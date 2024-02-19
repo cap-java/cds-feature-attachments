@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-feature-attachments-root</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>cds-feature-attachments</artifactId>
+    <packaging>jar</packaging>
+
+    <name>CDS Feature for Attachments</name>
+    <url>https://github.wdf.sap.corp/cds-java/cds-feature-attachments</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.sap.cds</groupId>
+            <artifactId>cds-feature-attachments-model</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sap.cds</groupId>
+            <artifactId>cds-feature-attachments-service</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sap.cds</groupId>
+            <artifactId>cds-feature-attachments-handler</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+    </dependencies>
+
+</project>
