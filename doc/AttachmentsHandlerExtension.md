@@ -40,15 +40,83 @@ service CatalogService {
 
 The following table shows the requests from the UI and for which cases the handler shall do something:
 
-| UI Request                                                                      | OData Version | Handler interaction | What needs to be done                                                                                                                             |
-|---------------------------------------------------------------------------------|---------------|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| POST /odata/v2/CatalogService/Roots(1)/attachments <br /> JSON Body with data   | V2            | No                  |                                                                                                                                                   |
-| PUT /odata/v2/CatalogService/Roots(1)/attachments <br /> Body with file content | V2            | Yes                 | - Attachment service needs to be called for file creation <br /> - external document id needs to be stored <br /> - file type needs to be updated |
-| GET /odata/v2/CatalogService/Roots(1)/attachments                               | V2            | No                  |                                                                                                                                                   |
-| GET /odata/v2/CatalogService/Attachments(guid'...')                             | V2            | No                  |                                                                                                                                                   |
-| GET /odata/v2/CatalogService/Attachments(guid'...')/$value                      | V2            | Yes                 | - File content needs to be read and returned                                                                                                      |
-| POST /odata/v4/CatalogService/Roots(1)/attachments <br /> JSON Body with data   | V4            | No                  |                                                                                                                                                   |
-| PUT /odata/v4/CatalogService/Roots(1)/attachments <br /> Body with file content | V4            | Yes                 | - Attachment service needs to be called for file creation <br /> - external document id needs to be stored <br /> - file type needs to be updated |
-| GET /odata/v4/CatalogService/Roots(1)/attachments                               | V4            | Yes                 | - Per default this requests reads all file contents from the database, this needs to be avoided                                                   |
-| GET /odata/v4/CatalogService/Attachments(...)                                   | V4            | Yes                 | - Per default this requests reads the file contents from the database, this needs to be avoided                                                   |
-| GET /odata/v4/CatalogService/Attachments(...)/content                           | V4            | Yes                 | - File content needs to be read and returned                                                                                                      |
+| UI Request                                                                        | OData Version | Handler intervention | Event | What needs to be done                                                                                                                             |
+|-----------------------------------------------------------------------------------|---------------|----------------------|-------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| POST /odata/v2/CatalogService/Roots(1)/attachments <br /> - JSON Body with data   | V2            | No                   |       |                                                                                                                                                   |
+| PUT /odata/v2/CatalogService/Roots(1)/attachments <br /> - Body with file content | V2            | Yes                  | ON    | - Attachment service needs to be called for file creation <br /> - external document id needs to be stored <br /> - file type needs to be updated |
+| GET /odata/v2/CatalogService/Roots(1)/attachments                                 | V2            | No                   |       |                                                                                                                                                   |
+| GET /odata/v2/CatalogService/Attachments(guid'...')                               | V2            | No                   |       |                                                                                                                                                   |
+| GET /odata/v2/CatalogService/Attachments(guid'...')/$value                        | V2            | Yes                  | AFTER | - File content needs to be read and returned                                                                                                      |
+| POST /odata/v4/CatalogService/Roots(1)/attachments <br /> - JSON Body with data   | V4            | No                   |       |                                                                                                                                                   |
+| PUT /odata/v4/CatalogService/Roots(1)/attachments <br /> - Body with file content | V4            | Yes                  | ON    | - Attachment service needs to be called for file creation <br /> - external document id needs to be stored <br /> - file type needs to be updated |
+| GET /odata/v4/CatalogService/Roots(1)/attachments                                 | V4            | Yes                  | ON    | - Per default this requests reads all file contents from the database, this needs to be avoided                                                   |
+| GET /odata/v4/CatalogService/Attachments(...)                                     | V4            | Yes                  | ON    | - Per default this requests reads the file contents from the database, this needs to be avoided                                                   |
+| GET /odata/v4/CatalogService/Attachments(...)/content                             | V4            | Yes                  | AFTER | - File content needs to be read and returned                                                                                                      |
+
+### Why GET requests in V4 needs handler intervention?
+
+Because in V4 the `content` field is part of the payload of the `Attachments` entity, the following response will be
+returned
+at the moment:
+
+```
+GET /odata/v4/CatalogService/Attachments(...)
+```
+
+Response for existing file content:
+
+```json
+{
+  "@context": "$metadata#Attachments/$entity",
+  "@metadataEtag": "W/\"8ca7430f48f5fe7053c6a0ed9d670b20e1eb7fd9069b9351f0c7f42fdd9b6488\"",
+  "ID": "...",
+  "parentKey": 1,
+  "content@mediaContentType": "text/plain",
+  "mimeType": "text/plain",
+  "fileName": "someText.txt",
+  "externalDocumentId": "..."
+}
+```
+
+Response for empty file content:
+
+```json
+{
+  "@context": "$metadata#Attachments/$entity",
+  "@metadataEtag": "W/\"8ca7430f48f5fe7053c6a0ed9d670b20e1eb7fd9069b9351f0c7f42fdd9b6488\"",
+  "ID": "...",
+  "parentKey": 1,
+  "content@mediaContentType": null,
+  "mimeType": "text/plain",
+  "fileName": "someText.txt",
+  "externalDocumentId": "..."
+}
+```
+
+#### Current Logic in V4 Handler
+
+The handler selects the file content from the database together with the other fields.
+If the content is filled, the field will be filled with the mime type.
+If there is no file content the field is null.
+
+For a single select this might be ok, but for selects like the following this could lead to bad performance:
+
+```
+GET /odata/v4/CatalogService/Roots(1)/attachments 
+```
+
+Here all attachments for on `Root` entity are read and for all the file content is read to calculate if the mime type
+needs to be filled.
+
+#### New Logic in Extension
+
+In the new extension the `externalDocumentId` is always filled.
+In case of external storages like SAP Document Management Service here the ID from the external storage is used,
+in case the SAP HANA is used as storage, the key of the entity which includes the media resource is used.
+
+If the `externalDocumentId` id is filled the `content` field can be filled with the mime type.
+So no content needs to be red if it is not requested.
+
+Therefore, the ON event in the extension handler needs to be overwritten for the GET requests.
+
+
