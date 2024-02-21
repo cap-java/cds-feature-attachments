@@ -4,7 +4,8 @@ using {
 } from './attachments';
 
 annotate MediaData with @UI.MediaResource: {
-    Stream: content
+    Stream: content,
+    title : '{i18n>mediaData}'
 } {
     content  @(
         title                      : '{i18n>content}',
@@ -26,8 +27,10 @@ annotate Attachments with @UI: {LineItem: [
     {Value: createdBy},
     {Value: note}
 ]} {
-    filename @(title: '{i18n>fileName}');
-    note     @(title: '{i18n>note}');
-    documentId @(_is_document_id,
-                 readonly);
+    filename   @(title: '{i18n>fileName}');
+    note       @(title: '{i18n>note}');
+    documentId @(
+        _is_document_id,
+        readonly
+    );
 }
