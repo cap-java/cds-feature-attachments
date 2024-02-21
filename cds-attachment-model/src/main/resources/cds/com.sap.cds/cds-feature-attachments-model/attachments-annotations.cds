@@ -25,4 +25,5 @@ annotate Attachments with @UI: {LineItem: [
 ]} {
     filename @(title: '{i18n>fileName}');
     note     @(title: '{i18n>note}');
+    documentId @(_is_document_id);
 }

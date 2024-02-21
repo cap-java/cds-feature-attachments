@@ -11,4 +11,5 @@ aspect MediaData @(_is_media_data) {
 aspect Attachments : cuid, managed, MediaData {
   filename         : String;
   note             : String;
+  documentId       : String;
 }
