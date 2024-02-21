@@ -4,8 +4,7 @@ using {
 } from './attachments';
 
 annotate MediaData with @UI.MediaResource: {
-    Stream: content,
-    title : '{i18n>mediaData}'
+    Stream: content
 } {
     content  @(
         title                      : '{i18n>content}',
