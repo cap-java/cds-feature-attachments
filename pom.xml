@@ -10,7 +10,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <cds.services.version>2.6.1</cds.services.version>
-
         <spring-version>3.2.1-sap-02</spring-version>
     </properties>
 
