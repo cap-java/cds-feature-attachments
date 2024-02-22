@@ -16,4 +16,9 @@ class ModelConstantsTest {
         assertThat(ModelConstants.ANNOTATION_IS_EXTERNAL_DOCUMENT_ID).isEqualTo("_is_document_id");
     }
 
+		@Test
+		void correctValueForMediaTypeAnnotation() {
+				assertThat(ModelConstants.ANNOTATION_MEDIA_TYPE).isEqualTo("Core.MediaType");
+		}
+
 }

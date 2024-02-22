@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-feature-attachments-root</artifactId>
-        <version>0.0.4-SNAPSHOT</version>
+        <version>0.0.9-SNAPSHOT</version>
     </parent>
 
     <artifactId>cds-feature-attachments-service</artifactId>
@@ -17,5 +17,14 @@
     <properties>
         <packageName>com.sap.cds.feature.attachments.model</packageName>
     </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+    </dependencies>
 
 </project>

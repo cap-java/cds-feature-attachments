@@ -18,7 +18,7 @@ public interface AttachmentReadEventContext extends EventContext {
 		}
 
 		/**
-			* @return The attachment id for the attachment to be read or {@code null} if no parent id was specified
+			* @return The attachment id for the attachment to be read or {@code null} if no attachment id was specified
 			*/
 		String getAttachmentId();
 
