@@ -1,6 +1,6 @@
 namespace unit.test;
 
-using {com.sap.attachments.Attachments} from`com.sap.cds/cds-feature-attachments-model`;
+using { com.sap.attachments.Attachments } from '../../../main/resources/cds/com.sap.cds/cds-feature-attachments-handler';
 
 entity Attachment : Attachments {
     parentKey : Integer;

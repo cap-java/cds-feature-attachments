@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
-import com.sap.cds.feature.attachments.model.ModelConstants;
+import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;

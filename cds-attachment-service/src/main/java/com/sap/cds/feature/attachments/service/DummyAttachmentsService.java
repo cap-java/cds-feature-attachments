@@ -6,10 +6,13 @@ import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContex
 import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentStorageResult;
 import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext;
-import com.sap.cds.services.EventContext;
-import com.sap.cds.services.handler.Handler;
+import com.sap.cds.services.ServiceDelegator;
 
-public class DummyAttachmentsService implements AttachmentService {
+public class DummyAttachmentsService extends ServiceDelegator implements AttachmentService {
+
+		public DummyAttachmentsService() {
+				super(AttachmentService.DEFAULT_NAME);
+		}
 
 		@Override
 		public InputStream readAttachment(AttachmentReadEventContext context) throws AttachmentAccessException {
@@ -24,31 +27,6 @@ public class DummyAttachmentsService implements AttachmentService {
 		@Override
 		public void deleteAttachment(AttachmentDeleteEventContext context) throws AttachmentAccessException {
 
-		}
-
-		@Override
-		public void before(String[] events, String[] entities, int order, Handler handler) {
-
-		}
-
-		@Override
-		public void on(String[] events, String[] entities, int order, Handler handler) {
-
-		}
-
-		@Override
-		public void after(String[] events, String[] entities, int order, Handler handler) {
-
-		}
-
-		@Override
-		public void emit(EventContext context) {
-
-		}
-
-		@Override
-		public String getName() {
-				return AttachmentService.DEFAULT_NAME;
 		}
 
 }
