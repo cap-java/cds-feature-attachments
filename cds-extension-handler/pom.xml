@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-feature-attachments-root</artifactId>
-        <version>0.0.9-SNAPSHOT</version>
+        <version>0.0.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>cds-feature-attachments-handler</artifactId>
@@ -37,5 +37,49 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>com.sap.cds</groupId>
+                <artifactId>cds-maven-plugin</artifactId>
+                <version>${cds.services.version}</version>
+                <configuration>
+                    <!--                    <workingDirectory>./src/test/resources</workingDirectory>-->
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>cds.clean</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+
+                    <execution>
+                        <id>cds.resolve</id>
+                        <goals>
+                            <goal>resolve</goal>
+                        </goals>
+                    </execution>
+
+                    <execution>
+                        <id>cds.build</id>
+                        <goals>
+                            <goal>cds</goal>
+                        </goals>
+                        <configuration>
+                            <commands>
+                                <command>build --clean</command>
+                                <command>compile cds/schema.cds -2 sql > schema.sql</command>
+                            </commands>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
 
 </project>

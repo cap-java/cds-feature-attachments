@@ -2,6 +2,7 @@ package com.sap.cds.feature.attachments.service;
 
 import java.io.InputStream;
 
+import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentStorageResult;
 import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext;
@@ -18,6 +19,11 @@ public class DummyAttachmentsService implements AttachmentService {
 		@Override
 		public AttachmentStorageResult storeAttachment(AttachmentStoreEventContext context) throws AttachmentAccessException {
 				return null;
+		}
+
+		@Override
+		public void deleteAttachment(AttachmentDeleteEventContext context) throws AttachmentAccessException {
+
 		}
 
 		@Override
