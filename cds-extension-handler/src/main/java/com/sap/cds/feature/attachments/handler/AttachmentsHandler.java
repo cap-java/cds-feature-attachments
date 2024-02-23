@@ -123,7 +123,7 @@ public class AttachmentsHandler implements EventHandler {
 
 		private boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
 				var isIncluded = new AtomicBoolean();
-
+				//TODO put in different class
 				CdsDataProcessor.create().addConverter(
 								(path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false) && hasElementAnnotation(element, ModelConstants.ANNOTATION_MEDIA_TYPE), // filter
 								(path, element, value) -> {
@@ -152,6 +152,7 @@ public class AttachmentsHandler implements EventHandler {
 		}
 
 		private void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, String event) {
+				//TODO refactor
 				CdsDataProcessor.create().addConverter(
 								(path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false) && hasElementAnnotation(element, ModelConstants.ANNOTATION_MEDIA_TYPE), // filter
 								(path, element, value) -> {
@@ -168,6 +169,7 @@ public class AttachmentsHandler implements EventHandler {
 												storageContext.setContent((InputStream) value);
 
 												mediaTypeAnnotation.ifPresent(anno -> {
+														//TODO validate ann.getValue before cast
 														var annotationKey = ((Map<String, String>) anno.getValue()).get("=");
 														var annotationValue = values.get(annotationKey);
 														var mimeType = Objects.nonNull(annotationValue) ? annotationValue : oldData.get(annotationKey);
