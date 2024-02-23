@@ -21,7 +21,7 @@ public class DummyAttachmentsService extends ServiceDelegator implements Attachm
 
 		@Override
 		public AttachmentStorageResult storeAttachment(AttachmentStoreEventContext context) throws AttachmentAccessException {
-				return null;
+				return new AttachmentStorageResult(false, context.getAttachmentId());
 		}
 
 		@Override

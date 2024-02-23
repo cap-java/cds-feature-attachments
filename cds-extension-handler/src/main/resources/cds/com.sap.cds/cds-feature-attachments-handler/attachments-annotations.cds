@@ -10,13 +10,11 @@ annotate MediaData with @UI.MediaResource: {
         title                      : '{i18n>content}',
         Core.MediaType             : mimeType,
         ContentDisposition.Filename: filename,
-        Core.Immutable,
         odata.draft.skip
     );
     mimeType @(
         title: '{i18n>mimeType}',
-        Core.IsMediaType,
-        Core.Immutable
+        Core.IsMediaType
     );
 }
 

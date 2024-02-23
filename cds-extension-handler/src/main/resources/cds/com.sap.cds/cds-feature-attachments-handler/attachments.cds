@@ -6,10 +6,10 @@ aspect MediaData @(_is_media_data) {
   url      : String;
   content  : LargeBinary; // only for db-based services
   mimeType : String;
+  filename : String;
 }
 
 aspect Attachments : cuid, managed, MediaData {
-  filename         : String;
   note             : String;
   documentId       : String;
 }

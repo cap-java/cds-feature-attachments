@@ -20,16 +20,16 @@ public interface AttachmentStoreEventContext extends EventContext {
 		}
 
 		/**
-			* Sets the parent id for the attachment storage
+			* Sets the id af the attachment entity for the attachment storage
 			*
-			* @param parentId The key of the parent entity of the entity which defines the content field
+			* @param id The key of the attachment entity which defines the content field
 			*/
-		void setParentId(String parentId);
+		void setAttachmentId(String id);
 
 		/**
-			* @return The parent id for the attachment storage or {@code null} if no parent id was specified
+			* @return The id of the attachment storage entity or {@code null} if no id was specified
 			*/
-		String getParentId();
+		String getAttachmentId();
 
 		/**
 			* Sets the file name for the attachment storage

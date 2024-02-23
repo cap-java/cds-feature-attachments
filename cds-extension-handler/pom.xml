@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-feature-attachments-root</artifactId>
-        <version>0.0.11-SNAPSHOT</version>
+        <version>0.0.27-SNAPSHOT</version>
     </parent>
 
     <artifactId>cds-feature-attachments-handler</artifactId>
@@ -17,6 +17,8 @@
     <properties>
         <packageName>com.sap.cds.feature.attachments.handler</packageName>
         <cds.install-cdsdk.version>7.6.0</cds.install-cdsdk.version>
+        <generation-package>com.sap.cds.feature.attachments.handler.generation</generation-package>
+        <test-generation-folder>src/test/gen</test-generation-folder>
     </properties>
 
     <dependencies>
@@ -29,6 +31,12 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sap.cds</groupId>
+            <artifactId>cds-services-impl</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
@@ -81,6 +89,22 @@
                                 <command>build --for java --src ./</command>
                                 <command>compile schema.cds -2 sql > ../schema.sql</command>
                             </commands>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>cds.generate</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <basePackage>cds.gen</basePackage>
+                            <codeOutputDirectory>${project.basedir}/${test-generation-folder}/cds4j
+                            </codeOutputDirectory>
+                            <basePackage>${generation-package}.cds4j</basePackage>
+                            <testSources>true</testSources>
+                            <csnFile>${project.basedir}/src/test/resources/cds/gen/src/main/resources/edmx/csn.json
+                            </csnFile>
                         </configuration>
                     </execution>
 
