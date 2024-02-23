@@ -72,7 +72,10 @@ public class AttachmentsHandler implements EventHandler {
 								var readContext = AttachmentReadEventContext.create();
 								readContext.setAttachmentId(attachmentId);
 								var content = attachmentService.readAttachment(readContext);
-								data.get(0).put("content", content);
+								var existingContent = data.get(0).get("content");
+								if (Objects.isNull(existingContent)) {
+										data.get(0).put("content", content);
+								}
 						}
 				}
 		}
