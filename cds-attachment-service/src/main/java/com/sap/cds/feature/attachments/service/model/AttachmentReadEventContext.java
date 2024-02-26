@@ -18,15 +18,15 @@ public interface AttachmentReadEventContext extends EventContext {
 		}
 
 		/**
-			* @return The attachment id for the attachment to be read or {@code null} if no attachment id was specified
+			* @return The document id for the attachment to be read or {@code null} if no id was specified
 			*/
-		String getAttachmentId();
+		String getDocumentId();
 
 		/**
-			* Sets the attachment id for the attachment to be read
+			* Sets the document id for the attachment to be read
 			*
-			* @param attachmentId The attachment id of the attachment to be read
+			* @param documentId The document id of the attachment to be read
 			*/
-		void setAttachmentId(String attachmentId);
+		void setDocumentId(String documentId);
 
 }

@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
@@ -27,8 +28,10 @@ import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testse
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentStorageResult;
 import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext;
+import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.impl.RowImpl;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.services.application.ApplicationLifecycleService;
@@ -48,6 +51,8 @@ class AttachmentsHandlerTest {
 		private CdsCreateEventContext createContext;
 		private CdsUpdateEventContext updateContext;
 		private ArgumentCaptor<AttachmentStoreEventContext> storeEventInputCaptor;
+		private ArgumentCaptor<AttachmentUpdateEventContext> updateEventInputCaptor;
+		private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventInputCaptor;
 		private ArgumentCaptor<CqnSelect> selectArgumentCaptor;
 
 		@BeforeEach
@@ -61,6 +66,8 @@ class AttachmentsHandlerTest {
 				createContext = mock(CdsCreateEventContext.class);
 				updateContext = mock(CdsUpdateEventContext.class);
 				storeEventInputCaptor = ArgumentCaptor.forClass(AttachmentStoreEventContext.class);
+				updateEventInputCaptor = ArgumentCaptor.forClass(AttachmentUpdateEventContext.class);
+				deleteEventInputCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
 				selectArgumentCaptor = ArgumentCaptor.forClass(CqnSelect.class);
 		}
 
@@ -224,7 +231,7 @@ class AttachmentsHandlerTest {
 				}
 
 				@Test
-				void simpleUpdateCallsAttachment() throws AttachmentAccessException, IOException {
+				void simpleUpdateCallsAttachmentWithCreate() throws AttachmentAccessException, IOException {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
@@ -255,6 +262,70 @@ class AttachmentsHandlerTest {
 								var select = selectArgumentCaptor.getValue();
 								assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
 						}
+				}
+
+				@Test
+				void simpleUpdateCallsAttachmentWithUpdate() throws AttachmentAccessException, IOException {
+						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
+						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
+						var result = mock(Result.class);
+						var oldData = Attachment.create();
+						oldData.setFilename("some file name");
+						oldData.setMimeType("some mime type");
+						oldData.setDocumentId(UUID.randomUUID().toString());
+						var row = RowImpl.row(oldData);
+						when(result.single()).thenReturn(row);
+						when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
+
+						var attachment = Attachment.create();
+						var testString = "test";
+						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+								attachment.setContent(testStream);
+								attachment.setId(UUID.randomUUID().toString());
+
+								cut.uploadAttachmentsForUpdate(updateContext, List.of(attachment));
+
+								verify(attachmentService).updateAttachment(updateEventInputCaptor.capture());
+								var input = updateEventInputCaptor.getValue();
+								assertThat(attachment.getContent()).isEqualTo(testStream);
+								assertThat(input.getContent()).isEqualTo(testStream);
+								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+								assertThat(input.getFileName()).isEqualTo(oldData.getFilename());
+								assertThat(input.getMimeType()).isEqualTo(oldData.getMimeType());
+								verify(persistenceService).run(selectArgumentCaptor.capture());
+								var select = selectArgumentCaptor.getValue();
+								assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
+						}
+				}
+
+				@Test
+				void removeValueFromContentDeletesDocument() throws AttachmentAccessException {
+						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
+						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						var result = mock(Result.class);
+						var oldData = Attachment.create();
+						oldData.setDocumentId(UUID.randomUUID().toString());
+						oldData.setId(UUID.randomUUID().toString());
+						var row = RowImpl.row(oldData);
+						when(result.single()).thenReturn(row);
+						when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
+
+						var attachment = Attachment.create();
+						attachment.setId(oldData.getId());
+						attachment.setContent(null);
+
+						cut.uploadAttachmentsForUpdate(updateContext, List.of(attachment));
+
+						verify(attachmentService).deleteAttachment(deleteEventInputCaptor.capture());
+						var input = deleteEventInputCaptor.getValue();
+						assertThat(attachment.getContent()).isNull();
+						assertThat(attachment.getDocumentId()).isNull();
+						assertThat(input.getDocumentId()).isEqualTo(oldData.getDocumentId());
+						verifyNoMoreInteractions(attachmentService);
+						verify(persistenceService).run(selectArgumentCaptor.capture());
+						var select = selectArgumentCaptor.getValue();
+						assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
 				}
 
 		}

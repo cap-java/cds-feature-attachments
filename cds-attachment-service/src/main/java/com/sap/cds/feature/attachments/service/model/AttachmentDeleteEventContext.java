@@ -18,15 +18,15 @@ public interface AttachmentDeleteEventContext extends EventContext {
 		}
 
 		/**
-			* @return The attachment id for the attachment to be deleted or {@code null} if attachment id was specified
+			* @return The document id for the attachment to be deleted or {@code null} if no id was specified
 			*/
-		String getAttachmentId();
+		String getDocumentId();
 
 		/**
 			* Sets the attachment id for the attachment to be deleted
 			*
-			* @param attachmentId The attachment id of the attachment to be deleted
+			* @param documentId The document id of the attachment to be deleted
 			*/
-		void setAttachmentId(String attachmentId);
+		void setDocumentId(String documentId);
 
 }
