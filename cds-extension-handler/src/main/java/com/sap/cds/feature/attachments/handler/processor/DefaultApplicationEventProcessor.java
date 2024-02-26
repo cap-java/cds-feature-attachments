@@ -17,13 +17,11 @@ import com.sap.cds.services.cds.CqnService;
 
 public class DefaultApplicationEventProcessor extends ProcessingBase implements ApplicationEventProcessor {
 
-		private final AttachmentService attachmentService;
 		private final StoreEvent storeEvent;
 		private final UpdateEvent updateEvent;
 		private final DeleteContentEvent deleteContentEvent;
 
 		public DefaultApplicationEventProcessor(AttachmentService attachmentService) {
-				this.attachmentService = attachmentService;
 				this.storeEvent = new StoreEvent(attachmentService);
 				this.updateEvent = new UpdateEvent(attachmentService);
 				this.deleteContentEvent = new DeleteContentEvent(attachmentService);
@@ -36,19 +34,18 @@ public class DefaultApplicationEventProcessor extends ProcessingBase implements 
 
 		@Override
 		public AttachmentEvent getEvent(String event, Object value, AttachmentFieldNames fieldNames, CdsData existingData) {
-				return switch (event) {
-						case CqnService.EVENT_UPDATE, CqnService.EVENT_CREATE -> {
-								if (Objects.isNull(value)) {
-										yield deleteContentEvent;
-								}
-								if (doesDocumentIdExistsBefore(fieldNames, existingData)) {
-										yield updateEvent;
-								} else {
-										yield storeEvent;
-								}
+				if (CqnService.EVENT_UPDATE.equals(event) || CqnService.EVENT_CREATE.equals(event)) {
+						if (Objects.isNull(value)) {
+								return deleteContentEvent;
 						}
-						default -> throw new IllegalStateException("Unexpected value: " + event);
-				};
+						if (doesDocumentIdExistsBefore(fieldNames, existingData)) {
+								return updateEvent;
+						} else {
+								return storeEvent;
+						}
+				} else {
+						throw new IllegalStateException("Unexpected event name: " + event);
+				}
 		}
 
 		private boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
@@ -65,7 +62,7 @@ public class DefaultApplicationEventProcessor extends ProcessingBase implements 
 
 				if (!isIncluded.get()) {
 						entity.associations().forEach(element -> {
-								var included = isIncluded.get() || isContentFieldInData(element.getType().as(CdsAssociationType.class).getTarget(), data);
+								var included = isContentFieldInData(element.getType().as(CdsAssociationType.class).getTarget(), data);
 								isIncluded.set(included);
 						});
 				}

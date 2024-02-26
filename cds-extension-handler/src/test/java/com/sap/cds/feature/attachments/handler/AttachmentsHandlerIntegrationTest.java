@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -26,7 +27,7 @@ import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testse
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.processor.ApplicationEventProcessor;
+import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.handler.processor.DefaultApplicationEventProcessor;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -40,13 +41,14 @@ import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.persistence.PersistenceService;
+import com.sap.cds.services.runtime.CdsRuntime;
 
-class AttachmentsHandlerIntegrationTest extends AttachmentsHandlerTestBase {
+class AttachmentsHandlerIntegrationTest {
 
+		private static CdsRuntime runtime;
 		private AttachmentsHandler cut;
 		private PersistenceService persistenceService;
 		private AttachmentService attachmentService;
-		private ApplicationEventProcessor eventProcessor;
 		private CdsCreateEventContext createContext;
 		private CdsUpdateEventContext updateContext;
 		private ArgumentCaptor<AttachmentStoreEventContext> storeEventInputCaptor;
@@ -54,15 +56,18 @@ class AttachmentsHandlerIntegrationTest extends AttachmentsHandlerTestBase {
 		private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventInputCaptor;
 		private ArgumentCaptor<CqnSelect> selectArgumentCaptor;
 
+		@BeforeAll
+		static void classSetup() {
+				runtime = new RuntimeHelper().runtime;
+		}
+
 		@BeforeEach
 		void setup() {
 				persistenceService = mock(PersistenceService.class);
 				attachmentService = mock(AttachmentService.class);
 
-				eventProcessor = new DefaultApplicationEventProcessor(attachmentService);
+				var eventProcessor = new DefaultApplicationEventProcessor(attachmentService);
 				cut = new AttachmentsHandler(persistenceService, eventProcessor);
-
-				super.setup();
 
 				createContext = mock(CdsCreateEventContext.class);
 				updateContext = mock(CdsUpdateEventContext.class);

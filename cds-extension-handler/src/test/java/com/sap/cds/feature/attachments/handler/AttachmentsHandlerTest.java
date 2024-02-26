@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -28,6 +29,7 @@ import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testse
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.ApplicationEventProcessor;
 import com.sap.cds.feature.attachments.handler.processor.AttachmentEvent;
@@ -40,8 +42,9 @@ import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.persistence.PersistenceService;
+import com.sap.cds.services.runtime.CdsRuntime;
 
-class AttachmentsHandlerTest extends AttachmentsHandlerTestBase {
+class AttachmentsHandlerTest {
 
 		private AttachmentsHandler cut;
 		private PersistenceService persistenceService;
@@ -53,14 +56,19 @@ class AttachmentsHandlerTest extends AttachmentsHandlerTestBase {
 		private ArgumentCaptor<AttachmentFieldNames> fieldNamesArgumentCaptor;
 		private AttachmentEvent event;
 
+		private static CdsRuntime runtime;
+
+		@BeforeAll
+		static void classSetup() {
+				runtime = new RuntimeHelper().runtime;
+		}
+
 		@BeforeEach
 		void setup() {
 				persistenceService = mock(PersistenceService.class);
 
 				eventProcessor = mock(ApplicationEventProcessor.class);
 				cut = new AttachmentsHandler(persistenceService, eventProcessor);
-
-				super.setup();
 
 				createContext = mock(CdsCreateEventContext.class);
 				updateContext = mock(CdsUpdateEventContext.class);

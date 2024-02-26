@@ -1,16 +1,16 @@
-package com.sap.cds.feature.attachments.handler;
+package com.sap.cds.feature.attachments.handler.helper;
 
 import com.sap.cds.services.application.ApplicationLifecycleService;
 import com.sap.cds.services.runtime.CdsRuntime;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 
-abstract class AttachmentsHandlerTestBase {
+public class RuntimeHelper {
 
 		public static final String CSN_FILE_PATH = "cds/gen/src/main/resources/edmx/csn.json";
-		CdsRuntime runtime;
+		public final CdsRuntime runtime;
 
-		void setup() {
-				runtime = prepareRuntime();
+		public RuntimeHelper() {
+				this.runtime = prepareRuntime();
 		}
 
 		private CdsRuntime prepareRuntime() {
