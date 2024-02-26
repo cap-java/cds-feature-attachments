@@ -8,6 +8,6 @@ import com.sap.cds.reflect.CdsElement;
 
 public interface AttachmentEvent {
 
-		Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData) throws AttachmentAccessException;
+		Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) throws AttachmentAccessException;
 
 }

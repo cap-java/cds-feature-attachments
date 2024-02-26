@@ -1,30 +1,32 @@
 package com.sap.cds.feature.attachments.handler;
 
-import java.io.InputStream;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
+import com.sap.cds.CdsDataProcessor.Converter;
+import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
+import com.sap.cds.feature.attachments.handler.processor.ApplicationEventProcessor;
 import com.sap.cds.feature.attachments.handler.processor.ProcessingBase;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentStorageResult;
-import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnAnalyzer;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.ResolvedSegment;
+import com.sap.cds.reflect.CdsAnnotation;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsBaseType;
 import com.sap.cds.reflect.CdsElement;
@@ -47,14 +49,16 @@ import com.sap.cds.services.persistence.PersistenceService;
 @ServiceName(value = "*", type = ApplicationService.class)
 public class AttachmentsHandler extends ProcessingBase implements EventHandler {
 
-		//TODO Logging / Error handling
+		private static final Logger logger = LoggerFactory.getLogger(AttachmentsHandler.class);
 
 		private final PersistenceService persistenceService;
 		private final AttachmentService attachmentService;
+		private final ApplicationEventProcessor eventProcessor;
 
-		public AttachmentsHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
+		public AttachmentsHandler(PersistenceService persistenceService, AttachmentService attachmentService, ApplicationEventProcessor eventProcessor) {
 				this.persistenceService = persistenceService;
 				this.attachmentService = attachmentService;
+				this.eventProcessor = eventProcessor;
 		}
 
 		@After
@@ -113,7 +117,7 @@ public class AttachmentsHandler extends ProcessingBase implements EventHandler {
 
 		@Before(event = CqnService.EVENT_CREATE)
 		void uploadAttachmentsForCreate(CdsCreateEventContext context, List<CdsData> data) {
-				if (!isContentFieldInData(context.getTarget(), data)) {
+				if (processingNotNeeded(context.getTarget(), data)) {
 						return;
 				}
 				setKeysInData(context.getTarget(), data);
@@ -122,31 +126,14 @@ public class AttachmentsHandler extends ProcessingBase implements EventHandler {
 
 		@Before(event = CqnService.EVENT_UPDATE)
 		void uploadAttachmentsForUpdate(CdsUpdateEventContext context, List<CdsData> data) {
-				if (!isContentFieldInData(context.getTarget(), data)) {
+				if (processingNotNeeded(context.getTarget(), data)) {
 						return;
 				}
 				uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_UPDATE);
 		}
 
-		private boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
-				var isIncluded = new AtomicBoolean();
-				//TODO put in different class
-				CdsDataProcessor.create().addConverter(
-								(path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false) && hasElementAnnotation(element, ModelConstants.ANNOTATION_MEDIA_TYPE), // filter
-								(path, element, value) -> {
-										isIncluded.set(true);
-										return value;
-								})
-						.process(data, entity);
-
-				if (!isIncluded.get()) {
-						entity.associations().forEach(element -> {
-								var included = isIncluded.get() || isContentFieldInData(element.getType().as(CdsAssociationType.class).getTarget(), data);
-								isIncluded.set(included);
-						});
-				}
-
-				return isIncluded.get();
+		private boolean processingNotNeeded(CdsEntity entity, List<CdsData> data) {
+				return !eventProcessor.isAttachmentEvent(entity, data);
 		}
 
 		private void setKeysInData(CdsEntity entity, List<CdsData> data) {
@@ -159,102 +146,65 @@ public class AttachmentsHandler extends ProcessingBase implements EventHandler {
 		}
 
 		private void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, String event) {
-				//TODO refactor
-				CdsDataProcessor.create().addConverter(
-								(path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false) && hasElementAnnotation(element, ModelConstants.ANNOTATION_MEDIA_TYPE), // filter
-								(path, element, value) -> {
-										try {
-												var fieldNames = getFieldNames(element, path.target());
+				Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false) && hasElementAnnotation(element, ModelConstants.ANNOTATION_MEDIA_TYPE);
+				Converter converter = (path, element, value) -> {
+						try {
+								var fieldNames = getFieldNames(element, path.target());
+								var attachmentId = path.target().keys().get(fieldNames.keyField()).toString();
+								var oldData = CqnService.EVENT_UPDATE.equals(event) ? readExistingData(attachmentId, path.target().entity()) : CdsData.create();
 
-												var oldData = CqnService.EVENT_UPDATE.equals(event) ? readExistingData(fieldNames.keyField(), path.target().entity()) : Collections.emptyMap();
+								var eventToProcess = eventProcessor.getEvent(event, value, fieldNames, oldData);
+								return eventToProcess.processEvent(path, element, fieldNames, value, oldData, attachmentId);
 
-												if (Objects.isNull(value)) {
-														if (doesDocumentIdExistsBefore(fieldNames, oldData)) {
-																var deleteContext = AttachmentDeleteEventContext.create();
-																deleteContext.setDocumentId((String) oldData.get(fieldNames.documentIdField().get()));
-																attachmentService.deleteAttachment(deleteContext);
-														}
-														path.target().values().put(fieldNames.documentIdField().get(), null);
-														return value;
-												}
-
-												AttachmentStorageResult uploadResult;
-												if (doesDocumentIdExistsBefore(fieldNames, oldData)) {
-														var storageContext = AttachmentUpdateEventContext.create();
-														storageContext.setAttachmentId(fieldNames.keyField());
-
-														var values = path.target().values();
-														storageContext.setContent((InputStream) value);
-
-														fieldNames.mimeTypeField().ifPresent(anno -> {
-																var annotationValue = values.get(anno);
-																var mimeType = Objects.nonNull(annotationValue) ? annotationValue : oldData.get(anno);
-																storageContext.setMimeType((String) mimeType);
-														});
-
-														fieldNames.fileNameField().ifPresent(anno -> {
-																var annotationValue = values.get(anno);
-																var fileName = Objects.nonNull(annotationValue) ? annotationValue : oldData.get(anno);
-																storageContext.setFileName((String) fileName);
-														});
-														storageContext.setDocumentId((String) oldData.get(fieldNames.documentIdField().get()));
-														uploadResult = attachmentService.updateAttachment(storageContext);
-												} else {
-														var storageContext = AttachmentStoreEventContext.create();
-														storageContext.setAttachmentId(fieldNames.keyField());
-
-														var values = path.target().values();
-														storageContext.setContent((InputStream) value);
-
-														fieldNames.mimeTypeField().ifPresent(anno -> {
-																var annotationValue = values.get(anno);
-																var mimeType = Objects.nonNull(annotationValue) ? annotationValue : oldData.get(anno);
-																storageContext.setMimeType((String) mimeType);
-														});
-
-														fieldNames.fileNameField().ifPresent(anno -> {
-																var annotationValue = values.get(anno);
-																var fileName = Objects.nonNull(annotationValue) ? annotationValue : oldData.get(anno);
-																storageContext.setFileName((String) fileName);
-														});
-
-														uploadResult = attachmentService.storeAttachment(storageContext);
-												}
-												fieldNames.documentIdField().ifPresent(doc -> path.target().values().put(doc, uploadResult.documentId()));
-
-												return uploadResult.isExternalStored() ? null : value;
-										} catch (AttachmentAccessException e) {
-												throw new ServiceException(e);
-										}
-								})
-						.process(data, entity);
-
+						} catch (AttachmentAccessException e) {
+								throw new ServiceException(e);
+						}
+				};
+				callProcessor(entity, data, filter, converter);
 				entity.associations().forEach(element -> uploadAttachmentForEntity(element.getType().as(CdsAssociationType.class).getTarget(), data, event));
 		}
 
 		private CdsData readExistingData(String attachmentId, CdsEntity entity) {
-				//TODO error log if id empty
+				if (Objects.isNull(attachmentId)) {
+						logger.error("no id provided for attachment entity");
+						throw new IllegalStateException("no attachment id provided");
+				}
+
 				CqnSelect select = Select.from(entity).byId(attachmentId);
 				var result = persistenceService.run(select);
-				//TODO error log if result not found
 				return result.single();
 		}
 
 		private AttachmentFieldNames getFieldNames(CdsElement element, ResolvedSegment target) {
 				var attachmentIdField = new AtomicReference<String>();
-				target.keys().forEach((key, val) -> attachmentIdField.set((String) val));
+				target.keys().forEach((key, val) -> attachmentIdField.set(key));
 
 				var documentIdElement = target.type().elements().filter(targetElement -> hasElementAnnotation(targetElement, ModelConstants.ANNOTATION_IS_EXTERNAL_DOCUMENT_ID)).findAny();
 				var documentIdField = documentIdElement.map(CdsElementDefinition::getName);
+				logEmptyFieldName("document ID", documentIdField);
 
 				var mediaTypeAnnotation = element.findAnnotation(ModelConstants.ANNOTATION_MEDIA_TYPE);
 				var fileNameAnnotation = element.findAnnotation(ModelConstants.ANNOTATION_FILE_NAME);
 
-				//TODO validate ann.getValue before cast
-				var mimeTypeField = mediaTypeAnnotation.map(anno -> ((Map<String, String>) anno.getValue()).get("="));
-				var fileNameField = fileNameAnnotation.map(anno -> ((Map<String, String>) anno.getValue()).get("="));
+				var mimeTypeField = mediaTypeAnnotation.map(this::getString);
+				logEmptyFieldName("mime type", mimeTypeField);
+				var fileNameField = fileNameAnnotation.map(this::getString);
+				logEmptyFieldName("file name", fileNameField);
 
 				return new AttachmentFieldNames(attachmentIdField.get(), documentIdField, mimeTypeField, fileNameField);
+		}
+
+		private String getString(CdsAnnotation<Object> anno) {
+				if (anno.getValue() instanceof Map<?, ?> annoMap) {
+						return (String) annoMap.get("=");
+				}
+				return null;
+		}
+
+		private void logEmptyFieldName(String fieldName, Optional<String> value) {
+				if (value.isEmpty()) {
+						logger.warn("For Attachments no field for {} was found", fieldName);
+				}
 		}
 
 }

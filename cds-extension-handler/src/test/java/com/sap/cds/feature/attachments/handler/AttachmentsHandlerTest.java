@@ -2,332 +2,163 @@ package com.sap.cds.feature.attachments.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import com.sap.cds.CdsData;
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.Attachment_;
-import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.service.AttachmentAccessException;
+import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
+import com.sap.cds.feature.attachments.handler.processor.ApplicationEventProcessor;
+import com.sap.cds.feature.attachments.handler.processor.AttachmentEvent;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentStorageResult;
-import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.impl.RowImpl;
 import com.sap.cds.ql.cqn.CqnSelect;
-import com.sap.cds.services.application.ApplicationLifecycleService;
+import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.persistence.PersistenceService;
-import com.sap.cds.services.runtime.CdsRuntime;
-import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 
-class AttachmentsHandlerTest {
+class AttachmentsHandlerTest extends AttachmentsHandlerTestBase {
 
 		private AttachmentsHandler cut;
 		private PersistenceService persistenceService;
 		private AttachmentService attachmentService;
-		private CdsRuntime runtime;
+		private ApplicationEventProcessor eventProcessor;
+
 		private CdsCreateEventContext createContext;
 		private CdsUpdateEventContext updateContext;
-		private ArgumentCaptor<AttachmentStoreEventContext> storeEventInputCaptor;
-		private ArgumentCaptor<AttachmentUpdateEventContext> updateEventInputCaptor;
-		private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventInputCaptor;
-		private ArgumentCaptor<CqnSelect> selectArgumentCaptor;
+		private CdsData cdsData;
+		private ArgumentCaptor<AttachmentFieldNames> fieldNamesArgumentCaptor;
+		private AttachmentEvent event;
 
 		@BeforeEach
 		void setup() {
 				persistenceService = mock(PersistenceService.class);
 				attachmentService = mock(AttachmentService.class);
 
-				cut = new AttachmentsHandler(persistenceService, attachmentService);
+				eventProcessor = mock(ApplicationEventProcessor.class);
+				cut = new AttachmentsHandler(persistenceService, attachmentService, eventProcessor);
 
-				runtime = prepareRuntime();
+				super.setup();
+
 				createContext = mock(CdsCreateEventContext.class);
 				updateContext = mock(CdsUpdateEventContext.class);
-				storeEventInputCaptor = ArgumentCaptor.forClass(AttachmentStoreEventContext.class);
-				updateEventInputCaptor = ArgumentCaptor.forClass(AttachmentUpdateEventContext.class);
-				deleteEventInputCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
-				selectArgumentCaptor = ArgumentCaptor.forClass(CqnSelect.class);
+				cdsData = mock(CdsData.class);
+				fieldNamesArgumentCaptor = ArgumentCaptor.forClass(AttachmentFieldNames.class);
+				event = mock(AttachmentEvent.class);
 		}
 
-		private CdsRuntime prepareRuntime() {
-				var runtime = CdsRuntimeConfigurer.create()
-						.cdsModel("cds/gen/src/main/resources/edmx/csn.json")
-						.serviceConfigurations()
-						.eventHandlerConfigurations()
-						.complete();
-				runtime.getServiceCatalog().getServices(ApplicationLifecycleService.class).forEach(ApplicationLifecycleService::applicationPrepared);
-				return runtime;
+		@Test
+		void noProcessingNeededForCreate() {
+				CdsEntity entity = mock(CdsEntity.class);
+				when(createContext.getTarget()).thenReturn(entity);
+				when(eventProcessor.isAttachmentEvent(entity, List.of(cdsData))).thenReturn(false);
+
+				cut.uploadAttachmentsForCreate(createContext, List.of(cdsData));
+
+				verifyNoInteractions(persistenceService);
+				verifyNoInteractions(attachmentService);
+				verify(eventProcessor).isAttachmentEvent(entity, List.of(cdsData));
 		}
 
-		@Nested
-		@DisplayName("Tests for calling the CREATE event")
-		class CreateContentTests {
+		@Test
+		void idsAreSetInDataForCreate() {
+				var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
+				var roots = RootTable.create();
+				var attachment = Attachment.create();
+				attachment.setFilename("test.txt");
+				roots.setAttachments(List.of(attachment));
+				when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+				when(eventProcessor.isAttachmentEvent(serviceEntity.orElseThrow(), List.of(roots))).thenReturn(true);
 
-				@Test
-				void simpleCreateDoesNotCallAttachment() {
-						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
-						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+				cut.uploadAttachmentsForCreate(createContext, List.of(roots));
 
-						var roots = RootTable.create();
-
-						cut.uploadAttachmentsForCreate(createContext, List.of(roots));
-
-						verifyNoInteractions(attachmentService);
-						assertThat(roots.getId()).isNull();
-				}
-
-				@Test
-				void simpleCreateCallsAttachment() throws AttachmentAccessException, IOException {
-						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-						when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
-
-						var attachment = Attachment.create();
-
-						var testString = "test";
-						var fileName = "testFile.txt";
-						var mimeType = "test/type";
-						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
-								attachment.setContent(testStream);
-								attachment.setFilename(fileName);
-								attachment.setMimeType(mimeType);
-								attachment.setParentKey(UUID.randomUUID().toString());
-
-								cut.uploadAttachmentsForCreate(createContext, List.of(attachment));
-
-								verify(attachmentService).storeAttachment(storeEventInputCaptor.capture());
-								var input = storeEventInputCaptor.getValue();
-								assertThat(attachment.getContent()).isEqualTo(testStream);
-								assertThat(input.getContent()).isEqualTo(testStream);
-								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-								assertThat(input.getFileName()).isEqualTo(fileName);
-								assertThat(input.getMimeType()).isEqualTo(mimeType);
-						}
-				}
-
-				@Test
-				void simpleCreateCallsAttachmentAndRemovesContent() throws AttachmentAccessException, IOException {
-						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-						when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(true, "document id"));
-
-						var attachment = Attachment.create();
-
-						var testString = "test";
-						var fileName = "testFile.txt";
-						var mimeType = "test/type";
-						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
-								attachment.setContent(testStream);
-								attachment.setFilename(fileName);
-								attachment.setMimeType(mimeType);
-								attachment.setParentKey(UUID.randomUUID().toString());
-
-								cut.uploadAttachmentsForCreate(createContext, List.of(attachment));
-
-								verify(attachmentService).storeAttachment(storeEventInputCaptor.capture());
-								var input = storeEventInputCaptor.getValue();
-								assertThat(attachment.getContent()).isNull();
-								assertThat(input.getContent()).isEqualTo(testStream);
-								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-								assertThat(input.getFileName()).isEqualTo(fileName);
-								assertThat(input.getMimeType()).isEqualTo(mimeType);
-						}
-				}
-
-				@Test
-				void deepCreateDoesNoCallAttachmentService() {
-						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
-						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
-
-						var fileName = "testFile.txt";
-						var mimeType = "test/type";
-
-						var roots = RootTable.create();
-						var item = Items.create();
-						var attachment = Attachment.create();
-						attachment.setFilename(fileName);
-						attachment.setMimeType(mimeType);
-						item.setAttachments(List.of(attachment));
-						roots.setItemTable(List.of(item));
-
-						cut.uploadAttachmentsForCreate(createContext, List.of(roots));
-
-						verifyNoInteractions(attachmentService);
-				}
-
-				@Test
-				void deepCreateCallsAttachmentService() throws AttachmentAccessException, IOException {
-						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
-						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
-						when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
-
-						var testString = "test";
-						var fileName = "testFile.txt";
-						var mimeType = "test/type";
-						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
-								var roots = RootTable.create();
-								var item = Items.create();
-								var attachment = Attachment.create();
-								attachment.setContent(testStream);
-								attachment.setFilename(fileName);
-								attachment.setMimeType(mimeType);
-								item.setAttachments(List.of(attachment));
-								roots.setItemTable(List.of(item));
-
-								cut.uploadAttachmentsForCreate(createContext, List.of(roots));
-
-								verify(attachmentService).storeAttachment(storeEventInputCaptor.capture());
-								var input = storeEventInputCaptor.getValue();
-								assertThat(attachment.getContent()).isEqualTo(testStream);
-								assertThat(input.getContent()).isEqualTo(testStream);
-								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-								assertThat(input.getFileName()).isEqualTo(fileName);
-								assertThat(input.getMimeType()).isEqualTo(mimeType);
-						}
-				}
-
+				assertThat(roots.getId()).isNotEmpty();
+				assertThat(attachment.getId()).isNotEmpty();
 		}
 
-		@Nested
-		@DisplayName("Tests for calling the UPDATE event")
-		class UpdateContentTests {
+		@Test
+		void eventProcessorCalledForCreate() throws IOException {
+				var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 
-				@Test
-				void simpleUpdateDoesNotCallAttachment() {
-						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
-						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-
-						var roots = RootTable.create();
-						roots.setTitle("new title");
-
-						cut.uploadAttachmentsForUpdate(updateContext, List.of(roots));
-
-						verifyNoInteractions(attachmentService);
-						assertThat(roots.getId()).isNull();
-				}
-
-				@Test
-				void simpleUpdateCallsAttachmentWithCreate() throws AttachmentAccessException, IOException {
-						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-						when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
+				try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
+						var attachment = Attachment.create();
+						attachment.setContent(testStream);
+						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(eventProcessor.isAttachmentEvent(serviceEntity.orElseThrow(), List.of(attachment))).thenReturn(true);
+						when(eventProcessor.getEvent(any(), any(), any(), any())).thenReturn(event);
+						var row = RowImpl.row(cdsData);
 						var result = mock(Result.class);
-						var oldData = Attachment.create();
-						oldData.setFilename("some file name");
-						oldData.setMimeType("some mime type");
-						var row = RowImpl.row(oldData);
 						when(result.single()).thenReturn(row);
 						when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
 
-						var attachment = Attachment.create();
-						var testString = "test";
-						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
-								attachment.setContent(testStream);
-								attachment.setId(UUID.randomUUID().toString());
+						cut.uploadAttachmentsForCreate(createContext, List.of(attachment));
 
-								cut.uploadAttachmentsForUpdate(updateContext, List.of(attachment));
-
-								verify(attachmentService).storeAttachment(storeEventInputCaptor.capture());
-								var input = storeEventInputCaptor.getValue();
-								assertThat(attachment.getContent()).isEqualTo(testStream);
-								assertThat(input.getContent()).isEqualTo(testStream);
-								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-								assertThat(input.getFileName()).isEqualTo(oldData.getFilename());
-								assertThat(input.getMimeType()).isEqualTo(oldData.getMimeType());
-								verify(persistenceService).run(selectArgumentCaptor.capture());
-								var select = selectArgumentCaptor.getValue();
-								assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
-						}
+						verify(eventProcessor).getEvent(eq(CqnService.EVENT_CREATE), eq(testStream), fieldNamesArgumentCaptor.capture(), eq(row));
+						verifyFieldNames();
 				}
+		}
 
-				@Test
-				void simpleUpdateCallsAttachmentWithUpdate() throws AttachmentAccessException, IOException {
-						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
+		@Test
+		void noProcessingNeededForUpdate() {
+				CdsEntity entity = mock(CdsEntity.class);
+				when(updateContext.getTarget()).thenReturn(entity);
+				when(eventProcessor.isAttachmentEvent(entity, List.of(cdsData))).thenReturn(false);
+
+				cut.uploadAttachmentsForUpdate(updateContext, List.of(cdsData));
+
+				verifyNoInteractions(persistenceService);
+				verifyNoInteractions(attachmentService);
+				verify(eventProcessor).isAttachmentEvent(entity, List.of(cdsData));
+		}
+
+		@Test
+		void eventProcessorCalledForUpdate() throws IOException {
+				var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
+
+				try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
+						var attachment = Attachment.create();
+						attachment.setContent(testStream);
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-						when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
+						when(eventProcessor.isAttachmentEvent(serviceEntity.orElseThrow(), List.of(attachment))).thenReturn(true);
+						when(eventProcessor.getEvent(any(), any(), any(), any())).thenReturn(event);
+						var row = RowImpl.row(cdsData);
 						var result = mock(Result.class);
-						var oldData = Attachment.create();
-						oldData.setFilename("some file name");
-						oldData.setMimeType("some mime type");
-						oldData.setDocumentId(UUID.randomUUID().toString());
-						var row = RowImpl.row(oldData);
 						when(result.single()).thenReturn(row);
 						when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
-
-						var attachment = Attachment.create();
-						var testString = "test";
-						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
-								attachment.setContent(testStream);
-								attachment.setId(UUID.randomUUID().toString());
-
-								cut.uploadAttachmentsForUpdate(updateContext, List.of(attachment));
-
-								verify(attachmentService).updateAttachment(updateEventInputCaptor.capture());
-								var input = updateEventInputCaptor.getValue();
-								assertThat(attachment.getContent()).isEqualTo(testStream);
-								assertThat(input.getContent()).isEqualTo(testStream);
-								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-								assertThat(input.getFileName()).isEqualTo(oldData.getFilename());
-								assertThat(input.getMimeType()).isEqualTo(oldData.getMimeType());
-								verify(persistenceService).run(selectArgumentCaptor.capture());
-								var select = selectArgumentCaptor.getValue();
-								assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
-						}
-				}
-
-				@Test
-				void removeValueFromContentDeletesDocument() throws AttachmentAccessException {
-						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-						var result = mock(Result.class);
-						var oldData = Attachment.create();
-						oldData.setDocumentId(UUID.randomUUID().toString());
-						oldData.setId(UUID.randomUUID().toString());
-						var row = RowImpl.row(oldData);
-						when(result.single()).thenReturn(row);
-						when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
-
-						var attachment = Attachment.create();
-						attachment.setId(oldData.getId());
-						attachment.setContent(null);
 
 						cut.uploadAttachmentsForUpdate(updateContext, List.of(attachment));
 
-						verify(attachmentService).deleteAttachment(deleteEventInputCaptor.capture());
-						var input = deleteEventInputCaptor.getValue();
-						assertThat(attachment.getContent()).isNull();
-						assertThat(attachment.getDocumentId()).isNull();
-						assertThat(input.getDocumentId()).isEqualTo(oldData.getDocumentId());
-						verifyNoMoreInteractions(attachmentService);
-						verify(persistenceService).run(selectArgumentCaptor.capture());
-						var select = selectArgumentCaptor.getValue();
-						assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
+						verify(eventProcessor).getEvent(eq(CqnService.EVENT_UPDATE), eq(testStream), fieldNamesArgumentCaptor.capture(), eq(row));
+						verifyFieldNames();
 				}
+		}
 
+		
+		private void verifyFieldNames() {
+				//field names taken from model defined in csn which can be found in AttachmentsHandlerTestBase.CSN_FILE_PATH
+				var fieldNames = fieldNamesArgumentCaptor.getValue();
+				assertThat(fieldNames.keyField()).isEqualTo("ID");
+				assertThat(fieldNames.documentIdField()).isPresent().contains("documentId");
+				assertThat(fieldNames.mimeTypeField()).isPresent().contains("mimeType");
+				assertThat(fieldNames.fileNameField()).isPresent().contains("filename");
 		}
 
 }

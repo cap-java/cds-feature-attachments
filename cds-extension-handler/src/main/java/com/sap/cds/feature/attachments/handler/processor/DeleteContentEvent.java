@@ -17,7 +17,7 @@ public class DeleteContentEvent extends ProcessingBase implements AttachmentEven
 		}
 
 		@Override
-		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData) throws AttachmentAccessException {
+		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) throws AttachmentAccessException {
 				if (fieldNames.documentIdField().isEmpty()) {
 						return value;
 				}

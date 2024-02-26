@@ -9,9 +9,9 @@ import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.services.ServiceDelegator;
 
-public class DummyAttachmentsService extends ServiceDelegator implements AttachmentService {
+public class DatabaseAttachmentsService extends ServiceDelegator implements AttachmentService {
 
-		public DummyAttachmentsService() {
+		public DatabaseAttachmentsService() {
 				super(AttachmentService.DEFAULT_NAME);
 		}
 
@@ -27,12 +27,12 @@ public class DummyAttachmentsService extends ServiceDelegator implements Attachm
 
 		@Override
 		public AttachmentStorageResult updateAttachment(AttachmentUpdateEventContext context) throws AttachmentAccessException {
-				return null;
+				return new AttachmentStorageResult(false, context.getAttachmentId());
 		}
 
 		@Override
 		public void deleteAttachment(AttachmentDeleteEventContext context) throws AttachmentAccessException {
-
+				//implementation will follow
 		}
 
 }

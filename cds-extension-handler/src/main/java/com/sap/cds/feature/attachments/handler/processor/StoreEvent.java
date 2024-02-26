@@ -20,9 +20,9 @@ public class StoreEvent implements AttachmentEvent {
 		}
 
 		@Override
-		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData) throws AttachmentAccessException {
+		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) throws AttachmentAccessException {
 				var storageContext = AttachmentStoreEventContext.create();
-				storageContext.setAttachmentId(fieldNames.keyField());
+				storageContext.setAttachmentId(attachmentId);
 
 				var values = path.target().values();
 				storageContext.setContent((InputStream) value);
