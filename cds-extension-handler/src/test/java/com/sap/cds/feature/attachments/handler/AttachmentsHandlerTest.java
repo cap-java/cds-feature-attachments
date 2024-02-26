@@ -136,6 +136,7 @@ class AttachmentsHandlerTest extends AttachmentsHandlerTestBase {
 				try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
 						var attachment = Attachment.create();
 						attachment.setContent(testStream);
+						attachment.setId("test");
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(eventProcessor.isAttachmentEvent(serviceEntity.orElseThrow(), List.of(attachment))).thenReturn(true);
 						when(eventProcessor.getEvent(any(), any(), any(), any())).thenReturn(event);
