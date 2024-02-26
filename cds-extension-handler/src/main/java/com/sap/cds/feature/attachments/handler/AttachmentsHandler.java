@@ -13,6 +13,7 @@ import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
+import com.sap.cds.feature.attachments.handler.processor.ProcessingBase;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
@@ -44,7 +45,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
 
 @ServiceName(value = "*", type = ApplicationService.class)
-public class AttachmentsHandler implements EventHandler {
+public class AttachmentsHandler extends ProcessingBase implements EventHandler {
 
 		//TODO Logging / Error handling
 
@@ -231,20 +232,12 @@ public class AttachmentsHandler implements EventHandler {
 				entity.associations().forEach(element -> uploadAttachmentForEntity(element.getType().as(CdsAssociationType.class).getTarget(), data, event));
 		}
 
-		private boolean doesDocumentIdExistsBefore(AttachmentFieldNames fieldNames, Map<?, Object> oldData) {
-				return fieldNames.documentIdField().isPresent() && Objects.nonNull(oldData.get(fieldNames.documentIdField().get()));
-		}
-
 		private CdsData readExistingData(String attachmentId, CdsEntity entity) {
 				//TODO error log if id empty
 				CqnSelect select = Select.from(entity).byId(attachmentId);
 				var result = persistenceService.run(select);
 				//TODO error log if result not found
 				return result.single();
-		}
-
-		private boolean hasElementAnnotation(CdsElement element, String annotation) {
-				return element.findAnnotation(annotation).isPresent();
 		}
 
 		private AttachmentFieldNames getFieldNames(CdsElement element, ResolvedSegment target) {
