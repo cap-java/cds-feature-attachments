@@ -60,7 +60,7 @@ class AttachmentsHandlerIntegrationTest extends AttachmentsHandlerTestBase {
 				attachmentService = mock(AttachmentService.class);
 
 				eventProcessor = new DefaultApplicationEventProcessor(attachmentService);
-				cut = new AttachmentsHandler(persistenceService, attachmentService, eventProcessor);
+				cut = new AttachmentsHandler(persistenceService, eventProcessor);
 
 				super.setup();
 

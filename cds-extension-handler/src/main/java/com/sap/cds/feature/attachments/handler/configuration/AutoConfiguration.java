@@ -19,8 +19,8 @@ public class AutoConfiguration {
 		}
 
 		@Bean
-		public EventHandler buildHandler(PersistenceService persistenceService, AttachmentService attachmentService, ApplicationEventProcessor eventProcessor) {
-				return new AttachmentsHandler(persistenceService, attachmentService, eventProcessor);
+		public EventHandler buildHandler(PersistenceService persistenceService, ApplicationEventProcessor eventProcessor) {
+				return new AttachmentsHandler(persistenceService, eventProcessor);
 		}
 
 }

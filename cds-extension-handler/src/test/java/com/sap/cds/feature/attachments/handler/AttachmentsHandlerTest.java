@@ -32,7 +32,6 @@ import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.ApplicationEventProcessor;
 import com.sap.cds.feature.attachments.handler.processor.AttachmentEvent;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
-import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.impl.RowImpl;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
@@ -46,7 +45,6 @@ class AttachmentsHandlerTest extends AttachmentsHandlerTestBase {
 
 		private AttachmentsHandler cut;
 		private PersistenceService persistenceService;
-		private AttachmentService attachmentService;
 		private ApplicationEventProcessor eventProcessor;
 
 		private CdsCreateEventContext createContext;
@@ -58,10 +56,9 @@ class AttachmentsHandlerTest extends AttachmentsHandlerTestBase {
 		@BeforeEach
 		void setup() {
 				persistenceService = mock(PersistenceService.class);
-				attachmentService = mock(AttachmentService.class);
 
 				eventProcessor = mock(ApplicationEventProcessor.class);
-				cut = new AttachmentsHandler(persistenceService, attachmentService, eventProcessor);
+				cut = new AttachmentsHandler(persistenceService, eventProcessor);
 
 				super.setup();
 
@@ -81,7 +78,6 @@ class AttachmentsHandlerTest extends AttachmentsHandlerTestBase {
 				cut.uploadAttachmentsForCreate(createContext, List.of(cdsData));
 
 				verifyNoInteractions(persistenceService);
-				verifyNoInteractions(attachmentService);
 				verify(eventProcessor).isAttachmentEvent(entity, List.of(cdsData));
 		}
 
@@ -146,7 +142,6 @@ class AttachmentsHandlerTest extends AttachmentsHandlerTestBase {
 				cut.uploadAttachmentsForUpdate(updateContext, List.of(cdsData));
 
 				verifyNoInteractions(persistenceService);
-				verifyNoInteractions(attachmentService);
 				verify(eventProcessor).isAttachmentEvent(entity, List.of(cdsData));
 		}
 
