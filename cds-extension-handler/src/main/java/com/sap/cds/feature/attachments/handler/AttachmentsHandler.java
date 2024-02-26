@@ -150,7 +150,7 @@ public class AttachmentsHandler extends ProcessingBase implements EventHandler {
 				Converter converter = (path, element, value) -> {
 						try {
 								var fieldNames = getFieldNames(element, path.target());
-								var attachmentId = path.target().keys().get(fieldNames.keyField()).toString();
+								var attachmentId = (String) path.target().keys().get(fieldNames.keyField());
 								var oldData = CqnService.EVENT_UPDATE.equals(event) ? readExistingData(attachmentId, path.target().entity()) : CdsData.create();
 
 								var eventToProcess = eventProcessor.getEvent(event, value, fieldNames, oldData);
