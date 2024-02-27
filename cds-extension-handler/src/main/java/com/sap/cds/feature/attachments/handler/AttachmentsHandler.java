@@ -21,6 +21,8 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
+//TODO add Java Doc
+//TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
 public class AttachmentsHandler extends ProcessingBase implements EventHandler {
 
@@ -88,6 +90,7 @@ public class AttachmentsHandler extends ProcessingBase implements EventHandler {
 
 		}
 
+		//TODO UPSERT?
 		@Before(event = {CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE})
 		void uploadAttachments(EventContext context, List<CdsData> data) {
 				//TODO implement cascading delete if association entity is removed

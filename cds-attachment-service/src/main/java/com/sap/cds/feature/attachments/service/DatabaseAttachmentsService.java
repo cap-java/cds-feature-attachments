@@ -9,6 +9,10 @@ import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.services.ServiceDelegator;
 
+//TODO implement
+//TODO add java doc
+//TODO exception handling
+//TODO i18n properties
 public class DatabaseAttachmentsService extends ServiceDelegator implements AttachmentService {
 
 		public DatabaseAttachmentsService() {
