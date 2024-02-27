@@ -38,7 +38,7 @@ public class UpdateEvent implements AttachmentEvent {
 						var fileName = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
 						storageContext.setFileName((String) fileName);
 				});
-				storageContext.setDocumentId((String) existingData.get(fieldNames.documentIdField().get()));
+				fieldNames.documentIdField().ifPresent(docId -> storageContext.setDocumentId((String) existingData.get(docId)));
 
 				var result = attachmentService.updateAttachment(storageContext);
 				fieldNames.documentIdField().ifPresent(doc -> path.target().values().put(doc, result.documentId()));
