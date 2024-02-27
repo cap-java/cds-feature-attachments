@@ -48,19 +48,7 @@ class CreateAttachmentEventTest {
 		@Test
 		void storageCalledWithAllFieldsFilledFromPath() throws IOException, AttachmentAccessException {
 				var fieldNames = getDefaultFieldNames();
-				var attachment = Attachment.create();
-
-				var testContent = "test content";
-				try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
-						attachment.setContent(testContentStream);
-						attachment.setMimeType("mimeType");
-						attachment.setFilename("file name");
-						attachment.setId(UUID.randomUUID().toString());
-				}
-				when(target.values()).thenReturn(attachment);
-				when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
-
-				cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
+				var attachment = prepareAndExecuteEventWithData(fieldNames);
 
 				verify(attachmentService).storeAttachment(contextArgumentCaptor.capture());
 				var resultValue = contextArgumentCaptor.getValue();
@@ -68,6 +56,20 @@ class CreateAttachmentEventTest {
 				assertThat(resultValue.getMimeType()).isEqualTo(attachment.getMimeType());
 				assertThat(resultValue.getFileName()).isEqualTo(attachment.getFilename());
 				assertThat(resultValue.getContent()).isEqualTo(attachment.getContent());
+		}
+
+		@Test
+		void noFieldNamesDoNotFillContext() throws IOException, AttachmentAccessException {
+				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty());
+				var attachment = prepareAndExecuteEventWithData(fieldNames);
+
+				verify(attachmentService).storeAttachment(contextArgumentCaptor.capture());
+				var resultValue = contextArgumentCaptor.getValue();
+				assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
+				assertThat(resultValue.getMimeType()).isNull();
+				assertThat(resultValue.getFileName()).isNull();
+				assertThat(resultValue.getContent()).isEqualTo(attachment.getContent());
+				assertThat(attachment.getDocumentId()).isNull();
 		}
 
 		@Test
@@ -145,9 +147,11 @@ class CreateAttachmentEventTest {
 				assertThat(result).isNull();
 		}
 
-		@Test
-		void noFieldNamesDoNotFillContext() throws IOException, AttachmentAccessException {
-				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty());
+		private AttachmentFieldNames getDefaultFieldNames() {
+				return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("filename"));
+		}
+
+		private Attachment prepareAndExecuteEventWithData(AttachmentFieldNames fieldNames) throws IOException, AttachmentAccessException {
 				var attachment = Attachment.create();
 
 				var testContent = "test content";
@@ -161,18 +165,7 @@ class CreateAttachmentEventTest {
 				when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
 
 				cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
-
-				verify(attachmentService).storeAttachment(contextArgumentCaptor.capture());
-				var resultValue = contextArgumentCaptor.getValue();
-				assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
-				assertThat(resultValue.getMimeType()).isNull();
-				assertThat(resultValue.getFileName()).isNull();
-				assertThat(resultValue.getContent()).isEqualTo(attachment.getContent());
-				assertThat(attachment.getDocumentId()).isNull();
-		}
-
-		private AttachmentFieldNames getDefaultFieldNames() {
-				return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("filename"));
+				return attachment;
 		}
 
 }

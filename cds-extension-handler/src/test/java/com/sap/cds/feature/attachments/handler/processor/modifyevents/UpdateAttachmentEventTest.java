@@ -48,21 +48,10 @@ class UpdateAttachmentEventTest {
 		@Test
 		void storageCalledWithAllFieldsFilledFromPath() throws IOException, AttachmentAccessException {
 				var fieldNames = getDefaultFieldNames();
-				var attachment = Attachment.create();
-
-				var testContent = "test content";
-				try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
-						attachment.setContent(testContentStream);
-						attachment.setMimeType("mimeType");
-						attachment.setFilename("file name");
-						attachment.setId(UUID.randomUUID().toString());
-				}
-				when(target.values()).thenReturn(attachment);
-				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
 				var existingData = CdsData.create();
 				existingData.put("documentId", "some document id");
 
-				cut.processEvent(path, null, fieldNames, attachment.getContent(), existingData, attachment.getId());
+				var attachment = prepareAndExecuteEventWithData(fieldNames, existingData);
 
 				verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
 				var resultValue = contextArgumentCaptor.getValue();
@@ -153,21 +142,10 @@ class UpdateAttachmentEventTest {
 		@Test
 		void noFieldNamesDoNotFillContext() throws IOException, AttachmentAccessException {
 				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty());
-				var attachment = Attachment.create();
-
-				var testContent = "test content";
-				try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
-						attachment.setContent(testContentStream);
-						attachment.setMimeType("mimeType");
-						attachment.setFilename("file name");
-						attachment.setId(UUID.randomUUID().toString());
-				}
-				when(target.values()).thenReturn(attachment);
-				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
 				var existingData = CdsData.create();
 				existingData.put("documentId", "some document id");
 
-				cut.processEvent(path, null, fieldNames, attachment.getContent(), existingData, attachment.getId());
+				var attachment = prepareAndExecuteEventWithData(fieldNames, existingData);
 
 				verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
 				var resultValue = contextArgumentCaptor.getValue();
@@ -180,6 +158,23 @@ class UpdateAttachmentEventTest {
 
 		private AttachmentFieldNames getDefaultFieldNames() {
 				return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("filename"));
+		}
+
+		private Attachment prepareAndExecuteEventWithData(AttachmentFieldNames fieldNames, CdsData existingData) throws IOException, AttachmentAccessException {
+				var attachment = Attachment.create();
+
+				var testContent = "test content";
+				try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
+						attachment.setContent(testContentStream);
+						attachment.setMimeType("mimeType");
+						attachment.setFilename("file name");
+						attachment.setId(UUID.randomUUID().toString());
+				}
+				when(target.values()).thenReturn(attachment);
+				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
+
+				cut.processEvent(path, null, fieldNames, attachment.getContent(), existingData, attachment.getId());
+				return attachment;
 		}
 
 }
