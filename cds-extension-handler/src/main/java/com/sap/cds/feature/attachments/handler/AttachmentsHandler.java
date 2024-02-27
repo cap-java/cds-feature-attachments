@@ -35,6 +35,8 @@ public class AttachmentsHandler extends ProcessingBase implements EventHandler {
 		@HandlerOrder(HandlerOrder.EARLY)
 		void readAttachments(CdsReadEventContext context, List<CdsData> data) throws AttachmentAccessException {
 
+				//TODO Implement
+				//TODO Implement content replacement for read of attachment entity
 				//fill mimeType for content in case entity with MediaType annotation is requested
 
 //				var cdsModel = context.getCdsRuntime().getCdsModel();
@@ -64,6 +66,7 @@ public class AttachmentsHandler extends ProcessingBase implements EventHandler {
 		@After(event = {CqnService.EVENT_DELETE})
 		void deleteAttachments(CdsDeleteEventContext context) throws AttachmentAccessException {
 
+				//TODO Implement
 				//TODO implement cascading delete e.g. Root is deleted and items -> attachments shall also be deleted
 
 //				var cdsModel = context.getCdsRuntime().getCdsModel();
@@ -87,6 +90,7 @@ public class AttachmentsHandler extends ProcessingBase implements EventHandler {
 
 		@Before(event = {CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE})
 		void uploadAttachments(EventContext context, List<CdsData> data) {
+				//TODO implement cascading delete if association entity is removed
 				if (processingNotNeeded(context.getTarget(), data)) {
 						return;
 				}
