@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.processor;
+package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -22,9 +22,9 @@ import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContex
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 
-class DeleteContentEventTest {
+class DeleteContentAttachmentEventTest {
 
-		private DeleteContentEvent cut;
+		private DeleteContentAttachmentEvent cut;
 		private AttachmentService attachmentService;
 		private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventContextArgumentCaptor;
 		private Path path;
@@ -33,7 +33,7 @@ class DeleteContentEventTest {
 		@BeforeEach
 		void setup() {
 				attachmentService = mock(AttachmentService.class);
-				cut = new DeleteContentEvent(attachmentService);
+				cut = new DeleteContentAttachmentEvent(attachmentService);
 
 				deleteEventContextArgumentCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
 				path = mock(Path.class);

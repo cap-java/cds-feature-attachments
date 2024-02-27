@@ -4,8 +4,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.sap.cds.feature.attachments.handler.AttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.processor.ApplicationEventProcessor;
 import com.sap.cds.feature.attachments.handler.processor.DefaultApplicationEventProcessor;
+import com.sap.cds.feature.attachments.handler.processor.applicationevents.CreateApplicationEvent;
+import com.sap.cds.feature.attachments.handler.processor.applicationevents.UpdateApplicationEvent;
+import com.sap.cds.feature.attachments.handler.processor.modifyevents.CreateAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.processor.modifyevents.DefaultModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.processor.modifyevents.DeleteContentAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.processor.modifyevents.UpdateAttachmentEvent;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -14,13 +19,17 @@ import com.sap.cds.services.persistence.PersistenceService;
 public class AutoConfiguration {
 
 		@Bean
-		public ApplicationEventProcessor buildEventProcessor(AttachmentService attachmentService) {
-				return new DefaultApplicationEventProcessor(attachmentService);
-		}
+		public EventHandler buildHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
 
-		@Bean
-		public EventHandler buildHandler(PersistenceService persistenceService, ApplicationEventProcessor eventProcessor) {
-				return new AttachmentsHandler(persistenceService, eventProcessor);
+				var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
+				var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
+				var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
+				var attachmentEventFactory = new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteAttachmentEvent);
+				var createApplicationEvent = new CreateApplicationEvent(persistenceService, attachmentEventFactory);
+				var updateApplicationEvent = new UpdateApplicationEvent(persistenceService, attachmentEventFactory);
+				var eventProcessor = new DefaultApplicationEventProcessor(createApplicationEvent, updateApplicationEvent);
+
+				return new AttachmentsHandler(eventProcessor);
 		}
 
 }

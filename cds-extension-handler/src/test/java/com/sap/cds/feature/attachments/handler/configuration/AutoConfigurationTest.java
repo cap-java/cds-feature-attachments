@@ -9,8 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.sap.cds.feature.attachments.handler.AttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.processor.ApplicationEventProcessor;
-import com.sap.cds.feature.attachments.handler.processor.DefaultApplicationEventProcessor;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.persistence.PersistenceService;
 
@@ -19,7 +17,6 @@ class AutoConfigurationTest {
 		private AutoConfiguration cut;
 		private AttachmentService attachmentService;
 		private PersistenceService persistenceService;
-		private ApplicationEventProcessor applicationEventProcessor;
 
 		@BeforeEach
 		void setup() {
@@ -27,17 +24,11 @@ class AutoConfigurationTest {
 
 				attachmentService = mock(AttachmentService.class);
 				persistenceService = mock(PersistenceService.class);
-				applicationEventProcessor = mock(ApplicationEventProcessor.class);
-		}
-
-		@Test
-		void eventProcessorIsBuild() {
-				assertThat(cut.buildEventProcessor(attachmentService)).isInstanceOf(DefaultApplicationEventProcessor.class);
 		}
 
 		@Test
 		void eventHandlerBuild() {
-				assertThat(cut.buildHandler(persistenceService, applicationEventProcessor)).isInstanceOf(AttachmentsHandler.class);
+				assertThat(cut.buildHandler(persistenceService, attachmentService)).isInstanceOf(AttachmentsHandler.class);
 		}
 
 		@Test
@@ -46,14 +37,8 @@ class AutoConfigurationTest {
 		}
 
 		@Test
-		void buildEventProcessorMethodHasCorrectAnnotation() throws NoSuchMethodException {
-				var beanAnnotation = cut.getClass().getMethod("buildEventProcessor", AttachmentService.class).getAnnotation(Bean.class);
-				assertThat(beanAnnotation).isNotNull();
-		}
-
-		@Test
 		void buildEventHandlerMethodHasCorrectAnnotation() throws NoSuchMethodException {
-				var beanAnnotation = cut.getClass().getMethod("buildHandler", PersistenceService.class, ApplicationEventProcessor.class).getAnnotation(Bean.class);
+				var beanAnnotation = cut.getClass().getMethod("buildHandler", PersistenceService.class, AttachmentService.class).getAnnotation(Bean.class);
 				assertThat(beanAnnotation).isNotNull();
 		}
 

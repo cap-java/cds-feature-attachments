@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.processor;
+package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 
 import java.io.InputStream;
 import java.util.Objects;
@@ -11,11 +11,11 @@ import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContex
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
 
-public class UpdateEvent implements AttachmentEvent {
+public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
 		private final AttachmentService attachmentService;
 
-		public UpdateEvent(AttachmentService attachmentService) {
+		public UpdateAttachmentEvent(AttachmentService attachmentService) {
 				this.attachmentService = attachmentService;
 		}
 

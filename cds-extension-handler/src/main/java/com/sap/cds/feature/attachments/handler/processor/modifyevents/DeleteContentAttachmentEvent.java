@@ -1,18 +1,19 @@
-package com.sap.cds.feature.attachments.handler.processor;
+package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
+import com.sap.cds.feature.attachments.handler.processor.ProcessingBase;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
 
-public class DeleteContentEvent extends ProcessingBase implements AttachmentEvent {
+public class DeleteContentAttachmentEvent extends ProcessingBase implements ModifyAttachmentEvent {
 
 		private final AttachmentService attachmentService;
 
-		public DeleteContentEvent(AttachmentService attachmentService) {
+		public DeleteContentAttachmentEvent(AttachmentService attachmentService) {
 				this.attachmentService = attachmentService;
 		}
 

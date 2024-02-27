@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.processor;
+package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 
 import java.io.InputStream;
 import java.util.Objects;
@@ -11,11 +11,11 @@ import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
 
-public class StoreEvent implements AttachmentEvent {
+public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
 		private final AttachmentService attachmentService;
 
-		public StoreEvent(AttachmentService attachmentService) {
+		public CreateAttachmentEvent(AttachmentService attachmentService) {
 				this.attachmentService = attachmentService;
 		}
 

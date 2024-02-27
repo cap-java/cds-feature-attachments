@@ -22,13 +22,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.Result;
+import com.sap.cds.feature.attachments.handler.configuration.AutoConfiguration;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
-import com.sap.cds.feature.attachments.handler.processor.DefaultApplicationEventProcessor;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
@@ -66,8 +66,7 @@ class AttachmentsHandlerIntegrationTest {
 				persistenceService = mock(PersistenceService.class);
 				attachmentService = mock(AttachmentService.class);
 
-				var eventProcessor = new DefaultApplicationEventProcessor(attachmentService);
-				cut = new AttachmentsHandler(persistenceService, eventProcessor);
+				cut = (AttachmentsHandler) new AutoConfiguration().buildHandler(persistenceService, attachmentService);
 
 				createContext = mock(CdsCreateEventContext.class);
 				updateContext = mock(CdsUpdateEventContext.class);
@@ -85,10 +84,10 @@ class AttachmentsHandlerIntegrationTest {
 				void simpleCreateDoesNotCallAttachment() {
 						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
 						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-
+						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
 						var roots = RootTable.create();
 
-						cut.uploadAttachmentsForCreate(createContext, List.of(roots));
+						cut.uploadAttachments(createContext, List.of(roots));
 
 						verifyNoInteractions(attachmentService);
 						assertThat(roots.getId()).isNull();
@@ -98,6 +97,7 @@ class AttachmentsHandlerIntegrationTest {
 				void simpleCreateCallsAttachment() throws AttachmentAccessException, IOException {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
 						when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
 
 						var attachment = Attachment.create();
@@ -111,7 +111,7 @@ class AttachmentsHandlerIntegrationTest {
 								attachment.setMimeType(mimeType);
 								attachment.setParentKey(UUID.randomUUID().toString());
 
-								cut.uploadAttachmentsForCreate(createContext, List.of(attachment));
+								cut.uploadAttachments(createContext, List.of(attachment));
 
 								verify(attachmentService).storeAttachment(storeEventInputCaptor.capture());
 								var input = storeEventInputCaptor.getValue();
@@ -127,6 +127,7 @@ class AttachmentsHandlerIntegrationTest {
 				void simpleCreateCallsAttachmentAndRemovesContent() throws AttachmentAccessException, IOException {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
 						when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(true, "document id"));
 
 						var attachment = Attachment.create();
@@ -140,7 +141,7 @@ class AttachmentsHandlerIntegrationTest {
 								attachment.setMimeType(mimeType);
 								attachment.setParentKey(UUID.randomUUID().toString());
 
-								cut.uploadAttachmentsForCreate(createContext, List.of(attachment));
+								cut.uploadAttachments(createContext, List.of(attachment));
 
 								verify(attachmentService).storeAttachment(storeEventInputCaptor.capture());
 								var input = storeEventInputCaptor.getValue();
@@ -169,7 +170,7 @@ class AttachmentsHandlerIntegrationTest {
 						item.setAttachments(List.of(attachment));
 						roots.setItemTable(List.of(item));
 
-						cut.uploadAttachmentsForCreate(createContext, List.of(roots));
+						cut.uploadAttachments(createContext, List.of(roots));
 
 						verifyNoInteractions(attachmentService);
 				}
@@ -194,7 +195,7 @@ class AttachmentsHandlerIntegrationTest {
 								item.setAttachments(List.of(attachment));
 								roots.setItemTable(List.of(item));
 
-								cut.uploadAttachmentsForCreate(createContext, List.of(roots));
+								cut.uploadAttachments(createContext, List.of(roots));
 
 								verify(attachmentService).storeAttachment(storeEventInputCaptor.capture());
 								var input = storeEventInputCaptor.getValue();
@@ -216,11 +217,12 @@ class AttachmentsHandlerIntegrationTest {
 				void simpleUpdateDoesNotCallAttachment() {
 						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
 
 						var roots = RootTable.create();
 						roots.setTitle("new title");
 
-						cut.uploadAttachmentsForUpdate(updateContext, List.of(roots));
+						cut.uploadAttachments(updateContext, List.of(roots));
 
 						verifyNoInteractions(attachmentService);
 						assertThat(roots.getId()).isNull();
@@ -230,6 +232,7 @@ class AttachmentsHandlerIntegrationTest {
 				void simpleUpdateCallsAttachmentWithCreate() throws AttachmentAccessException, IOException {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
 						when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
 						var result = mock(Result.class);
 						var oldData = Attachment.create();
@@ -245,7 +248,7 @@ class AttachmentsHandlerIntegrationTest {
 								attachment.setContent(testStream);
 								attachment.setId(UUID.randomUUID().toString());
 
-								cut.uploadAttachmentsForUpdate(updateContext, List.of(attachment));
+								cut.uploadAttachments(updateContext, List.of(attachment));
 
 								verify(attachmentService).storeAttachment(storeEventInputCaptor.capture());
 								var input = storeEventInputCaptor.getValue();
@@ -264,6 +267,7 @@ class AttachmentsHandlerIntegrationTest {
 				void simpleUpdateCallsAttachmentWithUpdate() throws AttachmentAccessException, IOException {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
 						when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
 						var result = mock(Result.class);
 						var oldData = Attachment.create();
@@ -280,7 +284,7 @@ class AttachmentsHandlerIntegrationTest {
 								attachment.setContent(testStream);
 								attachment.setId(UUID.randomUUID().toString());
 
-								cut.uploadAttachmentsForUpdate(updateContext, List.of(attachment));
+								cut.uploadAttachments(updateContext, List.of(attachment));
 
 								verify(attachmentService).updateAttachment(updateEventInputCaptor.capture());
 								var input = updateEventInputCaptor.getValue();
@@ -299,6 +303,7 @@ class AttachmentsHandlerIntegrationTest {
 				void removeValueFromContentDeletesDocument() throws AttachmentAccessException {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
 						var result = mock(Result.class);
 						var oldData = Attachment.create();
 						oldData.setDocumentId(UUID.randomUUID().toString());
@@ -311,7 +316,7 @@ class AttachmentsHandlerIntegrationTest {
 						attachment.setId(oldData.getId());
 						attachment.setContent(null);
 
-						cut.uploadAttachmentsForUpdate(updateContext, List.of(attachment));
+						cut.uploadAttachments(updateContext, List.of(attachment));
 
 						verify(attachmentService).deleteAttachment(deleteEventInputCaptor.capture());
 						var input = deleteEventInputCaptor.getValue();

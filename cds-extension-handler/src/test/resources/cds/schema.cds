@@ -22,7 +22,8 @@ entity Items: cuid {
                           on attachments.parentKey = $self.ID;
 }
 
-entity wrongAttachment@(_is_media_data) : cuid  {
+entity wrongAttachment@(_is_media_data) {
+ key  ID       : Integer;
       url      : String;
       content  : LargeBinary @Core.MediaType; // only for db-based services
       mimeType : String;
