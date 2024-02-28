@@ -24,7 +24,7 @@
     <modules>
         <module>cds-extension-handler</module>
         <module>cds-attachment-service</module>
-        <module>cds-attachment-feature</module>
+        <module>cds-feature-attachments</module>
     </modules>
 
     <dependencyManagement>
