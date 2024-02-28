@@ -2,10 +2,10 @@ package com.sap.cds.feature.attachments.service;
 
 import java.io.InputStream;
 
+import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
+import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentStorageResult;
-import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.services.Service;
 
@@ -22,7 +22,7 @@ public interface AttachmentService extends Service {
   /**
    * This event is emitted when an attachment shall be uploaded
    */
-  String EVENT_STORE_ATTACHMENT = "STORE_ATTACHMENT";
+  String EVENT_CREATE_ATTACHMENT = "CREATE_ATTACHMENT";
 
   /**
    * This event is emitted when an attachment shall be updated
@@ -49,7 +49,7 @@ public interface AttachmentService extends Service {
   InputStream readAttachment(AttachmentReadEventContext context) throws AttachmentAccessException;
 
   /**
-   * Stores a document with the given parameter
+   * Creates a document with the given parameter
    *
    * @param context Contains needed data to store the attachment like
    *                - attachmentId
@@ -62,7 +62,7 @@ public interface AttachmentService extends Service {
    *         - documentId
    * @throws AttachmentAccessException Exception to be thrown in case of errors during accessing the attachment
    */
-  AttachmentStorageResult storeAttachment(AttachmentStoreEventContext context) throws AttachmentAccessException;
+  AttachmentModificationResult createAttachment(AttachmentCreateEventContext context) throws AttachmentAccessException;
 
   /**
    * Updates a document with the given parameter
@@ -79,7 +79,7 @@ public interface AttachmentService extends Service {
    * 		- documentId
    * @throws AttachmentAccessException Exception to be thrown in case of errors during accessing the attachment
    */
-  AttachmentStorageResult updateAttachment(AttachmentUpdateEventContext context) throws AttachmentAccessException;
+  AttachmentModificationResult updateAttachment(AttachmentUpdateEventContext context) throws AttachmentAccessException;
 
   /**
    * Delete an attachment based on the given attachment id

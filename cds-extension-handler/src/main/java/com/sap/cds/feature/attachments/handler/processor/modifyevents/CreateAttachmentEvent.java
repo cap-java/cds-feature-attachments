@@ -7,7 +7,7 @@ import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext;
+import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
 
@@ -21,7 +21,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
 		@Override
 		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) throws AttachmentAccessException {
-				var storageContext = AttachmentStoreEventContext.create();
+				var storageContext = AttachmentCreateEventContext.create();
 				storageContext.setAttachmentId(attachmentId);
 
 				var values = path.target().values();
@@ -39,7 +39,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 						storageContext.setFileName((String) fileName);
 				});
 
-				var result = attachmentService.storeAttachment(storageContext);
+				var result = attachmentService.createAttachment(storageContext);
 				fieldNames.documentIdField().ifPresent(doc -> path.target().values().put(doc, result.documentId()));
 				return result.isExternalStored() ? null : value;
 		}

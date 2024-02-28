@@ -6,17 +6,17 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.EventName;
 
-@EventName(AttachmentService.EVENT_STORE_ATTACHMENT)
-public interface AttachmentStoreEventContext extends EventContext {
+@EventName(AttachmentService.EVENT_CREATE_ATTACHMENT)
+public interface AttachmentCreateEventContext extends EventContext {
 
 		/**
 			* Creates an {@link EventContext} already overlayed with this interface. The event is set to be
-			* {@link AttachmentService#EVENT_STORE_ATTACHMENT}
+			* {@link AttachmentService#EVENT_CREATE_ATTACHMENT}
 			*
-			* @return the {@link AttachmentStoreEventContext}
+			* @return the {@link AttachmentCreateEventContext}
 			*/
-		static AttachmentStoreEventContext create() {
-				return EventContext.create(AttachmentStoreEventContext.class, null);
+		static AttachmentCreateEventContext create() {
+				return EventContext.create(AttachmentCreateEventContext.class, null);
 		}
 
 		/**

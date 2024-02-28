@@ -21,8 +21,8 @@ import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.Attach
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.AttachmentStorageResult;
-import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext;
+import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
+import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 
@@ -30,7 +30,7 @@ class CreateAttachmentEventTest {
 
 		private CreateAttachmentEvent cut;
 		private AttachmentService attachmentService;
-		private ArgumentCaptor<AttachmentStoreEventContext> contextArgumentCaptor;
+		private ArgumentCaptor<AttachmentCreateEventContext> contextArgumentCaptor;
 		private Path path;
 		private ResolvedSegment target;
 
@@ -39,7 +39,7 @@ class CreateAttachmentEventTest {
 				attachmentService = mock(AttachmentService.class);
 				cut = new CreateAttachmentEvent(attachmentService);
 
-				contextArgumentCaptor = ArgumentCaptor.forClass(AttachmentStoreEventContext.class);
+				contextArgumentCaptor = ArgumentCaptor.forClass(AttachmentCreateEventContext.class);
 				path = mock(Path.class);
 				target = mock(ResolvedSegment.class);
 				when(path.target()).thenReturn(target);
@@ -58,11 +58,11 @@ class CreateAttachmentEventTest {
 						attachment.setId(UUID.randomUUID().toString());
 				}
 				when(target.values()).thenReturn(attachment);
-				when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
+				when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 
 				cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
 
-				verify(attachmentService).storeAttachment(contextArgumentCaptor.capture());
+				verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 				var resultValue = contextArgumentCaptor.getValue();
 				assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
 				assertThat(resultValue.getMimeType()).isEqualTo(attachment.getMimeType());
@@ -81,14 +81,14 @@ class CreateAttachmentEventTest {
 						attachment.setId(UUID.randomUUID().toString());
 				}
 				when(target.values()).thenReturn(attachment);
-				when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
+				when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 				var existingData = CdsData.create();
 				existingData.put("filename", "some file name");
 				existingData.put("mimeType", "some mime type");
 
 				cut.processEvent(path, null, fieldNames, attachment.getContent(), existingData, attachment.getId());
 
-				verify(attachmentService).storeAttachment(contextArgumentCaptor.capture());
+				verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 				var resultValue = contextArgumentCaptor.getValue();
 				assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
 				assertThat(resultValue.getMimeType()).isEqualTo(existingData.get("mimeType"));
@@ -100,8 +100,8 @@ class CreateAttachmentEventTest {
 		void documentIdStoredInPath() throws AttachmentAccessException {
 				var fieldNames = getDefaultFieldNames();
 				var attachment = Attachment.create();
-				var attachmentServiceResult = new AttachmentStorageResult(false, "some document id");
-				when(attachmentService.storeAttachment(any())).thenReturn(attachmentServiceResult);
+				var attachmentServiceResult = new AttachmentModificationResult(false, "some document id");
+				when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
 				when(target.values()).thenReturn(attachment);
 
 				cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
@@ -120,7 +120,7 @@ class CreateAttachmentEventTest {
 						attachment.setId(UUID.randomUUID().toString());
 				}
 				when(target.values()).thenReturn(attachment);
-				when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
+				when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 
 				var result = cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
 
@@ -138,7 +138,7 @@ class CreateAttachmentEventTest {
 						attachment.setId(UUID.randomUUID().toString());
 				}
 				when(target.values()).thenReturn(attachment);
-				when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(true, "id"));
+				when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(true, "id"));
 
 				var result = cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
 
@@ -158,11 +158,11 @@ class CreateAttachmentEventTest {
 						attachment.setId(UUID.randomUUID().toString());
 				}
 				when(target.values()).thenReturn(attachment);
-				when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
+				when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 
 				cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
 
-				verify(attachmentService).storeAttachment(contextArgumentCaptor.capture());
+				verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 				var resultValue = contextArgumentCaptor.getValue();
 				assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
 				assertThat(resultValue.getMimeType()).isNull();

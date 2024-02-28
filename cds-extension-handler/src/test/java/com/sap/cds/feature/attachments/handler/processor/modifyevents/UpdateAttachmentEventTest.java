@@ -21,7 +21,7 @@ import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.Attach
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.AttachmentStorageResult;
+import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
@@ -58,7 +58,7 @@ class UpdateAttachmentEventTest {
 						attachment.setId(UUID.randomUUID().toString());
 				}
 				when(target.values()).thenReturn(attachment);
-				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
+				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 				var existingData = CdsData.create();
 				existingData.put("documentId", "some document id");
 
@@ -84,7 +84,7 @@ class UpdateAttachmentEventTest {
 						attachment.setId(UUID.randomUUID().toString());
 				}
 				when(target.values()).thenReturn(attachment);
-				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
+				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 				var existingData = CdsData.create();
 				existingData.put("filename", "some file name");
 				existingData.put("mimeType", "some mime type");
@@ -105,7 +105,7 @@ class UpdateAttachmentEventTest {
 		void newDocumentIdStoredInPath() throws AttachmentAccessException {
 				var fieldNames = getDefaultFieldNames();
 				var attachment = Attachment.create();
-				var attachmentServiceResult = new AttachmentStorageResult(false, "some document id");
+				var attachmentServiceResult = new AttachmentModificationResult(false, "some document id");
 				when(attachmentService.updateAttachment(any())).thenReturn(attachmentServiceResult);
 				when(target.values()).thenReturn(attachment);
 
@@ -124,7 +124,7 @@ class UpdateAttachmentEventTest {
 						attachment.setContent(testContentStream);
 						attachment.setId(UUID.randomUUID().toString());
 				}
-				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
+				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 				when(target.values()).thenReturn(attachment);
 
 				var result = cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
@@ -142,7 +142,7 @@ class UpdateAttachmentEventTest {
 						attachment.setContent(testContentStream);
 						attachment.setId(UUID.randomUUID().toString());
 				}
-				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentStorageResult(true, "id"));
+				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(true, "id"));
 				when(target.values()).thenReturn(attachment);
 
 				var result = cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
@@ -163,7 +163,7 @@ class UpdateAttachmentEventTest {
 						attachment.setId(UUID.randomUUID().toString());
 				}
 				when(target.values()).thenReturn(attachment);
-				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentStorageResult(false, "id"));
+				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 				var existingData = CdsData.create();
 				existingData.put("documentId", "some document id");
 

@@ -12,7 +12,7 @@
     <packaging>jar</packaging>
 
     <name>CDS Feature for Attachments - Attachment Service</name>
-    <url>https://github.wdf.sap.corp/cds-java/cds-feature-attachments</url>
+    <url>https://cap.cloud.sap/docs/java</url>
 
     <properties>
         <packageName>com.sap.cds.feature.attachments.model</packageName>

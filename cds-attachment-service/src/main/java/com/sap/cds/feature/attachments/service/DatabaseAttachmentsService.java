@@ -2,10 +2,10 @@ package com.sap.cds.feature.attachments.service;
 
 import java.io.InputStream;
 
+import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
+import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentStorageResult;
-import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.services.ServiceDelegator;
 
@@ -25,13 +25,13 @@ public class DatabaseAttachmentsService extends ServiceDelegator implements Atta
 		}
 
 		@Override
-		public AttachmentStorageResult storeAttachment(AttachmentStoreEventContext context) throws AttachmentAccessException {
-				return new AttachmentStorageResult(false, context.getAttachmentId());
+		public AttachmentModificationResult createAttachment(AttachmentCreateEventContext context) throws AttachmentAccessException {
+				return new AttachmentModificationResult(false, context.getAttachmentId());
 		}
 
 		@Override
-		public AttachmentStorageResult updateAttachment(AttachmentUpdateEventContext context) throws AttachmentAccessException {
-				return new AttachmentStorageResult(false, context.getAttachmentId());
+		public AttachmentModificationResult updateAttachment(AttachmentUpdateEventContext context) throws AttachmentAccessException {
+				return new AttachmentModificationResult(false, context.getAttachmentId());
 		}
 
 		@Override
