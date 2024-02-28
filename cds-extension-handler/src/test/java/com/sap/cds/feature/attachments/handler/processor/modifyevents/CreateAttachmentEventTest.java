@@ -2,9 +2,7 @@ package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -63,7 +61,7 @@ class CreateAttachmentEventTest {
 				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty());
 				var attachment = prepareAndExecuteEventWithData(fieldNames);
 
-				verify(attachmentService).storeAttachment(contextArgumentCaptor.capture());
+				verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 				var resultValue = contextArgumentCaptor.getValue();
 				assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
 				assertThat(resultValue.getMimeType()).isNull();
