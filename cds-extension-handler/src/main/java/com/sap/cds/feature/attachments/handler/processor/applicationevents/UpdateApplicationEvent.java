@@ -16,6 +16,10 @@ public class UpdateApplicationEvent extends ModifyApplicationEventBase implement
 
 		@Override
 		public void process(EventContext context, List<CdsData> data) {
+				if (processingNotNeeded(context.getTarget(), data)) {
+						return;
+				}
+
 				uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_UPDATE);
 		}
 

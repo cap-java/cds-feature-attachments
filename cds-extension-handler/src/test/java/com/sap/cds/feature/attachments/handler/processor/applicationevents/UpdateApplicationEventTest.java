@@ -45,6 +45,18 @@ class UpdateApplicationEventTest extends ModifyApplicationEventTestBase {
 		}
 
 		@Test
+		void noContentInDataNothingToDo() {
+				var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
+				var attachment = Attachment.create();
+				mockTargetInContext(serviceEntity.orElseThrow());
+
+				cut.process(updateContext, List.of(attachment));
+
+				verifyNoInteractions(persistenceService);
+				verifyNoInteractions(eventFactory);
+		}
+
+		@Test
 		void eventProcessorCalledForUpdate() throws IOException {
 				var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 

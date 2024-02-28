@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.processor;
+package com.sap.cds.feature.attachments.handler.processor.common;
 
 import java.util.List;
 import java.util.Map;

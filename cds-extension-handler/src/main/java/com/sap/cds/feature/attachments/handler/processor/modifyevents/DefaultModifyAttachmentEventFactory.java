@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
-import com.sap.cds.feature.attachments.handler.processor.ProcessingBase;
+import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
 import com.sap.cds.services.cds.CqnService;
 
 public class DefaultModifyAttachmentEventFactory extends ProcessingBase implements ModifyAttachmentEventFactory {

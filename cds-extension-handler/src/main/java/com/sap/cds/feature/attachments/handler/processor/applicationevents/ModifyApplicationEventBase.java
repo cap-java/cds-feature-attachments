@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
@@ -14,7 +15,7 @@ import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
-import com.sap.cds.feature.attachments.handler.processor.ProcessingBase;
+import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.ql.Select;
@@ -41,6 +42,10 @@ abstract class ModifyApplicationEventBase extends ProcessingBase implements Appl
 				this.eventFactory = eventFactory;
 		}
 
+		boolean processingNotNeeded(CdsEntity entity, List<CdsData> data) {
+				return !isContentFieldInData(entity, data);
+		}
+
 		void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, String event) {
 				Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false) && hasElementAnnotation(element, ModelConstants.ANNOTATION_MEDIA_TYPE);
 				Converter converter = (path, element, value) -> {
@@ -59,6 +64,28 @@ abstract class ModifyApplicationEventBase extends ProcessingBase implements Appl
 				};
 				callProcessor(entity, data, filter, converter);
 				entity.associations().forEach(element -> uploadAttachmentForEntity(element.getType().as(CdsAssociationType.class).getTarget(), data, event));
+		}
+
+		private boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
+				var isIncluded = new AtomicBoolean();
+
+				Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)
+						&& hasElementAnnotation(element, ModelConstants.ANNOTATION_MEDIA_TYPE);
+				Converter converter = (path, element, value) -> {
+						isIncluded.set(true);
+						return value;
+				};
+
+				callProcessor(entity, data, filter, converter);
+
+				if (!isIncluded.get()) {
+						entity.associations().forEach(element -> {
+								var included = isContentFieldInData(element.getType().as(CdsAssociationType.class).getTarget(), data);
+								isIncluded.set(included);
+						});
+				}
+
+				return isIncluded.get();
 		}
 
 		private AttachmentFieldNames getFieldNames(CdsElement element, ResolvedSegment target) {
