@@ -45,13 +45,27 @@ class CreateApplicationEventTest extends ModifyApplicationEventTestBase {
 		}
 
 		@Test
+		void noContentInDataNothingToDo() {
+				var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
+				var attachment = Attachment.create();
+				mockTargetInContext(serviceEntity.orElseThrow());
+
+				cut.process(createContext, List.of(attachment));
+
+				verifyNoInteractions(persistenceService);
+				verifyNoInteractions(eventFactory);
+		}
+
+		@Test
 		void idsAreSetInDataForCreate() {
 				var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
 				var roots = RootTable.create();
 				var attachment = Attachment.create();
 				attachment.setFilename("test.txt");
+				attachment.setContent(null);
 				roots.setAttachments(List.of(attachment));
 				mockTargetInContext(serviceEntity.orElseThrow());
+				when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
 
 				cut.process(createContext, List.of(roots));
 

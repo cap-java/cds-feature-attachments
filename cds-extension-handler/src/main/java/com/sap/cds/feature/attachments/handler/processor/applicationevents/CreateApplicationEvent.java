@@ -21,6 +21,10 @@ public class CreateApplicationEvent extends ModifyApplicationEventBase implement
 
 		@Override
 		public void process(EventContext context, List<CdsData> data) {
+				if (processingNotNeeded(context.getTarget(), data)) {
+						return;
+				}
+
 				setKeysInData(context.getTarget(), data);
 				uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_CREATE);
 		}

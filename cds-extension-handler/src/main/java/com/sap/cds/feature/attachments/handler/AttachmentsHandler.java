@@ -6,10 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.handler.processor.ApplicationEventProcessor;
-import com.sap.cds.feature.attachments.handler.processor.ProcessingBase;
+import com.sap.cds.feature.attachments.handler.processor.ApplicationEventFactory;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
-import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
@@ -24,12 +22,12 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 //TODO add Java Doc
 //TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
-public class AttachmentsHandler extends ProcessingBase implements EventHandler {
+public class AttachmentsHandler implements EventHandler {
 
 		private static final Logger logger = LoggerFactory.getLogger(AttachmentsHandler.class);
-		private final ApplicationEventProcessor eventProcessor;
+		private final ApplicationEventFactory eventProcessor;
 
-		public AttachmentsHandler(ApplicationEventProcessor eventProcessor) {
+		public AttachmentsHandler(ApplicationEventFactory eventProcessor) {
 				this.eventProcessor = eventProcessor;
 		}
 
@@ -94,16 +92,10 @@ public class AttachmentsHandler extends ProcessingBase implements EventHandler {
 		@Before(event = {CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE})
 		void uploadAttachments(EventContext context, List<CdsData> data) {
 				//TODO implement cascading delete if association entity is removed
-				if (processingNotNeeded(context.getTarget(), data)) {
-						return;
-				}
 				var event = context.getEvent();
 				logger.info("Attachment processing will be called for event {}", event);
 				eventProcessor.getApplicationEvent(event).process(context, data);
 		}
 
-		private boolean processingNotNeeded(CdsEntity entity, List<CdsData> data) {
-				return !eventProcessor.isAttachmentEvent(entity, data);
-		}
 
 }

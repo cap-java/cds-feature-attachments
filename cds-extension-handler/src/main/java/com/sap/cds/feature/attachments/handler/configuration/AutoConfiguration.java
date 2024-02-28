@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.sap.cds.feature.attachments.handler.AttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.processor.DefaultApplicationEventProcessor;
+import com.sap.cds.feature.attachments.handler.processor.DefaultApplicationEventFactory;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.CreateApplicationEvent;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.UpdateApplicationEvent;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.CreateAttachmentEvent;
@@ -27,7 +27,7 @@ public class AutoConfiguration {
 				var attachmentEventFactory = new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteAttachmentEvent);
 				var createApplicationEvent = new CreateApplicationEvent(persistenceService, attachmentEventFactory);
 				var updateApplicationEvent = new UpdateApplicationEvent(persistenceService, attachmentEventFactory);
-				var eventProcessor = new DefaultApplicationEventProcessor(createApplicationEvent, updateApplicationEvent);
+				var eventProcessor = new DefaultApplicationEventFactory(createApplicationEvent, updateApplicationEvent);
 
 				return new AttachmentsHandler(eventProcessor);
 		}

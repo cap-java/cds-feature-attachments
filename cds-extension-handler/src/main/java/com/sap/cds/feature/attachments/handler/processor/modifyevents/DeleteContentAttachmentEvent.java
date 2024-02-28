@@ -2,7 +2,7 @@ package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
-import com.sap.cds.feature.attachments.handler.processor.ProcessingBase;
+import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
