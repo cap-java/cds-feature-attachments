@@ -27,7 +27,7 @@ class DatabaseAttachmentsServiceTest {
 		}
 
 		@Test
-		void storeAttachmentReturnsDocumentId() throws AttachmentAccessException {
+		void createAttachmentReturnsDocumentId() throws AttachmentAccessException {
 				var input = AttachmentCreateEventContext.create();
 				input.setAttachmentId("some id");
 				var result = cut.createAttachment(input);
@@ -35,7 +35,7 @@ class DatabaseAttachmentsServiceTest {
 		}
 
 		@Test
-		void storeAttachmentReturnsNotExternalStored() throws AttachmentAccessException {
+		void createAttachmentReturnsNotExternalStored() throws AttachmentAccessException {
 				var input = AttachmentCreateEventContext.create();
 				var result = cut.createAttachment(input);
 				assertThat(result.isExternalStored()).isFalse();

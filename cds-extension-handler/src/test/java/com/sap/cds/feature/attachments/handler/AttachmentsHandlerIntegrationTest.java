@@ -51,7 +51,7 @@ class AttachmentsHandlerIntegrationTest {
 		private AttachmentService attachmentService;
 		private CdsCreateEventContext createContext;
 		private CdsUpdateEventContext updateContext;
-		private ArgumentCaptor<AttachmentCreateEventContext> storeEventInputCaptor;
+		private ArgumentCaptor<AttachmentCreateEventContext> createEventInputCaptor;
 		private ArgumentCaptor<AttachmentUpdateEventContext> updateEventInputCaptor;
 		private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventInputCaptor;
 		private ArgumentCaptor<CqnSelect> selectArgumentCaptor;
@@ -70,7 +70,7 @@ class AttachmentsHandlerIntegrationTest {
 
 				createContext = mock(CdsCreateEventContext.class);
 				updateContext = mock(CdsUpdateEventContext.class);
-				storeEventInputCaptor = ArgumentCaptor.forClass(AttachmentCreateEventContext.class);
+				createEventInputCaptor = ArgumentCaptor.forClass(AttachmentCreateEventContext.class);
 				updateEventInputCaptor = ArgumentCaptor.forClass(AttachmentUpdateEventContext.class);
 				deleteEventInputCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
 				selectArgumentCaptor = ArgumentCaptor.forClass(CqnSelect.class);
@@ -113,8 +113,8 @@ class AttachmentsHandlerIntegrationTest {
 
 								cut.uploadAttachments(createContext, List.of(attachment));
 
-								verify(attachmentService).createAttachment(storeEventInputCaptor.capture());
-								var input = storeEventInputCaptor.getValue();
+								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+								var input = createEventInputCaptor.getValue();
 								assertThat(attachment.getContent()).isEqualTo(testStream);
 								assertThat(input.getContent()).isEqualTo(testStream);
 								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
@@ -143,8 +143,8 @@ class AttachmentsHandlerIntegrationTest {
 
 								cut.uploadAttachments(createContext, List.of(attachment));
 
-								verify(attachmentService).createAttachment(storeEventInputCaptor.capture());
-								var input = storeEventInputCaptor.getValue();
+								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+								var input = createEventInputCaptor.getValue();
 								assertThat(attachment.getContent()).isNull();
 								assertThat(input.getContent()).isEqualTo(testStream);
 								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
@@ -197,8 +197,8 @@ class AttachmentsHandlerIntegrationTest {
 
 								cut.uploadAttachments(createContext, List.of(roots));
 
-								verify(attachmentService).createAttachment(storeEventInputCaptor.capture());
-								var input = storeEventInputCaptor.getValue();
+								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+								var input = createEventInputCaptor.getValue();
 								assertThat(attachment.getContent()).isEqualTo(testStream);
 								assertThat(input.getContent()).isEqualTo(testStream);
 								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
@@ -250,8 +250,8 @@ class AttachmentsHandlerIntegrationTest {
 
 								cut.uploadAttachments(updateContext, List.of(attachment));
 
-								verify(attachmentService).createAttachment(storeEventInputCaptor.capture());
-								var input = storeEventInputCaptor.getValue();
+								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+								var input = createEventInputCaptor.getValue();
 								assertThat(attachment.getContent()).isEqualTo(testStream);
 								assertThat(input.getContent()).isEqualTo(testStream);
 								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
