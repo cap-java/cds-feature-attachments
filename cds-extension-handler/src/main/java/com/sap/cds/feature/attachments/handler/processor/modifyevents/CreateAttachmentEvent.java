@@ -21,25 +21,25 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
 		@Override
 		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) throws AttachmentAccessException {
-				var storageContext = AttachmentCreateEventContext.create();
-				storageContext.setAttachmentId(attachmentId);
+				var createEventContext = AttachmentCreateEventContext.create();
+				createEventContext.setAttachmentId(attachmentId);
 
 				var values = path.target().values();
-				storageContext.setContent((InputStream) value);
+				createEventContext.setContent((InputStream) value);
 
 				fieldNames.mimeTypeField().ifPresent(anno -> {
 						var annotationValue = values.get(anno);
 						var mimeType = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
-						storageContext.setMimeType((String) mimeType);
+						createEventContext.setMimeType((String) mimeType);
 				});
 
 				fieldNames.fileNameField().ifPresent(anno -> {
 						var annotationValue = values.get(anno);
 						var fileName = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
-						storageContext.setFileName((String) fileName);
+						createEventContext.setFileName((String) fileName);
 				});
 
-				var result = attachmentService.createAttachment(storageContext);
+				var result = attachmentService.createAttachment(createEventContext);
 				fieldNames.documentIdField().ifPresent(doc -> path.target().values().put(doc, result.documentId()));
 				return result.isExternalStored() ? null : value;
 		}

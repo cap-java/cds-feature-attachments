@@ -10,7 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
@@ -38,8 +39,9 @@ abstract class ModifyAttachmentEventTestBase {
 
 		abstract ModifyAttachmentEvent defineCut();
 
-		@Test
-		void contentIsReturnedIfNotExternalStored() throws AttachmentAccessException, IOException {
+		@ParameterizedTest
+		@ValueSource(booleans = {true, false})
+		void contentIsReturnedIfNotExternalStored(boolean isExternalStored) throws AttachmentAccessException, IOException {
 				var fieldNames = getDefaultFieldNames();
 				var attachment = com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.Attachment.create();
 
@@ -49,31 +51,13 @@ abstract class ModifyAttachmentEventTestBase {
 						attachment.setId(UUID.randomUUID().toString());
 				}
 				when(target.values()).thenReturn(attachment);
-				when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
-				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
+				when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "id"));
+				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "id"));
 
 				var result = cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
 
-				assertThat(result).isNotNull().isEqualTo(attachment.getContent());
-		}
-
-		@Test
-		void nullIsReturnedIfExternalStored() throws AttachmentAccessException, IOException {
-				var fieldNames = getDefaultFieldNames();
-				var attachment = com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.Attachment.create();
-
-				var testContent = "test content";
-				try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
-						attachment.setContent(testContentStream);
-						attachment.setId(UUID.randomUUID().toString());
-				}
-				when(target.values()).thenReturn(attachment);
-				when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(true, "id"));
-				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(true, "id"));
-
-				var result = cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
-
-				assertThat(result).isNull();
+				var expectedContent = isExternalStored ? null : attachment.getContent();
+				assertThat(result).isEqualTo(expectedContent);
 		}
 
 		AttachmentFieldNames getDefaultFieldNames() {

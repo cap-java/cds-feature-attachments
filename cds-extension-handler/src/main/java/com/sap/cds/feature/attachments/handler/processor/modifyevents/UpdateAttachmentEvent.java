@@ -21,26 +21,26 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
 		@Override
 		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) throws AttachmentAccessException {
-				var storageContext = AttachmentUpdateEventContext.create();
-				storageContext.setAttachmentId(attachmentId);
+				var updateEventContext = AttachmentUpdateEventContext.create();
+				updateEventContext.setAttachmentId(attachmentId);
 
 				var values = path.target().values();
-				storageContext.setContent((InputStream) value);
+				updateEventContext.setContent((InputStream) value);
 
 				fieldNames.mimeTypeField().ifPresent(anno -> {
 						var annotationValue = values.get(anno);
 						var mimeType = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
-						storageContext.setMimeType((String) mimeType);
+						updateEventContext.setMimeType((String) mimeType);
 				});
 
 				fieldNames.fileNameField().ifPresent(anno -> {
 						var annotationValue = values.get(anno);
 						var fileName = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
-						storageContext.setFileName((String) fileName);
+						updateEventContext.setFileName((String) fileName);
 				});
-				fieldNames.documentIdField().ifPresent(docId -> storageContext.setDocumentId((String) existingData.get(docId)));
+				fieldNames.documentIdField().ifPresent(docId -> updateEventContext.setDocumentId((String) existingData.get(docId)));
 
-				var result = attachmentService.updateAttachment(storageContext);
+				var result = attachmentService.updateAttachment(updateEventContext);
 				fieldNames.documentIdField().ifPresent(doc -> path.target().values().put(doc, result.documentId()));
 				return result.isExternalStored() ? null : value;
 		}
