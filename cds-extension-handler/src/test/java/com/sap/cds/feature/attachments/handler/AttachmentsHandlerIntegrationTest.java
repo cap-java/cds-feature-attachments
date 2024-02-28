@@ -2,11 +2,7 @@ package com.sap.cds.feature.attachments.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.Result;
@@ -93,12 +91,13 @@ class AttachmentsHandlerIntegrationTest {
 						assertThat(roots.getId()).isNull();
 				}
 
-				@Test
-				void simpleCreateCallsAttachment() throws AttachmentAccessException, IOException {
+				@ParameterizedTest
+				@ValueSource(booleans = {true, false})
+				void simpleCreateCallsAttachment(boolean isExternalStored) throws AttachmentAccessException, IOException {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
-						when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
+						when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "document id"));
 
 						var attachment = Attachment.create();
 
@@ -114,42 +113,13 @@ class AttachmentsHandlerIntegrationTest {
 								cut.uploadAttachments(createContext, List.of(attachment));
 
 								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
-								var input = createEventInputCaptor.getValue();
-								assertThat(attachment.getContent()).isEqualTo(testStream);
-								assertThat(input.getContent()).isEqualTo(testStream);
-								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-								assertThat(input.getFileName()).isEqualTo(fileName);
-								assertThat(input.getMimeType()).isEqualTo(mimeType);
-						}
-				}
-
-				@Test
-				void simpleCreateCallsAttachmentAndRemovesContent() throws AttachmentAccessException, IOException {
-						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
-						when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(true, "document id"));
-
-						var attachment = Attachment.create();
-
-						var testString = "test";
-						var fileName = "testFile.txt";
-						var mimeType = "test/type";
-						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
-								attachment.setContent(testStream);
-								attachment.setFilename(fileName);
-								attachment.setMimeType(mimeType);
-								attachment.setParentKey(UUID.randomUUID().toString());
-
-								cut.uploadAttachments(createContext, List.of(attachment));
-
-								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
-								var input = createEventInputCaptor.getValue();
-								assertThat(attachment.getContent()).isNull();
-								assertThat(input.getContent()).isEqualTo(testStream);
-								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-								assertThat(input.getFileName()).isEqualTo(fileName);
-								assertThat(input.getMimeType()).isEqualTo(mimeType);
+								var createInput = createEventInputCaptor.getValue();
+								var expectedContent = isExternalStored ? null : testStream;
+								assertThat(attachment.getContent()).isEqualTo(expectedContent);
+								assertThat(createInput.getContent()).isEqualTo(testStream);
+								assertThat(createInput.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+								assertThat(createInput.getFileName()).isEqualTo(fileName);
+								assertThat(createInput.getMimeType()).isEqualTo(mimeType);
 						}
 				}
 
@@ -234,13 +204,7 @@ class AttachmentsHandlerIntegrationTest {
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
 						when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
-						var result = mock(Result.class);
-						var oldData = Attachment.create();
-						oldData.setFilename("some file name");
-						oldData.setMimeType("some mime type");
-						var row = RowImpl.row(oldData);
-						when(result.single()).thenReturn(row);
-						when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
+						var existingData = mockExistingData();
 
 						var attachment = Attachment.create();
 						var testString = "test";
@@ -251,12 +215,12 @@ class AttachmentsHandlerIntegrationTest {
 								cut.uploadAttachments(updateContext, List.of(attachment));
 
 								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
-								var input = createEventInputCaptor.getValue();
+								var creationInput = createEventInputCaptor.getValue();
 								assertThat(attachment.getContent()).isEqualTo(testStream);
-								assertThat(input.getContent()).isEqualTo(testStream);
-								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-								assertThat(input.getFileName()).isEqualTo(oldData.getFilename());
-								assertThat(input.getMimeType()).isEqualTo(oldData.getMimeType());
+								assertThat(creationInput.getContent()).isEqualTo(testStream);
+								assertThat(creationInput.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+								assertThat(creationInput.getFileName()).isEqualTo(existingData.getFilename());
+								assertThat(creationInput.getMimeType()).isEqualTo(existingData.getMimeType());
 								verify(persistenceService).run(selectArgumentCaptor.capture());
 								var select = selectArgumentCaptor.getValue();
 								assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
@@ -269,14 +233,8 @@ class AttachmentsHandlerIntegrationTest {
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
 						when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
-						var result = mock(Result.class);
-						var oldData = Attachment.create();
-						oldData.setFilename("some file name");
-						oldData.setMimeType("some mime type");
-						oldData.setDocumentId(UUID.randomUUID().toString());
-						var row = RowImpl.row(oldData);
-						when(result.single()).thenReturn(row);
-						when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
+						var existingData = mockExistingData();
+						existingData.setDocumentId(UUID.randomUUID().toString());
 
 						var attachment = Attachment.create();
 						var testString = "test";
@@ -287,12 +245,12 @@ class AttachmentsHandlerIntegrationTest {
 								cut.uploadAttachments(updateContext, List.of(attachment));
 
 								verify(attachmentService).updateAttachment(updateEventInputCaptor.capture());
-								var input = updateEventInputCaptor.getValue();
+								var updateInput = updateEventInputCaptor.getValue();
 								assertThat(attachment.getContent()).isEqualTo(testStream);
-								assertThat(input.getContent()).isEqualTo(testStream);
-								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-								assertThat(input.getFileName()).isEqualTo(oldData.getFilename());
-								assertThat(input.getMimeType()).isEqualTo(oldData.getMimeType());
+								assertThat(updateInput.getContent()).isEqualTo(testStream);
+								assertThat(updateInput.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+								assertThat(updateInput.getFileName()).isEqualTo(existingData.getFilename());
+								assertThat(updateInput.getMimeType()).isEqualTo(existingData.getMimeType());
 								verify(persistenceService).run(selectArgumentCaptor.capture());
 								var select = selectArgumentCaptor.getValue();
 								assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
@@ -319,14 +277,25 @@ class AttachmentsHandlerIntegrationTest {
 						cut.uploadAttachments(updateContext, List.of(attachment));
 
 						verify(attachmentService).deleteAttachment(deleteEventInputCaptor.capture());
-						var input = deleteEventInputCaptor.getValue();
+						var deleteInput = deleteEventInputCaptor.getValue();
 						assertThat(attachment.getContent()).isNull();
 						assertThat(attachment.getDocumentId()).isNull();
-						assertThat(input.getDocumentId()).isEqualTo(oldData.getDocumentId());
+						assertThat(deleteInput.getDocumentId()).isEqualTo(oldData.getDocumentId());
 						verifyNoMoreInteractions(attachmentService);
 						verify(persistenceService).run(selectArgumentCaptor.capture());
 						var select = selectArgumentCaptor.getValue();
 						assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
+				}
+
+				private Attachment mockExistingData() {
+						var result = mock(Result.class);
+						var oldData = Attachment.create();
+						oldData.setFilename("some file name");
+						oldData.setMimeType("some mime type");
+						var row = RowImpl.row(oldData);
+						when(result.single()).thenReturn(row);
+						when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
+						return oldData;
 				}
 
 		}
