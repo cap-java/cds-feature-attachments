@@ -18,29 +18,22 @@ import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.Attachment;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
-import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
-import com.sap.cds.ql.cqn.Path;
-import com.sap.cds.ql.cqn.ResolvedSegment;
 
-class CreateAttachmentEventTest {
+class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
-		private CreateAttachmentEvent cut;
-		private AttachmentService attachmentService;
 		private ArgumentCaptor<AttachmentCreateEventContext> contextArgumentCaptor;
-		private Path path;
-		private ResolvedSegment target;
 
 		@BeforeEach
 		void setup() {
-				attachmentService = mock(AttachmentService.class);
-				cut = new CreateAttachmentEvent(attachmentService);
-
+				super.setup();
 				contextArgumentCaptor = ArgumentCaptor.forClass(AttachmentCreateEventContext.class);
-				path = mock(Path.class);
-				target = mock(ResolvedSegment.class);
-				when(path.target()).thenReturn(target);
+		}
+
+		@Override
+		ModifyAttachmentEvent defineCut() {
+				return new CreateAttachmentEvent(attachmentService);
 		}
 
 		@Test
@@ -107,46 +100,6 @@ class CreateAttachmentEventTest {
 				cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
 
 				assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
-		}
-
-		@Test
-		void contentIsReturnedIfNotExternalStored() throws AttachmentAccessException, IOException {
-				var fieldNames = getDefaultFieldNames();
-				var attachment = Attachment.create();
-
-				var testContent = "test content";
-				try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
-						attachment.setContent(testContentStream);
-						attachment.setId(UUID.randomUUID().toString());
-				}
-				when(target.values()).thenReturn(attachment);
-				when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
-
-				var result = cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
-
-				assertThat(result).isNotNull().isEqualTo(attachment.getContent());
-		}
-
-		@Test
-		void nullIsReturnedIfExternalStored() throws AttachmentAccessException, IOException {
-				var fieldNames = getDefaultFieldNames();
-				var attachment = Attachment.create();
-
-				var testContent = "test content";
-				try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
-						attachment.setContent(testContentStream);
-						attachment.setId(UUID.randomUUID().toString());
-				}
-				when(target.values()).thenReturn(attachment);
-				when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(true, "id"));
-
-				var result = cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
-
-				assertThat(result).isNull();
-		}
-
-		private AttachmentFieldNames getDefaultFieldNames() {
-				return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("filename"));
 		}
 
 		private Attachment prepareAndExecuteEventWithData(AttachmentFieldNames fieldNames) throws IOException, AttachmentAccessException {
