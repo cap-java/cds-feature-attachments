@@ -58,7 +58,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 
 		@ParameterizedTest
 		@ValueSource(strings = {CqnService.EVENT_UPDATE, CqnService.EVENT_CREATE})
-		void storeEventReturned(String eventName) {
+		void createEventReturned(String eventName) {
 				var fieldNames = getDefaultFieldNames();
 				var cdsData = CdsData.create();
 

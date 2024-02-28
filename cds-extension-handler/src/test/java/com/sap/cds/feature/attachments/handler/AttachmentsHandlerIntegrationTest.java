@@ -31,9 +31,9 @@ import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testse
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentStorageResult;
-import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext;
+import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.impl.RowImpl;
 import com.sap.cds.ql.cqn.CqnSelect;
@@ -51,7 +51,7 @@ class AttachmentsHandlerIntegrationTest {
 		private AttachmentService attachmentService;
 		private CdsCreateEventContext createContext;
 		private CdsUpdateEventContext updateContext;
-		private ArgumentCaptor<AttachmentStoreEventContext> storeEventInputCaptor;
+		private ArgumentCaptor<AttachmentCreateEventContext> createEventInputCaptor;
 		private ArgumentCaptor<AttachmentUpdateEventContext> updateEventInputCaptor;
 		private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventInputCaptor;
 		private ArgumentCaptor<CqnSelect> selectArgumentCaptor;
@@ -70,7 +70,7 @@ class AttachmentsHandlerIntegrationTest {
 
 				createContext = mock(CdsCreateEventContext.class);
 				updateContext = mock(CdsUpdateEventContext.class);
-				storeEventInputCaptor = ArgumentCaptor.forClass(AttachmentStoreEventContext.class);
+				createEventInputCaptor = ArgumentCaptor.forClass(AttachmentCreateEventContext.class);
 				updateEventInputCaptor = ArgumentCaptor.forClass(AttachmentUpdateEventContext.class);
 				deleteEventInputCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
 				selectArgumentCaptor = ArgumentCaptor.forClass(CqnSelect.class);
@@ -98,7 +98,7 @@ class AttachmentsHandlerIntegrationTest {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
-						when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
+						when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
 
 						var attachment = Attachment.create();
 
@@ -113,8 +113,8 @@ class AttachmentsHandlerIntegrationTest {
 
 								cut.uploadAttachments(createContext, List.of(attachment));
 
-								verify(attachmentService).storeAttachment(storeEventInputCaptor.capture());
-								var input = storeEventInputCaptor.getValue();
+								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+								var input = createEventInputCaptor.getValue();
 								assertThat(attachment.getContent()).isEqualTo(testStream);
 								assertThat(input.getContent()).isEqualTo(testStream);
 								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
@@ -128,7 +128,7 @@ class AttachmentsHandlerIntegrationTest {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
-						when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(true, "document id"));
+						when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(true, "document id"));
 
 						var attachment = Attachment.create();
 
@@ -143,8 +143,8 @@ class AttachmentsHandlerIntegrationTest {
 
 								cut.uploadAttachments(createContext, List.of(attachment));
 
-								verify(attachmentService).storeAttachment(storeEventInputCaptor.capture());
-								var input = storeEventInputCaptor.getValue();
+								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+								var input = createEventInputCaptor.getValue();
 								assertThat(attachment.getContent()).isNull();
 								assertThat(input.getContent()).isEqualTo(testStream);
 								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
@@ -180,7 +180,7 @@ class AttachmentsHandlerIntegrationTest {
 						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
 						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
-						when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
+						when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
 
 						var testString = "test";
 						var fileName = "testFile.txt";
@@ -197,8 +197,8 @@ class AttachmentsHandlerIntegrationTest {
 
 								cut.uploadAttachments(createContext, List.of(roots));
 
-								verify(attachmentService).storeAttachment(storeEventInputCaptor.capture());
-								var input = storeEventInputCaptor.getValue();
+								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+								var input = createEventInputCaptor.getValue();
 								assertThat(attachment.getContent()).isEqualTo(testStream);
 								assertThat(input.getContent()).isEqualTo(testStream);
 								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
@@ -233,7 +233,7 @@ class AttachmentsHandlerIntegrationTest {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
-						when(attachmentService.storeAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
+						when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
 						var result = mock(Result.class);
 						var oldData = Attachment.create();
 						oldData.setFilename("some file name");
@@ -250,8 +250,8 @@ class AttachmentsHandlerIntegrationTest {
 
 								cut.uploadAttachments(updateContext, List.of(attachment));
 
-								verify(attachmentService).storeAttachment(storeEventInputCaptor.capture());
-								var input = storeEventInputCaptor.getValue();
+								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+								var input = createEventInputCaptor.getValue();
 								assertThat(attachment.getContent()).isEqualTo(testStream);
 								assertThat(input.getContent()).isEqualTo(testStream);
 								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
@@ -268,7 +268,7 @@ class AttachmentsHandlerIntegrationTest {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
-						when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentStorageResult(false, "document id"));
+						when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
 						var result = mock(Result.class);
 						var oldData = Attachment.create();
 						oldData.setFilename("some file name");

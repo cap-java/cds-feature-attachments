@@ -19,12 +19,12 @@
     <packaging>pom</packaging>
 
     <name>CDS Feature for Attachments - Root</name>
-    <url>https://github.wdf.sap.corp/cds-java/cds-feature-attachments</url>
+    <url>https://cap.cloud.sap/docs/java</url>
 
     <modules>
         <module>cds-extension-handler</module>
         <module>cds-attachment-service</module>
-        <module>cds-attachment-feature</module>
+        <module>cds-feature-attachments</module>
     </modules>
 
     <dependencyManagement>

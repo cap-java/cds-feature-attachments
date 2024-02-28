@@ -6,9 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentStoreEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 
 class DatabaseAttachmentsServiceTest {
@@ -27,17 +27,17 @@ class DatabaseAttachmentsServiceTest {
 		}
 
 		@Test
-		void storeAttachmentReturnsDocumentId() throws AttachmentAccessException {
-				var input = AttachmentStoreEventContext.create();
+		void createAttachmentReturnsDocumentId() throws AttachmentAccessException {
+				var input = AttachmentCreateEventContext.create();
 				input.setAttachmentId("some id");
-				var result = cut.storeAttachment(input);
+				var result = cut.createAttachment(input);
 				assertThat(result.documentId()).isNotEmpty();
 		}
 
 		@Test
-		void storeAttachmentReturnsNotExternalStored() throws AttachmentAccessException {
-				var input = AttachmentStoreEventContext.create();
-				var result = cut.storeAttachment(input);
+		void createAttachmentReturnsNotExternalStored() throws AttachmentAccessException {
+				var input = AttachmentCreateEventContext.create();
+				var result = cut.createAttachment(input);
 				assertThat(result.isExternalStored()).isFalse();
 		}
 
