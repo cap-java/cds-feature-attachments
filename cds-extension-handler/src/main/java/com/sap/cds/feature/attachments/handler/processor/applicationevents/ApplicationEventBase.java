@@ -28,7 +28,7 @@ public class ApplicationEventBase extends ProcessingBase {
 
 		private static final Logger logger = LoggerFactory.getLogger(ApplicationEventBase.class);
 
-		protected boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
+		protected boolean isContentFieldInData(CdsEntity entity, List<CdsData> data, List<String> processedEntityNames) {
 				var isIncluded = new AtomicBoolean();
 
 				Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)
@@ -39,11 +39,15 @@ public class ApplicationEventBase extends ProcessingBase {
 				};
 
 				callProcessor(entity, data, filter, converter);
+				processedEntityNames.add(entity.getName());
 
 				if (!isIncluded.get()) {
 						entity.associations().forEach(element -> {
-								var included = isContentFieldInData(element.getType().as(CdsAssociationType.class).getTarget(), data);
-								isIncluded.set(included);
+								var target = element.getType().as(CdsAssociationType.class).getTarget();
+								if (!processedEntityNames.contains(target.getName())) {
+										var included = isContentFieldInData(element.getType().as(CdsAssociationType.class).getTarget(), data, processedEntityNames);
+										isIncluded.set(included);
+								}
 						});
 				}
 
@@ -75,16 +79,16 @@ public class ApplicationEventBase extends ProcessingBase {
 						.process(data, entity);
 		}
 
-		protected boolean hasElementAnnotation(CdsElement element, String annotation) {
-				return element.findAnnotation(annotation).isPresent();
-		}
-
 		protected Filter buildFilterForMediaTypeEntity() {
 				return (path, element, type) -> isMediaEntity(path.target().type()) && hasElementAnnotation(element, ModelConstants.ANNOTATION_MEDIA_TYPE);
 		}
 
 		protected boolean isMediaEntity(CdsStructuredType baseEntity) {
 				return baseEntity.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false);
+		}
+
+		protected boolean hasElementAnnotation(CdsElement element, String annotation) {
+				return element.findAnnotation(annotation).isPresent();
 		}
 
 		private void logEmptyFieldName(String fieldName, Optional<String> value) {

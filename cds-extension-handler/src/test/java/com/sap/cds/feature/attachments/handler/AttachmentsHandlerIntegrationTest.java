@@ -313,11 +313,7 @@ class AttachmentsHandlerIntegrationTest {
 				@Test
 				void expandedReadAddsDocumentId() {
 						CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.items().expand(Items_::ID, getItemExpandWithContent()));
-						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
-						when(readContext.getCqn()).thenReturn(select);
-						when(readContext.getCdsRuntime()).thenReturn(runtime);
-						when(readContext.getEvent()).thenReturn(CqnService.EVENT_READ);
-						when(readContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						mockReadContext(select, RootTable_.CDS_NAME);
 
 						cut.readAttachmentsBeforeEvent(readContext);
 
@@ -328,12 +324,8 @@ class AttachmentsHandlerIntegrationTest {
 
 				@Test
 				void expandedReadWithoutContentDoNotAddDocumentId() {
-						CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.items().expand(Items_::ID, getItemExpandWithAllFiels()));
-						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
-						when(readContext.getCqn()).thenReturn(select);
-						when(readContext.getCdsRuntime()).thenReturn(runtime);
-						when(readContext.getEvent()).thenReturn(CqnService.EVENT_READ);
-						when(readContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.items().expand(Items_::ID, getItemExpandWithAllFields()));
+						mockReadContext(select, RootTable_.CDS_NAME);
 
 						cut.readAttachmentsBeforeEvent(readContext);
 
@@ -342,12 +334,55 @@ class AttachmentsHandlerIntegrationTest {
 						assertThat(resultCqn.toString()).doesNotContain("documentId");
 				}
 
+				@Test
+				void directReadForAttachmentsAddsDocumentId() {
+						CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::ID, Attachment_::content);
+						mockReadContext(select, Attachment_.CDS_NAME);
+
+						cut.readAttachmentsBeforeEvent(readContext);
+
+						verify(readContext).setCqn(selectArgumentCaptor.capture());
+						var resultCqn = selectArgumentCaptor.getValue();
+						assertThat(resultCqn.toString()).contains("documentId");
+				}
+
+				@Test
+				void directReadForAttachmentsWithNoFieldsDoesNotInsertDocumentId() {
+						CqnSelect select = Select.from(Attachment_.class);
+						mockReadContext(select, Attachment_.CDS_NAME);
+
+						cut.readAttachmentsBeforeEvent(readContext);
+
+						verify(readContext).setCqn(selectArgumentCaptor.capture());
+						var resultCqn = selectArgumentCaptor.getValue();
+						assertThat(resultCqn.toString()).doesNotContain("documentId");
+				}
+
+				@Test
+				void directReadForAttachmentsWithDocumentIdDoesNotInsertDocumentId() {
+						CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::documentId, Attachment_::ID, Attachment_::content);
+						mockReadContext(select, Attachment_.CDS_NAME);
+
+						cut.readAttachmentsBeforeEvent(readContext);
+
+						verify(readContext).setCqn(selectArgumentCaptor.capture());
+						var resultCqn = selectArgumentCaptor.getValue();
+						assertThat(resultCqn.toString()).containsOnlyOnce("documentId");
+				}
+
+				private void mockReadContext(CqnSelect select, String entityName) {
+						var serviceEntity = runtime.getCdsModel().findEntity(entityName);
+						when(readContext.getCqn()).thenReturn(select);
+						when(readContext.getCdsRuntime()).thenReturn(runtime);
+						when(readContext.getEvent()).thenReturn(CqnService.EVENT_READ);
+						when(readContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+				}
 
 				private Function<Items_, Selectable> getItemExpandWithContent() {
 						return item -> item.attachments().expand(Attachment_::content);
 				}
 
-				private Function<Items_, Selectable> getItemExpandWithAllFiels() {
+				private Function<Items_, Selectable> getItemExpandWithAllFields() {
 						return item -> item.attachments().expand();
 				}
 

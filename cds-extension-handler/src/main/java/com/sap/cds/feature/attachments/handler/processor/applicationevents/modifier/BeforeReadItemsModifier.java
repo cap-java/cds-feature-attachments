@@ -40,7 +40,8 @@ public class BeforeReadItemsModifier implements Modifier {
 		private Optional<CqnSelectListItem> findNewField(String association, List<CqnSelectListItem> list) {
 				if (associationNameMap.containsKey(association)) {
 						var fieldName = associationNameMap.get(association);
-						if (list.stream().anyMatch(item -> !item.isExpand() && item.isRef() && item.asRef().displayName().equals(fieldName.contentFieldName()))) {
+						if (list.stream().anyMatch(item -> !item.isExpand() && item.isRef() && item.asRef().displayName().equals(fieldName.contentFieldName())) &&
+								list.stream().noneMatch(item -> !item.isExpand() && item.isRef() && item.asRef().displayName().equals(fieldName.documentIdFieldName()))) {
 								return Optional.of(CQL.get(fieldName.documentIdFieldName()));
 						}
 				}
