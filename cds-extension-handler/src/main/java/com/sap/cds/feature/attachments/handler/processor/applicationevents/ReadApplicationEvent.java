@@ -1,6 +1,5 @@
 package com.sap.cds.feature.attachments.handler.processor.applicationevents;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +47,7 @@ public class ReadApplicationEvent extends ApplicationEventBase implements Applic
 
 		@Override
 		public void processAfter(EventContext context, List<CdsData> data) {
-				if (isContentFieldInData(context.getTarget(), data, new ArrayList<>())) {
+				if (isContentFieldInData(context.getTarget(), data)) {
 						Filter filter = buildFilterForMediaTypeEntity();
 						Generator generator = (path, element, isNull) -> {
 								var fieldNames = getFieldNames(element, path.target());

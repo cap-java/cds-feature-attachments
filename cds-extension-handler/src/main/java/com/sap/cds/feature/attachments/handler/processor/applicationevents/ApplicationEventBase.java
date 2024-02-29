@@ -18,7 +18,6 @@ import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsAnnotation;
-import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
@@ -28,7 +27,7 @@ public class ApplicationEventBase extends ProcessingBase {
 
 		private static final Logger logger = LoggerFactory.getLogger(ApplicationEventBase.class);
 
-		protected boolean isContentFieldInData(CdsEntity entity, List<CdsData> data, List<String> processedEntityNames) {
+		protected boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
 				var isIncluded = new AtomicBoolean();
 
 				Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)
@@ -39,18 +38,6 @@ public class ApplicationEventBase extends ProcessingBase {
 				};
 
 				callProcessor(entity, data, filter, converter);
-				processedEntityNames.add(entity.getName());
-
-				if (!isIncluded.get()) {
-						entity.associations().forEach(element -> {
-								var target = element.getType().as(CdsAssociationType.class).getTarget();
-								if (!processedEntityNames.contains(target.getName())) {
-										var included = isContentFieldInData(element.getType().as(CdsAssociationType.class).getTarget(), data, processedEntityNames);
-										isIncluded.set(included);
-								}
-						});
-				}
-
 				return isIncluded.get();
 		}
 
