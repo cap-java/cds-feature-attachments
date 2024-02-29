@@ -21,13 +21,13 @@ class DatabaseAttachmentsServiceTest {
 		}
 
 		@Test
-		void readAttachmentDoesNotThrow() throws AttachmentAccessException {
+		void readAttachmentDoesNotThrow() {
 				var stream = cut.readAttachment(AttachmentReadEventContext.create());
 				assertThat(stream).isNull();
 		}
 
 		@Test
-		void createAttachmentReturnsDocumentId() throws AttachmentAccessException {
+		void createAttachmentReturnsDocumentId() {
 				var input = AttachmentCreateEventContext.create();
 				input.setAttachmentId("some id");
 				var result = cut.createAttachment(input);
@@ -35,14 +35,14 @@ class DatabaseAttachmentsServiceTest {
 		}
 
 		@Test
-		void createAttachmentReturnsNotExternalStored() throws AttachmentAccessException {
+		void createAttachmentReturnsNotExternalStored() {
 				var input = AttachmentCreateEventContext.create();
 				var result = cut.createAttachment(input);
 				assertThat(result.isExternalStored()).isFalse();
 		}
 
 		@Test
-		void updateAttachmentReturnsDocumentId() throws AttachmentAccessException {
+		void updateAttachmentReturnsDocumentId() {
 				var input = AttachmentUpdateEventContext.create();
 				input.setAttachmentId("some id");
 				var result = cut.updateAttachment(input);
@@ -50,7 +50,7 @@ class DatabaseAttachmentsServiceTest {
 		}
 
 		@Test
-		void updateAttachmentReturnsNotExternalStored() throws AttachmentAccessException {
+		void updateAttachmentReturnsNotExternalStored() {
 				var input = AttachmentUpdateEventContext.create();
 				var result = cut.updateAttachment(input);
 				assertThat(result.isExternalStored()).isFalse();

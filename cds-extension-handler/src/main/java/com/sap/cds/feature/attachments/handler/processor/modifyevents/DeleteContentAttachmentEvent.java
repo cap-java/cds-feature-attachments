@@ -3,7 +3,6 @@ package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
-import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
 import com.sap.cds.ql.cqn.Path;
@@ -18,7 +17,7 @@ public class DeleteContentAttachmentEvent extends ProcessingBase implements Modi
 		}
 
 		@Override
-		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) throws AttachmentAccessException {
+		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) {
 				if (fieldNames.documentIdField().isEmpty()) {
 						return value;
 				}

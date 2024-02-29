@@ -20,7 +20,6 @@ import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testse
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
-import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.CdsCreateEventContext;
@@ -92,19 +91,17 @@ class CreateApplicationEventTest extends ModifyApplicationEventTestBase {
 		}
 
 		@Test
-		void attachmentAccessExceptionCorrectHandledForCreate() throws AttachmentAccessException {
+		void attachmentAccessExceptionCorrectHandledForCreate() {
 				var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 				var attachment = Attachment.create();
 				attachment.setFilename("test.txt");
 				attachment.setContent(null);
 				mockTargetInContext(serviceEntity.orElseThrow());
 				when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
-				when(event.processEvent(any(), any(), any(), any(), any(), any())).thenThrow(new AttachmentAccessException());
+				when(event.processEvent(any(), any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
 
 				List<CdsData> input = List.of(attachment);
-				var exception = assertThrows(ServiceException.class, () -> cut.process(createContext, input));
-
-				assertThat(exception.getCause()).isInstanceOf(AttachmentAccessException.class);
+				assertThrows(ServiceException.class, () -> cut.process(createContext, input));
 		}
 
 		private void mockTargetInContext(CdsEntity serviceEntity) {

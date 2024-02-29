@@ -17,7 +17,6 @@ import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEventFactory;
-import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.ResolvedSegment;
@@ -26,7 +25,6 @@ import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.persistence.PersistenceService;
 
@@ -49,18 +47,13 @@ abstract class ModifyApplicationEventBase extends ProcessingBase implements Appl
 		void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, String event) {
 				Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false) && hasElementAnnotation(element, ModelConstants.ANNOTATION_MEDIA_TYPE);
 				Converter converter = (path, element, value) -> {
-						try {
-								var fieldNames = getFieldNames(element, path.target());
-								var attachmentIdObject = path.target().keys().get(fieldNames.keyField());
-								var attachmentId = Objects.nonNull(attachmentIdObject) ? String.valueOf(attachmentIdObject) : null;
-								var oldData = CqnService.EVENT_UPDATE.equals(event) ? readExistingData(attachmentId, path.target().entity()) : CdsData.create();
+						var fieldNames = getFieldNames(element, path.target());
+						var attachmentIdObject = path.target().keys().get(fieldNames.keyField());
+						var attachmentId = Objects.nonNull(attachmentIdObject) ? String.valueOf(attachmentIdObject) : null;
+						var oldData = CqnService.EVENT_UPDATE.equals(event) ? readExistingData(attachmentId, path.target().entity()) : CdsData.create();
 
-								var eventToProcess = eventFactory.getEvent(event, value, fieldNames, oldData);
-								return eventToProcess.processEvent(path, element, fieldNames, value, oldData, attachmentId);
-
-						} catch (AttachmentAccessException e) {
-								throw new ServiceException(e);
-						}
+						var eventToProcess = eventFactory.getEvent(event, value, fieldNames, oldData);
+						return eventToProcess.processEvent(path, element, fieldNames, value, oldData, attachmentId);
 				};
 				callProcessor(entity, data, filter, converter);
 				entity.associations().forEach(element -> uploadAttachmentForEntity(element.getType().as(CdsAssociationType.class).getTarget(), data, event));

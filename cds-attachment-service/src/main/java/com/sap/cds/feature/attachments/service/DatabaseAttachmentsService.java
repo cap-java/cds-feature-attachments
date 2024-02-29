@@ -20,22 +20,22 @@ public class DatabaseAttachmentsService extends ServiceDelegator implements Atta
 		}
 
 		@Override
-		public InputStream readAttachment(AttachmentReadEventContext context) throws AttachmentAccessException {
+		public InputStream readAttachment(AttachmentReadEventContext context) {
 				return null;
 		}
 
 		@Override
-		public AttachmentModificationResult createAttachment(AttachmentCreateEventContext context) throws AttachmentAccessException {
+		public AttachmentModificationResult createAttachment(AttachmentCreateEventContext context) {
 				return new AttachmentModificationResult(false, context.getAttachmentId());
 		}
 
 		@Override
-		public AttachmentModificationResult updateAttachment(AttachmentUpdateEventContext context) throws AttachmentAccessException {
+		public AttachmentModificationResult updateAttachment(AttachmentUpdateEventContext context) {
 				return new AttachmentModificationResult(false, context.getAttachmentId());
 		}
 
 		@Override
-		public void deleteAttachment(AttachmentDeleteEventContext context) throws AttachmentAccessException {
+		public void deleteAttachment(AttachmentDeleteEventContext context) {
 				//implementation will follow
 		}
 
