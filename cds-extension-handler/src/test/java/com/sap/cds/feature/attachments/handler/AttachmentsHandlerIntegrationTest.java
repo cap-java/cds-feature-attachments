@@ -33,8 +33,10 @@ import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContex
 import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.impl.RowImpl;
+import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.services.cds.CdsCreateEventContext;
+import com.sap.cds.services.cds.CdsReadEventContext;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -48,6 +50,7 @@ class AttachmentsHandlerIntegrationTest {
 		private AttachmentService attachmentService;
 		private CdsCreateEventContext createContext;
 		private CdsUpdateEventContext updateContext;
+		private CdsReadEventContext readContext;
 		private ArgumentCaptor<AttachmentCreateEventContext> createEventInputCaptor;
 		private ArgumentCaptor<AttachmentUpdateEventContext> updateEventInputCaptor;
 		private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventInputCaptor;
@@ -67,6 +70,7 @@ class AttachmentsHandlerIntegrationTest {
 
 				createContext = mock(CdsCreateEventContext.class);
 				updateContext = mock(CdsUpdateEventContext.class);
+				readContext = mock(CdsReadEventContext.class);
 				createEventInputCaptor = ArgumentCaptor.forClass(AttachmentCreateEventContext.class);
 				updateEventInputCaptor = ArgumentCaptor.forClass(AttachmentUpdateEventContext.class);
 				deleteEventInputCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
@@ -137,7 +141,7 @@ class AttachmentsHandlerIntegrationTest {
 						attachment.setFilename(fileName);
 						attachment.setMimeType(mimeType);
 						item.setAttachments(List.of(attachment));
-						roots.setItemTable(List.of(item));
+						roots.setItems(List.of(item));
 
 						cut.uploadAttachments(createContext, List.of(roots));
 
@@ -162,7 +166,7 @@ class AttachmentsHandlerIntegrationTest {
 								attachment.setFilename(fileName);
 								attachment.setMimeType(mimeType);
 								item.setAttachments(List.of(attachment));
-								roots.setItemTable(List.of(item));
+								roots.setItems(List.of(item));
 
 								cut.uploadAttachments(createContext, List.of(roots));
 
@@ -295,6 +299,28 @@ class AttachmentsHandlerIntegrationTest {
 						when(result.single()).thenReturn(row);
 						when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
 						return oldData;
+				}
+
+		}
+
+		@Nested
+		@DisplayName("Tests for calling the READ event")
+		class ReadContentTests {
+
+				@Test
+				void expandedReadIsWorking() {
+						CqnSelect select = Select.from(com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable_.class).columns(root -> root.ID(), root -> root.items().expand(item -> item.ID(), item -> item.attachments().expand()));
+						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
+						when(readContext.getCqn()).thenReturn(select);
+						when(readContext.getCdsRuntime()).thenReturn(runtime);
+						when(readContext.getEvent()).thenReturn(CqnService.EVENT_READ);
+						when(readContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+
+						cut.readAttachmentsBeforeEvent(readContext);
+
+						verify(readContext).setCqn(selectArgumentCaptor.capture());
+						var resultCqn = selectArgumentCaptor.getValue();
+						assertThat(resultCqn.toString()).contains("documentId");
 				}
 
 		}

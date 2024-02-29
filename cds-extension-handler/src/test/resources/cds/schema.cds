@@ -31,5 +31,10 @@ entity wrongAttachment@(_is_media_data) {
 }
 
 service TestService{
-    entity RootTable as projection on Roots;
+    entity RootTable as projection on Roots{
+        ID,
+        title,
+        itemTable as items,
+        attachments as attachmentTable
+    };
 }

@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Generator;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
@@ -50,19 +51,18 @@ public class ReadApplicationEvent extends ApplicationEventBase implements Applic
 						Filter filter = buildFilterForMediaTypeEntity();
 						Generator generator = (path, element, isNull) -> {
 								var fieldNames = getFieldNames(element, path.target());
-								fieldNames.documentIdField().ifPresent(field -> {
+								if (fieldNames.documentIdField().isPresent()) {
 										var documentId = (String) path.target().values().get(fieldNames.documentIdField().get());
 										return new LazyProxyInputStream(() -> {
 												var readContext = AttachmentReadEventContext.create();
 												readContext.setDocumentId(documentId);
 												return attachmentService.readAttachment(readContext);
 										});
-								});
-
-
+								}
+								return null;
 						};
 
-
+						CdsDataProcessor.create().addGenerator(filter, generator).process(data, context.getTarget());
 				}
 		}
 

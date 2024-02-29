@@ -30,36 +30,29 @@ public class AttachmentsHandler implements EventHandler {
 				this.eventProcessor = eventProcessor;
 		}
 
+		@Before
+		@HandlerOrder(HandlerOrder.EARLY)
+		void readAttachmentsBeforeEvent(CdsReadEventContext context) {
+				var event = context.getEvent();
+				logger.info("Attachment processing will be called for @Before for event {}", event);
+				eventProcessor.getApplicationEvent(event).processBefore(context);
+		}
+
 		@After
 		@HandlerOrder(HandlerOrder.EARLY)
-		void readAttachments(CdsReadEventContext context, List<CdsData> data) {
+		void readAttachmentsAfterEvent(CdsReadEventContext context, List<CdsData> data) {
+				var event = context.getEvent();
+				logger.info("Attachment processing will be called for @After for event {}", event);
+				eventProcessor.getApplicationEvent(event).processAfter(context, data);
+		}
 
-				//TODO Implement
-				//TODO Implement content replacement for read of attachment entity
-				//fill mimeType for content in case entity with MediaType annotation is requested
-
-//				var cdsModel = context.getCdsRuntime().getCdsModel();
-//				if (data.size() != 1) {  //content is to be read only for single attachment
-//						return;
-//				}
-//
-//				if (context.getTarget().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)) {
-//
-//						final CqnSelect cqn = context.getCqn();
-//						// read from attachment service only if content is asked
-//						if (cqn.items().stream().filter(i -> i.isRef()).map(i -> i.asRef())
-//								.anyMatch(i -> i.path().equals("content"))) { // for delete this condition is not fulfilled
-//
-//								var attachmentId = CqnAnalyzer.create(cdsModel).analyze(cqn).targetKeys().get("ID").toString();
-//								var readContext = AttachmentReadEventContext.create();
-//								readContext.setDocumentId(attachmentId);
-//								var content = attachmentService.readAttachment(readContext);
-//								var existingContent = data.get(0).get("content");
-//								if (Objects.isNull(existingContent)) {
-//										data.get(0).put("content", content);
-//								}
-//						}
-//				}
+		//TODO UPSERT?
+		@Before(event = {CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE})
+		void uploadAttachments(EventContext context, List<CdsData> data) {
+				//TODO implement cascading delete if association entity is removed
+				var event = context.getEvent();
+				logger.info("Attachment processing will be called for event {}", event);
+				eventProcessor.getApplicationEvent(event).processAfter(context, data);
 		}
 
 		@After(event = {CqnService.EVENT_DELETE})
@@ -86,15 +79,5 @@ public class AttachmentsHandler implements EventHandler {
 //				}
 
 		}
-
-		//TODO UPSERT?
-		@Before(event = {CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE})
-		void uploadAttachments(EventContext context, List<CdsData> data) {
-				//TODO implement cascading delete if association entity is removed
-				var event = context.getEvent();
-				logger.info("Attachment processing will be called for event {}", event);
-				eventProcessor.getApplicationEvent(event).processAfter(context, data);
-		}
-
 
 }

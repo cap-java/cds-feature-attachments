@@ -15,12 +15,14 @@ class DefaultApplicationEventFactoryTest {
 		private DefaultApplicationEventFactory cut;
 		private ApplicationEvent createApplicationEvent;
 		private ApplicationEvent updateApplicationEvent;
+		private ApplicationEvent readApplicationEvent;
 
 		@BeforeEach
 		void setup() {
 				createApplicationEvent = mock(ApplicationEvent.class);
 				updateApplicationEvent = mock(ApplicationEvent.class);
-				cut = new DefaultApplicationEventFactory(createApplicationEvent, updateApplicationEvent);
+				readApplicationEvent = mock(ApplicationEvent.class);
+				cut = new DefaultApplicationEventFactory(createApplicationEvent, updateApplicationEvent, readApplicationEvent);
 		}
 
 		@Test
@@ -31,6 +33,11 @@ class DefaultApplicationEventFactoryTest {
 		@Test
 		void updateEventReturned() {
 				assertThat(cut.getApplicationEvent(CqnService.EVENT_UPDATE)).isEqualTo(updateApplicationEvent);
+		}
+
+		@Test
+		void readEventReturned() {
+				assertThat(cut.getApplicationEvent(CqnService.EVENT_READ)).isEqualTo(readApplicationEvent);
 		}
 
 		@Test

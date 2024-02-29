@@ -62,7 +62,7 @@ class CreateApplicationEventTest extends ModifyApplicationEventTestBase {
 				var attachment = Attachment.create();
 				attachment.setFilename("test.txt");
 				attachment.setContent(null);
-				roots.setAttachments(List.of(attachment));
+				roots.setAttachmentTable(List.of(attachment));
 				mockTargetInContext(serviceEntity.orElseThrow());
 				when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
 

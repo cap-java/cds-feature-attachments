@@ -32,8 +32,8 @@ public class BeforeReadItemsModifier implements Modifier {
 				var fieldOptional = findNewField(association, list);
 				fieldOptional.ifPresent(newItems::add);
 
-				List<CqnSelectListItem> expendedItems = list.stream().filter(CqnSelectListItem::isExpand).toList();
-				newItems.addAll(processExpandedEntities(expendedItems));
+				List<CqnSelectListItem> expandedItems = list.stream().filter(CqnSelectListItem::isExpand).toList();
+				newItems.addAll(processExpandedEntities(expandedItems));
 				return newItems;
 		}
 
@@ -51,15 +51,15 @@ public class BeforeReadItemsModifier implements Modifier {
 				List<CqnSelectListItem> newItems = new ArrayList<>();
 
 				expendedItems.forEach(item -> {
-						List<CqnSelectListItem> allItems = new ArrayList<>(item.asExpand().items().stream().filter(i -> !i.isExpand()).toList());
-						var fieldOptional = findNewField(item.asExpand().displayName(), allItems);
-						fieldOptional.ifPresent(allItems::add);
+						List<CqnSelectListItem> newItemsFromExpand = new ArrayList<>(item.asExpand().items().stream().filter(i -> !i.isExpand()).toList());
+						var fieldOptional = findNewField(item.asExpand().displayName(), newItemsFromExpand);
+						fieldOptional.ifPresent(newItemsFromExpand::add);
 
-						List<CqnSelectListItem> expandedItems = allItems.stream().filter(CqnSelectListItem::isExpand).toList();
+						List<CqnSelectListItem> expandedItems = item.asExpand().items().stream().filter(CqnSelectListItem::isExpand).toList();
 						var result = processExpandedEntities(expandedItems);
-						allItems.addAll(result);
+						newItemsFromExpand.addAll(result);
 						var copy = CQL.copy(item.asExpand());
-						copy.items(allItems);
+						copy.items(newItemsFromExpand);
 						newItems.add(copy);
 				});
 

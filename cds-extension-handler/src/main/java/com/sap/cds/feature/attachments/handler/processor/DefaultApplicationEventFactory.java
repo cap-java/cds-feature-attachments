@@ -11,9 +11,10 @@ public class DefaultApplicationEventFactory implements ApplicationEventFactory {
 
 		private final Map<String, ApplicationEvent> applicationEvents = new HashMap<>();
 
-		public DefaultApplicationEventFactory(ApplicationEvent createApplicationEvent, ApplicationEvent updateApplicationEvent) {
+		public DefaultApplicationEventFactory(ApplicationEvent createApplicationEvent, ApplicationEvent updateApplicationEvent, ApplicationEvent readApplicationEvent) {
 				applicationEvents.put(CqnService.EVENT_CREATE, createApplicationEvent);
 				applicationEvents.put(CqnService.EVENT_UPDATE, updateApplicationEvent);
+				applicationEvents.put(CqnService.EVENT_READ, readApplicationEvent);
 		}
 
 		@Override
