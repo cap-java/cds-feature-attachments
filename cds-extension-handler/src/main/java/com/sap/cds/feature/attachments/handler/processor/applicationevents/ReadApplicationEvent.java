@@ -75,25 +75,25 @@ public class ReadApplicationEvent extends ApplicationEventBase implements Applic
 				Map<String, DocumentFieldNames> associationNameMap = new HashMap<>();
 				List<String> names = query.get().from().asRef().segments().stream().map(Segment::id).toList();
 
-				var contentFieldName = new AtomicReference<String>();
-				var documentIdFieldName = new AtomicReference<String>();
 				names.forEach(name -> {
 						var baseEntity = model.findEntity(name);
 						baseEntity.ifPresent(base -> {
 								if (isMediaEntity(base)) {
+										var contentFieldName = new AtomicReference<String>();
+										var documentIdFieldName = new AtomicReference<String>();
 										var contentElement = base.elements().filter(elem -> hasElementAnnotation(elem, ModelConstants.ANNOTATION_MEDIA_TYPE)).findAny();
 										var resultName = contentElement.map(CdsElementDefinition::getName);
 										resultName.ifPresent(contentFieldName::set);
 										var documentIdElement = base.elements().filter(elem -> hasElementAnnotation(elem, ModelConstants.ANNOTATION_IS_EXTERNAL_DOCUMENT_ID)).findAny();
 										var documentIdName = documentIdElement.map(CdsElementDefinition::getName);
 										documentIdName.ifPresent(documentIdFieldName::set);
+										if (Objects.nonNull(contentFieldName.get()) || Objects.nonNull(documentIdFieldName.get())) {
+												var fieldNames = new DocumentFieldNames(contentFieldName.get(), documentIdFieldName.get());
+												associationNameMap.put(associationName, fieldNames);
+										}
 								}
 						});
 				});
-				if (Objects.nonNull(contentFieldName.get()) || Objects.nonNull(documentIdFieldName.get())) {
-						var fieldNames = new DocumentFieldNames(contentFieldName.get(), documentIdFieldName.get());
-						associationNameMap.put(associationName, fieldNames);
-				}
 
 				Map<String, CdsEntity> annotatedEntitiesMap = new HashMap<>();
 				entity.elements().filter(element -> element.getType().isAssociation()).forEach(element -> annotatedEntitiesMap.put(element.getName(), element.getType().as(CdsAssociationType.class).getTarget()));

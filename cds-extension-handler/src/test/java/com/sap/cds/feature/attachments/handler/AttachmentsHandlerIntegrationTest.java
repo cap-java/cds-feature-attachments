@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,7 @@ import com.sap.cds.feature.attachments.handler.configuration.AutoConfiguration;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.Items;
+import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
@@ -34,6 +36,7 @@ import com.sap.cds.feature.attachments.service.model.AttachmentModificationResul
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.impl.RowImpl;
 import com.sap.cds.ql.Select;
+import com.sap.cds.ql.Selectable;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CdsReadEventContext;
@@ -308,8 +311,8 @@ class AttachmentsHandlerIntegrationTest {
 		class ReadContentTests {
 
 				@Test
-				void expandedReadIsWorking() {
-						CqnSelect select = Select.from(com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable_.class).columns(root -> root.ID(), root -> root.items().expand(item -> item.ID(), item -> item.attachments().expand()));
+				void expandedReadAddsDocumentId() {
+						CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.items().expand(Items_::ID, getItemExpandWithContent()));
 						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
 						when(readContext.getCqn()).thenReturn(select);
 						when(readContext.getCdsRuntime()).thenReturn(runtime);
@@ -321,6 +324,31 @@ class AttachmentsHandlerIntegrationTest {
 						verify(readContext).setCqn(selectArgumentCaptor.capture());
 						var resultCqn = selectArgumentCaptor.getValue();
 						assertThat(resultCqn.toString()).contains("documentId");
+				}
+
+				@Test
+				void expandedReadWithoutContentDoNotAddDocumentId() {
+						CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.items().expand(Items_::ID, getItemExpandWithAllFiels()));
+						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
+						when(readContext.getCqn()).thenReturn(select);
+						when(readContext.getCdsRuntime()).thenReturn(runtime);
+						when(readContext.getEvent()).thenReturn(CqnService.EVENT_READ);
+						when(readContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+
+						cut.readAttachmentsBeforeEvent(readContext);
+
+						verify(readContext).setCqn(selectArgumentCaptor.capture());
+						var resultCqn = selectArgumentCaptor.getValue();
+						assertThat(resultCqn.toString()).doesNotContain("documentId");
+				}
+
+
+				private Function<Items_, Selectable> getItemExpandWithContent() {
+						return item -> item.attachments().expand(Attachment_::content);
+				}
+
+				private Function<Items_, Selectable> getItemExpandWithAllFiels() {
+						return item -> item.attachments().expand();
 				}
 
 		}
