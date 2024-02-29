@@ -1,6 +1,5 @@
 package com.sap.cds.feature.attachments.handler.processor.applicationevents;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,6 +12,10 @@ import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
+import com.sap.cds.ql.cqn.ResolvedSegment;
+import com.sap.cds.reflect.CdsAnnotation;
+import com.sap.cds.reflect.CdsElement;
+import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.CqnService;
@@ -31,10 +34,10 @@ abstract class ModifyApplicationEventBase extends ApplicationEventBase {
 		}
 
 		boolean processingNotNeeded(CdsEntity entity, List<CdsData> data) {
-				return !isContentFieldInData(entity, data, new ArrayList<>());
+				return !isContentFieldInData(entity, data);
 		}
 
-		void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, String event, List<String> processedEntities) {
+		void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, String event) {
 				Filter filter = buildFilterForMediaTypeEntity();
 				Converter converter = (path, element, value) -> {
 						var fieldNames = getFieldNames(element, path.target());
@@ -46,14 +49,6 @@ abstract class ModifyApplicationEventBase extends ApplicationEventBase {
 						return eventToProcess.processEvent(path, element, fieldNames, value, oldData, attachmentId);
 				};
 				callProcessor(entity, data, filter, converter);
-				processedEntities.add(entity.getName());
-
-				entity.associations().forEach(element -> {
-						var target = element.getType().as(CdsAssociationType.class).getTarget();
-						if (!processedEntities.contains(target.getName())) {
-								uploadAttachmentForEntity(element.getType().as(CdsAssociationType.class).getTarget(), data, event, processedEntities);
-						}
-				});
 		}
 
 		private CdsData readExistingData(String attachmentId, CdsEntity entity) {
