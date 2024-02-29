@@ -88,7 +88,7 @@ public class AttachmentsHandler implements EventHandler {
 		}
 
 		//TODO UPSERT?
-		@Before(event = {CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE})
+		@Before(event = {CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE, CqnService.EVENT_UPSERT})
 		void uploadAttachments(EventContext context, List<CdsData> data) {
 				//TODO implement cascading delete if association entity is removed
 				var event = context.getEvent();

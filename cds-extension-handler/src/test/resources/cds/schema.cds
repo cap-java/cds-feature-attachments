@@ -18,8 +18,16 @@ entity Roots: cuid {
 entity Items: cuid {
         rootId      : UUID;
         note        : String;
+        events      : Association to many Events;
         attachments : Composition of many Attachment
                           on attachments.parentKey = $self.ID;
+}
+
+entity Events {
+    key id1: UUID;
+    key id2: Integer;
+        content: String(100);
+    items: Association to many Items;
 }
 
 entity wrongAttachment@(_is_media_data) {
