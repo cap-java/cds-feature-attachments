@@ -1,5 +1,6 @@
 package com.sap.cds.feature.attachments.handler.processor.applicationevents;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,10 +31,10 @@ abstract class ModifyApplicationEventBase extends ApplicationEventBase {
 		}
 
 		boolean processingNotNeeded(CdsEntity entity, List<CdsData> data) {
-				return !isContentFieldInData(entity, data);
+				return !isContentFieldInData(entity, data, new ArrayList<>());
 		}
 
-		void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, String event) {
+		void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, String event, List<String> processedEntities) {
 				Filter filter = buildFilterForMediaTypeEntity();
 				Converter converter = (path, element, value) -> {
 						var fieldNames = getFieldNames(element, path.target());
@@ -45,7 +46,59 @@ abstract class ModifyApplicationEventBase extends ApplicationEventBase {
 						return eventToProcess.processEvent(path, element, fieldNames, value, oldData, attachmentId);
 				};
 				callProcessor(entity, data, filter, converter);
-				entity.associations().forEach(element -> uploadAttachmentForEntity(element.getType().as(CdsAssociationType.class).getTarget(), data, event));
+				processedEntities.add(entity.getName());
+
+				entity.associations().forEach(element -> {
+						var target = element.getType().as(CdsAssociationType.class).getTarget();
+						if (!processedEntities.contains(target.getName())) {
+								uploadAttachmentForEntity(element.getType().as(CdsAssociationType.class).getTarget(), data, event, processedEntities);
+						}
+				});
+		}
+
+		private boolean isContentFieldInData(CdsEntity entity, List<CdsData> data, List<String> processedEntityNames) {
+				var isIncluded = new AtomicBoolean();
+
+				Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)
+						&& hasElementAnnotation(element, ModelConstants.ANNOTATION_MEDIA_TYPE);
+				Converter converter = (path, element, value) -> {
+						isIncluded.set(true);
+						return value;
+				};
+
+				callProcessor(entity, data, filter, converter);
+				processedEntityNames.add(entity.getName());
+
+				if (!isIncluded.get()) {
+						entity.associations().forEach(element -> {
+								var target = element.getType().as(CdsAssociationType.class).getTarget();
+								if (!processedEntityNames.contains(target.getName())) {
+										var included = isContentFieldInData(element.getType().as(CdsAssociationType.class).getTarget(), data, processedEntityNames);
+										isIncluded.set(included);
+								}
+						});
+				}
+
+				return isIncluded.get();
+		}
+
+		private AttachmentFieldNames getFieldNames(CdsElement element, ResolvedSegment target) {
+				var attachmentIdField = new AtomicReference<String>();
+				target.keys().forEach((key, val) -> attachmentIdField.set(key));
+
+				var documentIdElement = target.type().elements().filter(targetElement -> hasElementAnnotation(targetElement, ModelConstants.ANNOTATION_IS_EXTERNAL_DOCUMENT_ID)).findAny();
+				var documentIdField = documentIdElement.map(CdsElementDefinition::getName);
+				logEmptyFieldName("document ID", documentIdField);
+
+				var mediaTypeAnnotation = element.findAnnotation(ModelConstants.ANNOTATION_MEDIA_TYPE);
+				var fileNameAnnotation = element.findAnnotation(ModelConstants.ANNOTATION_FILE_NAME);
+
+				var mimeTypeField = mediaTypeAnnotation.map(this::getString);
+				logEmptyFieldName("mime type", mimeTypeField);
+				var fileNameField = fileNameAnnotation.map(this::getString);
+				logEmptyFieldName("file name", fileNameField);
+
+				return new AttachmentFieldNames(attachmentIdField.get(), documentIdField, mimeTypeField, fileNameField);
 		}
 
 		private CdsData readExistingData(String attachmentId, CdsEntity entity) {

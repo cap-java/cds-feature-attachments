@@ -1,5 +1,6 @@
 package com.sap.cds.feature.attachments.handler.processor.applicationevents;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.sap.cds.CdsData;
@@ -20,7 +21,7 @@ public class UpdateApplicationEvent extends ModifyApplicationEventBase implement
 						return;
 				}
 
-				uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_UPDATE);
+				uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_UPDATE, new ArrayList<>());
 		}
 
 }
