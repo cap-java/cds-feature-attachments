@@ -94,7 +94,7 @@ public class AttachmentsHandler implements EventHandler {
 				//TODO implement cascading delete if association entity is removed
 				var event = context.getEvent();
 				logger.info("Attachment processing will be called for event {}", event);
-				eventProcessor.getApplicationEvent(event).process(context, data);
+				eventProcessor.getApplicationEvent(event).processAfter(context, data);
 		}
 
 

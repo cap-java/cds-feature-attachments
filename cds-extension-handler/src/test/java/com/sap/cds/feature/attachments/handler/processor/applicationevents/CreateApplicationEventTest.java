@@ -50,7 +50,7 @@ class CreateApplicationEventTest extends ModifyApplicationEventTestBase {
 				var attachment = Attachment.create();
 				mockTargetInContext(serviceEntity.orElseThrow());
 
-				cut.process(createContext, List.of(attachment));
+				cut.processAfter(createContext, List.of(attachment));
 
 				verifyNoInteractions(persistenceService);
 				verifyNoInteractions(eventFactory);
@@ -67,7 +67,7 @@ class CreateApplicationEventTest extends ModifyApplicationEventTestBase {
 				mockTargetInContext(serviceEntity.orElseThrow());
 				when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
 
-				cut.process(createContext, List.of(roots));
+				cut.processAfter(createContext, List.of(roots));
 
 				assertThat(roots.getId()).isNotEmpty();
 				assertThat(attachment.getId()).isNotEmpty();
@@ -84,7 +84,7 @@ class CreateApplicationEventTest extends ModifyApplicationEventTestBase {
 						when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
 						var row = mockSelectionResult();
 
-						cut.process(createContext, List.of(attachment));
+						cut.processAfter(createContext, List.of(attachment));
 
 						verify(eventFactory).getEvent(eq(CqnService.EVENT_CREATE), eq(testStream), fieldNamesArgumentCaptor.capture(), eq(row));
 						verifyFilledFieldNames();
@@ -102,7 +102,7 @@ class CreateApplicationEventTest extends ModifyApplicationEventTestBase {
 				when(event.processEvent(any(), any(), any(), any(), any(), any())).thenThrow(new AttachmentAccessException());
 
 				List<CdsData> input = List.of(attachment);
-				var exception = assertThrows(ServiceException.class, () -> cut.process(createContext, input));
+				var exception = assertThrows(ServiceException.class, () -> cut.processAfter(createContext, input));
 
 				assertThat(exception.getCause()).isInstanceOf(AttachmentAccessException.class);
 		}

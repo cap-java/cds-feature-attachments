@@ -39,7 +39,7 @@ class AttachmentsHandlerTest {
 
 				cut.uploadAttachments(context, data);
 
-				verify(eventImplementation).process(context, data);
+				verify(eventImplementation).processAfter(context, data);
 		}
 
 }

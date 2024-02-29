@@ -50,7 +50,7 @@ class UpdateApplicationEventTest extends ModifyApplicationEventTestBase {
 				var attachment = Attachment.create();
 				mockTargetInContext(serviceEntity.orElseThrow());
 
-				cut.process(updateContext, List.of(attachment));
+				cut.processAfter(updateContext, List.of(attachment));
 
 				verifyNoInteractions(persistenceService);
 				verifyNoInteractions(eventFactory);
@@ -68,7 +68,7 @@ class UpdateApplicationEventTest extends ModifyApplicationEventTestBase {
 						when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
 						var row = mockSelectionResult();
 
-						cut.process(updateContext, List.of(attachment));
+						cut.processAfter(updateContext, List.of(attachment));
 
 						verify(eventFactory).getEvent(eq(CqnService.EVENT_UPDATE), eq(testStream), fieldNamesArgumentCaptor.capture(), eq(row));
 						verifyFilledFieldNames();
@@ -88,7 +88,7 @@ class UpdateApplicationEventTest extends ModifyApplicationEventTestBase {
 				mockSelectionResult();
 
 				List<CdsData> input = List.of(attachment);
-				var exception = assertThrows(ServiceException.class, () -> cut.process(updateContext, input));
+				var exception = assertThrows(ServiceException.class, () -> cut.processAfter(updateContext, input));
 
 				assertThat(exception.getCause()).isInstanceOf(AttachmentAccessException.class);
 		}
@@ -102,7 +102,7 @@ class UpdateApplicationEventTest extends ModifyApplicationEventTestBase {
 				mockTargetInContext(serviceEntity.orElseThrow());
 
 				List<CdsData> input = List.of(attachment);
-				assertThrows(IllegalStateException.class, () -> cut.process(updateContext, input));
+				assertThrows(IllegalStateException.class, () -> cut.processAfter(updateContext, input));
 		}
 
 		@Test
@@ -117,7 +117,7 @@ class UpdateApplicationEventTest extends ModifyApplicationEventTestBase {
 				var row = mockSelectionResult();
 
 				List<CdsData> input = List.of(attachment);
-				assertDoesNotThrow(() -> cut.process(updateContext, input));
+				assertDoesNotThrow(() -> cut.processAfter(updateContext, input));
 
 				verify(eventFactory).getEvent(eq(CqnService.EVENT_UPDATE), eq(null), fieldNamesArgumentCaptor.capture(), eq(row));
 				verifyEmptyFieldNames();
