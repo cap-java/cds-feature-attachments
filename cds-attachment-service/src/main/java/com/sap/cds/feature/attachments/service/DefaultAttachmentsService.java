@@ -13,9 +13,9 @@ import com.sap.cds.services.ServiceDelegator;
 //TODO add java doc
 //TODO exception handling
 //TODO i18n properties
-public class DatabaseAttachmentsService extends ServiceDelegator implements AttachmentService {
+public class DefaultAttachmentsService extends ServiceDelegator implements AttachmentService {
 
-		public DatabaseAttachmentsService() {
+		public DefaultAttachmentsService() {
 				super(AttachmentService.DEFAULT_NAME);
 		}
 

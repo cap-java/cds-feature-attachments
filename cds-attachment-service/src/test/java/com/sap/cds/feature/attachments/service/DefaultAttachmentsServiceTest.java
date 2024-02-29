@@ -11,13 +11,13 @@ import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContex
 import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 
-class DatabaseAttachmentsServiceTest {
+class DefaultAttachmentsServiceTest {
 
-		private DatabaseAttachmentsService cut;
+		private DefaultAttachmentsService cut;
 
 		@BeforeEach
 		void setup() {
-				cut = new DatabaseAttachmentsService();
+				cut = new DefaultAttachmentsService();
 		}
 
 		@Test
