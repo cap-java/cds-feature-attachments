@@ -15,7 +15,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
-import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
 import com.sap.cds.ql.cqn.Path;
@@ -41,7 +40,7 @@ abstract class ModifyAttachmentEventTestBase {
 
 		@ParameterizedTest
 		@ValueSource(booleans = {true, false})
-		void contentIsReturnedIfNotExternalStored(boolean isExternalStored) throws AttachmentAccessException, IOException {
+		void contentIsReturnedIfNotExternalStored(boolean isExternalStored) throws IOException {
 				var fieldNames = getDefaultFieldNames();
 				var attachment = com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.Attachment.create();
 

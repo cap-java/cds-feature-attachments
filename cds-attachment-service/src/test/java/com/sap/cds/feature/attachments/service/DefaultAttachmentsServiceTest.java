@@ -11,23 +11,23 @@ import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContex
 import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 
-class DatabaseAttachmentsServiceTest {
+class DefaultAttachmentsServiceTest {
 
-		private DatabaseAttachmentsService cut;
+		private DefaultAttachmentsService cut;
 
 		@BeforeEach
 		void setup() {
-				cut = new DatabaseAttachmentsService();
+				cut = new DefaultAttachmentsService();
 		}
 
 		@Test
-		void readAttachmentDoesNotThrow() throws AttachmentAccessException {
+		void readAttachmentDoesNotThrow() {
 				var stream = cut.readAttachment(AttachmentReadEventContext.create());
 				assertThat(stream).isNull();
 		}
 
 		@Test
-		void createAttachmentReturnsDocumentId() throws AttachmentAccessException {
+		void createAttachmentReturnsDocumentId() {
 				var input = AttachmentCreateEventContext.create();
 				input.setAttachmentId("some id");
 				var result = cut.createAttachment(input);
@@ -35,14 +35,14 @@ class DatabaseAttachmentsServiceTest {
 		}
 
 		@Test
-		void createAttachmentReturnsNotExternalStored() throws AttachmentAccessException {
+		void createAttachmentReturnsNotExternalStored() {
 				var input = AttachmentCreateEventContext.create();
 				var result = cut.createAttachment(input);
 				assertThat(result.isExternalStored()).isFalse();
 		}
 
 		@Test
-		void updateAttachmentReturnsDocumentId() throws AttachmentAccessException {
+		void updateAttachmentReturnsDocumentId() {
 				var input = AttachmentUpdateEventContext.create();
 				input.setAttachmentId("some id");
 				var result = cut.updateAttachment(input);
@@ -50,7 +50,7 @@ class DatabaseAttachmentsServiceTest {
 		}
 
 		@Test
-		void updateAttachmentReturnsNotExternalStored() throws AttachmentAccessException {
+		void updateAttachmentReturnsNotExternalStored() {
 				var input = AttachmentUpdateEventContext.create();
 				var result = cut.updateAttachment(input);
 				assertThat(result.isExternalStored()).isFalse();

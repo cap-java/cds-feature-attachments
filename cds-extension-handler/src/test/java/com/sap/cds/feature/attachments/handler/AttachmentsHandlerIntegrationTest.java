@@ -27,7 +27,6 @@ import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testse
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
-import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
@@ -93,7 +92,7 @@ class AttachmentsHandlerIntegrationTest {
 
 				@ParameterizedTest
 				@ValueSource(booleans = {true, false})
-				void simpleCreateCallsAttachment(boolean isExternalStored) throws AttachmentAccessException, IOException {
+				void simpleCreateCallsAttachment(boolean isExternalStored) throws IOException {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
@@ -146,7 +145,7 @@ class AttachmentsHandlerIntegrationTest {
 				}
 
 				@Test
-				void deepCreateCallsAttachmentService() throws AttachmentAccessException, IOException {
+				void deepCreateCallsAttachmentService() throws IOException {
 						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
 						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
@@ -199,7 +198,7 @@ class AttachmentsHandlerIntegrationTest {
 				}
 
 				@Test
-				void simpleUpdateCallsAttachmentWithCreate() throws AttachmentAccessException, IOException {
+				void simpleUpdateCallsAttachmentWithCreate() throws IOException {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
@@ -228,7 +227,7 @@ class AttachmentsHandlerIntegrationTest {
 				}
 
 				@Test
-				void simpleUpdateCallsAttachmentWithUpdate() throws AttachmentAccessException, IOException {
+				void simpleUpdateCallsAttachmentWithUpdate() throws IOException {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
@@ -258,7 +257,7 @@ class AttachmentsHandlerIntegrationTest {
 				}
 
 				@Test
-				void removeValueFromContentDeletesDocument() throws AttachmentAccessException {
+				void removeValueFromContentDeletesDocument() {
 						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);

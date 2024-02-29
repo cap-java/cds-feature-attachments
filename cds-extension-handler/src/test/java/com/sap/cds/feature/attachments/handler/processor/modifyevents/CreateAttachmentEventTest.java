@@ -17,7 +17,6 @@ import org.mockito.ArgumentCaptor;
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.Attachment;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
-import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
 
@@ -37,7 +36,7 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		}
 
 		@Test
-		void storageCalledWithAllFieldsFilledFromPath() throws IOException, AttachmentAccessException {
+		void storageCalledWithAllFieldsFilledFromPath() throws IOException {
 				var fieldNames = getDefaultFieldNames();
 				var attachment = prepareAndExecuteEventWithData(fieldNames);
 
@@ -50,7 +49,7 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		}
 
 		@Test
-		void noFieldNamesDoNotFillContext() throws IOException, AttachmentAccessException {
+		void noFieldNamesDoNotFillContext() throws IOException {
 				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty());
 				var attachment = prepareAndExecuteEventWithData(fieldNames);
 
@@ -64,7 +63,7 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		}
 
 		@Test
-		void storageCalledWithAllFieldsFilledFromExistingData() throws IOException, AttachmentAccessException {
+		void storageCalledWithAllFieldsFilledFromExistingData() throws IOException {
 				var fieldNames = getDefaultFieldNames();
 				var attachment = Attachment.create();
 
@@ -90,7 +89,7 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		}
 
 		@Test
-		void documentIdStoredInPath() throws AttachmentAccessException {
+		void documentIdStoredInPath() {
 				var fieldNames = getDefaultFieldNames();
 				var attachment = Attachment.create();
 				var attachmentServiceResult = new AttachmentModificationResult(false, "some document id");
@@ -102,7 +101,7 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 				assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
 		}
 
-		private Attachment prepareAndExecuteEventWithData(AttachmentFieldNames fieldNames) throws IOException, AttachmentAccessException {
+		private Attachment prepareAndExecuteEventWithData(AttachmentFieldNames fieldNames) throws IOException {
 				var attachment = Attachment.create();
 
 				var testContent = "test content";

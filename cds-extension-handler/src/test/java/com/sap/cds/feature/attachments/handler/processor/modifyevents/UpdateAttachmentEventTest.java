@@ -17,7 +17,6 @@ import org.mockito.ArgumentCaptor;
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.Attachment;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
-import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 
@@ -37,7 +36,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		}
 
 		@Test
-		void storageCalledWithAllFieldsFilledFromPath() throws IOException, AttachmentAccessException {
+		void storageCalledWithAllFieldsFilledFromPath() throws IOException {
 				var fieldNames = getDefaultFieldNames();
 				var existingData = CdsData.create();
 				existingData.put("documentId", "some document id");
@@ -54,7 +53,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		}
 
 		@Test
-		void storageCalledWithAllFieldsFilledFromExistingData() throws IOException, AttachmentAccessException {
+		void storageCalledWithAllFieldsFilledFromExistingData() throws IOException {
 				var fieldNames = getDefaultFieldNames();
 				var attachment = Attachment.create();
 
@@ -82,7 +81,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		}
 
 		@Test
-		void newDocumentIdStoredInPath() throws AttachmentAccessException {
+		void newDocumentIdStoredInPath() {
 				var fieldNames = getDefaultFieldNames();
 				var attachment = Attachment.create();
 				var attachmentServiceResult = new AttachmentModificationResult(false, "some document id");
@@ -95,7 +94,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		}
 
 		@Test
-		void noFieldNamesDoNotFillContext() throws IOException, AttachmentAccessException {
+		void noFieldNamesDoNotFillContext() throws IOException {
 				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty());
 				var existingData = CdsData.create();
 				existingData.put("documentId", "some document id");
@@ -111,7 +110,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 				assertThat(attachment.getDocumentId()).isNull();
 		}
 
-		private Attachment defineDataAndExecuteEvent(AttachmentFieldNames fieldNames, CdsData existingData) throws IOException, AttachmentAccessException {
+		private Attachment defineDataAndExecuteEvent(AttachmentFieldNames fieldNames, CdsData existingData) throws IOException {
 				var attachment = Attachment.create();
 				var testContent = "test content";
 				try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
@@ -127,6 +126,5 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 				cut.processEvent(path, null, fieldNames, attachment.getContent(), existingData, attachment.getId());
 				return attachment;
 		}
-
 
 }

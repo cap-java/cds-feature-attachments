@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.processor.ApplicationEventFactory;
-import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
@@ -33,7 +32,7 @@ public class AttachmentsHandler implements EventHandler {
 
 		@After
 		@HandlerOrder(HandlerOrder.EARLY)
-		void readAttachments(CdsReadEventContext context, List<CdsData> data) throws AttachmentAccessException {
+		void readAttachments(CdsReadEventContext context, List<CdsData> data) {
 
 				//TODO Implement
 				//TODO Implement content replacement for read of attachment entity
@@ -64,7 +63,7 @@ public class AttachmentsHandler implements EventHandler {
 		}
 
 		@After(event = {CqnService.EVENT_DELETE})
-		void deleteAttachments(CdsDeleteEventContext context) throws AttachmentAccessException {
+		void deleteAttachments(CdsDeleteEventContext context) {
 
 				//TODO Implement
 				//TODO implement cascading delete e.g. Root is deleted and items -> attachments shall also be deleted

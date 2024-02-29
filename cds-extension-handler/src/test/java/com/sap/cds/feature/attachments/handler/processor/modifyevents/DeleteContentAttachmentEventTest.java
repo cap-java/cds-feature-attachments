@@ -13,7 +13,6 @@ import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.feature.attachments.handler.generation.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
-import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
 import com.sap.cds.ql.cqn.Path;
@@ -41,7 +40,7 @@ class DeleteContentAttachmentEventTest {
 		}
 
 		@Test
-		void noDocumentIdFieldNameNoDeletion() throws AttachmentAccessException {
+		void noDocumentIdFieldNameNoDeletion() {
 				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.of("mimeType"), Optional.of("fileName"));
 				var value = "test";
 
@@ -52,7 +51,7 @@ class DeleteContentAttachmentEventTest {
 		}
 
 		@Test
-		void documentIsExternallyDeleted() throws AttachmentAccessException {
+		void documentIsExternallyDeleted() {
 				var fieldNames = getDefaultFieldNames();
 				var value = "test";
 				var documentId = "some id";
@@ -71,7 +70,7 @@ class DeleteContentAttachmentEventTest {
 		}
 
 		@Test
-		void documentIsNotExternallyDeletedBecauseDoesNotExistBefore() throws AttachmentAccessException {
+		void documentIsNotExternallyDeletedBecauseDoesNotExistBefore() {
 				var fieldNames = getDefaultFieldNames();
 				var value = "test";
 				var data = Attachments.create();

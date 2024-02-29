@@ -5,7 +5,6 @@ import java.util.Objects;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
-import com.sap.cds.feature.attachments.service.AttachmentAccessException;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
 import com.sap.cds.ql.cqn.Path;
@@ -20,7 +19,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		}
 
 		@Override
-		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) throws AttachmentAccessException {
+		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) {
 				var createEventContext = AttachmentCreateEventContext.create();
 				createEventContext.setAttachmentId(attachmentId);
 

@@ -44,9 +44,9 @@ public interface AttachmentService extends Service {
    *
    * @param context Contains the attachment id of the attachment which shall be read
    * @return Returns an input stream of the attachment content
-   * @throws AttachmentAccessException Exception to be thrown in case of errors during accessing the attachment
+   * @throws com.sap.cds.services.ServiceException Exception to be thrown in case of errors during accessing the attachment
    */
-  InputStream readAttachment(AttachmentReadEventContext context) throws AttachmentAccessException;
+  InputStream readAttachment(AttachmentReadEventContext context);
 
   /**
    * Creates a document with the given parameter
@@ -60,9 +60,9 @@ public interface AttachmentService extends Service {
    *         - fileName
    *         - mimeType
    *         - documentId
-   * @throws AttachmentAccessException Exception to be thrown in case of errors during accessing the attachment
+   * @throws com.sap.cds.services.ServiceException Exception to be thrown in case of errors during accessing the attachment
    */
-  AttachmentModificationResult createAttachment(AttachmentCreateEventContext context) throws AttachmentAccessException;
+  AttachmentModificationResult createAttachment(AttachmentCreateEventContext context);
 
   /**
    * Updates a document with the given parameter
@@ -77,16 +77,16 @@ public interface AttachmentService extends Service {
    * 		- fileName
    * 		- mimeType
    * 		- documentId
-   * @throws AttachmentAccessException Exception to be thrown in case of errors during accessing the attachment
+   * @throws com.sap.cds.services.ServiceException Exception to be thrown in case of errors during accessing the attachment
    */
-  AttachmentModificationResult updateAttachment(AttachmentUpdateEventContext context) throws AttachmentAccessException;
+  AttachmentModificationResult updateAttachment(AttachmentUpdateEventContext context);
 
   /**
    * Delete an attachment based on the given attachment id
    *
    * @param context Contains the attachment id of the attachment which shall be deleted
-   * @throws AttachmentAccessException Exception to be thrown in case of errors during accessing the attachment
+   * @throws com.sap.cds.services.ServiceException Exception to be thrown in case of errors during accessing the attachment
    */
-  void deleteAttachment(AttachmentDeleteEventContext context) throws AttachmentAccessException;
+  void deleteAttachment(AttachmentDeleteEventContext context);
 
 }
