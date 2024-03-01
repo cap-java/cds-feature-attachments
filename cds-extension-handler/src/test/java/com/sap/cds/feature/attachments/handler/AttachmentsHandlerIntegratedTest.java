@@ -47,7 +47,7 @@ import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntime;
 
-class AttachmentsHandlerIntegrationTest {
+class AttachmentsHandlerIntegratedTest {
 
 		private static CdsRuntime runtime;
 		private AttachmentsHandler cut;
