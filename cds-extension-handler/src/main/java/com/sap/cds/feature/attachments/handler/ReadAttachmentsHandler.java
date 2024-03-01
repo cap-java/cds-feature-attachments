@@ -23,9 +23,9 @@ import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
-import com.sap.cds.services.EventContext;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
+import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.Before;
@@ -45,21 +45,20 @@ public class ReadAttachmentsHandler extends ApplicationEventBase implements Even
 				this.provider = provider;
 		}
 
-		@Before
+		@Before(event = CqnService.EVENT_READ)
 		@HandlerOrder(HandlerOrder.EARLY)
-		public void processBefore(EventContext context) {
-				var readContext = (CdsReadEventContext) context;
-				var cdsModel = readContext.getCdsRuntime().getCdsModel();
-				var fieldNames = getContentFieldName(cdsModel, readContext.getTarget(), "", new ArrayList<>());
+		public void processBefore(CdsReadEventContext context) {
+				var cdsModel = context.getCdsRuntime().getCdsModel();
+				var fieldNames = getContentFieldName(cdsModel, context.getTarget(), "", new ArrayList<>());
 				if (!fieldNames.isEmpty()) {
-						var resultCqn = CQL.copy(readContext.getCqn(), provider.getBeforeReadDocumentIdEnhancer(fieldNames));
-						readContext.setCqn(resultCqn);
+						var resultCqn = CQL.copy(context.getCqn(), provider.getBeforeReadDocumentIdEnhancer(fieldNames));
+						context.setCqn(resultCqn);
 				}
 		}
 
-		@After
+		@After(event = CqnService.EVENT_READ)
 		@HandlerOrder(HandlerOrder.EARLY)
-		public void processAfter(EventContext context, List<CdsData> data) {
+		public void processAfter(CdsReadEventContext context, List<CdsData> data) {
 				if (isContentFieldInData(context.getTarget(), data)) {
 						Filter filter = buildFilterForMediaTypeEntity();
 						Generator generator = (path, element, isNull) -> {

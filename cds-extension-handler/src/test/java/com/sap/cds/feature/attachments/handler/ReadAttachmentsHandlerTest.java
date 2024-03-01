@@ -1,7 +1,6 @@
 package com.sap.cds.feature.attachments.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -34,7 +33,13 @@ import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.Modifier;
+import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
+import com.sap.cds.services.cds.CqnService;
+import com.sap.cds.services.handler.annotations.After;
+import com.sap.cds.services.handler.annotations.Before;
+import com.sap.cds.services.handler.annotations.HandlerOrder;
+import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.runtime.CdsRuntime;
 
 class ReadAttachmentsHandlerTest {
@@ -221,8 +226,33 @@ class ReadAttachmentsHandlerTest {
 		}
 
 		@Test
-		void checkAnnotations() {
-				fail("not implemented");
+		void classHasCorrectAnnotation() {
+				var readHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
+
+				assertThat(readHandlerAnnotation.type()).containsOnly(ApplicationService.class);
+				assertThat(readHandlerAnnotation.value()).containsOnly("*");
+		}
+
+		@Test
+		void afterMethodAfterHasCorrectAnnotations() throws NoSuchMethodException {
+				var method = cut.getClass().getMethod("processAfter", CdsReadEventContext.class, List.class);
+
+				var readAfterAnnotation = method.getAnnotation(After.class);
+				var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
+
+				assertThat(readAfterAnnotation.event()).containsOnly(CqnService.EVENT_READ);
+				assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
+		}
+
+		@Test
+		void beforeMethodHasCorrectAnnotations() throws NoSuchMethodException {
+				var method = cut.getClass().getMethod("processBefore", CdsReadEventContext.class);
+
+				var readBeforeAnnotation = method.getAnnotation(Before.class);
+				var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
+
+				assertThat(readBeforeAnnotation.event()).containsOnly(CqnService.EVENT_READ);
+				assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
 		}
 
 		private void mockEventContext(String entityName, CqnSelect select) {

@@ -1,7 +1,7 @@
 package com.sap.cds.feature.attachments.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -22,8 +22,12 @@ import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testse
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
+import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CqnService;
+import com.sap.cds.services.handler.annotations.After;
+import com.sap.cds.services.handler.annotations.HandlerOrder;
+import com.sap.cds.services.handler.annotations.ServiceName;
 
 class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
@@ -105,8 +109,22 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		}
 
 		@Test
-		void checkAnnotations() {
-				fail("not implemented");
+		void classHasCorrectAnnotation() {
+				var createHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
+
+				assertThat(createHandlerAnnotation.type()).containsOnly(ApplicationService.class);
+				assertThat(createHandlerAnnotation.value()).containsOnly("*");
+		}
+
+		@Test
+		void methodHasCorrectAnnotations() throws NoSuchMethodException {
+				var method = cut.getClass().getMethod("processAfter", CdsCreateEventContext.class, List.class);
+
+				var createAfterAnnotation = method.getAnnotation(After.class);
+				var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
+
+				assertThat(createAfterAnnotation.event()).containsOnly(CqnService.EVENT_CREATE);
+				assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
 		}
 
 		private void mockTargetInContext(CdsEntity serviceEntity) {

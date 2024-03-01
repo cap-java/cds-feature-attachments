@@ -8,11 +8,11 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.reflect.CdsBaseType;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.services.EventContext;
 import com.sap.cds.services.cds.ApplicationService;
+import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.EventHandler;
-import com.sap.cds.services.handler.annotations.Before;
+import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -26,9 +26,9 @@ public class CreateAttachmentsHandler extends ModifyApplicationEventBase impleme
 				super(persistenceService, eventFactory);
 		}
 
-		@Before(event = CqnService.EVENT_CREATE)
+		@After(event = CqnService.EVENT_CREATE)
 		@HandlerOrder(HandlerOrder.EARLY)
-		public void processAfter(EventContext context, List<CdsData> data) {
+		public void processAfter(CdsCreateEventContext context, List<CdsData> data) {
 				if (processingNotNeeded(context.getTarget(), data)) {
 						return;
 				}

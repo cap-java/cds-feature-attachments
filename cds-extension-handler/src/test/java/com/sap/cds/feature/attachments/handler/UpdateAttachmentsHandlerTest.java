@@ -22,8 +22,12 @@ import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testse
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
+import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
+import com.sap.cds.services.handler.annotations.After;
+import com.sap.cds.services.handler.annotations.HandlerOrder;
+import com.sap.cds.services.handler.annotations.ServiceName;
 
 class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
@@ -122,8 +126,22 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		}
 
 		@Test
-		void checkAnnotations() {
-				fail("not implemented");
+		void classHasCorrectAnnotation() {
+				var updateHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
+
+				assertThat(updateHandlerAnnotation.type()).containsOnly(ApplicationService.class);
+				assertThat(updateHandlerAnnotation.value()).containsOnly("*");
+		}
+
+		@Test
+		void methodHasCorrectAnnotations() throws NoSuchMethodException {
+				var method = cut.getClass().getMethod("processAfter", CdsUpdateEventContext.class, List.class);
+
+				var updateAfterAnnotation = method.getAnnotation(After.class);
+				var updateHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
+
+				assertThat(updateAfterAnnotation.event()).containsOnly(CqnService.EVENT_UPDATE);
+				assertThat(updateHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
 		}
 
 		private void mockTargetInContext(CdsEntity serviceEntity) {
