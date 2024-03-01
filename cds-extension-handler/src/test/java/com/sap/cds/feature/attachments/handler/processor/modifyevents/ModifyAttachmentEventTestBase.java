@@ -60,7 +60,7 @@ abstract class ModifyAttachmentEventTestBase {
 		}
 
 		AttachmentFieldNames getDefaultFieldNames() {
-				return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("filename"));
+				return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("filename"), "content");
 		}
 
 }

@@ -41,7 +41,7 @@ class DeleteContentAttachmentEventTest {
 
 		@Test
 		void noDocumentIdFieldNameNoDeletion() {
-				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.of("mimeType"), Optional.of("fileName"));
+				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.of("mimeType"), Optional.of("fileName"), "content");
 				var value = "test";
 
 				var expectedValue = cut.processEvent(null, null, fieldNames, value, null, null);
@@ -85,7 +85,7 @@ class DeleteContentAttachmentEventTest {
 		}
 
 		private AttachmentFieldNames getDefaultFieldNames() {
-				return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("fileName"));
+				return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("fileName"), "content");
 		}
 
 }

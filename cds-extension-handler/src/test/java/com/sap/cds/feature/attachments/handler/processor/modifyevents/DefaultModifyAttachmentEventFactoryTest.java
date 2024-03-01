@@ -47,7 +47,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 		@ParameterizedTest
 		@ValueSource(strings = {CqnService.EVENT_UPDATE, CqnService.EVENT_CREATE})
 		void updateEventReturnedIDocumentFieldNameNotPresent(String eventName) {
-				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.of("mimeType"), Optional.of("fileName"));
+				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.of("mimeType"), Optional.of("fileName"), "content");
 				var cdsData = CdsData.create();
 				cdsData.put("documentID", "documentId");
 
@@ -87,7 +87,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 		}
 
 		private AttachmentFieldNames getDefaultFieldNames() {
-				return new AttachmentFieldNames("key", Optional.of("documentID"), Optional.of("mimeType"), Optional.of("fileName"));
+				return new AttachmentFieldNames("key", Optional.of("documentID"), Optional.of("mimeType"), Optional.of("fileName"), "content");
 		}
 
 }

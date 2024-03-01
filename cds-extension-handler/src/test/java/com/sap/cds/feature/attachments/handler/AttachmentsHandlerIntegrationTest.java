@@ -29,10 +29,12 @@ import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testse
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.handler.generation.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
+import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
+import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.impl.RowImpl;
 import com.sap.cds.ql.Select;
@@ -57,6 +59,7 @@ class AttachmentsHandlerIntegrationTest {
 		private ArgumentCaptor<AttachmentCreateEventContext> createEventInputCaptor;
 		private ArgumentCaptor<AttachmentUpdateEventContext> updateEventInputCaptor;
 		private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventInputCaptor;
+		private ArgumentCaptor<AttachmentReadEventContext> readEventInputCaptor;
 		private ArgumentCaptor<CqnSelect> selectArgumentCaptor;
 
 		@BeforeAll
@@ -77,6 +80,7 @@ class AttachmentsHandlerIntegrationTest {
 				createEventInputCaptor = ArgumentCaptor.forClass(AttachmentCreateEventContext.class);
 				updateEventInputCaptor = ArgumentCaptor.forClass(AttachmentUpdateEventContext.class);
 				deleteEventInputCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
+				readEventInputCaptor = ArgumentCaptor.forClass(AttachmentReadEventContext.class);
 				selectArgumentCaptor = ArgumentCaptor.forClass(CqnSelect.class);
 		}
 
@@ -368,6 +372,89 @@ class AttachmentsHandlerIntegrationTest {
 						verify(readContext).setCqn(selectArgumentCaptor.capture());
 						var resultCqn = selectArgumentCaptor.getValue();
 						assertThat(resultCqn.toString()).containsOnlyOnce("documentId");
+				}
+
+				@Test
+				void streamProxyIsInsertedButNotCalledForSingleRequest() {
+						mockReadContext(mock(CqnSelect.class), Attachment_.CDS_NAME);
+
+						var attachment = Attachment.create();
+						attachment.setDocumentId("some ID");
+						attachment.setContent(null);
+
+						cut.readAttachmentsAfterEvent(readContext, List.of(attachment));
+
+						assertThat(attachment.getContent()).isInstanceOf(LazyProxyInputStream.class);
+						verifyNoInteractions(attachmentService);
+				}
+
+				@Test
+				void streamProxyIsInsertedButNotCalledForDeepRequest() throws IOException {
+						mockReadContext(mock(CqnSelect.class), RootTable_.CDS_NAME);
+
+						var testString = "test";
+						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+
+								var attachmentWithNullContent = Attachment.create();
+								attachmentWithNullContent.setDocumentId("some ID");
+								attachmentWithNullContent.setContent(null);
+								var item1 = Items.create();
+								item1.setId("item id1");
+								item1.setAttachments(List.of(attachmentWithNullContent));
+								var attachmentWithoutContent = Attachment.create();
+								attachmentWithoutContent.setDocumentId("some ID");
+								var item2 = Items.create();
+								item2.setId("item id2");
+								item2.setAttachments(List.of(attachmentWithoutContent));
+								var item3 = Items.create();
+								item3.setId("item id3");
+								var attachmentWithFilledContent = Attachment.create();
+								attachmentWithFilledContent.setDocumentId("some ID");
+								attachmentWithFilledContent.setContent(testStream);
+								var item4 = Items.create();
+								item4.setId("item id4");
+								item4.setAttachments(List.of(attachmentWithFilledContent));
+								var attachmentWithFilledContentButWithoutDocumentId = Attachment.create();
+								attachmentWithFilledContentButWithoutDocumentId.setContent(null);
+								var item5 = Items.create();
+								item5.setId("item id4");
+								item5.setAttachments(List.of(attachmentWithFilledContentButWithoutDocumentId));
+								var root1 = RootTable.create();
+								root1.setItems(List.of(item2, item1, item4, item5));
+								var root2 = RootTable.create();
+								root2.setItems(List.of(item3));
+
+								cut.readAttachmentsAfterEvent(readContext, List.of(root2, root1));
+
+								assertThat(attachmentWithNullContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
+								assertThat(attachmentWithoutContent.getContent()).isNull();
+								assertThat(attachmentWithFilledContent.getContent()).isEqualTo(testStream);
+								assertThat(attachmentWithFilledContentButWithoutDocumentId.getContent()).isNull();
+								verifyNoInteractions(attachmentService);
+						}
+				}
+
+				@Test
+				void attachmentServiceCalledIfStreamIsRequested() throws IOException {
+						mockReadContext(mock(CqnSelect.class), Attachment_.CDS_NAME);
+
+						var testString = "test";
+						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+								when(attachmentService.readAttachment(any())).thenReturn(testStream);
+								var attachment = Attachment.create();
+								attachment.setDocumentId("some ID");
+								attachment.setContent(null);
+
+								cut.readAttachmentsAfterEvent(readContext, List.of(attachment));
+
+								assertThat(attachment.getContent()).isInstanceOf(LazyProxyInputStream.class);
+								verifyNoInteractions(attachmentService);
+								byte[] bytes = attachment.getContent().readAllBytes();
+								assertThat(bytes).isEqualTo(testString.getBytes(StandardCharsets.UTF_8));
+								verify(attachmentService).readAttachment(readEventInputCaptor.capture());
+								var readInput = readEventInputCaptor.getValue();
+								assertThat(readInput.getDocumentId()).isEqualTo(attachment.getDocumentId());
+						}
 				}
 
 				private void mockReadContext(CqnSelect select, String entityName) {

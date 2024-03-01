@@ -95,7 +95,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
 		@Test
 		void noFieldNamesDoNotFillContext() throws IOException {
-				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty());
+				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty(), "");
 				var existingData = CdsData.create();
 				existingData.put("documentId", "some document id");
 

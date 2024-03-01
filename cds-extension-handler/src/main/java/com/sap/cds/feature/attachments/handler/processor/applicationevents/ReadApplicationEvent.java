@@ -50,14 +50,18 @@ public class ReadApplicationEvent extends ApplicationEventBase implements Applic
 				if (isContentFieldInData(context.getTarget(), data)) {
 						Filter filter = buildFilterForMediaTypeEntity();
 						Generator generator = (path, element, isNull) -> {
-								var fieldNames = getFieldNames(element, path.target());
-								if (fieldNames.documentIdField().isPresent()) {
-										var documentId = (String) path.target().values().get(fieldNames.documentIdField().get());
-										return new LazyProxyInputStream(() -> {
-												var readContext = AttachmentReadEventContext.create();
-												readContext.setDocumentId(documentId);
-												return attachmentService.readAttachment(readContext);
-										});
+								if (path.target().values().containsKey(element.getName())) {
+										var fieldNames = getFieldNames(element, path.target());
+										if (fieldNames.documentIdField().isPresent()) {
+												var documentId = (String) path.target().values().get(fieldNames.documentIdField().get());
+												if (Objects.nonNull(documentId)) {
+														return new LazyProxyInputStream(() -> {
+																var readContext = AttachmentReadEventContext.create();
+																readContext.setDocumentId(documentId);
+																return attachmentService.readAttachment(readContext);
+														});
+												}
+										}
 								}
 								return null;
 						};

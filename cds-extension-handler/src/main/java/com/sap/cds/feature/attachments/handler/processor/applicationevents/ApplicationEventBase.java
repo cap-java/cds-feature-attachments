@@ -57,7 +57,7 @@ public class ApplicationEventBase extends ProcessingBase {
 				var fileNameField = fileNameAnnotation.map(this::getString);
 				logEmptyFieldName("file name", fileNameField);
 
-				return new AttachmentFieldNames(attachmentIdField.get(), documentIdField, mimeTypeField, fileNameField);
+				return new AttachmentFieldNames(attachmentIdField.get(), documentIdField, mimeTypeField, fileNameField, "");
 		}
 
 		protected void callProcessor(CdsEntity entity, List<CdsData> data, Filter filter, Converter converter) {

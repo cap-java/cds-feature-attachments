@@ -50,7 +50,7 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
 		@Test
 		void noFieldNamesDoNotFillContext() throws IOException {
-				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty());
+				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty(), "content");
 				var attachment = prepareAndExecuteEventWithData(fieldNames);
 
 				verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
