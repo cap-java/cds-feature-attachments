@@ -20,6 +20,10 @@ public class BeforeReadItemsModifier implements Modifier {
 				this.associationNameMap = associationNameMap;
 		}
 
+		private static boolean isItemRefFieldWithName(CqnSelectListItem item, String fieldName) {
+				return item.isRef() && item.asRef().displayName().equals(fieldName);
+		}
+
 		@Override
 		public List<CqnSelectListItem> items(List<CqnSelectListItem> items) {
 				List<CqnSelectListItem> newItems = new ArrayList<>(items.stream().filter(item -> !item.isExpand()).toList());
@@ -43,7 +47,7 @@ public class BeforeReadItemsModifier implements Modifier {
 				if (associationNameMap.containsKey(association)) {
 						var fieldName = associationNameMap.get(association);
 						if (list.stream().anyMatch(item -> isItemRefFieldWithName(item, fieldName.contentFieldName())) &&
-								list.stream().noneMatch(item -> isItemRefFieldWithName(item, fieldName.documentIdFieldName()))) {
+								    list.stream().noneMatch(item -> isItemRefFieldWithName(item, fieldName.documentIdFieldName()))) {
 								return Optional.of(CQL.get(fieldName.documentIdFieldName()));
 						}
 				}
@@ -67,10 +71,6 @@ public class BeforeReadItemsModifier implements Modifier {
 				});
 
 				return newItems;
-		}
-
-		private static boolean isItemRefFieldWithName(CqnSelectListItem item, String fieldName) {
-				return item.isRef() && item.asRef().displayName().equals(fieldName);
 		}
 
 }

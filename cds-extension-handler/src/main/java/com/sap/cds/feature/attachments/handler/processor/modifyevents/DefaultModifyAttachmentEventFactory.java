@@ -9,30 +9,30 @@ import com.sap.cds.services.cds.CqnService;
 
 public class DefaultModifyAttachmentEventFactory extends ProcessingBase implements ModifyAttachmentEventFactory {
 
-		private final ModifyAttachmentEvent createEvent;
-		private final ModifyAttachmentEvent updateEvent;
-		private final ModifyAttachmentEvent deleteContentEvent;
+	private final ModifyAttachmentEvent createEvent;
+	private final ModifyAttachmentEvent updateEvent;
+	private final ModifyAttachmentEvent deleteContentEvent;
 
-		public DefaultModifyAttachmentEventFactory(ModifyAttachmentEvent createEvent, ModifyAttachmentEvent updateEvent, ModifyAttachmentEvent deleteContentEvent) {
-				this.createEvent = createEvent;
-				this.updateEvent = updateEvent;
-				this.deleteContentEvent = deleteContentEvent;
-		}
+	public DefaultModifyAttachmentEventFactory(ModifyAttachmentEvent createEvent, ModifyAttachmentEvent updateEvent, ModifyAttachmentEvent deleteContentEvent) {
+		this.createEvent = createEvent;
+		this.updateEvent = updateEvent;
+		this.deleteContentEvent = deleteContentEvent;
+	}
 
-		@Override
-		public ModifyAttachmentEvent getEvent(String event, Object value, AttachmentFieldNames fieldNames, CdsData existingData) {
-				if (CqnService.EVENT_UPDATE.equals(event) || CqnService.EVENT_CREATE.equals(event)) {
-						if (Objects.isNull(value)) {
-								return deleteContentEvent;
-						}
-						if (doesDocumentIdExistsBefore(fieldNames, existingData)) {
-								return updateEvent;
-						} else {
-								return createEvent;
-						}
-				} else {
-						throw new IllegalStateException("Unexpected event name: " + event);
-				}
+	@Override
+	public ModifyAttachmentEvent getEvent(String event, Object value, AttachmentFieldNames fieldNames, CdsData existingData) {
+		if (CqnService.EVENT_UPDATE.equals(event) || CqnService.EVENT_CREATE.equals(event)) {
+			if (Objects.isNull(value)) {
+				return deleteContentEvent;
+			}
+			if (doesDocumentIdExistsBefore(fieldNames, existingData)) {
+				return updateEvent;
+			} else {
+				return createEvent;
+			}
+		} else {
+			throw new IllegalStateException("Unexpected event name: " + event);
 		}
+	}
 
 }

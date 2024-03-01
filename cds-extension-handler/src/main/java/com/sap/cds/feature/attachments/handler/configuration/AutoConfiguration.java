@@ -19,33 +19,33 @@ import com.sap.cds.services.persistence.PersistenceService;
 @Configuration
 public class AutoConfiguration {
 
-		@Bean
-		public EventHandler buildCreateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
-				var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
-				var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
-				var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
-				var attachmentEventFactory = new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteAttachmentEvent);
-				return new CreateAttachmentsHandler(persistenceService, attachmentEventFactory);
-		}
+	@Bean
+	public EventHandler buildCreateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
+		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
+		var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
+		var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
+		var attachmentEventFactory = new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteAttachmentEvent);
+		return new CreateAttachmentsHandler(persistenceService, attachmentEventFactory);
+	}
 
-		@Bean
-		public EventHandler buildDeleteHandler() {
-				return new DeleteAttachmentsHandler();
-		}
+	@Bean
+	public EventHandler buildDeleteHandler() {
+		return new DeleteAttachmentsHandler();
+	}
 
-		@Bean
-		public EventHandler buildReadHandler(AttachmentService attachmentService) {
-				var itemModifierProvider = new DefaultItemModifierProvider();
-				return new ReadAttachmentsHandler(attachmentService, itemModifierProvider);
-		}
+	@Bean
+	public EventHandler buildReadHandler(AttachmentService attachmentService) {
+		var itemModifierProvider = new DefaultItemModifierProvider();
+		return new ReadAttachmentsHandler(attachmentService, itemModifierProvider);
+	}
 
-		@Bean
-		public EventHandler buildUpdateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
-				var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
-				var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
-				var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
-				var attachmentEventFactory = new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteAttachmentEvent);
-				return new UpdateAttachmentsHandler(persistenceService, attachmentEventFactory);
-		}
+	@Bean
+	public EventHandler buildUpdateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
+		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
+		var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
+		var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
+		var attachmentEventFactory = new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteAttachmentEvent);
+		return new UpdateAttachmentsHandler(persistenceService, attachmentEventFactory);
+	}
 
 }

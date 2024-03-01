@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class LazyProxyInputStream extends InputStream {
-		private InputStream delegate;
 		private final InputStreamSupplier inputStreamSupplier;
+		private InputStream delegate;
 
 		public LazyProxyInputStream(InputStreamSupplier inputStreamSupplier) {
 				this.inputStreamSupplier = inputStreamSupplier;

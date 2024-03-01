@@ -16,41 +16,41 @@ import com.sap.cds.services.persistence.PersistenceService;
 
 class AutoConfigurationTest {
 
-		private AutoConfiguration cut;
-		private AttachmentService attachmentService;
-		private PersistenceService persistenceService;
+	private AutoConfiguration cut;
+	private AttachmentService attachmentService;
+	private PersistenceService persistenceService;
 
-		@BeforeEach
-		void setup() {
-				cut = new AutoConfiguration();
+	@BeforeEach
+	void setup() {
+		cut = new AutoConfiguration();
 
-				attachmentService = mock(AttachmentService.class);
-				persistenceService = mock(PersistenceService.class);
-		}
+		attachmentService = mock(AttachmentService.class);
+		persistenceService = mock(PersistenceService.class);
+	}
 
-		@Test
-		void createEventHandlerBuild() {
-				assertThat(cut.buildCreateHandler(persistenceService, attachmentService)).isInstanceOf(CreateAttachmentsHandler.class);
-		}
+	@Test
+	void createEventHandlerBuild() {
+		assertThat(cut.buildCreateHandler(persistenceService, attachmentService)).isInstanceOf(CreateAttachmentsHandler.class);
+	}
 
-		@Test
-		void updateEventHandlerBuild() {
-				assertThat(cut.buildUpdateHandler(persistenceService, attachmentService)).isInstanceOf(UpdateAttachmentsHandler.class);
-		}
+	@Test
+	void updateEventHandlerBuild() {
+		assertThat(cut.buildUpdateHandler(persistenceService, attachmentService)).isInstanceOf(UpdateAttachmentsHandler.class);
+	}
 
-		@Test
-		void deleteEventHandlerBuild() {
-				assertThat(cut.buildDeleteHandler()).isInstanceOf(DeleteAttachmentsHandler.class);
-		}
+	@Test
+	void deleteEventHandlerBuild() {
+		assertThat(cut.buildDeleteHandler()).isInstanceOf(DeleteAttachmentsHandler.class);
+	}
 
-		@Test
-		void readEventHandlerBuild() {
-				assertThat(cut.buildReadHandler(attachmentService)).isInstanceOf(ReadAttachmentsHandler.class);
-		}
+	@Test
+	void readEventHandlerBuild() {
+		assertThat(cut.buildReadHandler(attachmentService)).isInstanceOf(ReadAttachmentsHandler.class);
+	}
 
-		@Test
-		void classHasCorrectAnnotation() {
-				assertThat(cut.getClass().getAnnotation(Configuration.class)).isNotNull();
-		}
+	@Test
+	void classHasCorrectAnnotation() {
+		assertThat(cut.getClass().getAnnotation(Configuration.class)).isNotNull();
+	}
 
 }

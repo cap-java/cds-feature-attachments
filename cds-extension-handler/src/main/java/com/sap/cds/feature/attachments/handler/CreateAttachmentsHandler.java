@@ -39,9 +39,9 @@ public class CreateAttachmentsHandler extends ModifyApplicationEventBase impleme
 
 		private void setKeysInData(CdsEntity entity, List<CdsData> data) {
 				CdsDataProcessor.create().addGenerator(
-								(path, element, type) -> path.target().type().keyElements().count() == 1 && element.isKey() && element.getType().isSimpleType(CdsBaseType.UUID),
-								(path, element, isNull) -> UUID.randomUUID().toString())
-						.process(data, entity);
+				(path, element, type) -> path.target().type().keyElements().count() == 1 && element.isKey() && element.getType().isSimpleType(CdsBaseType.UUID),
+				(path, element, isNull) -> UUID.randomUUID().toString())
+				.process(data, entity);
 		}
 
 }

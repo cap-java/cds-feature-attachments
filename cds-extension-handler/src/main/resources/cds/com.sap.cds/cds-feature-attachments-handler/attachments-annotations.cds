@@ -3,9 +3,7 @@ using {
     com.sap.attachments.Attachments
 } from './attachments';
 
-annotate MediaData with @UI.MediaResource: {
-    Stream: content
-} {
+annotate MediaData with @UI.MediaResource: {Stream: content} {
     content  @(
         title                      : '{i18n>content}',
         Core.MediaType             : mimeType,

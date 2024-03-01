@@ -15,18 +15,18 @@ import com.sap.cds.feature.attachments.handler.configuration.AutoConfiguration;
 
 class MetaInfAutoConfigFileTest {
 
-		@Test
-		void testAutoconfigFactories() throws IOException {
-				String path =
-						"src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports";
+	@Test
+	void testAutoconfigFactories() throws IOException {
+		String path =
+		"src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports";
 
-				BufferedReader reader = Files.newBufferedReader(Paths.get(path));
-				List<String> classes = reader.lines().collect(Collectors.toList());
-				reader.close();
+		BufferedReader reader = Files.newBufferedReader(Paths.get(path));
+		List<String> classes = reader.lines().collect(Collectors.toList());
+		reader.close();
 
-				String configurationClass = AutoConfiguration.class.getCanonicalName();
+		String configurationClass = AutoConfiguration.class.getCanonicalName();
 
-				assertThat(classes).contains(configurationClass);
-		}
+		assertThat(classes).contains(configurationClass);
+	}
 
 }
