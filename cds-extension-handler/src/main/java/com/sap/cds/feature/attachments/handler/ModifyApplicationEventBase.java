@@ -51,7 +51,6 @@ abstract class ModifyApplicationEventBase extends ApplicationEventBase {
 						logger.error("no id provided for attachment entity");
 						throw new IllegalStateException("no attachment id provided");
 				}
-
 				CqnSelect select = Select.from(entity).byId(attachmentId);
 				var result = persistenceService.run(select);
 				return result.single();
