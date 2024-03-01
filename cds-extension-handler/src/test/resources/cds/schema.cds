@@ -28,6 +28,12 @@ entity Events {
     key id2: Integer;
         content: String(100);
     items: Association to many Items;
+    eventItems: Composition of many EventItems;
+}
+
+entity EventItems {
+    key id1: UUID;
+        note: String;
 }
 
 entity wrongAttachment@(_is_media_data) {

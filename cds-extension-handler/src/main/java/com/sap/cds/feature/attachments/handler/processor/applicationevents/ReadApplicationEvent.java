@@ -1,6 +1,6 @@
 package com.sap.cds.feature.attachments.handler.processor.applicationevents;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +14,7 @@ import com.sap.cds.CdsDataProcessor.Generator;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.DocumentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.LazyProxyInputStream;
-import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.BeforeReadItemsModifier;
+import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
 import com.sap.cds.ql.CQL;
@@ -29,18 +29,20 @@ import com.sap.cds.services.cds.CdsReadEventContext;
 public class ReadApplicationEvent extends ApplicationEventBase implements ApplicationEvent {
 
 		private final AttachmentService attachmentService;
+		private final ItemModifierProvider provider;
 
-		public ReadApplicationEvent(AttachmentService attachmentService) {
+		public ReadApplicationEvent(AttachmentService attachmentService, ItemModifierProvider provider) {
 				this.attachmentService = attachmentService;
+				this.provider = provider;
 		}
 
 		@Override
 		public void processBefore(EventContext context) {
 				var readContext = (CdsReadEventContext) context;
 				var cdsModel = readContext.getCdsRuntime().getCdsModel();
-				var fieldNames = getContentFieldName(cdsModel, readContext.getTarget(), "");
+				var fieldNames = getContentFieldName(cdsModel, readContext.getTarget(), "", new ArrayList<>());
 				if (!fieldNames.isEmpty()) {
-						var resultCqn = CQL.copy(readContext.getCqn(), new BeforeReadItemsModifier(fieldNames));
+						var resultCqn = CQL.copy(readContext.getCqn(), provider.getBeforeReadDocumentIdEnhancer(fieldNames));
 						readContext.setCqn(resultCqn);
 				}
 		}
@@ -70,16 +72,12 @@ public class ReadApplicationEvent extends ApplicationEventBase implements Applic
 				}
 		}
 
-		private Map<String, DocumentFieldNames> getContentFieldName(CdsModel model, CdsEntity entity, String associationName) {
+		private Map<String, DocumentFieldNames> getContentFieldName(CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {
 				var query = entity.query();
-				if (query.isEmpty()) {
-						return Collections.emptyMap();
-				}
-
+				List<String> entityNames = query.map(cqnSelect -> cqnSelect.from().asRef().segments().stream().map(Segment::id).toList()).orElseGet(() -> List.of(entity.getQualifiedName()));
 				Map<String, DocumentFieldNames> associationNameMap = new HashMap<>();
-				List<String> names = query.get().from().asRef().segments().stream().map(Segment::id).toList();
 
-				names.forEach(name -> {
+				entityNames.forEach(name -> {
 						var baseEntity = model.findEntity(name);
 						baseEntity.ifPresent(base -> {
 								if (isMediaEntity(base)) {
@@ -91,7 +89,7 @@ public class ReadApplicationEvent extends ApplicationEventBase implements Applic
 										var documentIdElement = base.elements().filter(elem -> hasElementAnnotation(elem, ModelConstants.ANNOTATION_IS_EXTERNAL_DOCUMENT_ID)).findAny();
 										var documentIdName = documentIdElement.map(CdsElementDefinition::getName);
 										documentIdName.ifPresent(documentIdFieldName::set);
-										if (Objects.nonNull(contentFieldName.get()) || Objects.nonNull(documentIdFieldName.get())) {
+										if (Objects.nonNull(contentFieldName.get()) && Objects.nonNull(documentIdFieldName.get())) {
 												var fieldNames = new DocumentFieldNames(contentFieldName.get(), documentIdFieldName.get());
 												associationNameMap.put(associationName, fieldNames);
 										}
@@ -107,8 +105,11 @@ public class ReadApplicationEvent extends ApplicationEventBase implements Applic
 				}
 
 				for (var associatedElement : annotatedEntitiesMap.entrySet()) {
-						var result = getContentFieldName(model, associatedElement.getValue(), associatedElement.getKey());
-						associationNameMap.putAll(result);
+						if (!associationNameMap.containsKey(associatedElement.getKey()) && !processedEntities.contains(associatedElement.getKey())) {
+								processedEntities.add(associatedElement.getKey());
+								var result = getContentFieldName(model, associatedElement.getValue(), associatedElement.getKey(), processedEntities);
+								associationNameMap.putAll(result);
+						}
 				}
 				return associationNameMap;
 		}

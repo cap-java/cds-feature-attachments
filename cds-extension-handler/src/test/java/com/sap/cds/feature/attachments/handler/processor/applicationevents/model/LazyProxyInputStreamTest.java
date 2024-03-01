@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 class LazyProxyInputStreamTest {
 
 		private LazyProxyInputStream cut;
@@ -44,6 +46,7 @@ class LazyProxyInputStreamTest {
 		}
 
 		@Test
+		@SuppressFBWarnings("RR_NOT_CHECKED")
 		void readWithBytesIsForwarded() throws IOException {
 				var bytes = "test".getBytes(StandardCharsets.UTF_8);
 				when(inputStream.read(bytes)).thenReturn(24);
@@ -55,6 +58,7 @@ class LazyProxyInputStreamTest {
 		}
 
 		@Test
+		@SuppressFBWarnings("RR_NOT_CHECKED")
 		void readWithBytesAndParametersIsForwarded() throws IOException {
 				var bytes = "test".getBytes(StandardCharsets.UTF_8);
 				when(inputStream.read(bytes, 1, 2)).thenReturn(36);

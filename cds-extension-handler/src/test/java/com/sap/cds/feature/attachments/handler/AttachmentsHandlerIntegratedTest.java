@@ -64,7 +64,7 @@ class AttachmentsHandlerIntegratedTest {
 
 		@BeforeAll
 		static void classSetup() {
-				runtime = new RuntimeHelper().runtime;
+				runtime = RuntimeHelper.runtime;
 		}
 
 		@BeforeEach

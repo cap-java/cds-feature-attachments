@@ -8,6 +8,7 @@ import com.sap.cds.feature.attachments.handler.processor.DefaultApplicationEvent
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.CreateApplicationEvent;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.ReadApplicationEvent;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.UpdateApplicationEvent;
+import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.DefaultItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.CreateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.DefaultModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.DeleteContentAttachmentEvent;
@@ -28,7 +29,8 @@ public class AutoConfiguration {
 				var attachmentEventFactory = new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteAttachmentEvent);
 				var createApplicationEvent = new CreateApplicationEvent(persistenceService, attachmentEventFactory);
 				var updateApplicationEvent = new UpdateApplicationEvent(persistenceService, attachmentEventFactory);
-				var readApplicationEvent = new ReadApplicationEvent(attachmentService);
+				var itemModifierProvider = new DefaultItemModifierProvider();
+				var readApplicationEvent = new ReadApplicationEvent(attachmentService, itemModifierProvider);
 				var eventProcessor = new DefaultApplicationEventFactory(createApplicationEvent, updateApplicationEvent, readApplicationEvent);
 
 				return new AttachmentsHandler(eventProcessor);

@@ -32,7 +32,7 @@ class UpdateApplicationEventTest extends ModifyApplicationEventTestBase {
 
 		@BeforeAll
 		static void classSetup() {
-				runtime = new RuntimeHelper().runtime;
+				runtime = RuntimeHelper.runtime;
 		}
 
 		@BeforeEach

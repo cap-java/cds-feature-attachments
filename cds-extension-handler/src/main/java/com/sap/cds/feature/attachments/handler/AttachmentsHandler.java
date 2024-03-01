@@ -32,7 +32,7 @@ public class AttachmentsHandler implements EventHandler {
 
 		@Before
 		@HandlerOrder(HandlerOrder.EARLY)
-		void readAttachmentsBeforeEvent(CdsReadEventContext context) {
+		public void readAttachmentsBeforeEvent(CdsReadEventContext context) {
 				var event = context.getEvent();
 				logger.info("Attachment processing will be called for @Before for event {}", event);
 				eventProcessor.getApplicationEvent(event).processBefore(context);
@@ -40,15 +40,15 @@ public class AttachmentsHandler implements EventHandler {
 
 		@After
 		@HandlerOrder(HandlerOrder.EARLY)
-		void readAttachmentsAfterEvent(CdsReadEventContext context, List<CdsData> data) {
+		public void readAttachmentsAfterEvent(CdsReadEventContext context, List<CdsData> data) {
 				var event = context.getEvent();
 				logger.info("Attachment processing will be called for @After for event {}", event);
 				eventProcessor.getApplicationEvent(event).processAfter(context, data);
 		}
 
-		//TODO UPSERT?
 		@Before(event = {CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE})
-		void uploadAttachments(EventContext context, List<CdsData> data) {
+		@HandlerOrder(HandlerOrder.EARLY)
+		public void uploadAttachments(EventContext context, List<CdsData> data) {
 				//TODO implement cascading delete if association entity is removed
 				var event = context.getEvent();
 				logger.info("Attachment processing will be called for event {}", event);
