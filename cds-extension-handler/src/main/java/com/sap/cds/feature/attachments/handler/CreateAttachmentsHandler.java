@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.processor.applicationevents;
+package com.sap.cds.feature.attachments.handler;
 
 import java.util.List;
 import java.util.UUID;
@@ -9,16 +9,25 @@ import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAtta
 import com.sap.cds.reflect.CdsBaseType;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
+import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CqnService;
+import com.sap.cds.services.handler.EventHandler;
+import com.sap.cds.services.handler.annotations.Before;
+import com.sap.cds.services.handler.annotations.HandlerOrder;
+import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
 
-public class CreateApplicationEvent extends ModifyApplicationEventBase implements ApplicationEvent {
+//TODO add Java Doc
+//TODO exception handling
+@ServiceName(value = "*", type = ApplicationService.class)
+public class CreateAttachmentsHandler extends ModifyApplicationEventBase implements EventHandler {
 
-		public CreateApplicationEvent(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
+		public CreateAttachmentsHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
 				super(persistenceService, eventFactory);
 		}
 
-		@Override
+		@Before(event = CqnService.EVENT_CREATE)
+		@HandlerOrder(HandlerOrder.EARLY)
 		public void processAfter(EventContext context, List<CdsData> data) {
 				if (processingNotNeeded(context.getTarget(), data)) {
 						return;

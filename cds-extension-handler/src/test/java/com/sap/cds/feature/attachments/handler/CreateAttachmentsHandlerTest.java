@@ -1,7 +1,7 @@
-package com.sap.cds.feature.attachments.handler.processor.applicationevents;
+package com.sap.cds.feature.attachments.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -25,9 +25,9 @@ import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CqnService;
 
-class CreateApplicationEventTest extends ModifyApplicationEventTestBase {
+class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
-		private CreateApplicationEvent cut;
+		private CreateAttachmentsHandler cut;
 		private CdsCreateEventContext createContext;
 
 		@BeforeAll
@@ -38,7 +38,7 @@ class CreateApplicationEventTest extends ModifyApplicationEventTestBase {
 		@BeforeEach
 		void setup() {
 				super.setup();
-				cut = new CreateApplicationEvent(persistenceService, eventFactory);
+				cut = new CreateAttachmentsHandler(persistenceService, eventFactory);
 
 				createContext = mock(CdsCreateEventContext.class);
 		}
@@ -102,6 +102,11 @@ class CreateApplicationEventTest extends ModifyApplicationEventTestBase {
 
 				List<CdsData> input = List.of(attachment);
 				assertThrows(ServiceException.class, () -> cut.processAfter(createContext, input));
+		}
+
+		@Test
+		void checkAnnotations() {
+				fail("not implemented");
 		}
 
 		private void mockTargetInContext(CdsEntity serviceEntity) {

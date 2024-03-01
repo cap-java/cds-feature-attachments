@@ -1,6 +1,8 @@
-package com.sap.cds.feature.attachments.handler.processor.applicationevents;
+package com.sap.cds.feature.attachments.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
@@ -35,11 +37,12 @@ import com.sap.cds.ql.cqn.Modifier;
 import com.sap.cds.services.cds.CdsReadEventContext;
 import com.sap.cds.services.runtime.CdsRuntime;
 
-class ReadApplicationEventTest {
+class ReadAttachmentsHandlerTest {
 
 		private static CdsRuntime runtime;
 
-		private ReadApplicationEvent cut;
+		private ReadAttachmentsHandler cut;
+
 		private AttachmentService attachmentService;
 		private ItemModifierProvider provider;
 		private CdsReadEventContext readEventContext;
@@ -56,7 +59,7 @@ class ReadApplicationEventTest {
 		void setup() {
 				attachmentService = mock(AttachmentService.class);
 				provider = mock(ItemModifierProvider.class);
-				cut = new ReadApplicationEvent(attachmentService, provider);
+				cut = new ReadAttachmentsHandler(attachmentService, provider);
 
 				readEventContext = mock(CdsReadEventContext.class);
 				modifier = spy(new Modifier() {
@@ -215,6 +218,11 @@ class ReadApplicationEventTest {
 				cut.processAfter(readEventContext, List.of(wrongAttachment));
 
 				verifyNoInteractions(attachmentService);
+		}
+
+		@Test
+		void checkAnnotations() {
+				fail("not implemented");
 		}
 
 		private void mockEventContext(String entityName, CqnSelect select) {

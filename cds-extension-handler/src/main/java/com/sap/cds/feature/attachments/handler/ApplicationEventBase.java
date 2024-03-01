@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.processor.applicationevents;
+package com.sap.cds.feature.attachments.handler;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +23,7 @@ import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 
-public class ApplicationEventBase extends ProcessingBase {
+abstract class ApplicationEventBase extends ProcessingBase {
 
 		private static final Logger logger = LoggerFactory.getLogger(ApplicationEventBase.class);
 

@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.processor.applicationevents;
+package com.sap.cds.feature.attachments.handler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,19 +24,29 @@ import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.EventContext;
+import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
+import com.sap.cds.services.handler.EventHandler;
+import com.sap.cds.services.handler.annotations.After;
+import com.sap.cds.services.handler.annotations.Before;
+import com.sap.cds.services.handler.annotations.HandlerOrder;
+import com.sap.cds.services.handler.annotations.ServiceName;
 
-public class ReadApplicationEvent extends ApplicationEventBase implements ApplicationEvent {
+//TODO add Java Doc
+//TODO exception handling
+@ServiceName(value = "*", type = ApplicationService.class)
+public class ReadAttachmentsHandler extends ApplicationEventBase implements EventHandler {
 
 		private final AttachmentService attachmentService;
 		private final ItemModifierProvider provider;
 
-		public ReadApplicationEvent(AttachmentService attachmentService, ItemModifierProvider provider) {
+		public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider) {
 				this.attachmentService = attachmentService;
 				this.provider = provider;
 		}
 
-		@Override
+		@Before
+		@HandlerOrder(HandlerOrder.EARLY)
 		public void processBefore(EventContext context) {
 				var readContext = (CdsReadEventContext) context;
 				var cdsModel = readContext.getCdsRuntime().getCdsModel();
@@ -47,7 +57,8 @@ public class ReadApplicationEvent extends ApplicationEventBase implements Applic
 				}
 		}
 
-		@Override
+		@After
+		@HandlerOrder(HandlerOrder.EARLY)
 		public void processAfter(EventContext context, List<CdsData> data) {
 				if (isContentFieldInData(context.getTarget(), data)) {
 						Filter filter = buildFilterForMediaTypeEntity();

@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.processor.applicationevents;
+package com.sap.cds.feature.attachments.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,9 +25,10 @@ import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
 
-class UpdateApplicationEventTest extends ModifyApplicationEventTestBase {
+class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
-		private UpdateApplicationEvent cut;
+		private UpdateAttachmentsHandler cut;
+
 		private CdsUpdateEventContext updateContext;
 
 		@BeforeAll
@@ -38,7 +39,7 @@ class UpdateApplicationEventTest extends ModifyApplicationEventTestBase {
 		@BeforeEach
 		void setup() {
 				super.setup();
-				cut = new UpdateApplicationEvent(persistenceService, eventFactory);
+				cut = new UpdateAttachmentsHandler(persistenceService, eventFactory);
 
 				updateContext = mock(CdsUpdateEventContext.class);
 		}
@@ -120,6 +121,11 @@ class UpdateApplicationEventTest extends ModifyApplicationEventTestBase {
 				verifyEmptyFieldNames();
 		}
 
+		@Test
+		void checkAnnotations() {
+				fail("not implemented");
+		}
+
 		private void mockTargetInContext(CdsEntity serviceEntity) {
 				when(updateContext.getTarget()).thenReturn(serviceEntity);
 		}
@@ -132,5 +138,6 @@ class UpdateApplicationEventTest extends ModifyApplicationEventTestBase {
 				assertThat(fieldNames.mimeTypeField()).isEmpty();
 				assertThat(fieldNames.fileNameField()).isEmpty();
 		}
+
 
 }

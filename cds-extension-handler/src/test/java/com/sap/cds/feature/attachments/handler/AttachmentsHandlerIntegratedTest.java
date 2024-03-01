@@ -50,7 +50,9 @@ import com.sap.cds.services.runtime.CdsRuntime;
 class AttachmentsHandlerIntegratedTest {
 
 		private static CdsRuntime runtime;
-		private AttachmentsHandler cut;
+		private CreateAttachmentsHandler createHandler;
+		private UpdateAttachmentsHandler updateHandler;
+		private ReadAttachmentsHandler readHandler;
 		private PersistenceService persistenceService;
 		private AttachmentService attachmentService;
 		private CdsCreateEventContext createContext;
@@ -72,7 +74,9 @@ class AttachmentsHandlerIntegratedTest {
 				persistenceService = mock(PersistenceService.class);
 				attachmentService = mock(AttachmentService.class);
 
-				cut = (AttachmentsHandler) new AutoConfiguration().buildHandler(persistenceService, attachmentService);
+				createHandler = (CreateAttachmentsHandler) new AutoConfiguration().buildCreateHandler(persistenceService, attachmentService);
+				updateHandler = (UpdateAttachmentsHandler) new AutoConfiguration().buildUpdateHandler(persistenceService, attachmentService);
+				readHandler = (ReadAttachmentsHandler) new AutoConfiguration().buildReadHandler(attachmentService);
 
 				createContext = mock(CdsCreateEventContext.class);
 				updateContext = mock(CdsUpdateEventContext.class);
@@ -95,7 +99,7 @@ class AttachmentsHandlerIntegratedTest {
 						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
 						var roots = RootTable.create();
 
-						cut.uploadAttachments(createContext, List.of(roots));
+						createHandler.processAfter(createContext, List.of(roots));
 
 						verifyNoInteractions(attachmentService);
 						assertThat(roots.getId()).isNull();
@@ -120,7 +124,7 @@ class AttachmentsHandlerIntegratedTest {
 								attachment.setMimeType(mimeType);
 								attachment.setParentKey(UUID.randomUUID().toString());
 
-								cut.uploadAttachments(createContext, List.of(attachment));
+								createHandler.processAfter(createContext, List.of(attachment));
 
 								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 								var createInput = createEventInputCaptor.getValue();
@@ -150,7 +154,7 @@ class AttachmentsHandlerIntegratedTest {
 						item.setAttachments(List.of(attachment));
 						roots.setItems(List.of(item));
 
-						cut.uploadAttachments(createContext, List.of(roots));
+						createHandler.processAfter(createContext, List.of(roots));
 
 						verifyNoInteractions(attachmentService);
 				}
@@ -175,7 +179,7 @@ class AttachmentsHandlerIntegratedTest {
 								item.setAttachments(List.of(attachment));
 								roots.setItems(List.of(item));
 
-								cut.uploadAttachments(createContext, List.of(roots));
+								createHandler.processAfter(createContext, List.of(roots));
 
 								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 								var input = createEventInputCaptor.getValue();
@@ -202,7 +206,7 @@ class AttachmentsHandlerIntegratedTest {
 						var roots = RootTable.create();
 						roots.setTitle("new title");
 
-						cut.uploadAttachments(updateContext, List.of(roots));
+						updateHandler.processAfter(updateContext, List.of(roots));
 
 						verifyNoInteractions(attachmentService);
 						assertThat(roots.getId()).isNull();
@@ -222,7 +226,7 @@ class AttachmentsHandlerIntegratedTest {
 								attachment.setContent(testStream);
 								attachment.setId(UUID.randomUUID().toString());
 
-								cut.uploadAttachments(updateContext, List.of(attachment));
+								updateHandler.processAfter(updateContext, List.of(attachment));
 
 								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 								var creationInput = createEventInputCaptor.getValue();
@@ -252,7 +256,7 @@ class AttachmentsHandlerIntegratedTest {
 								attachment.setContent(testStream);
 								attachment.setId(UUID.randomUUID().toString());
 
-								cut.uploadAttachments(updateContext, List.of(attachment));
+								updateHandler.processAfter(updateContext, List.of(attachment));
 
 								verify(attachmentService).updateAttachment(updateEventInputCaptor.capture());
 								var updateInput = updateEventInputCaptor.getValue();
@@ -284,7 +288,7 @@ class AttachmentsHandlerIntegratedTest {
 						attachment.setId(oldData.getId());
 						attachment.setContent(null);
 
-						cut.uploadAttachments(updateContext, List.of(attachment));
+						updateHandler.processAfter(updateContext, List.of(attachment));
 
 						verify(attachmentService).deleteAttachment(deleteEventInputCaptor.capture());
 						var deleteInput = deleteEventInputCaptor.getValue();
@@ -319,7 +323,7 @@ class AttachmentsHandlerIntegratedTest {
 						CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.items().expand(Items_::ID, getItemExpandWithContent()));
 						mockReadContext(select, RootTable_.CDS_NAME);
 
-						cut.readAttachmentsBeforeEvent(readContext);
+						readHandler.processBefore(readContext);
 
 						verify(readContext).setCqn(selectArgumentCaptor.capture());
 						var resultCqn = selectArgumentCaptor.getValue();
@@ -331,7 +335,7 @@ class AttachmentsHandlerIntegratedTest {
 						CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.items().expand(Items_::ID, getItemExpandWithAllFields()));
 						mockReadContext(select, RootTable_.CDS_NAME);
 
-						cut.readAttachmentsBeforeEvent(readContext);
+						readHandler.processBefore(readContext);
 
 						verify(readContext).setCqn(selectArgumentCaptor.capture());
 						var resultCqn = selectArgumentCaptor.getValue();
@@ -343,7 +347,7 @@ class AttachmentsHandlerIntegratedTest {
 						CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::ID, Attachment_::content);
 						mockReadContext(select, Attachment_.CDS_NAME);
 
-						cut.readAttachmentsBeforeEvent(readContext);
+						readHandler.processBefore(readContext);
 
 						verify(readContext).setCqn(selectArgumentCaptor.capture());
 						var resultCqn = selectArgumentCaptor.getValue();
@@ -355,7 +359,7 @@ class AttachmentsHandlerIntegratedTest {
 						CqnSelect select = Select.from(Attachment_.class);
 						mockReadContext(select, Attachment_.CDS_NAME);
 
-						cut.readAttachmentsBeforeEvent(readContext);
+						readHandler.processBefore(readContext);
 
 						verify(readContext).setCqn(selectArgumentCaptor.capture());
 						var resultCqn = selectArgumentCaptor.getValue();
@@ -367,7 +371,7 @@ class AttachmentsHandlerIntegratedTest {
 						CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::documentId, Attachment_::ID, Attachment_::content);
 						mockReadContext(select, Attachment_.CDS_NAME);
 
-						cut.readAttachmentsBeforeEvent(readContext);
+						readHandler.processBefore(readContext);
 
 						verify(readContext).setCqn(selectArgumentCaptor.capture());
 						var resultCqn = selectArgumentCaptor.getValue();
@@ -382,7 +386,7 @@ class AttachmentsHandlerIntegratedTest {
 						attachment.setDocumentId("some ID");
 						attachment.setContent(null);
 
-						cut.readAttachmentsAfterEvent(readContext, List.of(attachment));
+						readHandler.processAfter(readContext, List.of(attachment));
 
 						assertThat(attachment.getContent()).isInstanceOf(LazyProxyInputStream.class);
 						verifyNoInteractions(attachmentService);
@@ -424,7 +428,7 @@ class AttachmentsHandlerIntegratedTest {
 								var root2 = RootTable.create();
 								root2.setItems(List.of(item3));
 
-								cut.readAttachmentsAfterEvent(readContext, List.of(root2, root1));
+								readHandler.processAfter(readContext, List.of(root2, root1));
 
 								assertThat(attachmentWithNullContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
 								assertThat(attachmentWithoutContent.getContent()).isNull();
@@ -445,7 +449,7 @@ class AttachmentsHandlerIntegratedTest {
 								attachment.setDocumentId("some ID");
 								attachment.setContent(null);
 
-								cut.readAttachmentsAfterEvent(readContext, List.of(attachment));
+								readHandler.processAfter(readContext, List.of(attachment));
 
 								assertThat(attachment.getContent()).isInstanceOf(LazyProxyInputStream.class);
 								verifyNoInteractions(attachmentService);

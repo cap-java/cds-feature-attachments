@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.processor.applicationevents;
+package com.sap.cds.feature.attachments.handler;
 
 import java.util.List;
 import java.util.Objects;
