@@ -14,8 +14,14 @@
     <name>CDS Feature for Attachments</name>
     <url>https://cap.cloud.sap/docs/java</url>
 
-    <dependencies>
+    <properties>
+        <packageName>com.sap.cds.feature.attachments</packageName>
+        <cds.install-cdsdk.version>7.6.0</cds.install-cdsdk.version>
+        <generation-package>com.sap.cds.feature.attachments.generation</generation-package>
+        <test-generation-folder>src/test/gen</test-generation-folder>
+    </properties>
 
+    <dependencies>
         <dependency>
             <groupId>com.sap.cds</groupId>
             <artifactId>cds-feature-attachments-service</artifactId>
@@ -23,11 +29,96 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <!-- TESTS -->
+        <dependency>
             <groupId>com.sap.cds</groupId>
-            <artifactId>cds-feature-attachments-handler</artifactId>
-            <version>${revision}</version>
+            <artifactId>cds-services-impl</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <version>4.8.3</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>com.sap.cds</groupId>
+                <artifactId>cds-maven-plugin</artifactId>
+                <version>${cds.services.version}</version>
+                <configuration>
+                    <workingDirectory>./src/test/resources/cds</workingDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>cds.clean</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+
+                    <execution>
+                        <id>cds.install-node</id>
+                        <goals>
+                            <goal>install-node</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${cdsdk-global}</skip>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>cds.install-cdsdk</id>
+                        <goals>
+                            <goal>install-cdsdk</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${cdsdk-global}</skip>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>cds.build</id>
+                        <goals>
+                            <goal>cds</goal>
+                        </goals>
+                        <configuration>
+                            <commands>
+                                <command>build --for java --src ./</command>
+                                <command>compile schema.cds -2 sql > ../schema.sql</command>
+                            </commands>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>cds.generate</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <basePackage>cds.gen</basePackage>
+                            <codeOutputDirectory>${project.basedir}/${test-generation-folder}/cds4j
+                            </codeOutputDirectory>
+                            <basePackage>${generation-package}.cds4j</basePackage>
+                            <testSources>true</testSources>
+                            <csnFile>${project.basedir}/src/test/resources/cds/gen/src/main/resources/edmx/csn.json
+                            </csnFile>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
 
 </project>

@@ -22,8 +22,6 @@
     <url>https://cap.cloud.sap/docs/java</url>
 
     <modules>
-        <module>cds-extension-handler</module>
-        <module>cds-attachment-service</module>
         <module>cds-feature-attachments</module>
     </modules>
 
