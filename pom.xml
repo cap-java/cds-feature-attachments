@@ -250,7 +250,7 @@
                     </rulesets>
                     <excludes>
                         <exclude>
-                            **/com/sap/cds/feature/attachments/handler/generation/**
+                            **/com/sap/cds/feature/attachments/generation/**
                         </exclude>
                     </excludes>
                 </configuration>
