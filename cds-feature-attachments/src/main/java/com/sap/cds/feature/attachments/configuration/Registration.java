@@ -1,7 +1,4 @@
-package com.sap.cds.feature.attachments.handler.configuration;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+package com.sap.cds.feature.attachments.configuration;
 
 import com.sap.cds.feature.attachments.handler.CreateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.DeleteAttachmentsHandler;
@@ -13,14 +10,39 @@ import com.sap.cds.feature.attachments.handler.processor.modifyevents.DefaultMod
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.DeleteContentAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.UpdateAttachmentEvent;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.DefaultAttachmentsService;
+import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.persistence.PersistenceService;
+import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
+import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 
-@Configuration
-public class AutoConfiguration {
+//TODO JavaDoc
+public class Registration implements CdsRuntimeConfiguration {
 
-	@Bean
-	public EventHandler buildCreateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
+	@Override
+	public void services(CdsRuntimeConfigurer configurer) {
+		configurer.service(buildAttachmentService());
+	}
+
+	@Override
+	public void eventHandlers(CdsRuntimeConfigurer configurer) {
+		configurer.eventHandler(new DefaultAttachmentsServiceHandler());
+
+		var persistenceService = configurer.getCdsRuntime().getServiceCatalog().getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
+		var attachmentService = configurer.getCdsRuntime().getServiceCatalog().getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
+
+		configurer.eventHandler(buildCreateHandler(persistenceService, attachmentService));
+		configurer.eventHandler(buildUpdateHandler(persistenceService, attachmentService));
+		configurer.eventHandler(buildDeleteHandler());
+		configurer.eventHandler(buildReadHandler(attachmentService));
+	}
+
+	private AttachmentService buildAttachmentService() {
+		return new DefaultAttachmentsService();
+	}
+
+	private EventHandler buildCreateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
 		var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
@@ -28,19 +50,16 @@ public class AutoConfiguration {
 		return new CreateAttachmentsHandler(persistenceService, attachmentEventFactory);
 	}
 
-	@Bean
-	public EventHandler buildDeleteHandler() {
+	private EventHandler buildDeleteHandler() {
 		return new DeleteAttachmentsHandler();
 	}
 
-	@Bean
-	public EventHandler buildReadHandler(AttachmentService attachmentService) {
+	private EventHandler buildReadHandler(AttachmentService attachmentService) {
 		var itemModifierProvider = new DefaultItemModifierProvider();
 		return new ReadAttachmentsHandler(attachmentService, itemModifierProvider);
 	}
 
-	@Bean
-	public EventHandler buildUpdateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
+	private EventHandler buildUpdateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
 		var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
