@@ -13,12 +13,12 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 @ServiceName(value = "*", type = ApplicationService.class)
 public class DeleteAttachmentsHandler implements EventHandler {
 
-		@After(event = CqnService.EVENT_DELETE)
-		@HandlerOrder(HandlerOrder.EARLY)
-		public void processAfter(CdsDeleteEventContext context) {
+	@After(event = CqnService.EVENT_DELETE)
+	@HandlerOrder(HandlerOrder.EARLY)
+	public void processAfter(CdsDeleteEventContext context) {
 
-				//TODO Implement
-				//TODO implement cascading delete e.g. Root is deleted and items -> attachments shall also be deleted
+		//TODO Implement
+		//TODO implement cascading delete e.g. Root is deleted and items -> attachments shall also be deleted
 
 //				var cdsModel = context.getCdsRuntime().getCdsModel();
 //
@@ -37,6 +37,6 @@ public class DeleteAttachmentsHandler implements EventHandler {
 //						attachmentService.deleteAttachment(deleteContext);
 //				}
 
-		}
+	}
 
 }
