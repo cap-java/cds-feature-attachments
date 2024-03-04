@@ -25,12 +25,12 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 
 	@Override
 	public AttachmentModificationResult createAttachment(CreateAttachmentInput input) {
-		return null;
+		return new AttachmentModificationResult(false, input.attachmentId());
 	}
 
 	@Override
 	public AttachmentModificationResult updateAttachment(UpdateAttachmentInput input) {
-		return null;
+		return new AttachmentModificationResult(false, input.attachmentId());
 	}
 
 	@Override

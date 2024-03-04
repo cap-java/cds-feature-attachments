@@ -26,7 +26,7 @@ class DefaultAttachmentsServiceTest {
 
 	@Test
 	void createAttachmentReturnsDocumentId() {
-		var input = new CreateAttachmentInput("", "", "", "", null);
+		var input = new CreateAttachmentInput("attachmentId", "", "", "", null);
 		var result = cut.createAttachment(input);
 		assertThat(result.documentId()).isNotEmpty();
 	}
@@ -40,7 +40,7 @@ class DefaultAttachmentsServiceTest {
 
 	@Test
 	void updateAttachmentReturnsDocumentId() {
-		var input = new UpdateAttachmentInput("", "", "", "", "", null);
+		var input = new UpdateAttachmentInput("documentId", "attachmentId", "", "", "", null);
 		var result = cut.updateAttachment(input);
 		assertThat(result.documentId()).isNotEmpty();
 	}
