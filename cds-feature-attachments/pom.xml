@@ -19,6 +19,7 @@
         <cds.install-cdsdk.version>7.6.0</cds.install-cdsdk.version>
         <generation-package>com.sap.cds.feature.attachments.generation</generation-package>
         <test-generation-folder>src/test/gen</test-generation-folder>
+        <generation-folder>src/gen</generation-folder>
     </properties>
 
     <dependencies>
@@ -46,11 +47,56 @@
         <plugins>
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${test-generation-folder}/</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${generation-folder}/</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <!--                        <fileset>-->
+                        <!--                            <directory>src/test/resources</directory>-->
+                        <!--                            <includes>-->
+                        <!--                                <include>schema.sql</include>-->
+                        <!--                            </includes>-->
+                        <!--                        </fileset>-->
+                        <fileset>
+                            <directory>src/test/resources/cds</directory>
+                            <includes>
+                                <include>csn.json</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>com.sap.cds</groupId>
                 <artifactId>cds-maven-plugin</artifactId>
                 <version>${cds.services.version}</version>
                 <configuration>
-                    <workingDirectory>./src/test/resources/cds</workingDirectory>
+
                 </configuration>
                 <executions>
                     <execution>
@@ -81,15 +127,45 @@
                     </execution>
 
                     <execution>
+                        <id>cds.test.build</id>
+                        <goals>
+                            <goal>cds</goal>
+                        </goals>
+                        <configuration>
+                            <workingDirectory>./src/test/resources/cds</workingDirectory>
+                            <commands>
+                                <command>compile schema.cds -2 csn > csn.json</command>
+                                <command>compile schema.cds -2 sql > ../schema.sql</command>
+                            </commands>
+                        </configuration>
+                    </execution>
+
+                    <execution>
                         <id>cds.build</id>
                         <goals>
                             <goal>cds</goal>
                         </goals>
                         <configuration>
+                            <workingDirectory>./</workingDirectory>
                             <commands>
                                 <command>build --for java --src ./</command>
-                                <command>compile schema.cds -2 sql > ../schema.sql</command>
                             </commands>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>cds.test.generate</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <basePackage>cds.gen.test</basePackage>
+                            <codeOutputDirectory>${project.basedir}/${test-generation-folder}/cds4j
+                            </codeOutputDirectory>
+                            <basePackage>${generation-package}.test.cds4j</basePackage>
+                            <testSources>true</testSources>
+                            <csnFile>${project.basedir}/src/test/resources/cds/csn.json
+                            </csnFile>
                         </configuration>
                     </execution>
 
@@ -100,12 +176,7 @@
                         </goals>
                         <configuration>
                             <basePackage>cds.gen</basePackage>
-                            <codeOutputDirectory>${project.basedir}/${test-generation-folder}/cds4j
-                            </codeOutputDirectory>
                             <basePackage>${generation-package}.cds4j</basePackage>
-                            <testSources>true</testSources>
-                            <csnFile>${project.basedir}/src/test/resources/cds/gen/src/main/resources/edmx/csn.json
-                            </csnFile>
                         </configuration>
                     </execution>
 

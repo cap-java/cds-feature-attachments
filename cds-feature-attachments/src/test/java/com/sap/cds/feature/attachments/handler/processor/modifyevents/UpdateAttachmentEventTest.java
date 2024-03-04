@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.Attachment;
+import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
@@ -55,7 +55,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 	@Test
 	void storageCalledWithAllFieldsFilledFromExistingData() throws IOException {
 		var fieldNames = getDefaultFieldNames();
-		var attachment = Attachment.create();
+			var attachment = Attachments.create();
 
 		var testContent = "test content";
 		try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
@@ -83,7 +83,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 	@Test
 	void newDocumentIdStoredInPath() {
 		var fieldNames = getDefaultFieldNames();
-		var attachment = Attachment.create();
+			var attachment = Attachments.create();
 		var attachmentServiceResult = new AttachmentModificationResult(false, "some document id");
 		when(attachmentService.updateAttachment(any())).thenReturn(attachmentServiceResult);
 		when(target.values()).thenReturn(attachment);
@@ -110,8 +110,8 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		assertThat(attachment.getDocumentId()).isNull();
 	}
 
-	private Attachment defineDataAndExecuteEvent(AttachmentFieldNames fieldNames, CdsData existingData) throws IOException {
-		var attachment = Attachment.create();
+		private Attachments defineDataAndExecuteEvent(AttachmentFieldNames fieldNames, CdsData existingData) throws IOException {
+				var attachment = Attachments.create();
 		var testContent = "test content";
 		try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
 			attachment.setContent(testContentStream);

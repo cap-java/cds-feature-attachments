@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;

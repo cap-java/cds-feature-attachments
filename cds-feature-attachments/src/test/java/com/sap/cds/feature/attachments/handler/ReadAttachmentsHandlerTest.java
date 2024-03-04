@@ -15,15 +15,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.EventItems;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.EventItems_;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.WrongAttachment;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.WrongAttachment_;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Attachment;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Attachment_;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Items;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.RootTable;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.EventItems;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.EventItems_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.WrongAttachment;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.WrongAttachment_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.DocumentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.LazyProxyInputStream;
@@ -137,26 +137,26 @@ class ReadAttachmentsHandlerTest {
 		var testString = "test";
 		try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
 
-			var attachmentWithNullValueContent = Attachment.create();
+				var attachmentWithNullValueContent = Attachments.create();
 			attachmentWithNullValueContent.setDocumentId("some ID");
 			attachmentWithNullValueContent.setContent(null);
 			var item1 = Items.create();
 			item1.setId("item id1");
 			item1.setAttachments(List.of(attachmentWithNullValueContent));
-			var attachmentWithoutContentField = Attachment.create();
+				var attachmentWithoutContentField = Attachments.create();
 			attachmentWithoutContentField.setDocumentId("some ID");
 			var item2 = Items.create();
 			item2.setId("item id2");
 			item2.setAttachments(List.of(attachmentWithoutContentField));
 			var item3 = Items.create();
 			item3.setId("item id3");
-			var attachmentWithStreamAsContent = Attachment.create();
+				var attachmentWithStreamAsContent = Attachments.create();
 			attachmentWithStreamAsContent.setDocumentId("some ID");
 			attachmentWithStreamAsContent.setContent(testStream);
 			var item4 = Items.create();
 			item4.setId("item id4");
 			item4.setAttachments(List.of(attachmentWithStreamAsContent));
-			var attachmentWithStreamContentButWithoutDocumentId = Attachment.create();
+				var attachmentWithStreamContentButWithoutDocumentId = Attachments.create();
 			attachmentWithStreamContentButWithoutDocumentId.setContent(null);
 			var item5 = Items.create();
 			item5.setId("item id4");
@@ -186,7 +186,7 @@ class ReadAttachmentsHandlerTest {
 		var testString = "test";
 		try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
 			when(attachmentService.readAttachment(any())).thenReturn(testStream);
-			var attachment = Attachment.create();
+				var attachment = Attachments.create();
 			attachment.setDocumentId("some ID");
 			attachment.setContent(null);
 

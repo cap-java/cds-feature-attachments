@@ -6,13 +6,13 @@ using {
 } from '@sap/cds/common';
 
 aspect MediaData @(_is_media_data) {
-    url      : String;
-    content  : LargeBinary; // only for db-based services
-    mimeType : String;
-    filename : String;
+    content    : LargeBinary; // only for db-based services
+    mimeType   : String;
+    filename   : String;
+    documentId : String;
 }
 
 aspect Attachments : cuid, managed, MediaData {
-    note       : String;
-    documentId : String;
+    note : String;
+    url  : String;
 }

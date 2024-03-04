@@ -15,10 +15,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.WrongAttachment;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.WrongAttachment_;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Attachment;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.WrongAttachment;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.WrongAttachment_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
@@ -51,7 +51,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	@Test
 	void noContentInDataNothingToDo() {
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-		var attachment = Attachment.create();
+			var attachment = Attachments.create();
 		mockTargetInContext(serviceEntity.orElseThrow());
 
 		cut.processAfter(updateContext, List.of(attachment));
@@ -65,7 +65,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
-			var attachment = Attachment.create();
+				var attachment = Attachments.create();
 			attachment.setContent(testStream);
 			attachment.setId("test");
 			mockTargetInContext(serviceEntity.orElseThrow());
@@ -82,7 +82,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	@Test
 	void attachmentAccessExceptionCorrectHandledForUpdate() {
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-		var attachment = Attachment.create();
+			var attachment = Attachments.create();
 		attachment.setFilename("test.txt");
 		attachment.setContent(null);
 		attachment.setId("some id");
@@ -98,7 +98,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	@Test
 	void illegalStateExceptionIfIdNotProvidedForUpdate() {
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-		var attachment = Attachment.create();
+			var attachment = Attachments.create();
 		attachment.setFilename("test.txt");
 		attachment.setContent(null);
 		mockTargetInContext(serviceEntity.orElseThrow());
@@ -156,6 +156,5 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		assertThat(fieldNames.mimeTypeField()).isEmpty();
 		assertThat(fieldNames.fileNameField()).isEmpty();
 	}
-
 
 }

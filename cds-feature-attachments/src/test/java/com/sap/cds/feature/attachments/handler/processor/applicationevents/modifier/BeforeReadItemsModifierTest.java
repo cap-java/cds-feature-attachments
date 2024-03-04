@@ -7,9 +7,9 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Attachment_;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Items_;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.DocumentFieldNames;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;

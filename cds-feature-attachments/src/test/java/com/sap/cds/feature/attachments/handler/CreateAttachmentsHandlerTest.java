@@ -15,10 +15,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Attachment;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Attachment_;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.RootTable;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
@@ -50,7 +50,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	@Test
 	void noContentInDataNothingToDo() {
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-		var attachment = Attachment.create();
+			var attachment = Attachments.create();
 		mockTargetInContext(serviceEntity.orElseThrow());
 
 		cut.processAfter(createContext, List.of(attachment));
@@ -63,7 +63,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	void idsAreSetInDataForCreate() {
 		var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
 		var roots = RootTable.create();
-		var attachment = Attachment.create();
+			var attachment = Attachments.create();
 		attachment.setFilename("test.txt");
 		attachment.setContent(null);
 		roots.setAttachmentTable(List.of(attachment));
@@ -81,7 +81,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
-			var attachment = Attachment.create();
+				var attachment = Attachments.create();
 			attachment.setContent(testStream);
 			mockTargetInContext(serviceEntity.orElseThrow());
 			when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
@@ -97,7 +97,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	@Test
 	void attachmentAccessExceptionCorrectHandledForCreate() {
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-		var attachment = Attachment.create();
+			var attachment = Attachments.create();
 		attachment.setFilename("test.txt");
 		attachment.setContent(null);
 		mockTargetInContext(serviceEntity.orElseThrow());

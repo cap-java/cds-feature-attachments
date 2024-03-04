@@ -22,12 +22,12 @@ import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.configuration.Registration;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Attachment;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Attachment_;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Items;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Items_;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.RootTable;
-import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items_;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -113,7 +113,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
 			when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "document id"));
 
-			var attachment = Attachment.create();
+				var attachment = Attachments.create();
 
 			var testString = "test";
 			var fileName = "testFile.txt";
@@ -122,7 +122,6 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				attachment.setContent(testStream);
 				attachment.setFilename(fileName);
 				attachment.setMimeType(mimeType);
-				attachment.setParentKey(UUID.randomUUID().toString());
 
 				createHandler.processAfter(createContext, List.of(attachment));
 
@@ -148,7 +147,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 
 			var roots = RootTable.create();
 			var item = Items.create();
-			var attachment = Attachment.create();
+				var attachment = Attachments.create();
 			attachment.setFilename(fileName);
 			attachment.setMimeType(mimeType);
 			item.setAttachments(List.of(attachment));
@@ -172,7 +171,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
 				var roots = RootTable.create();
 				var item = Items.create();
-				var attachment = Attachment.create();
+					var attachment = Attachments.create();
 				attachment.setContent(testStream);
 				attachment.setFilename(fileName);
 				attachment.setMimeType(mimeType);
@@ -220,7 +219,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
 			var existingData = mockExistingData();
 
-			var attachment = Attachment.create();
+				var attachment = Attachments.create();
 			var testString = "test";
 			try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
 				attachment.setContent(testStream);
@@ -250,7 +249,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			var existingData = mockExistingData();
 			existingData.setDocumentId(UUID.randomUUID().toString());
 
-			var attachment = Attachment.create();
+				var attachment = Attachments.create();
 			var testString = "test";
 			try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
 				attachment.setContent(testStream);
@@ -277,14 +276,14 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 			when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
 			var result = mock(Result.class);
-			var oldData = Attachment.create();
+				var oldData = Attachments.create();
 			oldData.setDocumentId(UUID.randomUUID().toString());
 			oldData.setId(UUID.randomUUID().toString());
 			var row = RowImpl.row(oldData);
 			when(result.single()).thenReturn(row);
 			when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
 
-			var attachment = Attachment.create();
+				var attachment = Attachments.create();
 			attachment.setId(oldData.getId());
 			attachment.setContent(null);
 
@@ -301,9 +300,9 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
 		}
 
-		private Attachment mockExistingData() {
+			private Attachments mockExistingData() {
 			var result = mock(Result.class);
-			var oldData = Attachment.create();
+					var oldData = Attachments.create();
 			oldData.setFilename("some file name");
 			oldData.setMimeType("some mime type");
 			var row = RowImpl.row(oldData);
@@ -382,7 +381,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 		void streamProxyIsInsertedButNotCalledForSingleRequest() {
 			mockReadContext(mock(CqnSelect.class), Attachment_.CDS_NAME);
 
-			var attachment = Attachment.create();
+				var attachment = Attachments.create();
 			attachment.setDocumentId("some ID");
 			attachment.setContent(null);
 
@@ -399,26 +398,26 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			var testString = "test";
 			try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
 
-				var attachmentWithNullContent = Attachment.create();
+					var attachmentWithNullContent = Attachments.create();
 				attachmentWithNullContent.setDocumentId("some ID");
 				attachmentWithNullContent.setContent(null);
 				var item1 = Items.create();
 				item1.setId("item id1");
 				item1.setAttachments(List.of(attachmentWithNullContent));
-				var attachmentWithoutContent = Attachment.create();
+					var attachmentWithoutContent = Attachments.create();
 				attachmentWithoutContent.setDocumentId("some ID");
 				var item2 = Items.create();
 				item2.setId("item id2");
 				item2.setAttachments(List.of(attachmentWithoutContent));
 				var item3 = Items.create();
 				item3.setId("item id3");
-				var attachmentWithFilledContent = Attachment.create();
+					var attachmentWithFilledContent = Attachments.create();
 				attachmentWithFilledContent.setDocumentId("some ID");
 				attachmentWithFilledContent.setContent(testStream);
 				var item4 = Items.create();
 				item4.setId("item id4");
 				item4.setAttachments(List.of(attachmentWithFilledContent));
-				var attachmentWithFilledContentButWithoutDocumentId = Attachment.create();
+					var attachmentWithFilledContentButWithoutDocumentId = Attachments.create();
 				attachmentWithFilledContentButWithoutDocumentId.setContent(null);
 				var item5 = Items.create();
 				item5.setId("item id4");
@@ -445,7 +444,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			var testString = "test";
 			try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
 				when(attachmentService.readAttachment(any())).thenReturn(testStream);
-				var attachment = Attachment.create();
+					var attachment = Attachments.create();
 				attachment.setDocumentId("some ID");
 				attachment.setContent(null);
 
