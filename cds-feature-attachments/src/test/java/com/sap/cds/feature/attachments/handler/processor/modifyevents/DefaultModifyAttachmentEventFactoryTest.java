@@ -12,6 +12,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Attachment;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.services.cds.CqnService;
 
@@ -47,7 +49,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@ParameterizedTest
 	@ValueSource(strings = {CqnService.EVENT_UPDATE, CqnService.EVENT_CREATE})
 	void updateEventReturnedIDocumentFieldNameNotPresent(String eventName) {
-		var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.of("mimeType"), Optional.of("fileName"), "content");
+		var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.of(MediaData.MIME_TYPE), Optional.of(MediaData.FILE_NAME), Attachment.DOCUMENT_ID);
 		var cdsData = CdsData.create();
 		cdsData.put("documentID", "documentId");
 
@@ -87,7 +89,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	}
 
 	private AttachmentFieldNames getDefaultFieldNames() {
-		return new AttachmentFieldNames("key", Optional.of("documentID"), Optional.of("mimeType"), Optional.of("fileName"), "content");
+		return new AttachmentFieldNames("key", Optional.of(Attachment.DOCUMENT_ID), Optional.of(MediaData.MIME_TYPE), Optional.of(MediaData.FILE_NAME), MediaData.CONTENT);
 	}
 
 }

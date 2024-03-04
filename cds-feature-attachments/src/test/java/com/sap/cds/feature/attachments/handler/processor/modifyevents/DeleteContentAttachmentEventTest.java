@@ -11,6 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Attachment;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
@@ -37,7 +39,7 @@ class DeleteContentAttachmentEventTest {
 
 	@Test
 	void noDocumentIdFieldNameNoDeletion() {
-		var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.of("mimeType"), Optional.of("fileName"), "content");
+		var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.of(MediaData.MIME_TYPE), Optional.of(MediaData.FILE_NAME), MediaData.CONTENT);
 		var value = "test";
 
 		var expectedValue = cut.processEvent(null, null, fieldNames, value, null, null);
@@ -79,7 +81,7 @@ class DeleteContentAttachmentEventTest {
 	}
 
 	private AttachmentFieldNames getDefaultFieldNames() {
-		return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("fileName"), "content");
+		return new AttachmentFieldNames("key", Optional.of(Attachment.DOCUMENT_ID), Optional.of(MediaData.MIME_TYPE), Optional.of(MediaData.FILE_NAME), MediaData.CONTENT);
 	}
 
 }

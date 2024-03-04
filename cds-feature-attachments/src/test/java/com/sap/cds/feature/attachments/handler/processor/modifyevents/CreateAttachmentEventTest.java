@@ -16,6 +16,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
@@ -77,8 +78,8 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		when(target.values()).thenReturn(attachment);
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 		var existingData = CdsData.create();
-		existingData.put("filename", "some file name");
-		existingData.put("mimeType", "some mime type");
+		existingData.put(MediaData.FILE_NAME, "some file name");
+		existingData.put(MediaData.MIME_TYPE, "some mime type");
 
 		cut.processEvent(path, null, fieldNames, attachment.getContent(), existingData, attachment.getId());
 
@@ -86,8 +87,8 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		var resultValue = contextArgumentCaptor.getValue();
 		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
 		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
-		assertThat(resultValue.mimeType()).isEqualTo(existingData.get("mimeType"));
-		assertThat(resultValue.fileName()).isEqualTo(existingData.get("filename"));
+		assertThat(resultValue.mimeType()).isEqualTo(existingData.get(MediaData.MIME_TYPE));
+		assertThat(resultValue.fileName()).isEqualTo(existingData.get(MediaData.FILE_NAME));
 		assertThat(resultValue.content()).isEqualTo(attachment.getContent());
 	}
 

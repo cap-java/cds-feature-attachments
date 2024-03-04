@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
@@ -67,7 +68,7 @@ abstract class ModifyAttachmentEventTestBase {
 	}
 
 	AttachmentFieldNames getDefaultFieldNames() {
-		return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("filename"), "content");
+		return new AttachmentFieldNames("key", Optional.of(Attachments.DOCUMENT_ID), Optional.of(MediaData.MIME_TYPE), Optional.of(MediaData.FILE_NAME), MediaData.CONTENT);
 	}
 
 }
