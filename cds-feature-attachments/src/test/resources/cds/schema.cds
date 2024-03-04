@@ -11,8 +11,7 @@ entity Roots : cuid {
     title       : String;
     itemTable   : Composition of many Items
                       on itemTable.rootId = $self.ID;
-    attachments : Composition of many Attachment
-                      on attachments.parentKey = $self.ID;
+    attachments : Composition of many Attachments;
 }
 
 entity Items : cuid {

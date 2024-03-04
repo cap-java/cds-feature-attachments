@@ -133,7 +133,6 @@ class ReadAttachmentsHandlerTest {
 
 	@Test
 	void dataFilledWithDeepStructure() throws IOException {
-
 		var testString = "test";
 		try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
 

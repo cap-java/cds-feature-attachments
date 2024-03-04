@@ -23,6 +23,7 @@ import org.mockito.ArgumentCaptor;
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.configuration.Registration;
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Attachment;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items_;
@@ -195,6 +196,41 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 	@Nested
 	@DisplayName("Tests for calling the UPDATE event")
 	class UpdateContentTests {
+
+			@Test
+			void deepUpdateCallsAttachment() throws IOException {
+					var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
+					when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+					when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
+					when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
+					var existingData = mockExistingData();
+
+					var testString = "test";
+					try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+
+							var roots = RootTable.create();
+							roots.setTitle("new title");
+							roots.setId(UUID.randomUUID().toString());
+							var attachmentAspect = Attachment.create();
+							attachmentAspect.setContent(testStream);
+							attachmentAspect.setId(UUID.randomUUID().toString());
+							roots.setAttachmentTable(List.of(attachmentAspect));
+
+							updateHandler.processAfter(updateContext, List.of(roots));
+
+							verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+							var creationInput = createEventInputCaptor.getValue();
+							assertThat(attachmentAspect.getContent()).isEqualTo(testStream);
+							assertThat(creationInput.getContent()).isEqualTo(testStream);
+							assertThat(creationInput.getAttachmentId()).isNotEmpty().isEqualTo(attachmentAspect.getId());
+							assertThat(creationInput.getFileName()).isEqualTo(existingData.getFilename());
+							assertThat(creationInput.getMimeType()).isEqualTo(existingData.getMimeType());
+							verify(persistenceService).run(selectArgumentCaptor.capture());
+							var select = selectArgumentCaptor.getValue();
+							assertThat(select.where().orElseThrow().toString()).contains(attachmentAspect.getId());
+
+					}
+			}
 
 		@Test
 		void simpleUpdateDoesNotCallAttachment() {
