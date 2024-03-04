@@ -22,8 +22,6 @@
     <url>https://cap.cloud.sap/docs/java</url>
 
     <modules>
-        <module>cds-extension-handler</module>
-        <module>cds-attachment-service</module>
         <module>cds-feature-attachments</module>
     </modules>
 
@@ -122,7 +120,7 @@
                 <configuration>
                     <excludes>
                         <exclude>
-                            com/sap/cds/feature/attachments/handler/generation/**/*
+                            com/sap/cds/feature/attachments/generation/**/*
                         </exclude>
                     </excludes>
                 </configuration>
@@ -252,7 +250,7 @@
                     </rulesets>
                     <excludes>
                         <exclude>
-                            **/com/sap/cds/feature/attachments/handler/generation/**
+                            **/com/sap/cds/feature/attachments/generation/**
                         </exclude>
                     </excludes>
                 </configuration>
