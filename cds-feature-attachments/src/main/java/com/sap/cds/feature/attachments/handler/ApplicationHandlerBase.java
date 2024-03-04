@@ -22,9 +22,9 @@ import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 
-abstract class ApplicationEventBase extends ProcessingBase {
+abstract class ApplicationHandlerBase extends ProcessingBase {
 
-	private static final Logger logger = LoggerFactory.getLogger(ApplicationEventBase.class);
+	private static final Logger logger = LoggerFactory.getLogger(ApplicationHandlerBase.class);
 
 	protected boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
 		var isIncluded = new AtomicBoolean();

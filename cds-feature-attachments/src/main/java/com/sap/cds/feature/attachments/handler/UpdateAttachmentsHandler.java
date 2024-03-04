@@ -16,7 +16,7 @@ import com.sap.cds.services.persistence.PersistenceService;
 //TODO add Java Doc
 //TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
-public class UpdateAttachmentsHandler extends ModifyApplicationEventBase implements EventHandler {
+public class UpdateAttachmentsHandler extends ModifyApplicationHandlerBase implements EventHandler {
 
 	public UpdateAttachmentsHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
 		super(persistenceService, eventFactory);

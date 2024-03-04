@@ -34,7 +34,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 //TODO add Java Doc
 //TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
-public class ReadAttachmentsHandler extends ApplicationEventBase implements EventHandler {
+public class ReadAttachmentsHandler extends ApplicationHandlerBase implements EventHandler {
 
 	private final AttachmentService attachmentService;
 	private final ItemModifierProvider provider;

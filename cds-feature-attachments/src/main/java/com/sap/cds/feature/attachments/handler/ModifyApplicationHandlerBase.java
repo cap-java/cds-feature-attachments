@@ -17,14 +17,14 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.persistence.PersistenceService;
 
-abstract class ModifyApplicationEventBase extends ApplicationEventBase {
+abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 
-	private static final Logger logger = LoggerFactory.getLogger(ModifyApplicationEventBase.class);
+	private static final Logger logger = LoggerFactory.getLogger(ModifyApplicationHandlerBase.class);
 
 	private final PersistenceService persistenceService;
 	private final ModifyAttachmentEventFactory eventFactory;
 
-	ModifyApplicationEventBase(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
+	ModifyApplicationHandlerBase(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
 		this.persistenceService = persistenceService;
 		this.eventFactory = eventFactory;
 	}
