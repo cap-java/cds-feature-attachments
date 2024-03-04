@@ -32,7 +32,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 			return (String) fileName;
 		});
 
-		var createEventInput = new CreateAttachmentInput(attachmentId, path.target().entity().getName(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
+		var createEventInput = new CreateAttachmentInput(attachmentId, path.target().entity().getQualifiedName(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
 		var result = attachmentService.createAttachment(createEventInput);
 		fieldNames.documentIdField().ifPresent(doc -> path.target().values().put(doc, result.documentId()));
 		return result.isExternalStored() ? null : value;

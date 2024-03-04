@@ -20,13 +20,16 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
+import com.sap.cds.reflect.CdsEntity;
 
 abstract class ModifyAttachmentEventTestBase {
 
+	protected static final String TEST_FULL_NAME = "test.full.Name";
 	protected ModifyAttachmentEvent cut;
 	protected AttachmentService attachmentService;
 	protected Path path;
 	protected ResolvedSegment target;
+	protected CdsEntity entity;
 
 	void setup() {
 		attachmentService = mock(AttachmentService.class);
@@ -34,6 +37,9 @@ abstract class ModifyAttachmentEventTestBase {
 
 		path = mock(Path.class);
 		target = mock(ResolvedSegment.class);
+		entity = mock(CdsEntity.class);
+		when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
+		when(target.entity()).thenReturn(entity);
 		when(path.target()).thenReturn(target);
 	}
 

@@ -47,7 +47,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		var resultValue = contextArgumentCaptor.getValue();
 		assertThat(resultValue.documentId()).isNotEmpty().isEqualTo(existingData.get("documentId"));
 		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
-		assertThat(resultValue.attachmentEntityName()).isEqualTo("ATTACHMENT");
+		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(resultValue.mimeType()).isEqualTo(attachment.getMimeType());
 		assertThat(resultValue.fileName()).isEqualTo(attachment.getFilename());
 		assertThat(resultValue.content()).isEqualTo(attachment.getContent());
@@ -76,7 +76,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		var resultValue = contextArgumentCaptor.getValue();
 		assertThat(resultValue.documentId()).isNotEmpty().isEqualTo(existingData.get("documentId"));
 		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
-		assertThat(resultValue.attachmentEntityName()).isEqualTo("EntityName");
+		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(resultValue.mimeType()).isNotEmpty().isEqualTo(existingData.get("mimeType"));
 		assertThat(resultValue.fileName()).isNotEmpty().isEqualTo(existingData.get("filename"));
 		assertThat(resultValue.content()).isEqualTo(attachment.getContent());
@@ -106,7 +106,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
 		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
-		assertThat(resultValue.attachmentEntityName()).isEqualTo("attachment.getId()");
+		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(resultValue.mimeType()).isNull();
 		assertThat(resultValue.fileName()).isNull();
 		assertThat(resultValue.content()).isEqualTo(attachment.getContent());
