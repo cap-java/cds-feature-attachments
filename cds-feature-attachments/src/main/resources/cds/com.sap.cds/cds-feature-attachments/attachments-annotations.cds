@@ -7,7 +7,7 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
     content  @(
         title                      : '{i18n>content}',
         Core.MediaType             : mimeType,
-        ContentDisposition.Filename: filename,
+        ContentDisposition.Filename: fileName,
         odata.draft.skip
     );
     mimeType @(
@@ -22,7 +22,7 @@ annotate Attachments with @UI: {LineItem: [
     {Value: createdBy},
     {Value: note}
 ]} {
-    filename   @(title: '{i18n>fileName}');
+    fileName   @(title: '{i18n>fileName}');
     note       @(title: '{i18n>note}');
     documentId @(
         _is_document_id,

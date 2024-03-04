@@ -126,7 +126,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				assertThat(attachment.getContent()).isEqualTo(expectedContent);
 				assertThat(createInput.content()).isEqualTo(testStream);
 				assertThat(createInput.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(createInput.attachmentEntityName()).isNotEmpty().isEqualTo("attachment.getId()");
+				assertThat(createInput.attachmentEntityName()).isNotEmpty().isEqualTo(Attachment_.CDS_NAME);
 				assertThat(createInput.fileName()).isEqualTo(fileName);
 				assertThat(createInput.mimeType()).isEqualTo(mimeType);
 			}
@@ -181,7 +181,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				assertThat(attachment.getContent()).isEqualTo(testStream);
 				assertThat(input.content()).isEqualTo(testStream);
 				assertThat(input.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(input.attachmentEntityName()).isNotEmpty().isEqualTo("attachment.getId()");
+				assertThat(input.attachmentEntityName()).isNotEmpty().isEqualTo(Attachment_.CDS_NAME);
 				assertThat(input.fileName()).isEqualTo(fileName);
 				assertThat(input.mimeType()).isEqualTo(mimeType);
 			}
@@ -219,7 +219,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				assertThat(attachmentAspect.getContent()).isEqualTo(testStream);
 				assertThat(creationInput.content()).isEqualTo(testStream);
 				assertThat(creationInput.attachmentId()).isNotEmpty().isEqualTo(attachmentAspect.getId());
-				assertThat(creationInput.attachmentEntityName()).isNotEmpty().isEqualTo("attachmentAspect.getId()");
+				assertThat(creationInput.attachmentEntityName()).isNotEmpty().isEqualTo(RootTable_.CDS_NAME + ".attachments");
 				assertThat(creationInput.fileName()).isEqualTo(existingData.getFileName());
 				assertThat(creationInput.mimeType()).isEqualTo(existingData.getMimeType());
 				verify(persistenceService).run(selectArgumentCaptor.capture());
@@ -265,7 +265,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				assertThat(attachment.getContent()).isEqualTo(testStream);
 				assertThat(creationInput.content()).isEqualTo(testStream);
 				assertThat(creationInput.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(creationInput.attachmentEntityName()).isNotEmpty().isEqualTo("attachment.getId()");
+				assertThat(creationInput.attachmentEntityName()).isNotEmpty().isEqualTo(Attachment_.CDS_NAME);
 				assertThat(creationInput.fileName()).isEqualTo(existingData.getFileName());
 				assertThat(creationInput.mimeType()).isEqualTo(existingData.getMimeType());
 				verify(persistenceService).run(selectArgumentCaptor.capture());
@@ -296,7 +296,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				assertThat(attachment.getContent()).isEqualTo(testStream);
 				assertThat(updateInput.content()).isEqualTo(testStream);
 				assertThat(updateInput.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(updateInput.attachmentEntityName()).isNotEmpty().isEqualTo("attachment.getId()");
+				assertThat(updateInput.attachmentEntityName()).isNotEmpty().isEqualTo(Attachment_.CDS_NAME);
 				assertThat(updateInput.fileName()).isEqualTo(existingData.getFileName());
 				assertThat(updateInput.mimeType()).isEqualTo(existingData.getMimeType());
 				verify(persistenceService).run(selectArgumentCaptor.capture());
