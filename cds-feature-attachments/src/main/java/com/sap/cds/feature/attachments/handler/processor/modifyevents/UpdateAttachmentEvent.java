@@ -7,6 +7,7 @@ import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
+import com.sap.cds.feature.attachments.service.model.service.UpdateAttachmentInput;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
 
@@ -26,21 +27,23 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 		var values = path.target().values();
 		updateEventContext.setContent((InputStream) value);
 
-		fieldNames.mimeTypeField().ifPresent(anno -> {
+		var mimeTypeOptional = fieldNames.mimeTypeField().map(anno -> {
 			var annotationValue = values.get(anno);
 			var mimeType = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
-			updateEventContext.setMimeType((String) mimeType);
+			return (String) mimeType;
 		});
 
-		fieldNames.fileNameField().ifPresent(anno -> {
+		var fileNameOptional = fieldNames.fileNameField().map(anno -> {
 			var annotationValue = values.get(anno);
 			var fileName = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
-			updateEventContext.setFileName((String) fileName);
+			return (String) fileName;
 		});
-		fieldNames.documentIdField().ifPresent(docId -> updateEventContext.setDocumentId((String) existingData.get(docId)));
+		var documentId = fieldNames.documentIdField().map(docId -> (String) existingData.get(docId));
 
-		var result = attachmentService.updateAttachment(updateEventContext);
+		var input = new UpdateAttachmentInput(documentId.orElse(null), attachmentId, path.target().entity().getName(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
+		var result = attachmentService.updateAttachment(input);
 		fieldNames.documentIdField().ifPresent(doc -> path.target().values().put(doc, result.documentId()));
 		return result.isExternalStored() ? null : value;
 	}
+
 }

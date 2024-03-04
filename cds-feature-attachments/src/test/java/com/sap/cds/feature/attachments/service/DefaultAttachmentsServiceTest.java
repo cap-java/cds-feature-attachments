@@ -6,10 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
+import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
+import com.sap.cds.feature.attachments.service.model.service.UpdateAttachmentInput;
 
 class DefaultAttachmentsServiceTest {
 
@@ -22,44 +20,41 @@ class DefaultAttachmentsServiceTest {
 
 	@Test
 	void readAttachmentDoesNotThrow() {
-		var stream = cut.readAttachment(AttachmentReadEventContext.create());
+		var stream = cut.readAttachment("");
 		assertThat(stream).isNull();
 	}
 
 	@Test
 	void createAttachmentReturnsDocumentId() {
-		var input = AttachmentCreateEventContext.create();
-		input.setAttachmentId("some id");
+		var input = new CreateAttachmentInput("", "", "", "", null);
 		var result = cut.createAttachment(input);
 		assertThat(result.documentId()).isNotEmpty();
 	}
 
 	@Test
 	void createAttachmentReturnsNotExternalStored() {
-		var input = AttachmentCreateEventContext.create();
+		var input = new CreateAttachmentInput("", "", "", "", null);
 		var result = cut.createAttachment(input);
 		assertThat(result.isExternalStored()).isFalse();
 	}
 
 	@Test
 	void updateAttachmentReturnsDocumentId() {
-		var input = AttachmentUpdateEventContext.create();
-		input.setAttachmentId("some id");
+		var input = new UpdateAttachmentInput("", "", "", "", "", null);
 		var result = cut.updateAttachment(input);
 		assertThat(result.documentId()).isNotEmpty();
 	}
 
 	@Test
 	void updateAttachmentReturnsNotExternalStored() {
-		var input = AttachmentUpdateEventContext.create();
+		var input = new UpdateAttachmentInput("", "", "", "", "", null);
 		var result = cut.updateAttachment(input);
 		assertThat(result.isExternalStored()).isFalse();
 	}
 
 	@Test
 	void deleteDoesNotThrow() {
-		var input = AttachmentDeleteEventContext.create();
-		assertDoesNotThrow(() -> cut.deleteAttachment(input));
+		assertDoesNotThrow(() -> cut.deleteAttachment(""));
 	}
 
 }

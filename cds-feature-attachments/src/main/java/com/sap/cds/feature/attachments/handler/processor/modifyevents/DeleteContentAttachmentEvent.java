@@ -4,7 +4,6 @@ import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
 
@@ -23,9 +22,7 @@ public class DeleteContentAttachmentEvent extends ProcessingBase implements Modi
 		}
 
 		if (doesDocumentIdExistsBefore(fieldNames, existingData)) {
-			var deleteContext = AttachmentDeleteEventContext.create();
-			deleteContext.setDocumentId((String) existingData.get(fieldNames.documentIdField().get()));
-			attachmentService.deleteAttachment(deleteContext);
+			attachmentService.deleteAttachment((String) existingData.get(fieldNames.documentIdField().get()));
 		}
 		path.target().values().put(fieldNames.documentIdField().get(), null);
 		return value;

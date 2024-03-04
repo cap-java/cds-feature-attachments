@@ -9,12 +9,10 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 
@@ -22,7 +20,6 @@ class DeleteContentAttachmentEventTest {
 
 	private DeleteContentAttachmentEvent cut;
 	private AttachmentService attachmentService;
-	private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventContextArgumentCaptor;
 	private Path path;
 	private Map<String, Object> currentData;
 
@@ -31,7 +28,6 @@ class DeleteContentAttachmentEventTest {
 		attachmentService = mock(AttachmentService.class);
 		cut = new DeleteContentAttachmentEvent(attachmentService);
 
-		deleteEventContextArgumentCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
 		path = mock(Path.class);
 		var target = mock(ResolvedSegment.class);
 		currentData = new HashMap<>();
@@ -62,10 +58,8 @@ class DeleteContentAttachmentEventTest {
 
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isEqualTo(documentId);
-		verify(attachmentService).deleteAttachment(deleteEventContextArgumentCaptor.capture());
-		var deleteContext = deleteEventContextArgumentCaptor.getValue();
-		assertThat(deleteContext.getDocumentId()).isEqualTo(documentId);
-		assertThat(currentData.containsKey(fieldNames.documentIdField().get())).isTrue();
+		verify(attachmentService).deleteAttachment(documentId);
+		assertThat(currentData).containsKey(fieldNames.documentIdField().orElseThrow());
 		assertThat(currentData.get(fieldNames.documentIdField().get())).isNull();
 	}
 
@@ -80,7 +74,7 @@ class DeleteContentAttachmentEventTest {
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isNull();
 		verifyNoInteractions(attachmentService);
-		assertThat(currentData.containsKey(fieldNames.documentIdField().get())).isTrue();
+		assertThat(currentData).containsKey(fieldNames.documentIdField().orElseThrow());
 		assertThat(currentData.get(fieldNames.documentIdField().get())).isNull();
 	}
 

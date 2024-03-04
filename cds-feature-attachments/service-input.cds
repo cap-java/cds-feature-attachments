@@ -2,6 +2,7 @@ using {com.sap.attachments.MediaData} from './src/main/resources/cds/com.sap.cds
 
 @cds.persistence.skip
 entity AttachmentServiceInput : MediaData {
-    attachmentId: UUID;
+    attachmentId           : UUID;
     databaseEntityFullName : String;
+    isExternalStored       : Boolean;
 }

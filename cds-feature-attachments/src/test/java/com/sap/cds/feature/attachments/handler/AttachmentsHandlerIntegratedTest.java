@@ -32,11 +32,9 @@ import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservi
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
-import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
+import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
+import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
+import com.sap.cds.feature.attachments.service.model.service.UpdateAttachmentInput;
 import com.sap.cds.impl.RowImpl;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.Selectable;
@@ -59,10 +57,8 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 	private CdsCreateEventContext createContext;
 	private CdsUpdateEventContext updateContext;
 	private CdsReadEventContext readContext;
-	private ArgumentCaptor<AttachmentCreateEventContext> createEventInputCaptor;
-	private ArgumentCaptor<AttachmentUpdateEventContext> updateEventInputCaptor;
-	private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventInputCaptor;
-	private ArgumentCaptor<AttachmentReadEventContext> readEventInputCaptor;
+	private ArgumentCaptor<CreateAttachmentInput> createEventInputCaptor;
+	private ArgumentCaptor<UpdateAttachmentInput> updateEventInputCaptor;
 	private ArgumentCaptor<CqnSelect> selectArgumentCaptor;
 
 	@BeforeAll
@@ -82,10 +78,8 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 		createContext = mock(CdsCreateEventContext.class);
 		updateContext = mock(CdsUpdateEventContext.class);
 		readContext = mock(CdsReadEventContext.class);
-		createEventInputCaptor = ArgumentCaptor.forClass(AttachmentCreateEventContext.class);
-		updateEventInputCaptor = ArgumentCaptor.forClass(AttachmentUpdateEventContext.class);
-		deleteEventInputCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
-		readEventInputCaptor = ArgumentCaptor.forClass(AttachmentReadEventContext.class);
+		createEventInputCaptor = ArgumentCaptor.forClass(CreateAttachmentInput.class);
+		updateEventInputCaptor = ArgumentCaptor.forClass(UpdateAttachmentInput.class);
 		selectArgumentCaptor = ArgumentCaptor.forClass(CqnSelect.class);
 	}
 
@@ -130,10 +124,11 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				var createInput = createEventInputCaptor.getValue();
 				var expectedContent = isExternalStored ? null : testStream;
 				assertThat(attachment.getContent()).isEqualTo(expectedContent);
-				assertThat(createInput.getContent()).isEqualTo(testStream);
-				assertThat(createInput.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(createInput.getFileName()).isEqualTo(fileName);
-				assertThat(createInput.getMimeType()).isEqualTo(mimeType);
+				assertThat(createInput.content()).isEqualTo(testStream);
+				assertThat(createInput.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+				assertThat(createInput.attachmentEntityName()).isNotEmpty().isEqualTo("attachment.getId()");
+				assertThat(createInput.fileName()).isEqualTo(fileName);
+				assertThat(createInput.mimeType()).isEqualTo(mimeType);
 			}
 		}
 
@@ -184,10 +179,11 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 				var input = createEventInputCaptor.getValue();
 				assertThat(attachment.getContent()).isEqualTo(testStream);
-				assertThat(input.getContent()).isEqualTo(testStream);
-				assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(input.getFileName()).isEqualTo(fileName);
-				assertThat(input.getMimeType()).isEqualTo(mimeType);
+				assertThat(input.content()).isEqualTo(testStream);
+				assertThat(input.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+				assertThat(input.attachmentEntityName()).isNotEmpty().isEqualTo("attachment.getId()");
+				assertThat(input.fileName()).isEqualTo(fileName);
+				assertThat(input.mimeType()).isEqualTo(mimeType);
 			}
 		}
 
@@ -221,10 +217,11 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 				var creationInput = createEventInputCaptor.getValue();
 				assertThat(attachmentAspect.getContent()).isEqualTo(testStream);
-				assertThat(creationInput.getContent()).isEqualTo(testStream);
-				assertThat(creationInput.getAttachmentId()).isNotEmpty().isEqualTo(attachmentAspect.getId());
-				assertThat(creationInput.getFileName()).isEqualTo(existingData.getFilename());
-				assertThat(creationInput.getMimeType()).isEqualTo(existingData.getMimeType());
+				assertThat(creationInput.content()).isEqualTo(testStream);
+				assertThat(creationInput.attachmentId()).isNotEmpty().isEqualTo(attachmentAspect.getId());
+				assertThat(creationInput.attachmentEntityName()).isNotEmpty().isEqualTo("attachmentAspect.getId()");
+				assertThat(creationInput.fileName()).isEqualTo(existingData.getFilename());
+				assertThat(creationInput.mimeType()).isEqualTo(existingData.getMimeType());
 				verify(persistenceService).run(selectArgumentCaptor.capture());
 				var select = selectArgumentCaptor.getValue();
 				assertThat(select.where().orElseThrow().toString()).contains(attachmentAspect.getId());
@@ -266,10 +263,11 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 				var creationInput = createEventInputCaptor.getValue();
 				assertThat(attachment.getContent()).isEqualTo(testStream);
-				assertThat(creationInput.getContent()).isEqualTo(testStream);
-				assertThat(creationInput.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(creationInput.getFileName()).isEqualTo(existingData.getFilename());
-				assertThat(creationInput.getMimeType()).isEqualTo(existingData.getMimeType());
+				assertThat(creationInput.content()).isEqualTo(testStream);
+				assertThat(creationInput.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+				assertThat(creationInput.attachmentEntityName()).isNotEmpty().isEqualTo("attachment.getId()");
+				assertThat(creationInput.fileName()).isEqualTo(existingData.getFilename());
+				assertThat(creationInput.mimeType()).isEqualTo(existingData.getMimeType());
 				verify(persistenceService).run(selectArgumentCaptor.capture());
 				var select = selectArgumentCaptor.getValue();
 				assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
@@ -296,10 +294,11 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				verify(attachmentService).updateAttachment(updateEventInputCaptor.capture());
 				var updateInput = updateEventInputCaptor.getValue();
 				assertThat(attachment.getContent()).isEqualTo(testStream);
-				assertThat(updateInput.getContent()).isEqualTo(testStream);
-				assertThat(updateInput.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(updateInput.getFileName()).isEqualTo(existingData.getFilename());
-				assertThat(updateInput.getMimeType()).isEqualTo(existingData.getMimeType());
+				assertThat(updateInput.content()).isEqualTo(testStream);
+				assertThat(updateInput.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+				assertThat(updateInput.attachmentEntityName()).isNotEmpty().isEqualTo("attachment.getId()");
+				assertThat(updateInput.fileName()).isEqualTo(existingData.getFilename());
+				assertThat(updateInput.mimeType()).isEqualTo(existingData.getMimeType());
 				verify(persistenceService).run(selectArgumentCaptor.capture());
 				var select = selectArgumentCaptor.getValue();
 				assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
@@ -325,11 +324,9 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 
 			updateHandler.processAfter(updateContext, List.of(attachment));
 
-			verify(attachmentService).deleteAttachment(deleteEventInputCaptor.capture());
-			var deleteInput = deleteEventInputCaptor.getValue();
+			verify(attachmentService).deleteAttachment(oldData.getDocumentId());
 			assertThat(attachment.getContent()).isNull();
 			assertThat(attachment.getDocumentId()).isNull();
-			assertThat(deleteInput.getDocumentId()).isEqualTo(oldData.getDocumentId());
 			verifyNoMoreInteractions(attachmentService);
 			verify(persistenceService).run(selectArgumentCaptor.capture());
 			var select = selectArgumentCaptor.getValue();
@@ -490,10 +487,9 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				verifyNoInteractions(attachmentService);
 				byte[] bytes = attachment.getContent().readAllBytes();
 				assertThat(bytes).isEqualTo(testString.getBytes(StandardCharsets.UTF_8));
-				verify(attachmentService).readAttachment(readEventInputCaptor.capture());
-				var readInput = readEventInputCaptor.getValue();
-				assertThat(readInput.getDocumentId()).isEqualTo(attachment.getDocumentId());
+				verify(attachmentService).readAttachment(attachment.getDocumentId());
 			}
+
 		}
 
 		private void mockReadContext(CqnSelect select, String entityName) {

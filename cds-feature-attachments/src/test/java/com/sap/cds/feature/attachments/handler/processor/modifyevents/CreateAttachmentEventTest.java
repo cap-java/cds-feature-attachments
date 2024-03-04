@@ -17,17 +17,17 @@ import org.mockito.ArgumentCaptor;
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
-import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
+import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
+import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 
 class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
-	private ArgumentCaptor<AttachmentCreateEventContext> contextArgumentCaptor;
+	private ArgumentCaptor<CreateAttachmentInput> contextArgumentCaptor;
 
 	@BeforeEach
 	void setup() {
 		super.setup();
-		contextArgumentCaptor = ArgumentCaptor.forClass(AttachmentCreateEventContext.class);
+		contextArgumentCaptor = ArgumentCaptor.forClass(CreateAttachmentInput.class);
 	}
 
 	@Override
@@ -42,10 +42,11 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
-		assertThat(resultValue.getMimeType()).isEqualTo(attachment.getMimeType());
-		assertThat(resultValue.getFileName()).isEqualTo(attachment.getFilename());
-		assertThat(resultValue.getContent()).isEqualTo(attachment.getContent());
+		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
+		assertThat(resultValue.attachmentEntityName()).isEqualTo("EntityName");
+		assertThat(resultValue.mimeType()).isEqualTo(attachment.getMimeType());
+		assertThat(resultValue.fileName()).isEqualTo(attachment.getFilename());
+		assertThat(resultValue.content()).isEqualTo(attachment.getContent());
 	}
 
 	@Test
@@ -55,10 +56,11 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
-		assertThat(resultValue.getMimeType()).isNull();
-		assertThat(resultValue.getFileName()).isNull();
-		assertThat(resultValue.getContent()).isEqualTo(attachment.getContent());
+		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
+		assertThat(resultValue.attachmentEntityName()).isEqualTo("EntityName");
+		assertThat(resultValue.mimeType()).isNull();
+		assertThat(resultValue.fileName()).isNull();
+		assertThat(resultValue.content()).isEqualTo(attachment.getContent());
 		assertThat(attachment.getDocumentId()).isNull();
 	}
 
@@ -82,10 +84,11 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
-		assertThat(resultValue.getMimeType()).isEqualTo(existingData.get("mimeType"));
-		assertThat(resultValue.getFileName()).isEqualTo(existingData.get("filename"));
-		assertThat(resultValue.getContent()).isEqualTo(attachment.getContent());
+		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
+		assertThat(resultValue.attachmentEntityName()).isEqualTo("EntiyName");
+		assertThat(resultValue.mimeType()).isEqualTo(existingData.get("mimeType"));
+		assertThat(resultValue.fileName()).isEqualTo(existingData.get("filename"));
+		assertThat(resultValue.content()).isEqualTo(attachment.getContent());
 	}
 
 	@Test

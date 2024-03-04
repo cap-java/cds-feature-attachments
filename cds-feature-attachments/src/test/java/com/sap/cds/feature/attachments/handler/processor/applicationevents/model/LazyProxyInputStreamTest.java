@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -27,7 +26,7 @@ class LazyProxyInputStreamTest {
 		inputStream = mock(InputStream.class);
 		attachmentService = mock(AttachmentService.class);
 		when(attachmentService.readAttachment(any())).thenReturn(inputStream);
-		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(mock(AttachmentReadEventContext.class)));
+		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()));
 	}
 
 	@Test

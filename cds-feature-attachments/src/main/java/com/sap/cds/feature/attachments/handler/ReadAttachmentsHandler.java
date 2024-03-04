@@ -16,7 +16,6 @@ import com.sap.cds.feature.attachments.handler.processor.applicationevents.model
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.reflect.CdsAssociationType;
@@ -67,11 +66,7 @@ public class ReadAttachmentsHandler extends ApplicationEventBase implements Even
 					if (fieldNames.documentIdField().isPresent()) {
 						var documentId = (String) path.target().values().get(fieldNames.documentIdField().get());
 						if (Objects.nonNull(documentId)) {
-							return new LazyProxyInputStream(() -> {
-								var readContext = AttachmentReadEventContext.create();
-								readContext.setDocumentId(documentId);
-								return attachmentService.readAttachment(readContext);
-							});
+							return new LazyProxyInputStream(() -> attachmentService.readAttachment(documentId));
 						}
 					}
 				}

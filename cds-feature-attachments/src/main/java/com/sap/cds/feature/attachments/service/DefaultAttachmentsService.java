@@ -2,11 +2,9 @@ package com.sap.cds.feature.attachments.service;
 
 import java.io.InputStream;
 
-import com.sap.cds.feature.attachments.service.model.AttachmentCreateEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentDeleteEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentModificationResult;
-import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
+import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
+import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
+import com.sap.cds.feature.attachments.service.model.service.UpdateAttachmentInput;
 import com.sap.cds.services.ServiceDelegator;
 
 //TODO implement
@@ -19,24 +17,25 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 		super(AttachmentService.DEFAULT_NAME);
 	}
 
+
 	@Override
-	public InputStream readAttachment(AttachmentReadEventContext context) {
+	public InputStream readAttachment(String documentId) {
 		return null;
 	}
 
 	@Override
-	public AttachmentModificationResult createAttachment(AttachmentCreateEventContext context) {
-		return new AttachmentModificationResult(false, context.getAttachmentId());
+	public AttachmentModificationResult createAttachment(CreateAttachmentInput input) {
+		return null;
 	}
 
 	@Override
-	public AttachmentModificationResult updateAttachment(AttachmentUpdateEventContext context) {
-		return new AttachmentModificationResult(false, context.getAttachmentId());
+	public AttachmentModificationResult updateAttachment(UpdateAttachmentInput input) {
+		return null;
 	}
 
 	@Override
-	public void deleteAttachment(AttachmentDeleteEventContext context) {
-		//implementation will follow
+	public void deleteAttachment(String documentId) {
+
 	}
 
 }

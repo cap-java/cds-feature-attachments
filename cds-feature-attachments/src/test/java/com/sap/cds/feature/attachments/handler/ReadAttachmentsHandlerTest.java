@@ -29,7 +29,6 @@ import com.sap.cds.feature.attachments.handler.processor.applicationevents.model
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.AttachmentReadEventContext;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.Modifier;
@@ -53,7 +52,6 @@ class ReadAttachmentsHandlerTest {
 	private CdsReadEventContext readEventContext;
 	private Modifier modifier;
 	private ArgumentCaptor<Map> fieldNamesArgumentCaptor;
-	private ArgumentCaptor<AttachmentReadEventContext> readEventInputCaptor;
 
 	@BeforeAll
 	static void classSetup() {
@@ -71,7 +69,6 @@ class ReadAttachmentsHandlerTest {
 		});
 		when(provider.getBeforeReadDocumentIdEnhancer(any())).thenReturn(modifier);
 		fieldNamesArgumentCaptor = ArgumentCaptor.forClass(Map.class);
-		readEventInputCaptor = ArgumentCaptor.forClass(AttachmentReadEventContext.class);
 	}
 
 	@Test
@@ -195,9 +192,7 @@ class ReadAttachmentsHandlerTest {
 			verifyNoInteractions(attachmentService);
 			byte[] bytes = attachment.getContent().readAllBytes();
 			assertThat(bytes).isEqualTo(testString.getBytes(StandardCharsets.UTF_8));
-			verify(attachmentService).readAttachment(readEventInputCaptor.capture());
-			var readInput = readEventInputCaptor.getValue();
-			assertThat(readInput.getDocumentId()).isEqualTo(attachment.getDocumentId());
+			verify(attachmentService).readAttachment(attachment.getDocumentId());
 		}
 	}
 
