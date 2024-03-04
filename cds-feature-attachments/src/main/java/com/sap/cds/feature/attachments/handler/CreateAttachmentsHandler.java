@@ -24,31 +24,31 @@ import com.sap.cds.services.persistence.PersistenceService;
 @ServiceName(value = "*", type = ApplicationService.class)
 public class CreateAttachmentsHandler extends ModifyApplicationEventBase implements EventHandler {
 
-		public CreateAttachmentsHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
-				super(persistenceService, eventFactory);
+	public CreateAttachmentsHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
+		super(persistenceService, eventFactory);
+	}
+
+	@After(event = CqnService.EVENT_CREATE)
+	@HandlerOrder(HandlerOrder.EARLY)
+	public void processAfter(CdsCreateEventContext context, List<CdsData> data) {
+		if (processingNotNeeded(context.getTarget(), data)) {
+			return;
 		}
 
-		@After(event = CqnService.EVENT_CREATE)
-		@HandlerOrder(HandlerOrder.EARLY)
-		public void processAfter(CdsCreateEventContext context, List<CdsData> data) {
-				if (processingNotNeeded(context.getTarget(), data)) {
-						return;
-				}
+		setKeysInData(context.getTarget(), data);
+		uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_CREATE);
+	}
 
-				setKeysInData(context.getTarget(), data);
-				uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_CREATE);
-		}
+	private void setKeysInData(CdsEntity entity, List<CdsData> data) {
+		CdsDataProcessor.create().addGenerator(
+						(path, element, type) -> isDefinedKey(path, element) && element.isKey() && element.getType().isSimpleType(CdsBaseType.UUID),
+						(path, element, isNull) -> UUID.randomUUID().toString())
+				.process(data, entity);
+	}
 
-		private void setKeysInData(CdsEntity entity, List<CdsData> data) {
-				CdsDataProcessor.create().addGenerator(
-								(path, element, type) -> isDefinedKey(path, element) && element.isKey() && element.getType().isSimpleType(CdsBaseType.UUID),
-								(path, element, isNull) -> UUID.randomUUID().toString())
-						.process(data, entity);
-		}
-
-		private boolean isDefinedKey(Path path, CdsElement element) {
-				var keyField = getIdField(path.target());
-				return element.getName().equals(keyField);
-		}
+	private boolean isDefinedKey(Path path, CdsElement element) {
+		var keyField = getIdField(path.target());
+		return element.getName().equals(keyField);
+	}
 
 }

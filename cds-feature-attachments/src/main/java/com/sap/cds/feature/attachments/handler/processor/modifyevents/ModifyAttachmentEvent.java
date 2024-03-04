@@ -7,6 +7,6 @@ import com.sap.cds.reflect.CdsElement;
 
 public interface ModifyAttachmentEvent {
 
-		Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId);
+	Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId);
 
 }

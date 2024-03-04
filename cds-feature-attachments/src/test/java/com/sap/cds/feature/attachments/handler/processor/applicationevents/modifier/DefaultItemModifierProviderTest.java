@@ -9,18 +9,18 @@ import org.junit.jupiter.api.Test;
 
 class DefaultItemModifierProviderTest {
 
-		private DefaultItemModifierProvider cut;
+	private DefaultItemModifierProvider cut;
 
-		@BeforeEach
-		void setup() {
-				cut = new DefaultItemModifierProvider();
-		}
+	@BeforeEach
+	void setup() {
+		cut = new DefaultItemModifierProvider();
+	}
 
-		@Test
-		void correctInstanceReturned() {
-				var instance = cut.getBeforeReadDocumentIdEnhancer(Collections.emptyMap());
+	@Test
+	void correctInstanceReturned() {
+		var instance = cut.getBeforeReadDocumentIdEnhancer(Collections.emptyMap());
 
-				assertThat(instance).isInstanceOf(BeforeReadItemsModifier.class);
-		}
+		assertThat(instance).isInstanceOf(BeforeReadItemsModifier.class);
+	}
 
 }

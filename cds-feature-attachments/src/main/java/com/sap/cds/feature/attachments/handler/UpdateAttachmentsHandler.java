@@ -18,18 +18,18 @@ import com.sap.cds.services.persistence.PersistenceService;
 @ServiceName(value = "*", type = ApplicationService.class)
 public class UpdateAttachmentsHandler extends ModifyApplicationEventBase implements EventHandler {
 
-		public UpdateAttachmentsHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
-				super(persistenceService, eventFactory);
+	public UpdateAttachmentsHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
+		super(persistenceService, eventFactory);
+	}
+
+	@After(event = CqnService.EVENT_UPDATE)
+	@HandlerOrder(HandlerOrder.EARLY)
+	public void processAfter(CdsUpdateEventContext context, List<CdsData> data) {
+		if (processingNotNeeded(context.getTarget(), data)) {
+			return;
 		}
 
-		@After(event = CqnService.EVENT_UPDATE)
-		@HandlerOrder(HandlerOrder.EARLY)
-		public void processAfter(CdsUpdateEventContext context, List<CdsData> data) {
-				if (processingNotNeeded(context.getTarget(), data)) {
-						return;
-				}
-
-				uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_UPDATE);
-		}
+		uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_UPDATE);
+	}
 
 }

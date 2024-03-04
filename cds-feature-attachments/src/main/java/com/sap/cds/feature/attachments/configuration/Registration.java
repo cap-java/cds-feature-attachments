@@ -20,51 +20,51 @@ import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 //TODO JavaDoc
 public class Registration implements CdsRuntimeConfiguration {
 
-		@Override
-		public void services(CdsRuntimeConfigurer configurer) {
-				configurer.service(buildAttachmentService());
-		}
+	@Override
+	public void services(CdsRuntimeConfigurer configurer) {
+		configurer.service(buildAttachmentService());
+	}
 
-		@Override
-		public void eventHandlers(CdsRuntimeConfigurer configurer) {
-				configurer.eventHandler(new DefaultAttachmentsServiceHandler());
+	@Override
+	public void eventHandlers(CdsRuntimeConfigurer configurer) {
+		configurer.eventHandler(new DefaultAttachmentsServiceHandler());
 
-				var persistenceService = configurer.getCdsRuntime().getServiceCatalog().getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
-				var attachmentService = configurer.getCdsRuntime().getServiceCatalog().getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
+		var persistenceService = configurer.getCdsRuntime().getServiceCatalog().getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
+		var attachmentService = configurer.getCdsRuntime().getServiceCatalog().getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
 
-				configurer.eventHandler(buildCreateHandler(persistenceService, attachmentService));
-				configurer.eventHandler(buildUpdateHandler(persistenceService, attachmentService));
-				configurer.eventHandler(buildDeleteHandler());
-				configurer.eventHandler(buildReadHandler(attachmentService));
-		}
+		configurer.eventHandler(buildCreateHandler(persistenceService, attachmentService));
+		configurer.eventHandler(buildUpdateHandler(persistenceService, attachmentService));
+		configurer.eventHandler(buildDeleteHandler());
+		configurer.eventHandler(buildReadHandler(attachmentService));
+	}
 
-		protected AttachmentService buildAttachmentService() {
-				return new DefaultAttachmentsService();
-		}
+	protected AttachmentService buildAttachmentService() {
+		return new DefaultAttachmentsService();
+	}
 
-		protected EventHandler buildCreateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
-				var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
-				var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
-				var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
-				var attachmentEventFactory = new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteAttachmentEvent);
-				return new CreateAttachmentsHandler(persistenceService, attachmentEventFactory);
-		}
+	protected EventHandler buildCreateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
+		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
+		var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
+		var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
+		var attachmentEventFactory = new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteAttachmentEvent);
+		return new CreateAttachmentsHandler(persistenceService, attachmentEventFactory);
+	}
 
-		protected EventHandler buildDeleteHandler() {
-				return new DeleteAttachmentsHandler();
-		}
+	protected EventHandler buildDeleteHandler() {
+		return new DeleteAttachmentsHandler();
+	}
 
-		protected EventHandler buildReadHandler(AttachmentService attachmentService) {
-				var itemModifierProvider = new DefaultItemModifierProvider();
-				return new ReadAttachmentsHandler(attachmentService, itemModifierProvider);
-		}
+	protected EventHandler buildReadHandler(AttachmentService attachmentService) {
+		var itemModifierProvider = new DefaultItemModifierProvider();
+		return new ReadAttachmentsHandler(attachmentService, itemModifierProvider);
+	}
 
-		protected EventHandler buildUpdateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
-				var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
-				var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
-				var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
-				var attachmentEventFactory = new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteAttachmentEvent);
-				return new UpdateAttachmentsHandler(persistenceService, attachmentEventFactory);
-		}
+	protected EventHandler buildUpdateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
+		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
+		var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
+		var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
+		var attachmentEventFactory = new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteAttachmentEvent);
+		return new UpdateAttachmentsHandler(persistenceService, attachmentEventFactory);
+	}
 
 }

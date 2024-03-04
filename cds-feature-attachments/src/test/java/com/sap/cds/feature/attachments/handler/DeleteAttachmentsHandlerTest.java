@@ -15,36 +15,36 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 
 class DeleteAttachmentsHandlerTest {
 
-		private DeleteAttachmentsHandler cut;
+	private DeleteAttachmentsHandler cut;
 
-		@BeforeEach
-		void setup() {
-				cut = new DeleteAttachmentsHandler();
-		}
+	@BeforeEach
+	void setup() {
+		cut = new DeleteAttachmentsHandler();
+	}
 
-		@Test
-		void dummy() {
-				//TODO remove if logic is implemented
-				cut.processAfter(mock(CdsDeleteEventContext.class));
-		}
+	@Test
+	void dummy() {
+		//TODO remove if logic is implemented
+		cut.processAfter(mock(CdsDeleteEventContext.class));
+	}
 
-		@Test
-		void classHasCorrectAnnotation() {
-				var deleteHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
+	@Test
+	void classHasCorrectAnnotation() {
+		var deleteHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
 
-				assertThat(deleteHandlerAnnotation.type()).containsOnly(ApplicationService.class);
-				assertThat(deleteHandlerAnnotation.value()).containsOnly("*");
-		}
+		assertThat(deleteHandlerAnnotation.type()).containsOnly(ApplicationService.class);
+		assertThat(deleteHandlerAnnotation.value()).containsOnly("*");
+	}
 
-		@Test
-		void methodHasCorrectAnnotations() throws NoSuchMethodException {
-				var method = cut.getClass().getMethod("processAfter", CdsDeleteEventContext.class);
+	@Test
+	void methodHasCorrectAnnotations() throws NoSuchMethodException {
+		var method = cut.getClass().getMethod("processAfter", CdsDeleteEventContext.class);
 
-				var deleteAfterAnnotation = method.getAnnotation(After.class);
-				var deleteHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
+		var deleteAfterAnnotation = method.getAnnotation(After.class);
+		var deleteHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-				assertThat(deleteAfterAnnotation.event()).containsOnly(CqnService.EVENT_DELETE);
-				assertThat(deleteHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
-		}
+		assertThat(deleteAfterAnnotation.event()).containsOnly(CqnService.EVENT_DELETE);
+		assertThat(deleteHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
+	}
 
 }
