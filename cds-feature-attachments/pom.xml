@@ -51,27 +51,15 @@
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>3.3.1</version>
                 <configuration>
+                    <directory>${test-generation-folder}</directory>
+                    <directory>${generation-folder}</directory>
                     <filesets>
                         <fileset>
-                            <directory>${test-generation-folder}/</directory>
+                            <directory>src/test/resources</directory>
                             <includes>
-                                <include>**/*</include>
+                                <include>schema.sql</include>
                             </includes>
-                            <followSymlinks>false</followSymlinks>
                         </fileset>
-                        <fileset>
-                            <directory>${generation-folder}/</directory>
-                            <includes>
-                                <include>**/*</include>
-                            </includes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <!--                        <fileset>-->
-                        <!--                            <directory>src/test/resources</directory>-->
-                        <!--                            <includes>-->
-                        <!--                                <include>schema.sql</include>-->
-                        <!--                            </includes>-->
-                        <!--                        </fileset>-->
                         <fileset>
                             <directory>src/test/resources/cds</directory>
                             <includes>
