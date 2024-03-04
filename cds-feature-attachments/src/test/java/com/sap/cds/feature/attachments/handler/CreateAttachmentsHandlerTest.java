@@ -63,7 +63,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
 		var roots = RootTable.create();
 		var attachment = Attachments.create();
-		attachment.setFilename("test.txt");
+		attachment.setFileName("test.txt");
 		attachment.setContent(null);
 		attachment.put("up__ID", "test");
 		roots.setAttachmentTable(List.of(attachment));
@@ -96,7 +96,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	void attachmentAccessExceptionCorrectHandledForCreate() {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 		var attachment = Attachments.create();
-		attachment.setFilename("test.txt");
+		attachment.setFileName("test.txt");
 		attachment.setContent(null);
 		when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
 		when(event.processEvent(any(), any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));

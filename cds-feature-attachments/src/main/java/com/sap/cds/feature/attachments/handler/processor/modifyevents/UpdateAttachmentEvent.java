@@ -6,7 +6,6 @@ import java.util.Objects;
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.feature.attachments.service.model.service.UpdateAttachmentInput;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
@@ -21,11 +20,7 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
 	@Override
 	public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) {
-		var updateEventContext = AttachmentUpdateEventContext.create();
-		updateEventContext.setAttachmentId(attachmentId);
-
 		var values = path.target().values();
-		updateEventContext.setContent((InputStream) value);
 
 		var mimeTypeOptional = fieldNames.mimeTypeField().map(anno -> {
 			var annotationValue = values.get(anno);

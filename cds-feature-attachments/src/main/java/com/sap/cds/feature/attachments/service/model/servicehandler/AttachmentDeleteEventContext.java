@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.service.model;
+package com.sap.cds.feature.attachments.service.model.servicehandler;
 
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.EventContext;

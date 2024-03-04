@@ -87,7 +87,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	void attachmentAccessExceptionCorrectHandledForUpdate() {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 		var attachment = Attachments.create();
-		attachment.setFilename("test.txt");
+		attachment.setFileName("test.txt");
 		attachment.setContent(null);
 		attachment.setId("some id");
 		when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
@@ -102,7 +102,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	void illegalStateExceptionIfIdNotProvidedForUpdate() {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 		var attachment = Attachments.create();
-		attachment.setFilename("test.txt");
+		attachment.setFileName("test.txt");
 		attachment.setContent(null);
 
 		List<CdsData> input = List.of(attachment);

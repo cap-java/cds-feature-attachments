@@ -49,7 +49,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
 		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(resultValue.mimeType()).isEqualTo(attachment.getMimeType());
-		assertThat(resultValue.fileName()).isEqualTo(attachment.getFilename());
+		assertThat(resultValue.fileName()).isEqualTo(attachment.getFileName());
 		assertThat(resultValue.content()).isEqualTo(attachment.getContent());
 	}
 
@@ -119,7 +119,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
 			attachment.setContent(testContentStream);
 			attachment.setMimeType("mimeType");
-			attachment.setFilename("file name");
+			attachment.setFileName("file name");
 			attachment.setId(UUID.randomUUID().toString());
 		}
 		when(target.values()).thenReturn(attachment);
