@@ -1,6 +1,7 @@
 package com.sap.cds.feature.attachments.handler;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -11,7 +12,9 @@ import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.impl.builder.model.Conjunction;
 import com.sap.cds.ql.Select;
+import com.sap.cds.ql.cqn.CqnPredicate;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.CqnService;
@@ -38,7 +41,7 @@ abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 		Converter converter = (path, element, value) -> {
 			var fieldNames = getFieldNames(element, path.target());
 			var attachmentId = getAttachmentId(path, fieldNames);
-			var oldData = getExistingData(event, path, attachmentId, fieldNames);
+			var oldData = getExistingData(event, path);
 
 			var eventToProcess = eventFactory.getEvent(event, value, fieldNames, oldData);
 			return eventToProcess.processEvent(path, element, fieldNames, value, oldData, attachmentId);
@@ -51,22 +54,33 @@ abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 		return Objects.nonNull(attachmentIdObject) ? String.valueOf(attachmentIdObject) : null;
 	}
 
-	private CdsData getExistingData(String event, Path path, String attachmentId, AttachmentFieldNames fieldNames) {
-		return CqnService.EVENT_UPDATE.equals(event) ? readExistingData(attachmentId, fieldNames.keyField(), path.target().entity()) : CdsData.create();
+	private CdsData getExistingData(String event, Path path) {
+		return CqnService.EVENT_UPDATE.equals(event) ? readExistingData(path.target().keys(), path.target().entity()) : CdsData.create();
 	}
 
-	private CdsData readExistingData(String keyValue, String keyFieldName, CdsEntity entity) {
-		if (isKeyEmpty(keyValue, keyFieldName)) {
+	private CdsData readExistingData(Map<String, Object> keys, CdsEntity entity) {
+		if (isKeyEmpty(keys)) {
 			logger.error("no id provided for attachment entity");
 			throw new IllegalStateException("no attachment id provided");
 		}
-		var select = Select.from(entity).where(e -> e.get(keyFieldName).eq(keyValue));
+
+		CqnPredicate whereClause = null;
+		for (var entry : keys.entrySet()) {
+			if (Objects.nonNull(entry.getValue())) {
+				CqnPredicate condition = Select.from(entity).where(e -> e.get(entry.getKey()).eq(entry.getValue())).where().orElseThrow();
+				whereClause = Objects.isNull(whereClause) ? condition : Conjunction.and(condition, whereClause);
+			}
+		}
+
+		var select = Select.from(entity).where(whereClause);
+		logger.info("Select for reading before data: {}", select);
 		var result = persistenceService.run(select);
+		logger.info("result from reading before data {}", result);
 		return result.single();
 	}
 
-	private boolean isKeyEmpty(String keyValue, String keyFieldName) {
-		return Objects.isNull(keyFieldName) || keyFieldName.isEmpty() || Objects.isNull(keyValue) || keyValue.isEmpty();
+	private boolean isKeyEmpty(Map<String, Object> keys) {
+		return keys.values().stream().noneMatch(Objects::nonNull);
 	}
 
 }

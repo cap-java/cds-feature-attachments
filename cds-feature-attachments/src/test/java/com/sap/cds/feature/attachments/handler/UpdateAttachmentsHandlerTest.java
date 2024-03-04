@@ -152,7 +152,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		verify(persistenceService).run(selectArgumentCaptor.capture());
 		var select = selectArgumentCaptor.getValue();
 		assertThat(select.where().toString()).contains(attachment.getId());
-		assertThat(select.where().toString()).doesNotContain(root.getId());
+		assertThat(select.where().toString()).contains(root.getId());
 	}
 
 	@Test

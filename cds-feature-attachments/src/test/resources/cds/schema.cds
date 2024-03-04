@@ -44,6 +44,7 @@ entity wrongAttachment         @(_is_media_data) {
 }
 
 service TestService {
+    @odata.draft.enabled
     entity RootTable as
         projection on Roots {
             ID,
