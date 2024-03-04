@@ -20,72 +20,72 @@ import com.sap.cds.ql.cqn.ResolvedSegment;
 
 class DeleteContentAttachmentEventTest {
 
-	private DeleteContentAttachmentEvent cut;
-	private AttachmentService attachmentService;
-	private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventContextArgumentCaptor;
-	private Path path;
-	private Map<String, Object> currentData;
+		private DeleteContentAttachmentEvent cut;
+		private AttachmentService attachmentService;
+		private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventContextArgumentCaptor;
+		private Path path;
+		private Map<String, Object> currentData;
 
-	@BeforeEach
-	void setup() {
-		attachmentService = mock(AttachmentService.class);
-		cut = new DeleteContentAttachmentEvent(attachmentService);
+		@BeforeEach
+		void setup() {
+				attachmentService = mock(AttachmentService.class);
+				cut = new DeleteContentAttachmentEvent(attachmentService);
 
-		deleteEventContextArgumentCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
-		path = mock(Path.class);
-		var target = mock(ResolvedSegment.class);
-		currentData = new HashMap<>();
-		when(path.target()).thenReturn(target);
-		when(target.values()).thenReturn(currentData);
-	}
+				deleteEventContextArgumentCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
+				path = mock(Path.class);
+				var target = mock(ResolvedSegment.class);
+				currentData = new HashMap<>();
+				when(path.target()).thenReturn(target);
+				when(target.values()).thenReturn(currentData);
+		}
 
-	@Test
-	void noDocumentIdFieldNameNoDeletion() {
-		var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.of("mimeType"), Optional.of("fileName"), "content");
-		var value = "test";
+		@Test
+		void noDocumentIdFieldNameNoDeletion() {
+				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.of("mimeType"), Optional.of("fileName"), "content");
+				var value = "test";
 
-		var expectedValue = cut.processEvent(null, null, fieldNames, value, null, null);
+				var expectedValue = cut.processEvent(null, null, fieldNames, value, null, null);
 
-		assertThat(expectedValue).isEqualTo(value);
-		verifyNoInteractions(attachmentService);
-	}
+				assertThat(expectedValue).isEqualTo(value);
+				verifyNoInteractions(attachmentService);
+		}
 
-	@Test
-	void documentIsExternallyDeleted() {
-		var fieldNames = getDefaultFieldNames();
-		var value = "test";
-		var documentId = "some id";
-		var data = Attachments.create();
-		data.setDocumentId(documentId);
+		@Test
+		void documentIsExternallyDeleted() {
+				var fieldNames = getDefaultFieldNames();
+				var value = "test";
+				var documentId = "some id";
+				var data = Attachments.create();
+				data.setDocumentId(documentId);
 
-		var expectedValue = cut.processEvent(path, null, fieldNames, value, data, null);
+				var expectedValue = cut.processEvent(path, null, fieldNames, value, data, null);
 
-		assertThat(expectedValue).isEqualTo(value);
-		assertThat(data.getDocumentId()).isEqualTo(documentId);
-		verify(attachmentService).deleteAttachment(deleteEventContextArgumentCaptor.capture());
-		var deleteContext = deleteEventContextArgumentCaptor.getValue();
-		assertThat(deleteContext.getDocumentId()).isEqualTo(documentId);
-		assertThat(currentData.containsKey(fieldNames.documentIdField().get())).isTrue();
-		assertThat(currentData.get(fieldNames.documentIdField().get())).isNull();
-	}
+				assertThat(expectedValue).isEqualTo(value);
+				assertThat(data.getDocumentId()).isEqualTo(documentId);
+				verify(attachmentService).deleteAttachment(deleteEventContextArgumentCaptor.capture());
+				var deleteContext = deleteEventContextArgumentCaptor.getValue();
+				assertThat(deleteContext.getDocumentId()).isEqualTo(documentId);
+				assertThat(currentData.containsKey(fieldNames.documentIdField().get())).isTrue();
+				assertThat(currentData.get(fieldNames.documentIdField().get())).isNull();
+		}
 
-	@Test
-	void documentIsNotExternallyDeletedBecauseDoesNotExistBefore() {
-		var fieldNames = getDefaultFieldNames();
-		var value = "test";
-		var data = Attachments.create();
+		@Test
+		void documentIsNotExternallyDeletedBecauseDoesNotExistBefore() {
+				var fieldNames = getDefaultFieldNames();
+				var value = "test";
+				var data = Attachments.create();
 
-		var expectedValue = cut.processEvent(path, null, fieldNames, value, data, null);
+				var expectedValue = cut.processEvent(path, null, fieldNames, value, data, null);
 
-		assertThat(expectedValue).isEqualTo(value);
-		assertThat(data.getDocumentId()).isNull();
-		verifyNoInteractions(attachmentService);
-		assertThat(currentData.containsKey(fieldNames.documentIdField().get())).isTrue();
-		assertThat(currentData.get(fieldNames.documentIdField().get())).isNull();
-	}
+				assertThat(expectedValue).isEqualTo(value);
+				assertThat(data.getDocumentId()).isNull();
+				verifyNoInteractions(attachmentService);
+				assertThat(currentData.containsKey(fieldNames.documentIdField().get())).isTrue();
+				assertThat(currentData.get(fieldNames.documentIdField().get())).isNull();
+		}
 
-	private AttachmentFieldNames getDefaultFieldNames() {
-		return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("fileName"), "content");
-	}
+		private AttachmentFieldNames getDefaultFieldNames() {
+				return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("fileName"), "content");
+		}
 
 }

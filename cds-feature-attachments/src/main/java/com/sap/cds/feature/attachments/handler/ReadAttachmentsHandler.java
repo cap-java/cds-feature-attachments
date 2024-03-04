@@ -37,91 +37,91 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 @ServiceName(value = "*", type = ApplicationService.class)
 public class ReadAttachmentsHandler extends ApplicationEventBase implements EventHandler {
 
-	private final AttachmentService attachmentService;
-	private final ItemModifierProvider provider;
+		private final AttachmentService attachmentService;
+		private final ItemModifierProvider provider;
 
-	public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider) {
-		this.attachmentService = attachmentService;
-		this.provider = provider;
-	}
-
-	@Before(event = CqnService.EVENT_READ)
-	@HandlerOrder(HandlerOrder.EARLY)
-	public void processBefore(CdsReadEventContext context) {
-		var cdsModel = context.getCdsRuntime().getCdsModel();
-		var fieldNames = getContentFieldName(cdsModel, context.getTarget(), "", new ArrayList<>());
-		if (!fieldNames.isEmpty()) {
-			var resultCqn = CQL.copy(context.getCqn(), provider.getBeforeReadDocumentIdEnhancer(fieldNames));
-			context.setCqn(resultCqn);
+		public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider) {
+				this.attachmentService = attachmentService;
+				this.provider = provider;
 		}
-	}
 
-	@After(event = CqnService.EVENT_READ)
-	@HandlerOrder(HandlerOrder.EARLY)
-	public void processAfter(CdsReadEventContext context, List<CdsData> data) {
-		if (isContentFieldInData(context.getTarget(), data)) {
-			Filter filter = buildFilterForMediaTypeEntity();
-			Generator generator = (path, element, isNull) -> {
-				if (path.target().values().containsKey(element.getName())) {
-					var fieldNames = getFieldNames(element, path.target());
-					if (fieldNames.documentIdField().isPresent()) {
-						var documentId = (String) path.target().values().get(fieldNames.documentIdField().get());
-						if (Objects.nonNull(documentId)) {
-							return new LazyProxyInputStream(() -> {
-								var readContext = AttachmentReadEventContext.create();
-								readContext.setDocumentId(documentId);
-								return attachmentService.readAttachment(readContext);
-							});
+		@Before(event = CqnService.EVENT_READ)
+		@HandlerOrder(HandlerOrder.EARLY)
+		public void processBefore(CdsReadEventContext context) {
+				var cdsModel = context.getCdsRuntime().getCdsModel();
+				var fieldNames = getContentFieldName(cdsModel, context.getTarget(), "", new ArrayList<>());
+				if (!fieldNames.isEmpty()) {
+						var resultCqn = CQL.copy(context.getCqn(), provider.getBeforeReadDocumentIdEnhancer(fieldNames));
+						context.setCqn(resultCqn);
+				}
+		}
+
+		@After(event = CqnService.EVENT_READ)
+		@HandlerOrder(HandlerOrder.EARLY)
+		public void processAfter(CdsReadEventContext context, List<CdsData> data) {
+				if (isContentFieldInData(context.getTarget(), data)) {
+						Filter filter = buildFilterForMediaTypeEntity();
+						Generator generator = (path, element, isNull) -> {
+								if (path.target().values().containsKey(element.getName())) {
+										var fieldNames = getFieldNames(element, path.target());
+										if (fieldNames.documentIdField().isPresent()) {
+												var documentId = (String) path.target().values().get(fieldNames.documentIdField().get());
+												if (Objects.nonNull(documentId)) {
+														return new LazyProxyInputStream(() -> {
+																var readContext = AttachmentReadEventContext.create();
+																readContext.setDocumentId(documentId);
+																return attachmentService.readAttachment(readContext);
+														});
+												}
+										}
+								}
+								return null;
+						};
+
+						CdsDataProcessor.create().addGenerator(filter, generator).process(data, context.getTarget());
+				}
+		}
+
+		private Map<String, DocumentFieldNames> getContentFieldName(CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {
+				var query = entity.query();
+				List<String> entityNames = query.map(cqnSelect -> cqnSelect.from().asRef().segments().stream().map(Segment::id).toList()).orElseGet(() -> List.of(entity.getQualifiedName()));
+				Map<String, DocumentFieldNames> associationNameMap = new HashMap<>();
+
+				entityNames.forEach(name -> {
+						var baseEntity = model.findEntity(name);
+						baseEntity.ifPresent(base -> {
+								if (isMediaEntity(base)) {
+										var contentFieldName = new AtomicReference<String>();
+										var documentIdFieldName = new AtomicReference<String>();
+										var contentElement = base.elements().filter(elem -> hasElementAnnotation(elem, ModelConstants.ANNOTATION_MEDIA_TYPE)).findAny();
+										var resultName = contentElement.map(CdsElementDefinition::getName);
+										resultName.ifPresent(contentFieldName::set);
+										var documentIdElement = base.elements().filter(elem -> hasElementAnnotation(elem, ModelConstants.ANNOTATION_IS_EXTERNAL_DOCUMENT_ID)).findAny();
+										var documentIdName = documentIdElement.map(CdsElementDefinition::getName);
+										documentIdName.ifPresent(documentIdFieldName::set);
+										if (Objects.nonNull(contentFieldName.get()) && Objects.nonNull(documentIdFieldName.get())) {
+												var fieldNames = new DocumentFieldNames(contentFieldName.get(), documentIdFieldName.get());
+												associationNameMap.put(associationName, fieldNames);
+										}
+								}
+						});
+				});
+
+				Map<String, CdsEntity> annotatedEntitiesMap = new HashMap<>();
+				entity.elements().filter(element -> element.getType().isAssociation()).forEach(element -> annotatedEntitiesMap.put(element.getName(), element.getType().as(CdsAssociationType.class).getTarget()));
+
+				if (annotatedEntitiesMap.isEmpty()) {
+						return associationNameMap;
+				}
+
+				for (var associatedElement : annotatedEntitiesMap.entrySet()) {
+						if (!associationNameMap.containsKey(associatedElement.getKey()) && !processedEntities.contains(associatedElement.getKey())) {
+								processedEntities.add(associatedElement.getKey());
+								var result = getContentFieldName(model, associatedElement.getValue(), associatedElement.getKey(), processedEntities);
+								associationNameMap.putAll(result);
 						}
-					}
 				}
-				return null;
-			};
-
-			CdsDataProcessor.create().addGenerator(filter, generator).process(data, context.getTarget());
+				return associationNameMap;
 		}
-	}
-
-	private Map<String, DocumentFieldNames> getContentFieldName(CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {
-		var query = entity.query();
-		List<String> entityNames = query.map(cqnSelect -> cqnSelect.from().asRef().segments().stream().map(Segment::id).toList()).orElseGet(() -> List.of(entity.getQualifiedName()));
-		Map<String, DocumentFieldNames> associationNameMap = new HashMap<>();
-
-		entityNames.forEach(name -> {
-			var baseEntity = model.findEntity(name);
-			baseEntity.ifPresent(base -> {
-				if (isMediaEntity(base)) {
-					var contentFieldName = new AtomicReference<String>();
-					var documentIdFieldName = new AtomicReference<String>();
-					var contentElement = base.elements().filter(elem -> hasElementAnnotation(elem, ModelConstants.ANNOTATION_MEDIA_TYPE)).findAny();
-					var resultName = contentElement.map(CdsElementDefinition::getName);
-					resultName.ifPresent(contentFieldName::set);
-					var documentIdElement = base.elements().filter(elem -> hasElementAnnotation(elem, ModelConstants.ANNOTATION_IS_EXTERNAL_DOCUMENT_ID)).findAny();
-					var documentIdName = documentIdElement.map(CdsElementDefinition::getName);
-					documentIdName.ifPresent(documentIdFieldName::set);
-					if (Objects.nonNull(contentFieldName.get()) && Objects.nonNull(documentIdFieldName.get())) {
-						var fieldNames = new DocumentFieldNames(contentFieldName.get(), documentIdFieldName.get());
-						associationNameMap.put(associationName, fieldNames);
-					}
-				}
-			});
-		});
-
-		Map<String, CdsEntity> annotatedEntitiesMap = new HashMap<>();
-		entity.elements().filter(element -> element.getType().isAssociation()).forEach(element -> annotatedEntitiesMap.put(element.getName(), element.getType().as(CdsAssociationType.class).getTarget()));
-
-		if (annotatedEntitiesMap.isEmpty()) {
-			return associationNameMap;
-		}
-
-		for (var associatedElement : annotatedEntitiesMap.entrySet()) {
-			if (!associationNameMap.containsKey(associatedElement.getKey()) && !processedEntities.contains(associatedElement.getKey())) {
-				processedEntities.add(associatedElement.getKey());
-				var result = getContentFieldName(model, associatedElement.getValue(), associatedElement.getKey(), processedEntities);
-				associationNameMap.putAll(result);
-			}
-		}
-		return associationNameMap;
-	}
 
 }

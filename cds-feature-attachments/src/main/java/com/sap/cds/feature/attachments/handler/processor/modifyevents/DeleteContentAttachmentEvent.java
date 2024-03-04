@@ -10,25 +10,25 @@ import com.sap.cds.reflect.CdsElement;
 
 public class DeleteContentAttachmentEvent extends ProcessingBase implements ModifyAttachmentEvent {
 
-	private final AttachmentService attachmentService;
+		private final AttachmentService attachmentService;
 
-	public DeleteContentAttachmentEvent(AttachmentService attachmentService) {
-		this.attachmentService = attachmentService;
-	}
-
-	@Override
-	public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) {
-		if (fieldNames.documentIdField().isEmpty()) {
-			return value;
+		public DeleteContentAttachmentEvent(AttachmentService attachmentService) {
+				this.attachmentService = attachmentService;
 		}
 
-		if (doesDocumentIdExistsBefore(fieldNames, existingData)) {
-			var deleteContext = AttachmentDeleteEventContext.create();
-			deleteContext.setDocumentId((String) existingData.get(fieldNames.documentIdField().get()));
-			attachmentService.deleteAttachment(deleteContext);
+		@Override
+		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) {
+				if (fieldNames.documentIdField().isEmpty()) {
+						return value;
+				}
+
+				if (doesDocumentIdExistsBefore(fieldNames, existingData)) {
+						var deleteContext = AttachmentDeleteEventContext.create();
+						deleteContext.setDocumentId((String) existingData.get(fieldNames.documentIdField().get()));
+						attachmentService.deleteAttachment(deleteContext);
+				}
+				path.target().values().put(fieldNames.documentIdField().get(), null);
+				return value;
 		}
-		path.target().values().put(fieldNames.documentIdField().get(), null);
-		return value;
-	}
 
 }

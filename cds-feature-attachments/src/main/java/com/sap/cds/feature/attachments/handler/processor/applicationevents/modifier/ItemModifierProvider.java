@@ -7,6 +7,6 @@ import com.sap.cds.ql.cqn.Modifier;
 
 public interface ItemModifierProvider {
 
-	Modifier getBeforeReadDocumentIdEnhancer(Map<String, DocumentFieldNames> fieldNamesMap);
+		Modifier getBeforeReadDocumentIdEnhancer(Map<String, DocumentFieldNames> fieldNamesMap);
 
 }

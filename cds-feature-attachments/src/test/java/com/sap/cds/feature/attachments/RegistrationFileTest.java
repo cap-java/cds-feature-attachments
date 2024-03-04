@@ -15,18 +15,18 @@ import com.sap.cds.feature.attachments.configuration.Registration;
 
 class RegistrationFileTest {
 
-	@Test
-	void registrationFileAvailable() throws IOException {
-		String path =
-		"src/main/resources/META-INF/services/com.sap.cds.services.runtime.CdsRuntimeConfiguration";
+		@Test
+		void registrationFileAvailable() throws IOException {
+				String path =
+						"src/main/resources/META-INF/services/com.sap.cds.services.runtime.CdsRuntimeConfiguration";
 
-		BufferedReader reader = Files.newBufferedReader(Paths.get(path));
-		List<String> classes = reader.lines().collect(Collectors.toList());
-		reader.close();
+				BufferedReader reader = Files.newBufferedReader(Paths.get(path));
+				List<String> classes = reader.lines().collect(Collectors.toList());
+				reader.close();
 
-		String runtimeRegistrationName = Registration.class.getCanonicalName();
+				String runtimeRegistrationName = Registration.class.getCanonicalName();
 
-		assertThat(classes).contains(runtimeRegistrationName);
-	}
+				assertThat(classes).contains(runtimeRegistrationName);
+		}
 
 }

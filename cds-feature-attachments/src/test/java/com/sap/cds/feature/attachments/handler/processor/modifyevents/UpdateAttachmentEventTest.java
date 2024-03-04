@@ -22,109 +22,109 @@ import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContex
 
 class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
-	private ArgumentCaptor<AttachmentUpdateEventContext> contextArgumentCaptor;
+		private ArgumentCaptor<AttachmentUpdateEventContext> contextArgumentCaptor;
 
-	@BeforeEach
-	void setup() {
-		super.setup();
-		contextArgumentCaptor = ArgumentCaptor.forClass(AttachmentUpdateEventContext.class);
-	}
-
-	@Override
-	ModifyAttachmentEvent defineCut() {
-		return new UpdateAttachmentEvent(attachmentService);
-	}
-
-	@Test
-	void storageCalledWithAllFieldsFilledFromPath() throws IOException {
-		var fieldNames = getDefaultFieldNames();
-		var existingData = CdsData.create();
-		existingData.put("documentId", "some document id");
-
-		var attachment = defineDataAndExecuteEvent(fieldNames, existingData);
-
-		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
-		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.getDocumentId()).isNotEmpty().isEqualTo(existingData.get("documentId"));
-		assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
-		assertThat(resultValue.getMimeType()).isEqualTo(attachment.getMimeType());
-		assertThat(resultValue.getFileName()).isEqualTo(attachment.getFilename());
-		assertThat(resultValue.getContent()).isEqualTo(attachment.getContent());
-	}
-
-	@Test
-	void storageCalledWithAllFieldsFilledFromExistingData() throws IOException {
-		var fieldNames = getDefaultFieldNames();
-			var attachment = Attachments.create();
-
-		var testContent = "test content";
-		try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
-			attachment.setContent(testContentStream);
-			attachment.setId(UUID.randomUUID().toString());
+		@BeforeEach
+		void setup() {
+				super.setup();
+				contextArgumentCaptor = ArgumentCaptor.forClass(AttachmentUpdateEventContext.class);
 		}
-		when(target.values()).thenReturn(attachment);
-		when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
-		var existingData = CdsData.create();
-		existingData.put("filename", "some file name");
-		existingData.put("mimeType", "some mime type");
-		existingData.put("documentId", "some document id");
 
-		cut.processEvent(path, null, fieldNames, attachment.getContent(), existingData, attachment.getId());
+		@Override
+		ModifyAttachmentEvent defineCut() {
+				return new UpdateAttachmentEvent(attachmentService);
+		}
 
-		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
-		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
-		assertThat(resultValue.getDocumentId()).isNotEmpty().isEqualTo(existingData.get("documentId"));
-		assertThat(resultValue.getMimeType()).isNotEmpty().isEqualTo(existingData.get("mimeType"));
-		assertThat(resultValue.getFileName()).isNotEmpty().isEqualTo(existingData.get("filename"));
-		assertThat(resultValue.getContent()).isEqualTo(attachment.getContent());
-	}
+		@Test
+		void storageCalledWithAllFieldsFilledFromPath() throws IOException {
+				var fieldNames = getDefaultFieldNames();
+				var existingData = CdsData.create();
+				existingData.put("documentId", "some document id");
 
-	@Test
-	void newDocumentIdStoredInPath() {
-		var fieldNames = getDefaultFieldNames();
-			var attachment = Attachments.create();
-		var attachmentServiceResult = new AttachmentModificationResult(false, "some document id");
-		when(attachmentService.updateAttachment(any())).thenReturn(attachmentServiceResult);
-		when(target.values()).thenReturn(attachment);
+				var attachment = defineDataAndExecuteEvent(fieldNames, existingData);
 
-		cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
+				verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
+				var resultValue = contextArgumentCaptor.getValue();
+				assertThat(resultValue.getDocumentId()).isNotEmpty().isEqualTo(existingData.get("documentId"));
+				assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
+				assertThat(resultValue.getMimeType()).isEqualTo(attachment.getMimeType());
+				assertThat(resultValue.getFileName()).isEqualTo(attachment.getFilename());
+				assertThat(resultValue.getContent()).isEqualTo(attachment.getContent());
+		}
 
-		assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
-	}
+		@Test
+		void storageCalledWithAllFieldsFilledFromExistingData() throws IOException {
+				var fieldNames = getDefaultFieldNames();
+				var attachment = Attachments.create();
 
-	@Test
-	void noFieldNamesDoNotFillContext() throws IOException {
-		var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty(), "");
-		var existingData = CdsData.create();
-		existingData.put("documentId", "some document id");
+				var testContent = "test content";
+				try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
+						attachment.setContent(testContentStream);
+						attachment.setId(UUID.randomUUID().toString());
+				}
+				when(target.values()).thenReturn(attachment);
+				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
+				var existingData = CdsData.create();
+				existingData.put("filename", "some file name");
+				existingData.put("mimeType", "some mime type");
+				existingData.put("documentId", "some document id");
 
-		var attachment = defineDataAndExecuteEvent(fieldNames, existingData);
+				cut.processEvent(path, null, fieldNames, attachment.getContent(), existingData, attachment.getId());
 
-		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
-		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
-		assertThat(resultValue.getMimeType()).isNull();
-		assertThat(resultValue.getFileName()).isNull();
-		assertThat(resultValue.getContent()).isEqualTo(attachment.getContent());
-		assertThat(attachment.getDocumentId()).isNull();
-	}
+				verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
+				var resultValue = contextArgumentCaptor.getValue();
+				assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
+				assertThat(resultValue.getDocumentId()).isNotEmpty().isEqualTo(existingData.get("documentId"));
+				assertThat(resultValue.getMimeType()).isNotEmpty().isEqualTo(existingData.get("mimeType"));
+				assertThat(resultValue.getFileName()).isNotEmpty().isEqualTo(existingData.get("filename"));
+				assertThat(resultValue.getContent()).isEqualTo(attachment.getContent());
+		}
+
+		@Test
+		void newDocumentIdStoredInPath() {
+				var fieldNames = getDefaultFieldNames();
+				var attachment = Attachments.create();
+				var attachmentServiceResult = new AttachmentModificationResult(false, "some document id");
+				when(attachmentService.updateAttachment(any())).thenReturn(attachmentServiceResult);
+				when(target.values()).thenReturn(attachment);
+
+				cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
+
+				assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
+		}
+
+		@Test
+		void noFieldNamesDoNotFillContext() throws IOException {
+				var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty(), "");
+				var existingData = CdsData.create();
+				existingData.put("documentId", "some document id");
+
+				var attachment = defineDataAndExecuteEvent(fieldNames, existingData);
+
+				verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
+				var resultValue = contextArgumentCaptor.getValue();
+				assertThat(resultValue.getAttachmentId()).isEqualTo(attachment.getId());
+				assertThat(resultValue.getMimeType()).isNull();
+				assertThat(resultValue.getFileName()).isNull();
+				assertThat(resultValue.getContent()).isEqualTo(attachment.getContent());
+				assertThat(attachment.getDocumentId()).isNull();
+		}
 
 		private Attachments defineDataAndExecuteEvent(AttachmentFieldNames fieldNames, CdsData existingData) throws IOException {
 				var attachment = Attachments.create();
-		var testContent = "test content";
-		try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
-			attachment.setContent(testContentStream);
-			attachment.setMimeType("mimeType");
-			attachment.setFilename("file name");
-			attachment.setId(UUID.randomUUID().toString());
+				var testContent = "test content";
+				try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
+						attachment.setContent(testContentStream);
+						attachment.setMimeType("mimeType");
+						attachment.setFilename("file name");
+						attachment.setId(UUID.randomUUID().toString());
+				}
+				when(target.values()).thenReturn(attachment);
+				when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
+
+
+				cut.processEvent(path, null, fieldNames, attachment.getContent(), existingData, attachment.getId());
+				return attachment;
 		}
-		when(target.values()).thenReturn(attachment);
-		when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
-
-
-		cut.processEvent(path, null, fieldNames, attachment.getContent(), existingData, attachment.getId());
-		return attachment;
-	}
 
 }

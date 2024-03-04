@@ -7,9 +7,9 @@ import com.sap.cds.ql.cqn.Modifier;
 
 public class DefaultItemModifierProvider implements ItemModifierProvider {
 
-	@Override
-	public Modifier getBeforeReadDocumentIdEnhancer(Map<String, DocumentFieldNames> fieldNamesMap) {
-		return new BeforeReadItemsModifier(fieldNamesMap);
-	}
+		@Override
+		public Modifier getBeforeReadDocumentIdEnhancer(Map<String, DocumentFieldNames> fieldNamesMap) {
+				return new BeforeReadItemsModifier(fieldNamesMap);
+		}
 
 }

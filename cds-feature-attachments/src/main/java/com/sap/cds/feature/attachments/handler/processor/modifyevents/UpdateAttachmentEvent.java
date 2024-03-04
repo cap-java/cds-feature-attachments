@@ -12,35 +12,35 @@ import com.sap.cds.reflect.CdsElement;
 
 public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
-	private final AttachmentService attachmentService;
+		private final AttachmentService attachmentService;
 
-	public UpdateAttachmentEvent(AttachmentService attachmentService) {
-		this.attachmentService = attachmentService;
-	}
+		public UpdateAttachmentEvent(AttachmentService attachmentService) {
+				this.attachmentService = attachmentService;
+		}
 
-	@Override
-	public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) {
-		var updateEventContext = AttachmentUpdateEventContext.create();
-		updateEventContext.setAttachmentId(attachmentId);
+		@Override
+		public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) {
+				var updateEventContext = AttachmentUpdateEventContext.create();
+				updateEventContext.setAttachmentId(attachmentId);
 
-		var values = path.target().values();
-		updateEventContext.setContent((InputStream) value);
+				var values = path.target().values();
+				updateEventContext.setContent((InputStream) value);
 
-		fieldNames.mimeTypeField().ifPresent(anno -> {
-			var annotationValue = values.get(anno);
-			var mimeType = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
-			updateEventContext.setMimeType((String) mimeType);
-		});
+				fieldNames.mimeTypeField().ifPresent(anno -> {
+						var annotationValue = values.get(anno);
+						var mimeType = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
+						updateEventContext.setMimeType((String) mimeType);
+				});
 
-		fieldNames.fileNameField().ifPresent(anno -> {
-			var annotationValue = values.get(anno);
-			var fileName = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
-			updateEventContext.setFileName((String) fileName);
-		});
-		fieldNames.documentIdField().ifPresent(docId -> updateEventContext.setDocumentId((String) existingData.get(docId)));
+				fieldNames.fileNameField().ifPresent(anno -> {
+						var annotationValue = values.get(anno);
+						var fileName = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
+						updateEventContext.setFileName((String) fileName);
+				});
+				fieldNames.documentIdField().ifPresent(docId -> updateEventContext.setDocumentId((String) existingData.get(docId)));
 
-		var result = attachmentService.updateAttachment(updateEventContext);
-		fieldNames.documentIdField().ifPresent(doc -> path.target().values().put(doc, result.documentId()));
-		return result.isExternalStored() ? null : value;
-	}
+				var result = attachmentService.updateAttachment(updateEventContext);
+				fieldNames.documentIdField().ifPresent(doc -> path.target().values().put(doc, result.documentId()));
+				return result.isExternalStored() ? null : value;
+		}
 }

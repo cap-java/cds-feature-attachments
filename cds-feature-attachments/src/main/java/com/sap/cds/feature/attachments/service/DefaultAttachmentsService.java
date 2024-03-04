@@ -15,28 +15,28 @@ import com.sap.cds.services.ServiceDelegator;
 //TODO i18n properties
 public class DefaultAttachmentsService extends ServiceDelegator implements AttachmentService {
 
-	public DefaultAttachmentsService() {
-		super(AttachmentService.DEFAULT_NAME);
-	}
+		public DefaultAttachmentsService() {
+				super(AttachmentService.DEFAULT_NAME);
+		}
 
-	@Override
-	public InputStream readAttachment(AttachmentReadEventContext context) {
-		return null;
-	}
+		@Override
+		public InputStream readAttachment(AttachmentReadEventContext context) {
+				return null;
+		}
 
-	@Override
-	public AttachmentModificationResult createAttachment(AttachmentCreateEventContext context) {
-		return new AttachmentModificationResult(false, context.getAttachmentId());
-	}
+		@Override
+		public AttachmentModificationResult createAttachment(AttachmentCreateEventContext context) {
+				return new AttachmentModificationResult(false, context.getAttachmentId());
+		}
 
-	@Override
-	public AttachmentModificationResult updateAttachment(AttachmentUpdateEventContext context) {
-		return new AttachmentModificationResult(false, context.getAttachmentId());
-	}
+		@Override
+		public AttachmentModificationResult updateAttachment(AttachmentUpdateEventContext context) {
+				return new AttachmentModificationResult(false, context.getAttachmentId());
+		}
 
-	@Override
-	public void deleteAttachment(AttachmentDeleteEventContext context) {
-		//implementation will follow
-	}
+		@Override
+		public void deleteAttachment(AttachmentDeleteEventContext context) {
+				//implementation will follow
+		}
 
 }

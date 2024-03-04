@@ -50,468 +50,468 @@ import com.sap.cds.services.runtime.CdsRuntime;
 
 class AttachmentsHandlerIntegratedTest extends Registration {
 
-	private static CdsRuntime runtime;
-	private CreateAttachmentsHandler createHandler;
-	private UpdateAttachmentsHandler updateHandler;
-	private ReadAttachmentsHandler readHandler;
-	private PersistenceService persistenceService;
-	private AttachmentService attachmentService;
-	private CdsCreateEventContext createContext;
-	private CdsUpdateEventContext updateContext;
-	private CdsReadEventContext readContext;
-	private ArgumentCaptor<AttachmentCreateEventContext> createEventInputCaptor;
-	private ArgumentCaptor<AttachmentUpdateEventContext> updateEventInputCaptor;
-	private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventInputCaptor;
-	private ArgumentCaptor<AttachmentReadEventContext> readEventInputCaptor;
-	private ArgumentCaptor<CqnSelect> selectArgumentCaptor;
+		private static CdsRuntime runtime;
+		private CreateAttachmentsHandler createHandler;
+		private UpdateAttachmentsHandler updateHandler;
+		private ReadAttachmentsHandler readHandler;
+		private PersistenceService persistenceService;
+		private AttachmentService attachmentService;
+		private CdsCreateEventContext createContext;
+		private CdsUpdateEventContext updateContext;
+		private CdsReadEventContext readContext;
+		private ArgumentCaptor<AttachmentCreateEventContext> createEventInputCaptor;
+		private ArgumentCaptor<AttachmentUpdateEventContext> updateEventInputCaptor;
+		private ArgumentCaptor<AttachmentDeleteEventContext> deleteEventInputCaptor;
+		private ArgumentCaptor<AttachmentReadEventContext> readEventInputCaptor;
+		private ArgumentCaptor<CqnSelect> selectArgumentCaptor;
 
-	@BeforeAll
-	static void classSetup() {
-		runtime = RuntimeHelper.runtime;
-	}
-
-	@BeforeEach
-	void setup() {
-		persistenceService = mock(PersistenceService.class);
-		attachmentService = mock(AttachmentService.class);
-
-		createHandler = (CreateAttachmentsHandler) buildCreateHandler(persistenceService, attachmentService);
-		updateHandler = (UpdateAttachmentsHandler) buildUpdateHandler(persistenceService, attachmentService);
-		readHandler = (ReadAttachmentsHandler) buildReadHandler(attachmentService);
-
-		createContext = mock(CdsCreateEventContext.class);
-		updateContext = mock(CdsUpdateEventContext.class);
-		readContext = mock(CdsReadEventContext.class);
-		createEventInputCaptor = ArgumentCaptor.forClass(AttachmentCreateEventContext.class);
-		updateEventInputCaptor = ArgumentCaptor.forClass(AttachmentUpdateEventContext.class);
-		deleteEventInputCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
-		readEventInputCaptor = ArgumentCaptor.forClass(AttachmentReadEventContext.class);
-		selectArgumentCaptor = ArgumentCaptor.forClass(CqnSelect.class);
-	}
-
-	@Nested
-	@DisplayName("Tests for calling the CREATE event")
-	class CreateContentTests {
-
-		@Test
-		void simpleCreateDoesNotCallAttachment() {
-			var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
-			when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-			when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
-			var roots = RootTable.create();
-
-			createHandler.processAfter(createContext, List.of(roots));
-
-			verifyNoInteractions(attachmentService);
-			assertThat(roots.getId()).isNull();
+		@BeforeAll
+		static void classSetup() {
+				runtime = RuntimeHelper.runtime;
 		}
 
-		@ParameterizedTest
-		@ValueSource(booleans = {true, false})
-		void simpleCreateCallsAttachment(boolean isExternalStored) throws IOException {
-			var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-			when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-			when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
-			when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "document id"));
+		@BeforeEach
+		void setup() {
+				persistenceService = mock(PersistenceService.class);
+				attachmentService = mock(AttachmentService.class);
 
-				var attachment = Attachments.create();
+				createHandler = (CreateAttachmentsHandler) buildCreateHandler(persistenceService, attachmentService);
+				updateHandler = (UpdateAttachmentsHandler) buildUpdateHandler(persistenceService, attachmentService);
+				readHandler = (ReadAttachmentsHandler) buildReadHandler(attachmentService);
 
-			var testString = "test";
-			var fileName = "testFile.txt";
-			var mimeType = "test/type";
-			try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
-				attachment.setContent(testStream);
-				attachment.setFilename(fileName);
-				attachment.setMimeType(mimeType);
-
-				createHandler.processAfter(createContext, List.of(attachment));
-
-				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
-				var createInput = createEventInputCaptor.getValue();
-				var expectedContent = isExternalStored ? null : testStream;
-				assertThat(attachment.getContent()).isEqualTo(expectedContent);
-				assertThat(createInput.getContent()).isEqualTo(testStream);
-				assertThat(createInput.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(createInput.getFileName()).isEqualTo(fileName);
-				assertThat(createInput.getMimeType()).isEqualTo(mimeType);
-			}
+				createContext = mock(CdsCreateEventContext.class);
+				updateContext = mock(CdsUpdateEventContext.class);
+				readContext = mock(CdsReadEventContext.class);
+				createEventInputCaptor = ArgumentCaptor.forClass(AttachmentCreateEventContext.class);
+				updateEventInputCaptor = ArgumentCaptor.forClass(AttachmentUpdateEventContext.class);
+				deleteEventInputCaptor = ArgumentCaptor.forClass(AttachmentDeleteEventContext.class);
+				readEventInputCaptor = ArgumentCaptor.forClass(AttachmentReadEventContext.class);
+				selectArgumentCaptor = ArgumentCaptor.forClass(CqnSelect.class);
 		}
 
-		@Test
-		void deepCreateDoesNoCallAttachmentService() {
-			var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
-			when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-			when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
+		@Nested
+		@DisplayName("Tests for calling the CREATE event")
+		class CreateContentTests {
 
-			var fileName = "testFile.txt";
-			var mimeType = "test/type";
+				@Test
+				void simpleCreateDoesNotCallAttachment() {
+						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
+						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
+						var roots = RootTable.create();
 
-			var roots = RootTable.create();
-			var item = Items.create();
-				var attachment = Attachments.create();
-			attachment.setFilename(fileName);
-			attachment.setMimeType(mimeType);
-			item.setAttachments(List.of(attachment));
-			roots.setItems(List.of(item));
+						createHandler.processAfter(createContext, List.of(roots));
 
-			createHandler.processAfter(createContext, List.of(roots));
+						verifyNoInteractions(attachmentService);
+						assertThat(roots.getId()).isNull();
+				}
 
-			verifyNoInteractions(attachmentService);
+				@ParameterizedTest
+				@ValueSource(booleans = {true, false})
+				void simpleCreateCallsAttachment(boolean isExternalStored) throws IOException {
+						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
+						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
+						when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "document id"));
+
+						var attachment = Attachments.create();
+
+						var testString = "test";
+						var fileName = "testFile.txt";
+						var mimeType = "test/type";
+						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+								attachment.setContent(testStream);
+								attachment.setFilename(fileName);
+								attachment.setMimeType(mimeType);
+
+								createHandler.processAfter(createContext, List.of(attachment));
+
+								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+								var createInput = createEventInputCaptor.getValue();
+								var expectedContent = isExternalStored ? null : testStream;
+								assertThat(attachment.getContent()).isEqualTo(expectedContent);
+								assertThat(createInput.getContent()).isEqualTo(testStream);
+								assertThat(createInput.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+								assertThat(createInput.getFileName()).isEqualTo(fileName);
+								assertThat(createInput.getMimeType()).isEqualTo(mimeType);
+						}
+				}
+
+				@Test
+				void deepCreateDoesNoCallAttachmentService() {
+						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
+						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
+
+						var fileName = "testFile.txt";
+						var mimeType = "test/type";
+
+						var roots = RootTable.create();
+						var item = Items.create();
+						var attachment = Attachments.create();
+						attachment.setFilename(fileName);
+						attachment.setMimeType(mimeType);
+						item.setAttachments(List.of(attachment));
+						roots.setItems(List.of(item));
+
+						createHandler.processAfter(createContext, List.of(roots));
+
+						verifyNoInteractions(attachmentService);
+				}
+
+				@Test
+				void deepCreateCallsAttachmentService() throws IOException {
+						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
+						when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
+						when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
+
+						var testString = "test";
+						var fileName = "testFile.txt";
+						var mimeType = "test/type";
+						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+								var roots = RootTable.create();
+								var item = Items.create();
+								var attachment = Attachments.create();
+								attachment.setContent(testStream);
+								attachment.setFilename(fileName);
+								attachment.setMimeType(mimeType);
+								item.setAttachments(List.of(attachment));
+								roots.setItems(List.of(item));
+
+								createHandler.processAfter(createContext, List.of(roots));
+
+								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+								var input = createEventInputCaptor.getValue();
+								assertThat(attachment.getContent()).isEqualTo(testStream);
+								assertThat(input.getContent()).isEqualTo(testStream);
+								assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+								assertThat(input.getFileName()).isEqualTo(fileName);
+								assertThat(input.getMimeType()).isEqualTo(mimeType);
+						}
+				}
+
 		}
 
-		@Test
-		void deepCreateCallsAttachmentService() throws IOException {
-			var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
-			when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-			when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
-			when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
+		@Nested
+		@DisplayName("Tests for calling the UPDATE event")
+		class UpdateContentTests {
 
-			var testString = "test";
-			var fileName = "testFile.txt";
-			var mimeType = "test/type";
-			try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
-				var roots = RootTable.create();
-				var item = Items.create();
-					var attachment = Attachments.create();
-				attachment.setContent(testStream);
-				attachment.setFilename(fileName);
-				attachment.setMimeType(mimeType);
-				item.setAttachments(List.of(attachment));
-				roots.setItems(List.of(item));
+				@Test
+				void deepUpdateCallsAttachment() throws IOException {
+						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
+						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
+						when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
+						var existingData = mockExistingData();
 
-				createHandler.processAfter(createContext, List.of(roots));
+						var testString = "test";
+						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
 
-				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
-				var input = createEventInputCaptor.getValue();
-				assertThat(attachment.getContent()).isEqualTo(testStream);
-				assertThat(input.getContent()).isEqualTo(testStream);
-				assertThat(input.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(input.getFileName()).isEqualTo(fileName);
-				assertThat(input.getMimeType()).isEqualTo(mimeType);
-			}
+								var roots = RootTable.create();
+								roots.setTitle("new title");
+								roots.setId(UUID.randomUUID().toString());
+								var attachmentAspect = Attachment.create();
+								attachmentAspect.setContent(testStream);
+								attachmentAspect.setId(UUID.randomUUID().toString());
+								roots.setAttachmentTable(List.of(attachmentAspect));
+
+								updateHandler.processAfter(updateContext, List.of(roots));
+
+								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+								var creationInput = createEventInputCaptor.getValue();
+								assertThat(attachmentAspect.getContent()).isEqualTo(testStream);
+								assertThat(creationInput.getContent()).isEqualTo(testStream);
+								assertThat(creationInput.getAttachmentId()).isNotEmpty().isEqualTo(attachmentAspect.getId());
+								assertThat(creationInput.getFileName()).isEqualTo(existingData.getFilename());
+								assertThat(creationInput.getMimeType()).isEqualTo(existingData.getMimeType());
+								verify(persistenceService).run(selectArgumentCaptor.capture());
+								var select = selectArgumentCaptor.getValue();
+								assertThat(select.where().orElseThrow().toString()).contains(attachmentAspect.getId());
+
+						}
+				}
+
+				@Test
+				void simpleUpdateDoesNotCallAttachment() {
+						var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
+						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
+
+						var roots = RootTable.create();
+						roots.setTitle("new title");
+
+						updateHandler.processAfter(updateContext, List.of(roots));
+
+						verifyNoInteractions(attachmentService);
+						assertThat(roots.getId()).isNull();
+				}
+
+				@Test
+				void simpleUpdateCallsAttachmentWithCreate() throws IOException {
+						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
+						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
+						when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
+						var existingData = mockExistingData();
+
+						var attachment = Attachments.create();
+						var testString = "test";
+						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+								attachment.setContent(testStream);
+								attachment.setId(UUID.randomUUID().toString());
+
+								updateHandler.processAfter(updateContext, List.of(attachment));
+
+								verify(attachmentService).createAttachment(createEventInputCaptor.capture());
+								var creationInput = createEventInputCaptor.getValue();
+								assertThat(attachment.getContent()).isEqualTo(testStream);
+								assertThat(creationInput.getContent()).isEqualTo(testStream);
+								assertThat(creationInput.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+								assertThat(creationInput.getFileName()).isEqualTo(existingData.getFilename());
+								assertThat(creationInput.getMimeType()).isEqualTo(existingData.getMimeType());
+								verify(persistenceService).run(selectArgumentCaptor.capture());
+								var select = selectArgumentCaptor.getValue();
+								assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
+						}
+				}
+
+				@Test
+				void simpleUpdateCallsAttachmentWithUpdate() throws IOException {
+						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
+						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
+						when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
+						var existingData = mockExistingData();
+						existingData.setDocumentId(UUID.randomUUID().toString());
+
+						var attachment = Attachments.create();
+						var testString = "test";
+						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+								attachment.setContent(testStream);
+								attachment.setId(UUID.randomUUID().toString());
+
+								updateHandler.processAfter(updateContext, List.of(attachment));
+
+								verify(attachmentService).updateAttachment(updateEventInputCaptor.capture());
+								var updateInput = updateEventInputCaptor.getValue();
+								assertThat(attachment.getContent()).isEqualTo(testStream);
+								assertThat(updateInput.getContent()).isEqualTo(testStream);
+								assertThat(updateInput.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+								assertThat(updateInput.getFileName()).isEqualTo(existingData.getFilename());
+								assertThat(updateInput.getMimeType()).isEqualTo(existingData.getMimeType());
+								verify(persistenceService).run(selectArgumentCaptor.capture());
+								var select = selectArgumentCaptor.getValue();
+								assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
+						}
+				}
+
+				@Test
+				void removeValueFromContentDeletesDocument() {
+						var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
+						when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+						when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
+						var result = mock(Result.class);
+						var oldData = Attachments.create();
+						oldData.setDocumentId(UUID.randomUUID().toString());
+						oldData.setId(UUID.randomUUID().toString());
+						var row = RowImpl.row(oldData);
+						when(result.single()).thenReturn(row);
+						when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
+
+						var attachment = Attachments.create();
+						attachment.setId(oldData.getId());
+						attachment.setContent(null);
+
+						updateHandler.processAfter(updateContext, List.of(attachment));
+
+						verify(attachmentService).deleteAttachment(deleteEventInputCaptor.capture());
+						var deleteInput = deleteEventInputCaptor.getValue();
+						assertThat(attachment.getContent()).isNull();
+						assertThat(attachment.getDocumentId()).isNull();
+						assertThat(deleteInput.getDocumentId()).isEqualTo(oldData.getDocumentId());
+						verifyNoMoreInteractions(attachmentService);
+						verify(persistenceService).run(selectArgumentCaptor.capture());
+						var select = selectArgumentCaptor.getValue();
+						assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
+				}
+
+				private Attachments mockExistingData() {
+						var result = mock(Result.class);
+						var oldData = Attachments.create();
+						oldData.setFilename("some file name");
+						oldData.setMimeType("some mime type");
+						var row = RowImpl.row(oldData);
+						when(result.single()).thenReturn(row);
+						when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
+						return oldData;
+				}
+
 		}
 
-	}
+		@Nested
+		@DisplayName("Tests for calling the READ event")
+		class ReadContentTests {
 
-	@Nested
-	@DisplayName("Tests for calling the UPDATE event")
-	class UpdateContentTests {
+				@Test
+				void expandedReadAddsDocumentId() {
+						CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.items().expand(Items_::ID, getItemExpandWithContent()));
+						mockReadContext(select, RootTable_.CDS_NAME);
 
-			@Test
-			void deepUpdateCallsAttachment() throws IOException {
-					var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
-					when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-					when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
-					when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
-					var existingData = mockExistingData();
+						readHandler.processBefore(readContext);
 
-					var testString = "test";
-					try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+						verify(readContext).setCqn(selectArgumentCaptor.capture());
+						var resultCqn = selectArgumentCaptor.getValue();
+						assertThat(resultCqn.toString()).contains("documentId");
+				}
 
-							var roots = RootTable.create();
-							roots.setTitle("new title");
-							roots.setId(UUID.randomUUID().toString());
-							var attachmentAspect = Attachment.create();
-							attachmentAspect.setContent(testStream);
-							attachmentAspect.setId(UUID.randomUUID().toString());
-							roots.setAttachmentTable(List.of(attachmentAspect));
+				@Test
+				void expandedReadWithoutContentDoNotAddDocumentId() {
+						CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.items().expand(Items_::ID, getItemExpandWithAllFields()));
+						mockReadContext(select, RootTable_.CDS_NAME);
 
-							updateHandler.processAfter(updateContext, List.of(roots));
+						readHandler.processBefore(readContext);
 
-							verify(attachmentService).createAttachment(createEventInputCaptor.capture());
-							var creationInput = createEventInputCaptor.getValue();
-							assertThat(attachmentAspect.getContent()).isEqualTo(testStream);
-							assertThat(creationInput.getContent()).isEqualTo(testStream);
-							assertThat(creationInput.getAttachmentId()).isNotEmpty().isEqualTo(attachmentAspect.getId());
-							assertThat(creationInput.getFileName()).isEqualTo(existingData.getFilename());
-							assertThat(creationInput.getMimeType()).isEqualTo(existingData.getMimeType());
-							verify(persistenceService).run(selectArgumentCaptor.capture());
-							var select = selectArgumentCaptor.getValue();
-							assertThat(select.where().orElseThrow().toString()).contains(attachmentAspect.getId());
+						verify(readContext).setCqn(selectArgumentCaptor.capture());
+						var resultCqn = selectArgumentCaptor.getValue();
+						assertThat(resultCqn.toString()).doesNotContain("documentId");
+				}
 
-					}
-			}
+				@Test
+				void directReadForAttachmentsAddsDocumentId() {
+						CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::ID, Attachment_::content);
+						mockReadContext(select, Attachment_.CDS_NAME);
 
-		@Test
-		void simpleUpdateDoesNotCallAttachment() {
-			var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
-			when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-			when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
+						readHandler.processBefore(readContext);
 
-			var roots = RootTable.create();
-			roots.setTitle("new title");
+						verify(readContext).setCqn(selectArgumentCaptor.capture());
+						var resultCqn = selectArgumentCaptor.getValue();
+						assertThat(resultCqn.toString()).contains("documentId");
+				}
 
-			updateHandler.processAfter(updateContext, List.of(roots));
+				@Test
+				void directReadForAttachmentsWithNoFieldsDoesNotInsertDocumentId() {
+						CqnSelect select = Select.from(Attachment_.class);
+						mockReadContext(select, Attachment_.CDS_NAME);
 
-			verifyNoInteractions(attachmentService);
-			assertThat(roots.getId()).isNull();
+						readHandler.processBefore(readContext);
+
+						verify(readContext).setCqn(selectArgumentCaptor.capture());
+						var resultCqn = selectArgumentCaptor.getValue();
+						assertThat(resultCqn.toString()).doesNotContain("documentId");
+				}
+
+				@Test
+				void directReadForAttachmentsWithDocumentIdDoesNotInsertDocumentId() {
+						CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::documentId, Attachment_::ID, Attachment_::content);
+						mockReadContext(select, Attachment_.CDS_NAME);
+
+						readHandler.processBefore(readContext);
+
+						verify(readContext).setCqn(selectArgumentCaptor.capture());
+						var resultCqn = selectArgumentCaptor.getValue();
+						assertThat(resultCqn.toString()).containsOnlyOnce("documentId");
+				}
+
+				@Test
+				void streamProxyIsInsertedButNotCalledForSingleRequest() {
+						mockReadContext(mock(CqnSelect.class), Attachment_.CDS_NAME);
+
+						var attachment = Attachments.create();
+						attachment.setDocumentId("some ID");
+						attachment.setContent(null);
+
+						readHandler.processAfter(readContext, List.of(attachment));
+
+						assertThat(attachment.getContent()).isInstanceOf(LazyProxyInputStream.class);
+						verifyNoInteractions(attachmentService);
+				}
+
+				@Test
+				void streamProxyIsInsertedButNotCalledForDeepRequest() throws IOException {
+						mockReadContext(mock(CqnSelect.class), RootTable_.CDS_NAME);
+
+						var testString = "test";
+						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+
+								var attachmentWithNullContent = Attachments.create();
+								attachmentWithNullContent.setDocumentId("some ID");
+								attachmentWithNullContent.setContent(null);
+								var item1 = Items.create();
+								item1.setId("item id1");
+								item1.setAttachments(List.of(attachmentWithNullContent));
+								var attachmentWithoutContent = Attachments.create();
+								attachmentWithoutContent.setDocumentId("some ID");
+								var item2 = Items.create();
+								item2.setId("item id2");
+								item2.setAttachments(List.of(attachmentWithoutContent));
+								var item3 = Items.create();
+								item3.setId("item id3");
+								var attachmentWithFilledContent = Attachments.create();
+								attachmentWithFilledContent.setDocumentId("some ID");
+								attachmentWithFilledContent.setContent(testStream);
+								var item4 = Items.create();
+								item4.setId("item id4");
+								item4.setAttachments(List.of(attachmentWithFilledContent));
+								var attachmentWithFilledContentButWithoutDocumentId = Attachments.create();
+								attachmentWithFilledContentButWithoutDocumentId.setContent(null);
+								var item5 = Items.create();
+								item5.setId("item id4");
+								item5.setAttachments(List.of(attachmentWithFilledContentButWithoutDocumentId));
+								var root1 = RootTable.create();
+								root1.setItems(List.of(item2, item1, item4, item5));
+								var root2 = RootTable.create();
+								root2.setItems(List.of(item3));
+
+								readHandler.processAfter(readContext, List.of(root2, root1));
+
+								assertThat(attachmentWithNullContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
+								assertThat(attachmentWithoutContent.getContent()).isNull();
+								assertThat(attachmentWithFilledContent.getContent()).isEqualTo(testStream);
+								assertThat(attachmentWithFilledContentButWithoutDocumentId.getContent()).isNull();
+								verifyNoInteractions(attachmentService);
+						}
+				}
+
+				@Test
+				void attachmentServiceCalledIfStreamIsRequested() throws IOException {
+						mockReadContext(mock(CqnSelect.class), Attachment_.CDS_NAME);
+
+						var testString = "test";
+						try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+								when(attachmentService.readAttachment(any())).thenReturn(testStream);
+								var attachment = Attachments.create();
+								attachment.setDocumentId("some ID");
+								attachment.setContent(null);
+
+								readHandler.processAfter(readContext, List.of(attachment));
+
+								assertThat(attachment.getContent()).isInstanceOf(LazyProxyInputStream.class);
+								verifyNoInteractions(attachmentService);
+								byte[] bytes = attachment.getContent().readAllBytes();
+								assertThat(bytes).isEqualTo(testString.getBytes(StandardCharsets.UTF_8));
+								verify(attachmentService).readAttachment(readEventInputCaptor.capture());
+								var readInput = readEventInputCaptor.getValue();
+								assertThat(readInput.getDocumentId()).isEqualTo(attachment.getDocumentId());
+						}
+				}
+
+				private void mockReadContext(CqnSelect select, String entityName) {
+						var serviceEntity = runtime.getCdsModel().findEntity(entityName);
+						when(readContext.getCqn()).thenReturn(select);
+						when(readContext.getCdsRuntime()).thenReturn(runtime);
+						when(readContext.getEvent()).thenReturn(CqnService.EVENT_READ);
+						when(readContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
+				}
+
+				private Function<Items_, Selectable> getItemExpandWithContent() {
+						return item -> item.attachments().expand(Attachment_::content);
+				}
+
+				private Function<Items_, Selectable> getItemExpandWithAllFields() {
+						return item -> item.attachments().expand();
+				}
+
 		}
-
-		@Test
-		void simpleUpdateCallsAttachmentWithCreate() throws IOException {
-			var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-			when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-			when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
-			when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
-			var existingData = mockExistingData();
-
-				var attachment = Attachments.create();
-			var testString = "test";
-			try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
-				attachment.setContent(testStream);
-				attachment.setId(UUID.randomUUID().toString());
-
-				updateHandler.processAfter(updateContext, List.of(attachment));
-
-				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
-				var creationInput = createEventInputCaptor.getValue();
-				assertThat(attachment.getContent()).isEqualTo(testStream);
-				assertThat(creationInput.getContent()).isEqualTo(testStream);
-				assertThat(creationInput.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(creationInput.getFileName()).isEqualTo(existingData.getFilename());
-				assertThat(creationInput.getMimeType()).isEqualTo(existingData.getMimeType());
-				verify(persistenceService).run(selectArgumentCaptor.capture());
-				var select = selectArgumentCaptor.getValue();
-				assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
-			}
-		}
-
-		@Test
-		void simpleUpdateCallsAttachmentWithUpdate() throws IOException {
-			var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-			when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-			when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
-			when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "document id"));
-			var existingData = mockExistingData();
-			existingData.setDocumentId(UUID.randomUUID().toString());
-
-				var attachment = Attachments.create();
-			var testString = "test";
-			try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
-				attachment.setContent(testStream);
-				attachment.setId(UUID.randomUUID().toString());
-
-				updateHandler.processAfter(updateContext, List.of(attachment));
-
-				verify(attachmentService).updateAttachment(updateEventInputCaptor.capture());
-				var updateInput = updateEventInputCaptor.getValue();
-				assertThat(attachment.getContent()).isEqualTo(testStream);
-				assertThat(updateInput.getContent()).isEqualTo(testStream);
-				assertThat(updateInput.getAttachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(updateInput.getFileName()).isEqualTo(existingData.getFilename());
-				assertThat(updateInput.getMimeType()).isEqualTo(existingData.getMimeType());
-				verify(persistenceService).run(selectArgumentCaptor.capture());
-				var select = selectArgumentCaptor.getValue();
-				assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
-			}
-		}
-
-		@Test
-		void removeValueFromContentDeletesDocument() {
-			var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
-			when(updateContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-			when(updateContext.getEvent()).thenReturn(CqnService.EVENT_UPDATE);
-			var result = mock(Result.class);
-				var oldData = Attachments.create();
-			oldData.setDocumentId(UUID.randomUUID().toString());
-			oldData.setId(UUID.randomUUID().toString());
-			var row = RowImpl.row(oldData);
-			when(result.single()).thenReturn(row);
-			when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
-
-				var attachment = Attachments.create();
-			attachment.setId(oldData.getId());
-			attachment.setContent(null);
-
-			updateHandler.processAfter(updateContext, List.of(attachment));
-
-			verify(attachmentService).deleteAttachment(deleteEventInputCaptor.capture());
-			var deleteInput = deleteEventInputCaptor.getValue();
-			assertThat(attachment.getContent()).isNull();
-			assertThat(attachment.getDocumentId()).isNull();
-			assertThat(deleteInput.getDocumentId()).isEqualTo(oldData.getDocumentId());
-			verifyNoMoreInteractions(attachmentService);
-			verify(persistenceService).run(selectArgumentCaptor.capture());
-			var select = selectArgumentCaptor.getValue();
-			assertThat(select.where().orElseThrow().toString()).contains(attachment.getId());
-		}
-
-			private Attachments mockExistingData() {
-			var result = mock(Result.class);
-					var oldData = Attachments.create();
-			oldData.setFilename("some file name");
-			oldData.setMimeType("some mime type");
-			var row = RowImpl.row(oldData);
-			when(result.single()).thenReturn(row);
-			when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
-			return oldData;
-		}
-
-	}
-
-	@Nested
-	@DisplayName("Tests for calling the READ event")
-	class ReadContentTests {
-
-		@Test
-		void expandedReadAddsDocumentId() {
-			CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.items().expand(Items_::ID, getItemExpandWithContent()));
-			mockReadContext(select, RootTable_.CDS_NAME);
-
-			readHandler.processBefore(readContext);
-
-			verify(readContext).setCqn(selectArgumentCaptor.capture());
-			var resultCqn = selectArgumentCaptor.getValue();
-			assertThat(resultCqn.toString()).contains("documentId");
-		}
-
-		@Test
-		void expandedReadWithoutContentDoNotAddDocumentId() {
-			CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.items().expand(Items_::ID, getItemExpandWithAllFields()));
-			mockReadContext(select, RootTable_.CDS_NAME);
-
-			readHandler.processBefore(readContext);
-
-			verify(readContext).setCqn(selectArgumentCaptor.capture());
-			var resultCqn = selectArgumentCaptor.getValue();
-			assertThat(resultCqn.toString()).doesNotContain("documentId");
-		}
-
-		@Test
-		void directReadForAttachmentsAddsDocumentId() {
-			CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::ID, Attachment_::content);
-			mockReadContext(select, Attachment_.CDS_NAME);
-
-			readHandler.processBefore(readContext);
-
-			verify(readContext).setCqn(selectArgumentCaptor.capture());
-			var resultCqn = selectArgumentCaptor.getValue();
-			assertThat(resultCqn.toString()).contains("documentId");
-		}
-
-		@Test
-		void directReadForAttachmentsWithNoFieldsDoesNotInsertDocumentId() {
-			CqnSelect select = Select.from(Attachment_.class);
-			mockReadContext(select, Attachment_.CDS_NAME);
-
-			readHandler.processBefore(readContext);
-
-			verify(readContext).setCqn(selectArgumentCaptor.capture());
-			var resultCqn = selectArgumentCaptor.getValue();
-			assertThat(resultCqn.toString()).doesNotContain("documentId");
-		}
-
-		@Test
-		void directReadForAttachmentsWithDocumentIdDoesNotInsertDocumentId() {
-			CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::documentId, Attachment_::ID, Attachment_::content);
-			mockReadContext(select, Attachment_.CDS_NAME);
-
-			readHandler.processBefore(readContext);
-
-			verify(readContext).setCqn(selectArgumentCaptor.capture());
-			var resultCqn = selectArgumentCaptor.getValue();
-			assertThat(resultCqn.toString()).containsOnlyOnce("documentId");
-		}
-
-		@Test
-		void streamProxyIsInsertedButNotCalledForSingleRequest() {
-			mockReadContext(mock(CqnSelect.class), Attachment_.CDS_NAME);
-
-				var attachment = Attachments.create();
-			attachment.setDocumentId("some ID");
-			attachment.setContent(null);
-
-			readHandler.processAfter(readContext, List.of(attachment));
-
-			assertThat(attachment.getContent()).isInstanceOf(LazyProxyInputStream.class);
-			verifyNoInteractions(attachmentService);
-		}
-
-		@Test
-		void streamProxyIsInsertedButNotCalledForDeepRequest() throws IOException {
-			mockReadContext(mock(CqnSelect.class), RootTable_.CDS_NAME);
-
-			var testString = "test";
-			try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
-
-					var attachmentWithNullContent = Attachments.create();
-				attachmentWithNullContent.setDocumentId("some ID");
-				attachmentWithNullContent.setContent(null);
-				var item1 = Items.create();
-				item1.setId("item id1");
-				item1.setAttachments(List.of(attachmentWithNullContent));
-					var attachmentWithoutContent = Attachments.create();
-				attachmentWithoutContent.setDocumentId("some ID");
-				var item2 = Items.create();
-				item2.setId("item id2");
-				item2.setAttachments(List.of(attachmentWithoutContent));
-				var item3 = Items.create();
-				item3.setId("item id3");
-					var attachmentWithFilledContent = Attachments.create();
-				attachmentWithFilledContent.setDocumentId("some ID");
-				attachmentWithFilledContent.setContent(testStream);
-				var item4 = Items.create();
-				item4.setId("item id4");
-				item4.setAttachments(List.of(attachmentWithFilledContent));
-					var attachmentWithFilledContentButWithoutDocumentId = Attachments.create();
-				attachmentWithFilledContentButWithoutDocumentId.setContent(null);
-				var item5 = Items.create();
-				item5.setId("item id4");
-				item5.setAttachments(List.of(attachmentWithFilledContentButWithoutDocumentId));
-				var root1 = RootTable.create();
-				root1.setItems(List.of(item2, item1, item4, item5));
-				var root2 = RootTable.create();
-				root2.setItems(List.of(item3));
-
-				readHandler.processAfter(readContext, List.of(root2, root1));
-
-				assertThat(attachmentWithNullContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
-				assertThat(attachmentWithoutContent.getContent()).isNull();
-				assertThat(attachmentWithFilledContent.getContent()).isEqualTo(testStream);
-				assertThat(attachmentWithFilledContentButWithoutDocumentId.getContent()).isNull();
-				verifyNoInteractions(attachmentService);
-			}
-		}
-
-		@Test
-		void attachmentServiceCalledIfStreamIsRequested() throws IOException {
-			mockReadContext(mock(CqnSelect.class), Attachment_.CDS_NAME);
-
-			var testString = "test";
-			try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
-				when(attachmentService.readAttachment(any())).thenReturn(testStream);
-					var attachment = Attachments.create();
-				attachment.setDocumentId("some ID");
-				attachment.setContent(null);
-
-				readHandler.processAfter(readContext, List.of(attachment));
-
-				assertThat(attachment.getContent()).isInstanceOf(LazyProxyInputStream.class);
-				verifyNoInteractions(attachmentService);
-				byte[] bytes = attachment.getContent().readAllBytes();
-				assertThat(bytes).isEqualTo(testString.getBytes(StandardCharsets.UTF_8));
-				verify(attachmentService).readAttachment(readEventInputCaptor.capture());
-				var readInput = readEventInputCaptor.getValue();
-				assertThat(readInput.getDocumentId()).isEqualTo(attachment.getDocumentId());
-			}
-		}
-
-		private void mockReadContext(CqnSelect select, String entityName) {
-			var serviceEntity = runtime.getCdsModel().findEntity(entityName);
-			when(readContext.getCqn()).thenReturn(select);
-			when(readContext.getCdsRuntime()).thenReturn(runtime);
-			when(readContext.getEvent()).thenReturn(CqnService.EVENT_READ);
-			when(readContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-		}
-
-		private Function<Items_, Selectable> getItemExpandWithContent() {
-			return item -> item.attachments().expand(Attachment_::content);
-		}
-
-		private Function<Items_, Selectable> getItemExpandWithAllFields() {
-			return item -> item.attachments().expand();
-		}
-
-	}
 
 }
