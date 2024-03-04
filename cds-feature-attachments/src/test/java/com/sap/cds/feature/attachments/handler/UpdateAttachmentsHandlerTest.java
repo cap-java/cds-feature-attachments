@@ -176,10 +176,10 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 		private void getEntityAndMockContext(String cdsName) {
 				var serviceEntity = runtime.getCdsModel().findEntity(cdsName);
-				mockTargetInContext(serviceEntity.orElseThrow());
+				mockTargetInUpdateContext(serviceEntity.orElseThrow());
 		}
 
-		private void mockTargetInContext(CdsEntity serviceEntity) {
+		private void mockTargetInUpdateContext(CdsEntity serviceEntity) {
 				when(updateContext.getTarget()).thenReturn(serviceEntity);
 		}
 

@@ -74,7 +74,7 @@ abstract class ApplicationEventBase extends ProcessingBase {
 				return element.findAnnotation(annotation).isPresent();
 		}
 
-		private String getIdField(ResolvedSegment target) {
+		protected String getIdField(ResolvedSegment target) {
 				var targetElements = target.entity().elements().map(CdsElementDefinition::getName).toList();
 				return target.keys().keySet().stream().filter(targetElements::contains).findAny().orElseThrow();
 		}
