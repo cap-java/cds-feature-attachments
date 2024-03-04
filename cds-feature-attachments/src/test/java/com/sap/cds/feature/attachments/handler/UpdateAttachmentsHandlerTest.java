@@ -174,6 +174,12 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		assertThat(updateHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
 	}
 
+	@Test
+	void correctAttachmentIdUsed() {
+		//TODO check ID field is retrieved correct if other keys available
+		fail("not implemented");
+	}
+
 	private void getEntityAndMockContext(String cdsName) {
 		var serviceEntity = runtime.getCdsModel().findEntity(cdsName);
 		mockTargetInUpdateContext(serviceEntity.orElseThrow());

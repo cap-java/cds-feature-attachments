@@ -17,6 +17,7 @@ import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsAnnotation;
+import com.sap.cds.reflect.CdsBaseType;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
@@ -75,8 +76,8 @@ abstract class ApplicationHandlerBase extends ProcessingBase {
 	}
 
 	protected String getIdField(ResolvedSegment target) {
-		var targetElements = target.entity().elements().map(CdsElementDefinition::getName).toList();
-		return target.keys().keySet().stream().filter(targetElements::contains).findAny().orElseThrow();
+		var targetElements = target.entity().elements().toList();
+		return target.keys().keySet().stream().filter(key -> targetElements.stream().anyMatch(elem -> elem.getName().equals(key) && elem.getType().isSimpleType(CdsBaseType.UUID))).findAny().orElseThrow();
 	}
 
 	private Optional<String> getDocumentIdField(ResolvedSegment target) {
