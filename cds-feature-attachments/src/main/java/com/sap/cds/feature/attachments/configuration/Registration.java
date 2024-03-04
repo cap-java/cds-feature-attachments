@@ -38,11 +38,11 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(buildReadHandler(attachmentService));
 	}
 
-	private AttachmentService buildAttachmentService() {
+	protected AttachmentService buildAttachmentService() {
 		return new DefaultAttachmentsService();
 	}
 
-	private EventHandler buildCreateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
+	protected EventHandler buildCreateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
 		var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
@@ -50,16 +50,16 @@ public class Registration implements CdsRuntimeConfiguration {
 		return new CreateAttachmentsHandler(persistenceService, attachmentEventFactory);
 	}
 
-	private EventHandler buildDeleteHandler() {
+	protected EventHandler buildDeleteHandler() {
 		return new DeleteAttachmentsHandler();
 	}
 
-	private EventHandler buildReadHandler(AttachmentService attachmentService) {
+	protected EventHandler buildReadHandler(AttachmentService attachmentService) {
 		var itemModifierProvider = new DefaultItemModifierProvider();
 		return new ReadAttachmentsHandler(attachmentService, itemModifierProvider);
 	}
 
-	private EventHandler buildUpdateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
+	protected EventHandler buildUpdateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
 		var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);

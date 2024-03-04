@@ -21,13 +21,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.Result;
+import com.sap.cds.feature.attachments.configuration.Registration;
 import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generation.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.configuration.AutoConfiguration;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -47,7 +47,7 @@ import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntime;
 
-class AttachmentsHandlerIntegratedTest {
+class AttachmentsHandlerIntegratedTest extends Registration {
 
 	private static CdsRuntime runtime;
 	private CreateAttachmentsHandler createHandler;
@@ -74,9 +74,9 @@ class AttachmentsHandlerIntegratedTest {
 		persistenceService = mock(PersistenceService.class);
 		attachmentService = mock(AttachmentService.class);
 
-		createHandler = (CreateAttachmentsHandler) new AutoConfiguration().buildCreateHandler(persistenceService, attachmentService);
-		updateHandler = (UpdateAttachmentsHandler) new AutoConfiguration().buildUpdateHandler(persistenceService, attachmentService);
-		readHandler = (ReadAttachmentsHandler) new AutoConfiguration().buildReadHandler(attachmentService);
+		createHandler = (CreateAttachmentsHandler) buildCreateHandler(persistenceService, attachmentService);
+		updateHandler = (UpdateAttachmentsHandler) buildUpdateHandler(persistenceService, attachmentService);
+		readHandler = (ReadAttachmentsHandler) buildReadHandler(attachmentService);
 
 		createContext = mock(CdsCreateEventContext.class);
 		updateContext = mock(CdsUpdateEventContext.class);
