@@ -29,7 +29,7 @@ public class CreateAttachmentsHandler extends ModifyApplicationHandlerBase imple
 	}
 
 	@Before(event = CqnService.EVENT_CREATE)
-	@HandlerOrder(HandlerOrder.EARLY)
+	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsCreateEventContext context, List<CdsData> data) {
 		if (processingNotNeeded(context.getTarget(), data)) {
 			return;

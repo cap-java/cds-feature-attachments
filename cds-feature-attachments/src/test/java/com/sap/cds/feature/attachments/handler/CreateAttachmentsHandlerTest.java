@@ -121,7 +121,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
 		assertThat(createBeforeAnnotation.event()).containsOnly(CqnService.EVENT_CREATE);
-		assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
+		assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 
 	private void getEntityAndMockContext(String cdsName) {

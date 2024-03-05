@@ -339,6 +339,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			oldData.setFileName("some file name");
 			oldData.setMimeType("some mime type");
 			var row = RowImpl.row(oldData);
+			when(result.rowCount()).thenReturn(1L);
 			when(result.single()).thenReturn(row);
 			when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
 			return oldData;

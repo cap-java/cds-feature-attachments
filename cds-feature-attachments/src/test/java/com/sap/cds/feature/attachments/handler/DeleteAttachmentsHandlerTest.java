@@ -44,7 +44,7 @@ class DeleteAttachmentsHandlerTest {
 		var deleteHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
 		assertThat(deleteAfterAnnotation.event()).containsOnly(CqnService.EVENT_DELETE);
-		assertThat(deleteHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
+		assertThat(deleteHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 
 }

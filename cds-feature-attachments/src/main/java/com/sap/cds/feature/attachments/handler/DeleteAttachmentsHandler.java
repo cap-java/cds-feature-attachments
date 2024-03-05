@@ -14,7 +14,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 public class DeleteAttachmentsHandler implements EventHandler {
 
 	@After(event = CqnService.EVENT_DELETE)
-	@HandlerOrder(HandlerOrder.EARLY)
+	@HandlerOrder(HandlerOrder.LATE)
 	public void processAfter(CdsDeleteEventContext context) {
 
 		//TODO Implement

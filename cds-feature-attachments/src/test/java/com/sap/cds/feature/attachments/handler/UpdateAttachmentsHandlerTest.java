@@ -171,7 +171,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		var updateHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
 		assertThat(updateBeforeAnnotation.event()).containsOnly(CqnService.EVENT_UPDATE);
-		assertThat(updateHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
+		assertThat(updateHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 
 	@Test

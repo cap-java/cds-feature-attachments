@@ -18,11 +18,13 @@ import com.sap.cds.ql.cqn.CqnPredicate;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.CqnService;
+import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.persistence.PersistenceService;
 
 abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 
 	private static final Logger logger = LoggerFactory.getLogger(ModifyApplicationHandlerBase.class);
+	private static final String DRAFT_ENTITY_ACTIVE_FIELD = "IsActiveEntity";
 
 	private final PersistenceService persistenceService;
 	private final ModifyAttachmentEventFactory eventFactory;
@@ -66,7 +68,7 @@ abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 
 		CqnPredicate whereClause = null;
 		for (var entry : keys.entrySet()) {
-			if (Objects.nonNull(entry.getValue())) {
+			if (Objects.nonNull(entry.getValue()) && isNotDraftActiveEntityField(entity, entry.getKey())) {
 				CqnPredicate condition = Select.from(entity).where(e -> e.get(entry.getKey()).eq(entry.getValue())).where().orElseThrow();
 				whereClause = Objects.isNull(whereClause) ? condition : Conjunction.and(condition, whereClause);
 			}
@@ -76,7 +78,14 @@ abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 		logger.info("Select for reading before data: {}", select);
 		var result = persistenceService.run(select);
 		logger.info("result from reading before data {}", result);
-		return result.single();
+		if (result.rowCount() > 1) {
+			throw new IllegalStateException("too many results");
+		}
+		return result.rowCount() == 1 ? result.single() : CdsData.create();
+	}
+
+	private boolean isNotDraftActiveEntityField(CdsEntity entity, String key) {
+		return !(entity.findAction(DraftService.EVENT_DRAFT_PREPARE).isPresent() && key.equals(DRAFT_ENTITY_ACTIVE_FIELD));
 	}
 
 	private boolean isKeyEmpty(Map<String, Object> keys) {

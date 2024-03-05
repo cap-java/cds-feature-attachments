@@ -23,7 +23,7 @@ public class UpdateAttachmentsHandler extends ModifyApplicationHandlerBase imple
 	}
 
 	@Before(event = CqnService.EVENT_UPDATE)
-	@HandlerOrder(HandlerOrder.EARLY)
+	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
 		if (processingNotNeeded(context.getTarget(), data)) {
 			return;
