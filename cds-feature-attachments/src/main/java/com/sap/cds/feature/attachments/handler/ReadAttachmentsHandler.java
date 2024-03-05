@@ -47,7 +47,7 @@ public class ReadAttachmentsHandler extends ApplicationHandlerBase implements Ev
 	@Before(event = CqnService.EVENT_READ)
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processBefore(CdsReadEventContext context) {
-		var cdsModel = context.getCdsRuntime().getCdsModel();
+		var cdsModel = context.getModel();
 		var fieldNames = getContentFieldName(cdsModel, context.getTarget(), "", new ArrayList<>());
 		if (!fieldNames.isEmpty()) {
 			var resultCqn = CQL.copy(context.getCqn(), provider.getBeforeReadDocumentIdEnhancer(fieldNames));

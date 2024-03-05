@@ -20,7 +20,7 @@ public class DeleteAttachmentsHandler implements EventHandler {
 		//TODO Implement
 		//TODO implement cascading delete e.g. Root is deleted and items -> attachments shall also be deleted
 
-//				var cdsModel = context.getCdsRuntime().getCdsModel();
+//				var cdsModel = context.getModel();
 //
 //				//check if entity is of type attachment
 //				if (context.getTarget().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)) {

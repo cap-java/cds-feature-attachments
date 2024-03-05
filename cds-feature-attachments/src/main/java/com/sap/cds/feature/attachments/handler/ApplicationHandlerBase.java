@@ -77,7 +77,7 @@ abstract class ApplicationHandlerBase extends ProcessingBase {
 
 	protected String getIdField(ResolvedSegment target) {
 		var targetElements = target.entity().elements().toList();
-		return target.keys().keySet().stream().filter(key -> targetElements.stream().anyMatch(elem -> elem.getName().equals(key) && (elem.getType().isSimpleType(CdsBaseType.UUID) || elem.getType().isSimpleType(CdsBaseType.INTEGER)))).findAny().orElseThrow();
+		return target.keys().keySet().stream().filter(key -> targetElements.stream().anyMatch(elem -> elem.getName().equals(key) && (elem.getType().isSimpleType(CdsBaseType.UUID)))).findAny().orElseThrow();
 	}
 
 	private Optional<String> getDocumentIdField(ResolvedSegment target) {
