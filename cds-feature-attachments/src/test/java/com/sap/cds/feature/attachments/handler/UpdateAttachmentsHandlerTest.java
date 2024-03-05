@@ -2,7 +2,7 @@ package com.sap.cds.feature.attachments.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
@@ -73,13 +73,12 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 			var attachment = Attachments.create();
 			attachment.setContent(testStream);
 			attachment.setId("test");
-			when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
+			when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 			var row = mockSelectionResult();
 
 			cut.processBefore(updateContext, List.of(attachment));
 
-			verify(eventFactory).getEvent(eq(CqnService.EVENT_UPDATE), eq(testStream), fieldNamesArgumentCaptor.capture(), eq(row));
-			verifyFilledFieldNames();
+			verify(eventFactory).getEvent(CqnService.EVENT_UPDATE, testStream, row);
 		}
 	}
 
@@ -90,8 +89,8 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		attachment.setFileName("test.txt");
 		attachment.setContent(null);
 		attachment.setId("some id");
-		when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
-		when(event.processEvent(any(), any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+		when(event.processEvent(any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
 		mockSelectionResult();
 
 		List<CdsData> input = List.of(attachment);
@@ -116,21 +115,20 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		attachment.setFilename("test.txt");
 		attachment.setContent(null);
 		attachment.setId(1);
-		when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 		var row = mockSelectionResult();
 
 		List<CdsData> input = List.of(attachment);
 		assertDoesNotThrow(() -> cut.processBefore(updateContext, input));
 
-		verify(eventFactory).getEvent(eq(CqnService.EVENT_UPDATE), eq(null), fieldNamesArgumentCaptor.capture(), eq(row));
-		verifyEmptyFieldNames();
+		verify(eventFactory).getEvent(CqnService.EVENT_UPDATE, null, row);
 	}
 
 	@Test
 	void existingDataFoundAndUsed() throws IOException {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
 		var row = mockSelectionResult();
-		when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
 		var root = RootTable.create();
 		root.setId(UUID.randomUUID().toString());
@@ -145,8 +143,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 			cut.processBefore(updateContext, List.of(root));
 
-			verify(eventFactory).getEvent(eq(CqnService.EVENT_UPDATE), eq(testStream), fieldNamesArgumentCaptor.capture(), eq(row));
-			verifyFilledFieldNames();
+			verify(eventFactory).getEvent(CqnService.EVENT_UPDATE, testStream, row);
 		}
 
 		verify(persistenceService).run(selectArgumentCaptor.capture());
@@ -177,7 +174,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	@Test
 	void correctAttachmentIdUsed() {
 		//TODO check ID field is retrieved correct if other keys available
-//		fail("not implemented");
+		fail("not implemented");
 	}
 
 	private void getEntityAndMockContext(String cdsName) {
@@ -187,15 +184,6 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 	private void mockTargetInUpdateContext(CdsEntity serviceEntity) {
 		when(updateContext.getTarget()).thenReturn(serviceEntity);
-	}
-
-	private void verifyEmptyFieldNames() {
-		//field names taken from model for entity WrongAttachments defined in csn which can be found in AttachmentsHandlerTestBase.CSN_FILE_PATH
-		var fieldNames = fieldNamesArgumentCaptor.getValue();
-		assertThat(fieldNames.keyField()).isEqualTo("ID");
-		assertThat(fieldNames.documentIdField()).isEmpty();
-		assertThat(fieldNames.mimeTypeField()).isEmpty();
-		assertThat(fieldNames.fileNameField()).isEmpty();
 	}
 
 }

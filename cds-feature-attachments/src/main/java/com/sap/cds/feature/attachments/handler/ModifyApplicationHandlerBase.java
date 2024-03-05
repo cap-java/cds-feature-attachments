@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
-import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.Path;
@@ -41,18 +40,17 @@ abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 	void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, String event) {
 		Filter filter = buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
-			var fieldNames = getFieldNames(element, path.target());
-			var attachmentId = getAttachmentId(path, fieldNames);
+			var attachmentId = getAttachmentId(path);
 			var oldData = getExistingData(event, path);
 
-			var eventToProcess = eventFactory.getEvent(event, value, fieldNames, oldData);
-			return eventToProcess.processEvent(path, element, fieldNames, value, oldData, attachmentId);
+			var eventToProcess = eventFactory.getEvent(event, value, oldData);
+			return eventToProcess.processEvent(path, element, value, oldData, attachmentId);
 		};
 		callProcessor(entity, data, filter, converter);
 	}
 
-	private String getAttachmentId(Path path, AttachmentFieldNames fieldNames) {
-		var attachmentIdObject = path.target().keys().get(fieldNames.keyField());
+	private String getAttachmentId(Path path) {
+		var attachmentIdObject = path.target().keys().get("ID");
 		return Objects.nonNull(attachmentIdObject) ? String.valueOf(attachmentIdObject) : null;
 	}
 

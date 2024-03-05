@@ -18,7 +18,7 @@ class DefaultItemModifierProviderTest {
 
 	@Test
 	void correctInstanceReturned() {
-		var instance = cut.getBeforeReadDocumentIdEnhancer(Collections.emptyMap());
+		var instance = cut.getBeforeReadDocumentIdEnhancer(Collections.emptyList());
 
 		assertThat(instance).isInstanceOf(BeforeReadItemsModifier.class);
 	}

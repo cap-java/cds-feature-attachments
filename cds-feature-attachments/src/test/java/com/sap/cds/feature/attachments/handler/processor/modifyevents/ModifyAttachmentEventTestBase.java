@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,8 +14,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.MediaData;
-import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.ql.cqn.Path;
@@ -49,7 +46,6 @@ abstract class ModifyAttachmentEventTestBase {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	void contentIsReturnedIfNotExternalStored(boolean isExternalStored) throws IOException {
-		var fieldNames = getDefaultFieldNames();
 		var attachment = Attachments.create();
 
 		var testContent = "test content";
@@ -61,14 +57,10 @@ abstract class ModifyAttachmentEventTestBase {
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "id"));
 		when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "id"));
 
-		var result = cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
+		var result = cut.processEvent(path, null, attachment.getContent(), CdsData.create(), attachment.getId());
 
 		var expectedContent = isExternalStored ? null : attachment.getContent();
 		assertThat(result).isEqualTo(expectedContent);
-	}
-
-	AttachmentFieldNames getDefaultFieldNames() {
-		return new AttachmentFieldNames("key", Optional.of(Attachments.DOCUMENT_ID), Optional.of(MediaData.MIME_TYPE), Optional.of(MediaData.FILE_NAME), MediaData.CONTENT);
 	}
 
 }

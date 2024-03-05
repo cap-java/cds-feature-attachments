@@ -2,7 +2,7 @@ package com.sap.cds.feature.attachments.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
@@ -67,7 +67,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		attachment.setContent(null);
 		attachment.put("up__ID", "test");
 		roots.setAttachmentTable(List.of(attachment));
-		when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
 		cut.processBefore(createContext, List.of(roots));
 
@@ -82,13 +82,12 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
 			var attachment = Attachments.create();
 			attachment.setContent(testStream);
-			when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
+			when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 			var row = mockSelectionResult();
 
 			cut.processBefore(createContext, List.of(attachment));
 
-			verify(eventFactory).getEvent(eq(CqnService.EVENT_CREATE), eq(testStream), fieldNamesArgumentCaptor.capture(), eq(row));
-			verifyFilledFieldNames();
+			verify(eventFactory).getEvent(CqnService.EVENT_CREATE, testStream, row);
 		}
 	}
 
@@ -98,8 +97,8 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		var attachment = Attachments.create();
 		attachment.setFileName("test.txt");
 		attachment.setContent(null);
-		when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
-		when(event.processEvent(any(), any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+		when(event.processEvent(any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
 
 		List<CdsData> input = List.of(attachment);
 		assertThrows(ServiceException.class, () -> cut.processBefore(createContext, input));

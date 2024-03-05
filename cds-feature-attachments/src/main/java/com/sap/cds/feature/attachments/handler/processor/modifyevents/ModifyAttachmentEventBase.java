@@ -8,12 +8,10 @@ import com.sap.cds.CdsData;
 
 abstract class ModifyAttachmentEventBase {
 
-	protected Optional<String> getFieldName(Optional<String> fieldNames, Map<String, Object> values, CdsData existingData) {
-		return fieldNames.map(anno -> {
-			var annotationValue = values.get(anno);
-			var mimeType = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
-			return (String) mimeType;
-		});
+	protected Optional<String> getFieldValue(String fieldName, Map<String, Object> values, CdsData existingData) {
+		var annotationValue = values.get(fieldName);
+		var value = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(fieldName);
+		return Optional.ofNullable((String) value);
 	}
 
 }

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +17,6 @@ import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Attachment;
-import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.UpdateAttachmentInput;
 
@@ -39,11 +37,10 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
 	@Test
 	void storageCalledWithAllFieldsFilledFromPath() throws IOException {
-		var fieldNames = getDefaultFieldNames();
 		var existingData = CdsData.create();
 		existingData.put("documentId", "some document id");
 
-		var attachment = defineDataAndExecuteEvent(fieldNames, existingData);
+		var attachment = defineDataAndExecuteEvent(existingData);
 
 		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
@@ -57,7 +54,6 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
 	@Test
 	void storageCalledWithAllFieldsFilledFromExistingData() throws IOException {
-		var fieldNames = getDefaultFieldNames();
 		var attachment = Attachments.create();
 
 		var testContent = "test content";
@@ -72,7 +68,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		existingData.put(MediaData.MIME_TYPE, "some mime type");
 		existingData.put(Attachments.DOCUMENT_ID, "some document id");
 
-		cut.processEvent(path, null, fieldNames, attachment.getContent(), existingData, attachment.getId());
+		cut.processEvent(path, null, attachment.getContent(), existingData, attachment.getId());
 
 		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
@@ -86,24 +82,22 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
 	@Test
 	void newDocumentIdStoredInPath() {
-		var fieldNames = getDefaultFieldNames();
 		var attachment = Attachments.create();
 		var attachmentServiceResult = new AttachmentModificationResult(false, "some document id");
 		when(attachmentService.updateAttachment(any())).thenReturn(attachmentServiceResult);
 		when(target.values()).thenReturn(attachment);
 
-		cut.processEvent(path, null, fieldNames, attachment.getContent(), CdsData.create(), attachment.getId());
+		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), attachment.getId());
 
 		assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
 	}
 
 	@Test
 	void noFieldNamesDoNotFillContext() throws IOException {
-		var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.empty(), Optional.empty(), "");
 		var existingData = CdsData.create();
 		existingData.put("documentId", "some document id");
 
-		var attachment = defineDataAndExecuteEvent(fieldNames, existingData);
+		var attachment = defineDataAndExecuteEvent(existingData);
 
 		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
@@ -115,7 +109,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		assertThat(attachment.getDocumentId()).isNull();
 	}
 
-	private Attachments defineDataAndExecuteEvent(AttachmentFieldNames fieldNames, CdsData existingData) throws IOException {
+	private Attachments defineDataAndExecuteEvent(CdsData existingData) throws IOException {
 		var attachment = Attachments.create();
 		var testContent = "test content";
 		try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
@@ -128,7 +122,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 
 
-		cut.processEvent(path, null, fieldNames, attachment.getContent(), existingData, attachment.getId());
+		cut.processEvent(path, null, attachment.getContent(), existingData, attachment.getId());
 		return attachment;
 	}
 

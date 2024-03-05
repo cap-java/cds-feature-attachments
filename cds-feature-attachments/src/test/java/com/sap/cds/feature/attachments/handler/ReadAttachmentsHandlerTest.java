@@ -8,7 +8,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +24,6 @@ import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservi
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
-import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.DocumentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -51,7 +49,7 @@ class ReadAttachmentsHandlerTest {
 	private ItemModifierProvider provider;
 	private CdsReadEventContext readEventContext;
 	private Modifier modifier;
-	private ArgumentCaptor<Map> fieldNamesArgumentCaptor;
+	private ArgumentCaptor<List<String>> fieldNamesArgumentCaptor;
 
 	@BeforeAll
 	static void classSetup() {
@@ -68,7 +66,7 @@ class ReadAttachmentsHandlerTest {
 		modifier = spy(new Modifier() {
 		});
 		when(provider.getBeforeReadDocumentIdEnhancer(any())).thenReturn(modifier);
-		fieldNamesArgumentCaptor = ArgumentCaptor.forClass(Map.class);
+		fieldNamesArgumentCaptor = ArgumentCaptor.forClass(List.class);
 	}
 
 	@Test
@@ -81,13 +79,7 @@ class ReadAttachmentsHandlerTest {
 		verify(provider).getBeforeReadDocumentIdEnhancer(fieldNamesArgumentCaptor.capture());
 		verify(modifier).items(any());
 		var fields = fieldNamesArgumentCaptor.getValue();
-		assertThat(fields).hasSize(2);
-		var attachmentFields = (DocumentFieldNames) fields.get("attachments");
-		var attachmentTableFields = (DocumentFieldNames) fields.get("attachmentTable");
-		assertThat(attachmentFields.contentFieldName()).isEqualTo("content");
-		assertThat(attachmentFields.documentIdFieldName()).isEqualTo("documentId");
-		assertThat(attachmentTableFields.contentFieldName()).isEqualTo("content");
-		assertThat(attachmentTableFields.documentIdFieldName()).isEqualTo("documentId");
+		assertThat(fields).hasSize(2).contains("attachments").contains("attachmentTable");
 	}
 
 	@Test
@@ -100,10 +92,7 @@ class ReadAttachmentsHandlerTest {
 		verify(provider).getBeforeReadDocumentIdEnhancer(fieldNamesArgumentCaptor.capture());
 		verify(modifier).items(any());
 		var fields = fieldNamesArgumentCaptor.getValue();
-		assertThat(fields).hasSize(1);
-		var attachmentFields = (DocumentFieldNames) fields.get("");
-		assertThat(attachmentFields.contentFieldName()).isEqualTo("content");
-		assertThat(attachmentFields.documentIdFieldName()).isEqualTo("documentId");
+		assertThat(fields).hasSize(1).contains("");
 	}
 
 	@Test

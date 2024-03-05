@@ -1,7 +1,7 @@
 package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
+import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
@@ -16,15 +16,11 @@ public class DeleteContentAttachmentEvent extends ProcessingBase implements Modi
 	}
 
 	@Override
-	public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) {
-		if (fieldNames.documentIdField().isEmpty()) {
-			return value;
+	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, String attachmentId) {
+		if (doesDocumentIdExistsBefore(existingData)) {
+			attachmentService.deleteAttachment((String) existingData.get(Attachments.DOCUMENT_ID));
 		}
-
-		if (doesDocumentIdExistsBefore(fieldNames, existingData)) {
-			attachmentService.deleteAttachment((String) existingData.get(fieldNames.documentIdField().get()));
-		}
-		path.target().values().put(fieldNames.documentIdField().get(), null);
+		path.target().values().put(Attachments.DOCUMENT_ID, null);
 		return value;
 	}
 

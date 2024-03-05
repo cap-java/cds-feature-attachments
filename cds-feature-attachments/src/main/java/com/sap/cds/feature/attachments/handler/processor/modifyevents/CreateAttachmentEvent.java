@@ -3,7 +3,8 @@ package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 import java.io.InputStream;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
+import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.ql.cqn.Path;
@@ -18,14 +19,14 @@ public class CreateAttachmentEvent extends ModifyAttachmentEventBase implements 
 	}
 
 	@Override
-	public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) {
+	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, String attachmentId) {
 		var values = path.target().values();
-		var mimeTypeOptional = getFieldName(fieldNames.mimeTypeField(), values, existingData);
-		var fileNameOptional = getFieldName(fieldNames.fileNameField(), values, existingData);
+		var mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, existingData);
+		var fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, existingData);
 
 		var createEventInput = new CreateAttachmentInput(attachmentId, path.target().entity().getQualifiedName(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
 		var result = attachmentService.createAttachment(createEventInput);
-		fieldNames.documentIdField().ifPresent(doc -> path.target().values().put(doc, result.documentId()));
+		path.target().values().put(Attachments.DOCUMENT_ID, result.documentId());
 		return result.isExternalStored() ? null : value;
 	}
 
