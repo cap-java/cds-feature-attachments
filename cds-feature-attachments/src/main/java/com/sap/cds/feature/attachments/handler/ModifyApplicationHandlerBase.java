@@ -1,5 +1,6 @@
 package com.sap.cds.feature.attachments.handler;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,11 +13,10 @@ import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEventFactory;
-import com.sap.cds.impl.builder.model.Conjunction;
 import com.sap.cds.ql.Select;
-import com.sap.cds.ql.cqn.CqnPredicate;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -61,35 +61,29 @@ abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 	}
 
 	private CdsData readExistingData(Map<String, Object> keys, CdsEntity entity) {
-		if (isKeyEmpty(keys)) {
-			logger.error("no id provided for attachment entity");
-			throw new IllegalStateException("no attachment id provided");
+		if (keys.isEmpty()) {
+			return CdsData.create();
 		}
 
-		CqnPredicate whereClause = null;
-		for (var entry : keys.entrySet()) {
-			if (Objects.nonNull(entry.getValue()) && isNotDraftActiveEntityField(entity, entry.getKey())) {
-				CqnPredicate condition = Select.from(entity).where(e -> e.get(entry.getKey()).eq(entry.getValue())).where().orElseThrow();
-				whereClause = Objects.isNull(whereClause) ? condition : Conjunction.and(condition, whereClause);
-			}
-		}
-
-		var select = Select.from(entity).where(whereClause);
+		var clearedKeys = removeDraftKeys(keys, entity);
+		var select = Select.from(entity).matching(clearedKeys);
 		logger.info("Select for reading before data: {}", select);
 		var result = persistenceService.run(select);
 		logger.info("result from reading before data {}", result);
 		if (result.rowCount() > 1) {
-			throw new IllegalStateException("too many results");
+			throw new ServiceException("too many results");
 		}
 		return result.rowCount() == 1 ? result.single() : CdsData.create();
 	}
 
-	private boolean isNotDraftActiveEntityField(CdsEntity entity, String key) {
-		return !(entity.findAction(DraftService.EVENT_DRAFT_PREPARE).isPresent() && key.equals(DRAFT_ENTITY_ACTIVE_FIELD));
+	private Map<String, Object> removeDraftKeys(Map<String, Object> keys, CdsEntity entity) {
+		var keyMap = new HashMap<>(keys);
+		keyMap.entrySet().removeIf(entry -> isDraftActiveEntityField(entity, entry.getKey()));
+		return keyMap;
 	}
 
-	private boolean isKeyEmpty(Map<String, Object> keys) {
-		return keys.values().stream().noneMatch(Objects::nonNull);
+	private boolean isDraftActiveEntityField(CdsEntity entity, String key) {
+		return entity.findAction(DraftService.EVENT_DRAFT_PREPARE).isPresent() && key.equals(DRAFT_ENTITY_ACTIVE_FIELD);
 	}
 
 }
