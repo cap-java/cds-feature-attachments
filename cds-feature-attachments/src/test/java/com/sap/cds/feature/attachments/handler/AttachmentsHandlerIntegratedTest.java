@@ -94,7 +94,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
 			var roots = RootTable.create();
 
-			createHandler.processAfter(createContext, List.of(roots));
+			createHandler.processBefore(createContext, List.of(roots));
 
 			verifyNoInteractions(attachmentService);
 			assertThat(roots.getId()).isNull();
@@ -118,7 +118,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				attachment.setFileName(fileName);
 				attachment.setMimeType(mimeType);
 
-				createHandler.processAfter(createContext, List.of(attachment));
+				createHandler.processBefore(createContext, List.of(attachment));
 
 				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 				var createInput = createEventInputCaptor.getValue();
@@ -149,7 +149,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			item.setAttachments(List.of(attachment));
 			roots.setItems(List.of(item));
 
-			createHandler.processAfter(createContext, List.of(roots));
+			createHandler.processBefore(createContext, List.of(roots));
 
 			verifyNoInteractions(attachmentService);
 		}
@@ -174,7 +174,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				item.setAttachments(List.of(attachment));
 				roots.setItems(List.of(item));
 
-				createHandler.processAfter(createContext, List.of(roots));
+				createHandler.processBefore(createContext, List.of(roots));
 
 				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 				var input = createEventInputCaptor.getValue();
@@ -212,7 +212,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				attachmentAspect.setId(UUID.randomUUID().toString());
 				roots.setAttachmentTable(List.of(attachmentAspect));
 
-				updateHandler.processAfter(updateContext, List.of(roots));
+				updateHandler.processBefore(updateContext, List.of(roots));
 
 				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 				var creationInput = createEventInputCaptor.getValue();
@@ -238,7 +238,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			var roots = RootTable.create();
 			roots.setTitle("new title");
 
-			updateHandler.processAfter(updateContext, List.of(roots));
+			updateHandler.processBefore(updateContext, List.of(roots));
 
 			verifyNoInteractions(attachmentService);
 			assertThat(roots.getId()).isNull();
@@ -258,7 +258,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				attachment.setContent(testStream);
 				attachment.setId(UUID.randomUUID().toString());
 
-				updateHandler.processAfter(updateContext, List.of(attachment));
+				updateHandler.processBefore(updateContext, List.of(attachment));
 
 				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 				var creationInput = createEventInputCaptor.getValue();
@@ -289,7 +289,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				attachment.setContent(testStream);
 				attachment.setId(UUID.randomUUID().toString());
 
-				updateHandler.processAfter(updateContext, List.of(attachment));
+				updateHandler.processBefore(updateContext, List.of(attachment));
 
 				verify(attachmentService).updateAttachment(updateEventInputCaptor.capture());
 				var updateInput = updateEventInputCaptor.getValue();
@@ -322,7 +322,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			attachment.setId(oldData.getId());
 			attachment.setContent(null);
 
-			updateHandler.processAfter(updateContext, List.of(attachment));
+			updateHandler.processBefore(updateContext, List.of(attachment));
 
 			verify(attachmentService).deleteAttachment(oldData.getDocumentId());
 			assertThat(attachment.getContent()).isNull();

@@ -8,7 +8,7 @@ import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.EventHandler;
-import com.sap.cds.services.handler.annotations.After;
+import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -22,9 +22,9 @@ public class UpdateAttachmentsHandler extends ModifyApplicationHandlerBase imple
 		super(persistenceService, eventFactory);
 	}
 
-	@After(event = CqnService.EVENT_UPDATE)
+	@Before(event = CqnService.EVENT_UPDATE)
 	@HandlerOrder(HandlerOrder.EARLY)
-	public void processAfter(CdsUpdateEventContext context, List<CdsData> data) {
+	public void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
 		if (processingNotNeeded(context.getTarget(), data)) {
 			return;
 		}

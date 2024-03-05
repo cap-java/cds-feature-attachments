@@ -25,7 +25,7 @@ import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CqnService;
-import com.sap.cds.services.handler.annotations.After;
+import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
@@ -52,7 +52,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 		var attachment = Attachments.create();
 
-		cut.processAfter(createContext, List.of(attachment));
+		cut.processBefore(createContext, List.of(attachment));
 
 		verifyNoInteractions(persistenceService);
 		verifyNoInteractions(eventFactory);
@@ -69,7 +69,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		roots.setAttachmentTable(List.of(attachment));
 		when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
 
-		cut.processAfter(createContext, List.of(roots));
+		cut.processBefore(createContext, List.of(roots));
 
 		assertThat(roots.getId()).isNotEmpty();
 		assertThat(attachment.getId()).isNotEmpty();
@@ -85,7 +85,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 			when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
 			var row = mockSelectionResult();
 
-			cut.processAfter(createContext, List.of(attachment));
+			cut.processBefore(createContext, List.of(attachment));
 
 			verify(eventFactory).getEvent(eq(CqnService.EVENT_CREATE), eq(testStream), fieldNamesArgumentCaptor.capture(), eq(row));
 			verifyFilledFieldNames();
@@ -102,7 +102,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		when(event.processEvent(any(), any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
 
 		List<CdsData> input = List.of(attachment);
-		assertThrows(ServiceException.class, () -> cut.processAfter(createContext, input));
+		assertThrows(ServiceException.class, () -> cut.processBefore(createContext, input));
 	}
 
 	@Test
@@ -115,12 +115,12 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processAfter", CdsCreateEventContext.class, List.class);
+		var method = cut.getClass().getMethod("processBefore", CdsCreateEventContext.class, List.class);
 
-		var createAfterAnnotation = method.getAnnotation(After.class);
+		var createBeforeAnnotation = method.getAnnotation(Before.class);
 		var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-		assertThat(createAfterAnnotation.event()).containsOnly(CqnService.EVENT_CREATE);
+		assertThat(createBeforeAnnotation.event()).containsOnly(CqnService.EVENT_CREATE);
 		assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
 	}
 

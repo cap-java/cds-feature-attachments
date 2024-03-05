@@ -14,7 +14,7 @@ import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.EventHandler;
-import com.sap.cds.services.handler.annotations.After;
+import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -28,9 +28,9 @@ public class CreateAttachmentsHandler extends ModifyApplicationHandlerBase imple
 		super(persistenceService, eventFactory);
 	}
 
-	@After(event = CqnService.EVENT_CREATE)
+	@Before(event = CqnService.EVENT_CREATE)
 	@HandlerOrder(HandlerOrder.EARLY)
-	public void processAfter(CdsCreateEventContext context, List<CdsData> data) {
+	public void processBefore(CdsCreateEventContext context, List<CdsData> data) {
 		if (processingNotNeeded(context.getTarget(), data)) {
 			return;
 		}

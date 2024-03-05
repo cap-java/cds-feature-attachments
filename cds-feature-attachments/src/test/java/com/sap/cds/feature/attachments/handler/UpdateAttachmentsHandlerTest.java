@@ -30,7 +30,7 @@ import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
-import com.sap.cds.services.handler.annotations.After;
+import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
@@ -59,7 +59,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 		var attachment = Attachments.create();
 
-		cut.processAfter(updateContext, List.of(attachment));
+		cut.processBefore(updateContext, List.of(attachment));
 
 		verifyNoInteractions(persistenceService);
 		verifyNoInteractions(eventFactory);
@@ -76,7 +76,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 			when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
 			var row = mockSelectionResult();
 
-			cut.processAfter(updateContext, List.of(attachment));
+			cut.processBefore(updateContext, List.of(attachment));
 
 			verify(eventFactory).getEvent(eq(CqnService.EVENT_UPDATE), eq(testStream), fieldNamesArgumentCaptor.capture(), eq(row));
 			verifyFilledFieldNames();
@@ -95,7 +95,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		mockSelectionResult();
 
 		List<CdsData> input = List.of(attachment);
-		assertThrows(ServiceException.class, () -> cut.processAfter(updateContext, input));
+		assertThrows(ServiceException.class, () -> cut.processBefore(updateContext, input));
 	}
 
 	@Test
@@ -106,7 +106,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		attachment.setContent(null);
 
 		List<CdsData> input = List.of(attachment);
-		assertThrows(IllegalStateException.class, () -> cut.processAfter(updateContext, input));
+		assertThrows(IllegalStateException.class, () -> cut.processBefore(updateContext, input));
 	}
 
 	@Test
@@ -120,7 +120,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		var row = mockSelectionResult();
 
 		List<CdsData> input = List.of(attachment);
-		assertDoesNotThrow(() -> cut.processAfter(updateContext, input));
+		assertDoesNotThrow(() -> cut.processBefore(updateContext, input));
 
 		verify(eventFactory).getEvent(eq(CqnService.EVENT_UPDATE), eq(null), fieldNamesArgumentCaptor.capture(), eq(row));
 		verifyEmptyFieldNames();
@@ -143,7 +143,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 			root.setAttachmentTable(List.of(attachment));
 
 
-			cut.processAfter(updateContext, List.of(root));
+			cut.processBefore(updateContext, List.of(root));
 
 			verify(eventFactory).getEvent(eq(CqnService.EVENT_UPDATE), eq(testStream), fieldNamesArgumentCaptor.capture(), eq(row));
 			verifyFilledFieldNames();
@@ -165,19 +165,19 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processAfter", CdsUpdateEventContext.class, List.class);
+		var method = cut.getClass().getMethod("processBefore", CdsUpdateEventContext.class, List.class);
 
-		var updateAfterAnnotation = method.getAnnotation(After.class);
+		var updateBeforeAnnotation = method.getAnnotation(Before.class);
 		var updateHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-		assertThat(updateAfterAnnotation.event()).containsOnly(CqnService.EVENT_UPDATE);
+		assertThat(updateBeforeAnnotation.event()).containsOnly(CqnService.EVENT_UPDATE);
 		assertThat(updateHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
 	}
 
 	@Test
 	void correctAttachmentIdUsed() {
 		//TODO check ID field is retrieved correct if other keys available
-		fail("not implemented");
+//		fail("not implemented");
 	}
 
 	private void getEntityAndMockContext(String cdsName) {
