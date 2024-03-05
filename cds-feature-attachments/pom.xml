@@ -115,6 +115,31 @@
                     </execution>
 
                     <execution>
+                        <id>cds.build</id>
+                        <goals>
+                            <goal>cds</goal>
+                        </goals>
+                        <configuration>
+                            <workingDirectory>./src/main/resources/cds/com.sap.cds/cds-feature-attachments
+                            </workingDirectory>
+                            <commands>
+                                <command>build --for java --src ./</command>
+                            </commands>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>cds.generate</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <basePackage>${generation-package}.cds4j</basePackage>
+                            <includes>com.sap.attachments.*</includes>
+                        </configuration>
+                    </execution>
+
+                    <execution>
                         <id>cds.test.build</id>
                         <goals>
                             <goal>cds</goal>
@@ -129,42 +154,16 @@
                     </execution>
 
                     <execution>
-                        <id>cds.build</id>
-                        <goals>
-                            <goal>cds</goal>
-                        </goals>
-                        <configuration>
-                            <workingDirectory>./</workingDirectory>
-                            <commands>
-                                <command>build --for java --src ./</command>
-                            </commands>
-                        </configuration>
-                    </execution>
-
-                    <execution>
                         <id>cds.test.generate</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <basePackage>cds.gen.test</basePackage>
                             <codeOutputDirectory>${project.basedir}/${test-generation-folder}/cds4j
                             </codeOutputDirectory>
                             <basePackage>${generation-package}.test.cds4j</basePackage>
                             <testSources>true</testSources>
-                            <csnFile>${project.basedir}/src/test/resources/cds/csn.json
-                            </csnFile>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>cds.generate</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <basePackage>cds.gen</basePackage>
-                            <basePackage>${generation-package}.cds4j</basePackage>
+                            <csnFile>${project.basedir}/src/test/resources/cds/csn.json</csnFile>
                         </configuration>
                     </execution>
 
