@@ -497,6 +497,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			var serviceEntity = runtime.getCdsModel().findEntity(entityName);
 			when(readContext.getCqn()).thenReturn(select);
 			when(readContext.getCdsRuntime()).thenReturn(runtime);
+			when(readContext.getModel()).thenReturn(runtime.getCdsModel());
 			when(readContext.getEvent()).thenReturn(CqnService.EVENT_READ);
 			when(readContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 		}

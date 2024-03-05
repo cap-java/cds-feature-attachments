@@ -241,7 +241,7 @@ class ReadAttachmentsHandlerTest {
 	private void mockEventContext(String entityName, CqnSelect select) {
 		var serviceEntity = runtime.getCdsModel().findEntity(entityName);
 		when(readEventContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-		when(readEventContext.getCdsRuntime()).thenReturn(runtime);
+		when(readEventContext.getModel()).thenReturn(runtime.getCdsModel());
 		when(readEventContext.getCqn()).thenReturn(select);
 	}
 
