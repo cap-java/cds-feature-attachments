@@ -125,7 +125,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				var expectedContent = isExternalStored ? null : testStream;
 				assertThat(attachment.getContent()).isEqualTo(expectedContent);
 				assertThat(createInput.content()).isEqualTo(testStream);
-				assertThat(createInput.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+				assertThat(createInput.attachmentIds()).isNotEmpty().containsEntry("ID", attachment.getId());
 				assertThat(createInput.attachmentEntityName()).isNotEmpty().isEqualTo(Attachment_.CDS_NAME);
 				assertThat(createInput.fileName()).isEqualTo(fileName);
 				assertThat(createInput.mimeType()).isEqualTo(mimeType);
@@ -180,7 +180,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				var input = createEventInputCaptor.getValue();
 				assertThat(attachment.getContent()).isEqualTo(testStream);
 				assertThat(input.content()).isEqualTo(testStream);
-				assertThat(input.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+				assertThat(input.attachmentIds()).isNotEmpty().containsEntry("ID", attachment.getId());
 				assertThat(input.attachmentEntityName()).isNotEmpty().isEqualTo(Attachment_.CDS_NAME);
 				assertThat(input.fileName()).isEqualTo(fileName);
 				assertThat(input.mimeType()).isEqualTo(mimeType);
@@ -218,7 +218,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				var creationInput = createEventInputCaptor.getValue();
 				assertThat(attachmentAspect.getContent()).isEqualTo(testStream);
 				assertThat(creationInput.content()).isEqualTo(testStream);
-				assertThat(creationInput.attachmentId()).isNotEmpty().isEqualTo(attachmentAspect.getId());
+				assertThat(creationInput.attachmentIds()).isNotEmpty().containsEntry("ID", attachmentAspect.getId());
 				assertThat(creationInput.attachmentEntityName()).isNotEmpty().isEqualTo(RootTable_.CDS_NAME + ".attachments");
 				assertThat(creationInput.fileName()).isEqualTo(existingData.getFileName());
 				assertThat(creationInput.mimeType()).isEqualTo(existingData.getMimeType());
@@ -264,7 +264,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				var creationInput = createEventInputCaptor.getValue();
 				assertThat(attachment.getContent()).isEqualTo(testStream);
 				assertThat(creationInput.content()).isEqualTo(testStream);
-				assertThat(creationInput.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+				assertThat(creationInput.attachmentIds()).isNotEmpty().containsEntry("ID", attachment.getId());
 				assertThat(creationInput.attachmentEntityName()).isNotEmpty().isEqualTo(Attachment_.CDS_NAME);
 				assertThat(creationInput.fileName()).isEqualTo(existingData.getFileName());
 				assertThat(creationInput.mimeType()).isEqualTo(existingData.getMimeType());
@@ -295,7 +295,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				var updateInput = updateEventInputCaptor.getValue();
 				assertThat(attachment.getContent()).isEqualTo(testStream);
 				assertThat(updateInput.content()).isEqualTo(testStream);
-				assertThat(updateInput.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
+				assertThat(updateInput.attachmentIds()).isNotEmpty().containsEntry("ID", attachment.getId());
 				assertThat(updateInput.attachmentEntityName()).isNotEmpty().isEqualTo(Attachment_.CDS_NAME);
 				assertThat(updateInput.fileName()).isEqualTo(existingData.getFileName());
 				assertThat(updateInput.mimeType()).isEqualTo(existingData.getMimeType());

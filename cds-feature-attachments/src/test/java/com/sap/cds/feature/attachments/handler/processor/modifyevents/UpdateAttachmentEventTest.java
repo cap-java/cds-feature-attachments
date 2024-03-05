@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +46,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
 		assertThat(resultValue.documentId()).isNotEmpty().isEqualTo(existingData.get("documentId"));
-		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
+		assertThat(resultValue.attachmentIds()).containsEntry("ID", attachment.getId());
 		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(resultValue.mimeType()).isEqualTo(attachment.getMimeType());
 		assertThat(resultValue.fileName()).isEqualTo(attachment.getFileName());
@@ -68,12 +69,12 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		existingData.put(MediaData.MIME_TYPE, "some mime type");
 		existingData.put(Attachments.DOCUMENT_ID, "some document id");
 
-		cut.processEvent(path, null, attachment.getContent(), existingData, attachment.getId());
+		cut.processEvent(path, null, attachment.getContent(), existingData, Map.of("ID", attachment.getId()));
 
 		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
 		assertThat(resultValue.documentId()).isNotEmpty().isEqualTo(existingData.get(Attachment.DOCUMENT_ID));
-		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
+		assertThat(resultValue.attachmentIds()).containsEntry("ID", attachment.getId());
 		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(resultValue.mimeType()).isNotEmpty().isEqualTo(existingData.get(MediaData.MIME_TYPE));
 		assertThat(resultValue.fileName()).isNotEmpty().isEqualTo(existingData.get(MediaData.FILE_NAME));
@@ -87,7 +88,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		when(attachmentService.updateAttachment(any())).thenReturn(attachmentServiceResult);
 		when(target.values()).thenReturn(attachment);
 
-		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), attachment.getId());
+		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()));
 
 		assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
 	}
@@ -101,7 +102,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
 		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
+		assertThat(resultValue.attachmentIds()).containsEntry("ID", attachment.getId());
 		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(resultValue.mimeType()).isNull();
 		assertThat(resultValue.fileName()).isNull();
@@ -122,7 +123,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 
 
-		cut.processEvent(path, null, attachment.getContent(), existingData, attachment.getId());
+		cut.processEvent(path, null, attachment.getContent(), existingData, Map.of("ID", attachment.getId()));
 		return attachment;
 	}
 

@@ -1,5 +1,7 @@
 package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 
+import java.util.Map;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
@@ -16,7 +18,7 @@ public class DeleteContentAttachmentEvent extends ProcessingBase implements Modi
 	}
 
 	@Override
-	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, String attachmentId) {
+	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds) {
 		if (doesDocumentIdExistsBefore(existingData)) {
 			attachmentService.deleteAttachment((String) existingData.get(Attachments.DOCUMENT_ID));
 		}

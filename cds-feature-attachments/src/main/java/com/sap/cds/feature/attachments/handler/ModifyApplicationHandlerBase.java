@@ -3,7 +3,6 @@ package com.sap.cds.feature.attachments.handler;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +12,6 @@ import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.ql.Select;
-import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.CqnService;
@@ -40,22 +38,18 @@ abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 	void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, String event) {
 		Filter filter = buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
-			var attachmentId = getAttachmentId(path);
-			var oldData = getExistingData(event, path);
+			var targetEntity = path.target().entity();
+			var keys = removeDraftKeys(path.target().keys(), targetEntity);
+			var oldData = getExistingData(event, keys, targetEntity);
 
 			var eventToProcess = eventFactory.getEvent(event, value, oldData);
-			return eventToProcess.processEvent(path, element, value, oldData, attachmentId);
+			return eventToProcess.processEvent(path, element, value, oldData, keys);
 		};
 		callProcessor(entity, data, filter, converter);
 	}
 
-	private String getAttachmentId(Path path) {
-		var attachmentIdObject = path.target().keys().get("ID");
-		return Objects.nonNull(attachmentIdObject) ? String.valueOf(attachmentIdObject) : null;
-	}
-
-	private CdsData getExistingData(String event, Path path) {
-		return CqnService.EVENT_UPDATE.equals(event) ? readExistingData(path.target().keys(), path.target().entity()) : CdsData.create();
+	private CdsData getExistingData(String event, Map<String, Object> keys, CdsEntity entity) {
+		return CqnService.EVENT_UPDATE.equals(event) ? readExistingData(keys, entity) : CdsData.create();
 	}
 
 	private CdsData readExistingData(Map<String, Object> keys, CdsEntity entity) {
@@ -63,8 +57,7 @@ abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 			return CdsData.create();
 		}
 
-		var clearedKeys = removeDraftKeys(keys, entity);
-		var select = Select.from(entity).matching(clearedKeys);
+		var select = Select.from(entity).matching(keys);
 		logger.info("Select for reading before data: {}", select);
 		var result = persistenceService.run(select);
 		logger.info("result from reading before data {}", result);

@@ -1,6 +1,7 @@
 package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 
 import java.io.InputStream;
+import java.util.Map;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
@@ -19,12 +20,12 @@ public class CreateAttachmentEvent extends ModifyAttachmentEventBase implements 
 	}
 
 	@Override
-	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, String attachmentId) {
+	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds) {
 		var values = path.target().values();
 		var mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, existingData);
 		var fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, existingData);
 
-		var createEventInput = new CreateAttachmentInput(attachmentId, path.target().entity().getQualifiedName(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
+		var createEventInput = new CreateAttachmentInput(attachmentIds, path.target().entity().getQualifiedName(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
 		var result = attachmentService.createAttachment(createEventInput);
 		path.target().values().put(Attachments.DOCUMENT_ID, result.documentId());
 		return result.isExternalStored() ? null : value;

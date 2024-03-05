@@ -1,5 +1,7 @@
 package com.sap.cds.feature.attachments.service.model.servicehandler;
 
+import java.util.Map;
+
 import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.EventContext;
@@ -31,16 +33,16 @@ public interface AttachmentUpdateEventContext extends EventContext {
 	void setDocumentId(String documentId);
 
 	/**
-		* @return The id of the attachment storage entity or {@code null} if no id was specified
+		* @return The id of the attachment storage entity or {@code Collections.emptyMap} if no id was specified
 		*/
-	String getAttachmentId();
+	Map<String, Object> getAttachmentIds();
 
 	/**
 		* Sets the id af the attachment entity for the attachment storage
 		*
-		* @param id The key of the attachment entity which defines the content field
+		* @param ids The key of the attachment entity which defines the content field
 		*/
-	void setAttachmentId(String id);
+	void setAttachmentIds(Map<String, Object> ids);
 
 	/**
 		* Sets the full qualified name af the attachment entity for the attachment storage

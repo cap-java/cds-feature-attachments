@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +41,7 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
+		assertThat(resultValue.attachmentIds()).containsEntry("ID", attachment.getId());
 		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(resultValue.mimeType()).isEqualTo(attachment.getMimeType());
 		assertThat(resultValue.fileName()).isEqualTo(attachment.getFileName());
@@ -53,7 +54,7 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
+		assertThat(resultValue.attachmentIds()).containsEntry("ID", attachment.getId());
 		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(resultValue.mimeType()).isNull();
 		assertThat(resultValue.fileName()).isNull();
@@ -76,11 +77,11 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		existingData.put(MediaData.FILE_NAME, "some file name");
 		existingData.put(MediaData.MIME_TYPE, "some mime type");
 
-		cut.processEvent(path, null, attachment.getContent(), existingData, attachment.getId());
+		cut.processEvent(path, null, attachment.getContent(), existingData, Map.of("ID", attachment.getId()));
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.attachmentId()).isEqualTo(attachment.getId());
+		assertThat(resultValue.attachmentIds()).containsEntry("ID", attachment.getId());
 		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(resultValue.mimeType()).isEqualTo(existingData.get(MediaData.MIME_TYPE));
 		assertThat(resultValue.fileName()).isEqualTo(existingData.get(MediaData.FILE_NAME));
@@ -94,7 +95,7 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
 		when(target.values()).thenReturn(attachment);
 
-		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), attachment.getId());
+		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()));
 
 		assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
 	}
@@ -112,7 +113,7 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		when(target.values()).thenReturn(attachment);
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 
-		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), attachment.getId());
+		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()));
 		return attachment;
 	}
 

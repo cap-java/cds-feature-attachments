@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -57,7 +58,7 @@ abstract class ModifyAttachmentEventTestBase {
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "id"));
 		when(attachmentService.updateAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "id"));
 
-		var result = cut.processEvent(path, null, attachment.getContent(), CdsData.create(), attachment.getId());
+		var result = cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()));
 
 		var expectedContent = isExternalStored ? null : attachment.getContent();
 		assertThat(result).isEqualTo(expectedContent);
