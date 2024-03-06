@@ -101,12 +101,12 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		var attachment = defineDataAndExecuteEvent(existingData);
 
 		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
-		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.attachmentIds()).containsEntry("ID", attachment.getId());
-		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
-		assertThat(resultValue.mimeType()).isNull();
-		assertThat(resultValue.fileName()).isNull();
-		assertThat(resultValue.content()).isEqualTo(attachment.getContent());
+		var resultUpdateValue = contextArgumentCaptor.getValue();
+		assertThat(resultUpdateValue.attachmentIds()).containsEntry("ID", attachment.getId());
+		assertThat(resultUpdateValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
+		assertThat(resultUpdateValue.mimeType()).isNull();
+		assertThat(resultUpdateValue.fileName()).isNull();
+		assertThat(resultUpdateValue.content()).isEqualTo(attachment.getContent());
 		assertThat(attachment.getDocumentId()).isNull();
 	}
 

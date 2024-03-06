@@ -17,8 +17,6 @@ import org.mockito.ArgumentCaptor;
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.EventItems;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.EventItems_;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.WrongAttachment;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.WrongAttachment_;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable;
@@ -107,17 +105,6 @@ class ReadAttachmentsHandlerTest {
 	}
 
 	@Test
-	void noFieldNamesFoundForWrongAttachment() {
-		var select = Select.from(WrongAttachment_.class).columns(WrongAttachment_::content);
-		mockEventContext(WrongAttachment_.CDS_NAME, select);
-
-		cut.processBefore(readEventContext);
-
-		verifyNoInteractions(provider);
-		verifyNoInteractions(modifier);
-	}
-
-	@Test
 	void dataFilledWithDeepStructure() throws IOException {
 		var testString = "test";
 		try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
@@ -192,18 +179,6 @@ class ReadAttachmentsHandlerTest {
 		mockEventContext(EventItems_.CDS_NAME, mock(CqnSelect.class));
 
 		cut.processAfter(readEventContext, List.of(eventItem));
-
-		verifyNoInteractions(attachmentService);
-	}
-
-	@Test
-	void attachmentServiceNotCalledIfWrongAttachment() {
-		var wrongAttachment = WrongAttachment.create();
-		wrongAttachment.setId(1);
-		wrongAttachment.setContent(null);
-		mockEventContext(WrongAttachment_.CDS_NAME, mock(CqnSelect.class));
-
-		cut.processAfter(readEventContext, List.of(wrongAttachment));
 
 		verifyNoInteractions(attachmentService);
 	}

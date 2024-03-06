@@ -51,9 +51,21 @@
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>3.3.1</version>
                 <configuration>
-                    <directory>${test-generation-folder}</directory>
-                    <directory>${generation-folder}</directory>
                     <filesets>
+                        <fileset>
+                            <directory>${generation-folder}</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>${test-generation-folder}</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
                         <fileset>
                             <directory>src/test/resources</directory>
                             <includes>

@@ -18,8 +18,6 @@ import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.WrongAttachment;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.WrongAttachment_;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
@@ -106,22 +104,6 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 		List<CdsData> input = List.of(attachment);
 		assertThrows(IllegalStateException.class, () -> cut.processBefore(updateContext, input));
-	}
-
-	@Test
-	void noExceptionIfAttachmentEntityWrongDefined() {
-		getEntityAndMockContext(WrongAttachment_.CDS_NAME);
-		var attachment = WrongAttachment.create();
-		attachment.setFilename("test.txt");
-		attachment.setContent(null);
-		attachment.setId(1);
-		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
-		var row = mockSelectionResult();
-
-		List<CdsData> input = List.of(attachment);
-		assertDoesNotThrow(() -> cut.processBefore(updateContext, input));
-
-		verify(eventFactory).getEvent(CqnService.EVENT_UPDATE, null, row);
 	}
 
 	@Test

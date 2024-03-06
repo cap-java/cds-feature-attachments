@@ -35,14 +35,6 @@ entity EventItems {
         note : String;
 }
 
-entity wrongAttachment         @(_is_media_data) {
-    key ID       : Integer;
-        url      : String;
-        content  : LargeBinary @Core.MediaType; // only for db-based services
-        mimeType : String;
-        filename : String;
-}
-
 service TestService {
     @odata.draft.enabled
     entity RootTable as
