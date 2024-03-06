@@ -15,7 +15,6 @@ import com.sap.cds.ql.Select;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.CqnService;
-import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.persistence.PersistenceService;
 
 abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
@@ -39,7 +38,7 @@ abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 		Filter filter = buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
 			var targetEntity = path.target().entity();
-			var keys = removeDraftKeys(path.target().keys(), targetEntity);
+			var keys = removeDraftKeys(path.target().keys());
 			var oldData = getExistingData(event, keys, targetEntity);
 
 			var eventToProcess = eventFactory.getEvent(event, value, oldData);
@@ -67,14 +66,14 @@ abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 		return result.rowCount() == 1 ? result.single() : CdsData.create();
 	}
 
-	private Map<String, Object> removeDraftKeys(Map<String, Object> keys, CdsEntity entity) {
+	private Map<String, Object> removeDraftKeys(Map<String, Object> keys) {
 		var keyMap = new HashMap<>(keys);
-		keyMap.entrySet().removeIf(entry -> isDraftActiveEntityField(entity, entry.getKey()));
+		keyMap.entrySet().removeIf(entry -> isDraftActiveEntityField(entry.getKey()));
 		return keyMap;
 	}
 
-	private boolean isDraftActiveEntityField(CdsEntity entity, String key) {
-		return entity.findAction(DraftService.EVENT_DRAFT_PREPARE).isPresent() && key.equals(DRAFT_ENTITY_ACTIVE_FIELD);
+	private boolean isDraftActiveEntityField(String key) {
+		return key.equals(DRAFT_ENTITY_ACTIVE_FIELD);
 	}
 
 }
