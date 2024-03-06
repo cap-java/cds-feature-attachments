@@ -67,12 +67,12 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		cut.processEvent(path, null, attachment.getContent(), existingData, Map.of("ID", attachment.getId(), "up__ID", "test"));
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
-		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.attachmentIds()).hasSize(2).containsEntry("ID", attachment.getId()).containsEntry("up__ID", "test");
-		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
-		assertThat(resultValue.mimeType()).isEqualTo(existingData.get(MediaData.MIME_TYPE));
-		assertThat(resultValue.fileName()).isEqualTo(existingData.get(MediaData.FILE_NAME));
-		assertThat(resultValue.content()).isEqualTo(attachment.getContent());
+		var createInput = contextArgumentCaptor.getValue();
+		assertThat(createInput.attachmentIds()).hasSize(2).containsEntry("ID", attachment.getId()).containsEntry("up__ID", "test");
+		assertThat(createInput.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
+		assertThat(createInput.mimeType()).isEqualTo(existingData.get(MediaData.MIME_TYPE));
+		assertThat(createInput.fileName()).isEqualTo(existingData.get(MediaData.FILE_NAME));
+		assertThat(createInput.content()).isEqualTo(attachment.getContent());
 	}
 
 	@Test
