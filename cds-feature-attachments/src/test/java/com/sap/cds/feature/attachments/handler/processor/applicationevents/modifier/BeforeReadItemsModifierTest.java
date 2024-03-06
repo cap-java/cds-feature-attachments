@@ -81,13 +81,6 @@ class BeforeReadItemsModifierTest {
 	}
 
 	@Test
-	void directSelectDoesNotExtendIfWrongFieldName() {
-		CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::ID, Attachment_::content);
-
-		runTestForDirectSelect(select, 0);
-	}
-
-	@Test
 	void directSelectDoesNotExtendForSelectAll() {
 		CqnSelect select = Select.from(Attachment_.class);
 

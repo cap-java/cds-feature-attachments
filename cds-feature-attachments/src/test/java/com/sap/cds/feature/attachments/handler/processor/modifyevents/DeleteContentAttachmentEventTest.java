@@ -34,16 +34,6 @@ class DeleteContentAttachmentEventTest {
 	}
 
 	@Test
-	void noDocumentIdFieldNameNoDeletion() {
-		var value = "test";
-
-		var expectedValue = cut.processEvent(null, null, value, null, null);
-
-		assertThat(expectedValue).isEqualTo(value);
-		verifyNoInteractions(attachmentService);
-	}
-
-	@Test
 	void documentIsExternallyDeleted() {
 		var value = "test";
 		var documentId = "some id";

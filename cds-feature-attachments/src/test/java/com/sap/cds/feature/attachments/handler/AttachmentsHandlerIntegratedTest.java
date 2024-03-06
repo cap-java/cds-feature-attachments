@@ -316,6 +316,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			oldData.setId(UUID.randomUUID().toString());
 			var row = RowImpl.row(oldData);
 			when(result.single()).thenReturn(row);
+			when(result.rowCount()).thenReturn(1L);
 			when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
 
 			var attachment = Attachments.create();

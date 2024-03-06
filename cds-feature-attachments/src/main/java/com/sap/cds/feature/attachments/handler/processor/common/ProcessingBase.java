@@ -7,8 +7,8 @@ import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Atta
 
 public abstract class ProcessingBase {
 
-	protected boolean doesDocumentIdExistsBefore(Map<?, Object> oldData) {
-		return Objects.nonNull(oldData.get(Attachments.DOCUMENT_ID));
+	protected boolean doesDocumentIdExistsBefore(Map<?, Object> existingData) {
+		return Objects.nonNull(existingData.get(Attachments.DOCUMENT_ID));
 	}
 
 }

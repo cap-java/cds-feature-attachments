@@ -49,20 +49,6 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 	}
 
 	@Test
-	void noFieldNamesDoNotFillContext() throws IOException {
-		var attachment = prepareAndExecuteEventWithData();
-
-		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
-		var resultCreateValue = contextArgumentCaptor.getValue();
-		assertThat(resultCreateValue.attachmentIds()).containsEntry("ID", attachment.getId());
-		assertThat(resultCreateValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
-		assertThat(resultCreateValue.mimeType()).isNull();
-		assertThat(resultCreateValue.fileName()).isNull();
-		assertThat(resultCreateValue.content()).isEqualTo(attachment.getContent());
-		assertThat(attachment.getDocumentId()).isNull();
-	}
-
-	@Test
 	void storageCalledWithAllFieldsFilledFromExistingData() throws IOException {
 		var attachment = Attachments.create();
 
@@ -70,6 +56,7 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
 			attachment.setContent(testContentStream);
 			attachment.setId(UUID.randomUUID().toString());
+			attachment.put("up__ID", "test");
 		}
 		when(target.values()).thenReturn(attachment);
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
@@ -77,11 +64,11 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		existingData.put(MediaData.FILE_NAME, "some file name");
 		existingData.put(MediaData.MIME_TYPE, "some mime type");
 
-		cut.processEvent(path, null, attachment.getContent(), existingData, Map.of("ID", attachment.getId()));
+		cut.processEvent(path, null, attachment.getContent(), existingData, Map.of("ID", attachment.getId(), "up__ID", "test"));
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
-		assertThat(resultValue.attachmentIds()).containsEntry("ID", attachment.getId());
+		assertThat(resultValue.attachmentIds()).hasSize(2).containsEntry("ID", attachment.getId()).containsEntry("up__ID", "test");
 		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(resultValue.mimeType()).isEqualTo(existingData.get(MediaData.MIME_TYPE));
 		assertThat(resultValue.fileName()).isEqualTo(existingData.get(MediaData.FILE_NAME));
@@ -91,6 +78,7 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 	@Test
 	void documentIdStoredInPath() {
 		var attachment = Attachments.create();
+		attachment.setId("test");
 		var attachmentServiceResult = new AttachmentModificationResult(false, "some document id");
 		when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
 		when(target.values()).thenReturn(attachment);

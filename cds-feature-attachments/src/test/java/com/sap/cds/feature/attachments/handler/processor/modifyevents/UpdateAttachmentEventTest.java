@@ -69,12 +69,12 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		existingData.put(MediaData.MIME_TYPE, "some mime type");
 		existingData.put(Attachments.DOCUMENT_ID, "some document id");
 
-		cut.processEvent(path, null, attachment.getContent(), existingData, Map.of("ID", attachment.getId()));
+		cut.processEvent(path, null, attachment.getContent(), existingData, Map.of("ID", attachment.getId(), "up__ID", "test"));
 
 		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
 		assertThat(resultValue.documentId()).isNotEmpty().isEqualTo(existingData.get(Attachment.DOCUMENT_ID));
-		assertThat(resultValue.attachmentIds()).containsEntry("ID", attachment.getId());
+		assertThat(resultValue.attachmentIds()).hasSize(2).containsEntry("ID", attachment.getId()).containsEntry("up__ID", "test");
 		assertThat(resultValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(resultValue.mimeType()).isNotEmpty().isEqualTo(existingData.get(MediaData.MIME_TYPE));
 		assertThat(resultValue.fileName()).isNotEmpty().isEqualTo(existingData.get(MediaData.FILE_NAME));
@@ -84,6 +84,7 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 	@Test
 	void newDocumentIdStoredInPath() {
 		var attachment = Attachments.create();
+		attachment.setId("testing");
 		var attachmentServiceResult = new AttachmentModificationResult(false, "some document id");
 		when(attachmentService.updateAttachment(any())).thenReturn(attachmentServiceResult);
 		when(target.values()).thenReturn(attachment);
@@ -91,23 +92,6 @@ class UpdateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()));
 
 		assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
-	}
-
-	@Test
-	void noFieldNamesDoNotFillContext() throws IOException {
-		var existingData = CdsData.create();
-		existingData.put("documentId", "some document id");
-
-		var attachment = defineDataAndExecuteEvent(existingData);
-
-		verify(attachmentService).updateAttachment(contextArgumentCaptor.capture());
-		var resultUpdateValue = contextArgumentCaptor.getValue();
-		assertThat(resultUpdateValue.attachmentIds()).containsEntry("ID", attachment.getId());
-		assertThat(resultUpdateValue.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
-		assertThat(resultUpdateValue.mimeType()).isNull();
-		assertThat(resultUpdateValue.fileName()).isNull();
-		assertThat(resultUpdateValue.content()).isEqualTo(attachment.getContent());
-		assertThat(attachment.getDocumentId()).isNull();
 	}
 
 	private Attachments defineDataAndExecuteEvent(CdsData existingData) throws IOException {

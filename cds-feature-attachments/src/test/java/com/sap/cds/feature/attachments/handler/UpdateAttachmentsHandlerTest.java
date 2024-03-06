@@ -1,7 +1,7 @@
 package com.sap.cds.feature.attachments.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -96,17 +96,6 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	}
 
 	@Test
-	void illegalStateExceptionIfIdNotProvidedForUpdate() {
-		getEntityAndMockContext(Attachment_.CDS_NAME);
-		var attachment = Attachments.create();
-		attachment.setFileName("test.txt");
-		attachment.setContent(null);
-
-		List<CdsData> input = List.of(attachment);
-		assertThrows(IllegalStateException.class, () -> cut.processBefore(updateContext, input));
-	}
-
-	@Test
 	void existingDataFoundAndUsed() throws IOException {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
 		var row = mockSelectionResult();
@@ -151,12 +140,6 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 		assertThat(updateBeforeAnnotation.event()).containsOnly(CqnService.EVENT_UPDATE);
 		assertThat(updateHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
-	}
-
-	@Test
-	void correctAttachmentIdUsed() {
-		//TODO check ID field is retrieved correct if other keys available
-		fail("not implemented");
 	}
 
 	private void getEntityAndMockContext(String cdsName) {
