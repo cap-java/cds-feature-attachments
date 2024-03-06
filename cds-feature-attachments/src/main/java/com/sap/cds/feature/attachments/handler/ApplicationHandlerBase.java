@@ -9,8 +9,6 @@ import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
-import com.sap.cds.ql.cqn.ResolvedSegment;
-import com.sap.cds.reflect.CdsBaseType;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
@@ -47,11 +45,6 @@ abstract class ApplicationHandlerBase extends ProcessingBase {
 
 	protected boolean hasElementAnnotation(CdsElement element, String annotation) {
 		return element.findAnnotation(annotation).isPresent();
-	}
-
-	protected String getIdField(ResolvedSegment target) {
-		var targetElements = target.entity().elements().toList();
-		return target.keys().keySet().stream().filter(key -> targetElements.stream().anyMatch(elem -> elem.getName().equals(key) && elem.getType().isSimpleType(CdsBaseType.UUID))).findAny().orElseThrow();
 	}
 
 }

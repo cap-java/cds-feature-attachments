@@ -22,6 +22,8 @@ import com.sap.cds.services.persistence.PersistenceService;
 @ServiceName(value = "*", type = ApplicationService.class)
 public class CreateAttachmentsHandler extends ModifyApplicationHandlerBase implements EventHandler {
 
+	private static final CdsDataProcessor processor = CdsDataProcessor.create();
+
 	public CreateAttachmentsHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
 		super(persistenceService, eventFactory);
 	}
@@ -38,7 +40,7 @@ public class CreateAttachmentsHandler extends ModifyApplicationHandlerBase imple
 	}
 
 	private void setKeysInData(CdsEntity entity, List<CdsData> data) {
-		CdsDataProcessor.create().addGenerator(
+		processor.addGenerator(
 						(path, element, type) -> element.isKey() && element.getType().isSimpleType(CdsBaseType.UUID),
 						(path, element, isNull) -> UUID.randomUUID().toString())
 				.process(data, entity);
