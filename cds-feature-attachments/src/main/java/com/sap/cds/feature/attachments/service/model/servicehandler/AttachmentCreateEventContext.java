@@ -71,4 +71,18 @@ public interface AttachmentCreateEventContext extends EventContext {
 		*/
 	void setData(MediaData data);
 
+	/**
+		* Sets the flag which show that the document was external created
+		*
+		* @param isExternalCreated Flag that the document was external created
+		*/
+	void setIsExternalCreated(Boolean isExternalCreated);
+
+	/**
+		* Flag that shows if the document was external created
+		*
+		* @return The flag for external creation
+		*/
+	Boolean getIsExternalCreated();
+
 }

@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.handler.CreateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.UpdateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draft.DraftHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.services.Service;
@@ -31,11 +32,6 @@ class RegistrationTest {
 	private AttachmentService attachmentService;
 	private ArgumentCaptor<Service> serviceArgumentCaptor;
 	private ArgumentCaptor<EventHandler> handlerArgumentCaptor;
-
-	private static void isHandlerForClassIncluded(List<EventHandler> handlers, Class<? extends EventHandler> includedClass) {
-		var isHandlerIncluded = handlers.stream().anyMatch(handler -> handler.getClass() == includedClass);
-		assertThat(isHandlerIncluded).isTrue();
-	}
 
 	@BeforeEach
 	void setup() {
@@ -68,14 +64,20 @@ class RegistrationTest {
 
 		cut.eventHandlers(configurer);
 
-		verify(configurer, times(5)).eventHandler(handlerArgumentCaptor.capture());
+		verify(configurer, times(7)).eventHandler(handlerArgumentCaptor.capture());
 		var handlers = handlerArgumentCaptor.getAllValues();
-		assertThat(handlers).hasSize(5);
+		assertThat(handlers).hasSize(7);
 		isHandlerForClassIncluded(handlers, DefaultAttachmentsServiceHandler.class);
 		isHandlerForClassIncluded(handlers, CreateAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, UpdateAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, DeleteAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, ReadAttachmentsHandler.class);
+		isHandlerForClassIncluded(handlers, DraftHandler.class);
+	}
+
+	private void isHandlerForClassIncluded(List<EventHandler> handlers, Class<? extends EventHandler> includedClass) {
+		var isHandlerIncluded = handlers.stream().anyMatch(handler -> handler.getClass() == includedClass);
+		assertThat(isHandlerIncluded).isTrue();
 	}
 
 }
