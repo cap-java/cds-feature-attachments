@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <revision>0.0.33-SNAPSHOT</revision>
+        <revision>0.0.34-SNAPSHOT</revision>
         <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -15,15 +15,13 @@
 
     <groupId>com.sap.cds</groupId>
     <artifactId>cds-feature-attachments-root</artifactId>
-    <version>0.0.33-SNAPSHOT</version>
+    <version>0.0.34-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>CDS Feature for Attachments - Root</name>
     <url>https://cap.cloud.sap/docs/java</url>
 
     <modules>
-        <module>cds-extension-handler</module>
-        <module>cds-attachment-service</module>
         <module>cds-feature-attachments</module>
     </modules>
 
@@ -122,7 +120,7 @@
                 <configuration>
                     <excludes>
                         <exclude>
-                            com/sap/cds/feature/attachments/handler/generation/**/*
+                            com/sap/cds/feature/attachments/generation/**/*
                         </exclude>
                     </excludes>
                 </configuration>
@@ -252,7 +250,7 @@
                     </rulesets>
                     <excludes>
                         <exclude>
-                            **/com/sap/cds/feature/attachments/handler/generation/**
+                            **/com/sap/cds/feature/attachments/generation/**
                         </exclude>
                     </excludes>
                 </configuration>
