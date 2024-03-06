@@ -31,9 +31,14 @@ abstract class ModifyApplicationEventTestBase {
 	}
 
 	Row mockSelectionResult() {
+		return mockSelectionResult(1L);
+	}
+
+	Row mockSelectionResult(long rowCount) {
 		var row = RowImpl.row(cdsData);
 		var result = mock(Result.class);
 		when(result.single()).thenReturn(row);
+		when(result.rowCount()).thenReturn(rowCount);
 		when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
 		return row;
 	}

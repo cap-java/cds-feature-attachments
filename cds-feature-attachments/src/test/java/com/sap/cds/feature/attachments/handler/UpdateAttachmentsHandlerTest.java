@@ -1,7 +1,7 @@
 package com.sap.cds.feature.attachments.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.CdsException;
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable;
@@ -101,26 +102,52 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		var row = mockSelectionResult();
 		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
+		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
+
+			var root = fillRootData(testStream);
+
+			cut.processBefore(updateContext, List.of(root));
+
+			verify(eventFactory).getEvent(CqnService.EVENT_UPDATE, testStream, row);
+			verify(persistenceService).run(selectArgumentCaptor.capture());
+			var select = selectArgumentCaptor.getValue();
+			assertThat(select.where().toString()).contains(root.getAttachmentTable().get(0).getId());
+			assertThat(select.where().toString()).contains(root.getId());
+		}
+	}
+
+	@Test
+	void tooManyExistingDataThrowsException() throws IOException {
+		getEntityAndMockContext(RootTable_.CDS_NAME);
+		mockSelectionResult(2L);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+
+		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
+
+			var root = fillRootData(testStream);
+
+			List<CdsData> roots = List.of(root);
+			assertThrows(CdsException.class, () -> cut.processBefore(updateContext, roots));
+		}
+	}
+
+	@Test
+	void noKeysNoException() throws IOException {
+		getEntityAndMockContext(RootTable_.CDS_NAME);
+		mockSelectionResult(1L);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+
 		var root = RootTable.create();
 		root.setId(UUID.randomUUID().toString());
 		var attachment = Attachments.create();
-		attachment.setId(UUID.randomUUID().toString());
-		attachment.put("up__ID", root.getId());
 
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
 			attachment.setContent(testStream);
 			root.setAttachmentTable(List.of(attachment));
 
-
-			cut.processBefore(updateContext, List.of(root));
-
-			verify(eventFactory).getEvent(CqnService.EVENT_UPDATE, testStream, row);
+			List<CdsData> roots = List.of(root);
+			assertDoesNotThrow(() -> cut.processBefore(updateContext, roots));
 		}
-
-		verify(persistenceService).run(selectArgumentCaptor.capture());
-		var select = selectArgumentCaptor.getValue();
-		assertThat(select.where().toString()).contains(attachment.getId());
-		assertThat(select.where().toString()).contains(root.getId());
 	}
 
 	@Test
@@ -140,6 +167,17 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 		assertThat(updateBeforeAnnotation.event()).containsOnly(CqnService.EVENT_UPDATE);
 		assertThat(updateHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
+	}
+
+	private RootTable fillRootData(ByteArrayInputStream testStream) {
+		var root = RootTable.create();
+		root.setId(UUID.randomUUID().toString());
+		var attachment = Attachments.create();
+		attachment.setId(UUID.randomUUID().toString());
+		attachment.put("up__ID", root.getId());
+		attachment.setContent(testStream);
+		root.setAttachmentTable(List.of(attachment));
+		return root;
 	}
 
 	private void getEntityAndMockContext(String cdsName) {
