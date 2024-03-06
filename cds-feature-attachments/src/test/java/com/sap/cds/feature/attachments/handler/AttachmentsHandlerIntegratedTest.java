@@ -71,8 +71,8 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 		persistenceService = mock(PersistenceService.class);
 		attachmentService = mock(AttachmentService.class);
 
-		createHandler = (CreateAttachmentsHandler) buildCreateHandler(persistenceService, attachmentService);
-		updateHandler = (UpdateAttachmentsHandler) buildUpdateHandler(persistenceService, attachmentService);
+		createHandler = (CreateAttachmentsHandler) buildCreateHandler(persistenceService, buildAttachmentEventFactory(attachmentService));
+		updateHandler = (UpdateAttachmentsHandler) buildUpdateHandler(persistenceService, buildAttachmentEventFactory(attachmentService));
 		readHandler = (ReadAttachmentsHandler) buildReadHandler(attachmentService);
 
 		createContext = mock(CdsCreateEventContext.class);

@@ -19,7 +19,7 @@ public class DeleteContentAttachmentEvent extends ProcessingBase implements Modi
 
 	@Override
 	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds) {
-		if (doesDocumentIdExistsBefore(existingData)) {
+		if (doesDocumentIdExistsInData(existingData)) {
 			attachmentService.deleteAttachment((String) existingData.get(Attachments.DOCUMENT_ID));
 		}
 		path.target().values().put(Attachments.DOCUMENT_ID, null);

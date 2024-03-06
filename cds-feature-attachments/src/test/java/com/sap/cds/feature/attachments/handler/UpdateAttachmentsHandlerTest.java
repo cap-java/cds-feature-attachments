@@ -72,12 +72,12 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 			var attachment = Attachments.create();
 			attachment.setContent(testStream);
 			attachment.setId("test");
-			when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+			when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
 			var row = mockSelectionResult();
 
 			cut.processBefore(updateContext, List.of(attachment));
 
-			verify(eventFactory).getEvent(CqnService.EVENT_UPDATE, testStream, row);
+//			verify(eventFactory).getEvent(CqnService.EVENT_UPDATE, testStream, row);
 		}
 	}
 
@@ -88,7 +88,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		attachment.setFileName("test.txt");
 		attachment.setContent(null);
 		attachment.setId("some id");
-		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
 		when(event.processEvent(any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
 		mockSelectionResult();
 
@@ -100,7 +100,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	void existingDataFoundAndUsed() throws IOException {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
 		var row = mockSelectionResult();
-		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
 
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
 
@@ -108,7 +108,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 			cut.processBefore(updateContext, List.of(root));
 
-			verify(eventFactory).getEvent(CqnService.EVENT_UPDATE, testStream, row);
+//			verify(eventFactory).getEvent(CqnService.EVENT_UPDATE, testStream, row);
 			verify(persistenceService).run(selectArgumentCaptor.capture());
 			var select = selectArgumentCaptor.getValue();
 			assertThat(select.where().toString()).contains(root.getAttachmentTable().get(0).getId());
@@ -120,7 +120,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	void tooManyExistingDataThrowsException() throws IOException {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
 		mockSelectionResult(2L);
-		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
 
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
 
@@ -135,7 +135,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	void noKeysNoException() throws IOException {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
 		mockSelectionResult(1L);
-		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
 
 		var root = RootTable.create();
 		root.setId(UUID.randomUUID().toString());

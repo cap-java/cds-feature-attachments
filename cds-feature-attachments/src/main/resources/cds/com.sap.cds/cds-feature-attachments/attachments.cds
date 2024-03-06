@@ -12,7 +12,8 @@ aspect MediaData @(_is_media_data) {
 }
 
 aspect Attachments : cuid, managed, MediaData {
-    documentId : String;
-    note       : String;
-    url        : String;
+    documentId      : String;
+    draftDocumentId : String;
+    note            : String;
+    url             : String;
 }

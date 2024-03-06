@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
+import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.ql.Select;
 import com.sap.cds.reflect.CdsEntity;
@@ -40,8 +41,10 @@ abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 			var targetEntity = path.target().entity();
 			var keys = removeDraftKeys(path.target().keys());
 			var oldData = getExistingData(event, keys, targetEntity);
+			var documentIdExists = path.target().values().containsKey(Attachments.DOCUMENT_ID);
+			var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
 
-			var eventToProcess = eventFactory.getEvent(event, value, oldData);
+			var eventToProcess = eventFactory.getEvent(value, documentId, documentIdExists, oldData);
 			return eventToProcess.processEvent(path, element, value, oldData, keys);
 		};
 		callProcessor(entity, data, filter, converter);
