@@ -66,8 +66,8 @@ public class BeforeReadItemsModifier implements Modifier {
 	}
 
 	private boolean isMediaAssociationAndNeedNewDocumentIdField(String association, List<CqnSelectListItem> list) {
-		return mediaAssociations.contains(association) && (list.stream().anyMatch(item -> isItemRefFieldWithName(item, MediaData.CONTENT)) &&
-																																																							list.stream().noneMatch(item -> isItemRefFieldWithName(item, Attachments.DOCUMENT_ID)));
+		return mediaAssociations.contains(association) && list.stream().anyMatch(item -> isItemRefFieldWithName(item, MediaData.CONTENT)) &&
+											list.stream().noneMatch(item -> isItemRefFieldWithName(item, Attachments.DOCUMENT_ID));
 	}
 
 	private boolean isItemRefFieldWithName(CqnSelectListItem item, String fieldName) {
