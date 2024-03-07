@@ -86,6 +86,7 @@ public class ReadAttachmentsHandler extends ApplicationHandlerBase implements Ev
 			});
 		});
 
+		//TODO refactor with map method in stream
 		Map<String, CdsEntity> annotatedEntitiesMap = new HashMap<>();
 		entity.elements().filter(element -> element.getType().isAssociation()).forEach(element -> annotatedEntitiesMap.put(element.getName(), element.getType().as(CdsAssociationType.class).getTarget()));
 
@@ -93,6 +94,7 @@ public class ReadAttachmentsHandler extends ApplicationHandlerBase implements Ev
 			return associationNames;
 		}
 
+		//TODO refactor: forEach
 		for (var associatedElement : annotatedEntitiesMap.entrySet()) {
 			if (!associationNames.contains(associatedElement.getKey()) && !processedEntities.contains(associatedElement.getKey())) {
 				processedEntities.add(associatedElement.getKey());
