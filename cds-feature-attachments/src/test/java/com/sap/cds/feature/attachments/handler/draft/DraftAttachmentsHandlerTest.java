@@ -19,6 +19,10 @@ import com.sap.cds.feature.attachments.handler.draftservice.DraftAttachmentsHand
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
+import com.sap.cds.services.draft.DraftService;
+import com.sap.cds.services.handler.annotations.Before;
+import com.sap.cds.services.handler.annotations.HandlerOrder;
+import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.runtime.CdsRuntime;
 
 class DraftAttachmentsHandlerTest {
@@ -60,6 +64,24 @@ class DraftAttachmentsHandlerTest {
 		cut.processBeforeDraftPatch(eventContext, List.of(events));
 
 		assertThat(events).doesNotContainKey(Attachments.DOCUMENT_ID);
+	}
+
+	@Test
+	void classHasCorrectAnnotations() {
+		var serviceAnnotation = cut.getClass().getAnnotation(ServiceName.class);
+
+		assertThat(serviceAnnotation.value()).containsOnly("*");
+		assertThat(serviceAnnotation.type()).containsOnly(DraftService.class);
+	}
+
+	@Test
+	void methodHasCorrectAnnotations() throws NoSuchMethodException {
+		var method = cut.getClass().getMethod("processBeforeDraftPatch", EventContext.class, List.class);
+		var beforeAnnotation = method.getAnnotation(Before.class);
+		var handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
+
+		assertThat(beforeAnnotation.event()).containsOnly(DraftService.EVENT_DRAFT_PATCH);
+		assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 
 	private void getEntityAndMockContext(String cdsName) {
