@@ -1,11 +1,11 @@
 package com.sap.cds.feature.attachments.configuration;
 
 import com.sap.cds.feature.attachments.dummy.DummyAttachmentsServiceHandler;
-import com.sap.cds.feature.attachments.handler.CreateAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.DeleteAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.ReadAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.UpdateAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.draft.DraftHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.BeforeReadItemsModifier;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.CreateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.DefaultModifyAttachmentEventFactory;
@@ -42,7 +42,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(buildUpdateHandler(persistenceService, factory));
 		configurer.eventHandler(buildDeleteHandler());
 		configurer.eventHandler(buildReadHandler(attachmentService));
-		configurer.eventHandler(new DraftHandler());
+		configurer.eventHandler(new DraftAttachmentsHandler());
 	}
 
 	private AttachmentService buildAttachmentService() {

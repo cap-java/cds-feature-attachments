@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler;
+package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;

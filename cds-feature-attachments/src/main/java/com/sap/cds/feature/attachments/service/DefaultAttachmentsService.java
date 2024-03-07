@@ -22,7 +22,6 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 		super(AttachmentService.DEFAULT_NAME);
 	}
 
-
 	@Override
 	public InputStream readAttachment(String documentId) {
 		var readContext = AttachmentReadEventContext.create();

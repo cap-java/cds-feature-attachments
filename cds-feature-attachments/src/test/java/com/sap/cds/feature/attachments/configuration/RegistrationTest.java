@@ -9,11 +9,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.sap.cds.feature.attachments.handler.CreateAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.DeleteAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.ReadAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.UpdateAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.draft.DraftHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.services.Service;
@@ -72,7 +72,7 @@ class RegistrationTest {
 		isHandlerForClassIncluded(handlers, UpdateAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, DeleteAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, ReadAttachmentsHandler.class);
-		isHandlerForClassIncluded(handlers, DraftHandler.class);
+		isHandlerForClassIncluded(handlers, DraftAttachmentsHandler.class);
 	}
 
 	private void isHandlerForClassIncluded(List<EventHandler> handlers, Class<? extends EventHandler> includedClass) {

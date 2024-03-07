@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
+//TODO remove if integration tests are in place, only for manual testing for now
 @ServiceName(value = "*", type = AttachmentService.class)
 public class DummyAttachmentsServiceHandler implements EventHandler {
 
@@ -57,7 +59,8 @@ public class DummyAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_READ_ATTACHMENT)
 	public void readAttachment(AttachmentReadEventContext context) {
 		logger.info(marker, "READ Attachment called in dummy handler for document id {}", context.getDocumentId());
-		var stream = new ByteArrayInputStream(documents.get(context.getDocumentId()));
+		var document = documents.get(context.getDocumentId());
+		var stream = Objects.nonNull(document) ? new ByteArrayInputStream(document) : null;
 		context.getData().setContent(stream);
 		context.setCompleted();
 	}

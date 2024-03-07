@@ -1,6 +1,7 @@
 package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
@@ -23,46 +24,42 @@ public class DefaultModifyAttachmentEventFactory extends ProcessingBase implemen
 	@Override
 	public ModifyAttachmentEvent getEvent(Object content, String documentId, boolean documentIdExist, CdsData existingData) {
 		var existingDocumentId = existingData.get(Attachments.DOCUMENT_ID);
-		if (documentIdExist) {
-			if (Objects.isNull(documentId) && Objects.isNull(existingDocumentId)) {
-				if (Objects.nonNull(content)) {
-					return createEvent;
-				} else {
-					return doNothingEvent;
-				}
-			}
-			if (Objects.isNull(documentId) && Objects.nonNull(existingDocumentId)) {
-				if (Objects.nonNull(content)) {
-					return updateEvent;
-				} else {
-					return deleteContentEvent;
-				}
-			}
-			if (documentId.equals(existingDocumentId)) {
-				if (Objects.nonNull(content)) {
-					return updateEvent;
-				} else {
-					return doNothingEvent;
-				}
-			}
+		var event = documentIdExist ? handleExistingDocumentId(content, documentId, existingDocumentId) : handleNonExistingDocumentId(content, existingDocumentId);
+		return event.orElse(doNothingEvent);
+	}
 
-		} else {
-			if (Objects.nonNull(existingDocumentId)) {
-				if (Objects.nonNull(content)) {
-					return updateEvent;
-				} else {
-					return deleteContentEvent;
-				}
-			} else {
-				if (Objects.nonNull(content)) {
-					return createEvent;
-				} else {
-					return doNothingEvent;
-				}
-			}
-
+	private Optional<ModifyAttachmentEvent> handleExistingDocumentId(Object content, String documentId, Object existingDocumentId) {
+		ModifyAttachmentEvent event = null;
+		if (Objects.isNull(documentId) && Objects.isNull(existingDocumentId) && (Objects.nonNull(content))) {
+			event = createEvent;
 		}
-		return doNothingEvent;
+		if (Objects.isNull(documentId) && Objects.nonNull(existingDocumentId)) {
+			if (Objects.nonNull(content)) {
+				event = updateEvent;
+			} else {
+				event = deleteContentEvent;
+			}
+		}
+		if (Objects.nonNull(documentId) && documentId.equals(existingDocumentId) && (Objects.nonNull(content))) {
+			event = updateEvent;
+		}
+		return Optional.ofNullable(event);
+	}
+
+	private Optional<ModifyAttachmentEvent> handleNonExistingDocumentId(Object content, Object existingDocumentId) {
+		ModifyAttachmentEvent event = null;
+		if (Objects.nonNull(existingDocumentId)) {
+			if (Objects.nonNull(content)) {
+				event = updateEvent;
+			} else {
+				event = deleteContentEvent;
+			}
+		} else {
+			if (Objects.nonNull(content)) {
+				event = createEvent;
+			}
+		}
+		return Optional.ofNullable(event);
 	}
 
 }

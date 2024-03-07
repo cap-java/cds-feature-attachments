@@ -22,6 +22,7 @@ import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
@@ -73,11 +74,11 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 			attachment.setContent(testStream);
 			attachment.setId("test");
 			when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
-			var row = mockSelectionResult();
+			mockSelectionResult();
 
 			cut.processBefore(updateContext, List.of(attachment));
 
-//			verify(eventFactory).getEvent(CqnService.EVENT_UPDATE, testStream, row);
+			verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
 		}
 	}
 
@@ -108,7 +109,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 			cut.processBefore(updateContext, List.of(root));
 
-//			verify(eventFactory).getEvent(CqnService.EVENT_UPDATE, testStream, row);
+			verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
 			verify(persistenceService).run(selectArgumentCaptor.capture());
 			var select = selectArgumentCaptor.getValue();
 			assertThat(select.where().toString()).contains(root.getAttachmentTable().get(0).getId());

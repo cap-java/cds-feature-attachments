@@ -29,7 +29,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@HandlerOrder(DEFAULT_ON)
 	public void updateAttachment(AttachmentUpdateEventContext context) {
 		context.setIsExternalCreated(false);
-		context.setDocumentId((String) context.getAttachmentIds().get(Attachments.ID));
+		context.setDocumentId(context.getDocumentId());
 		context.setCompleted();
 	}
 

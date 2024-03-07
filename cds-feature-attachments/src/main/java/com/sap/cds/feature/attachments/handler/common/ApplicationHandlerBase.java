@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler;
+package com.sap.cds.feature.attachments.handler.common;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -13,7 +13,7 @@ import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 
-abstract class ApplicationHandlerBase extends ProcessingBase {
+public abstract class ApplicationHandlerBase extends ProcessingBase {
 
 	protected boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
 		var isIncluded = new AtomicBoolean();
