@@ -5,7 +5,6 @@ import static org.mockito.Mockito.*;
 
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -82,7 +81,7 @@ class DefaultAttachmentsServiceTest {
 
 		var result = cut.createAttachment(input);
 
-		assertThat(result.isExternalStored()).isEqualTo(Objects.nonNull(isExternalCreated) ? isExternalCreated : false);
+		assertThat(result.isExternalStored()).isEqualTo(Boolean.TRUE.equals(isExternalCreated));
 		assertThat(result.documentId()).isEqualTo(documentId);
 		var createContext = contextReference.get();
 		assertThat(createContext.getAttachmentIds()).isEqualTo(input.attachmentIds());

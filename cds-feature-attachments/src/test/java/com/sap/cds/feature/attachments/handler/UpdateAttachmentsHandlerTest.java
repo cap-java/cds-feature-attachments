@@ -100,7 +100,7 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	@Test
 	void existingDataFoundAndUsed() throws IOException {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
-		var row = mockSelectionResult();
+		mockSelectionResult();
 		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
 
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {

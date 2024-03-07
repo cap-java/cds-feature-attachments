@@ -30,7 +30,7 @@ public class DefaultModifyAttachmentEventFactory extends ProcessingBase implemen
 
 	private Optional<ModifyAttachmentEvent> handleExistingDocumentId(Object content, String documentId, Object existingDocumentId) {
 		ModifyAttachmentEvent event = null;
-		if (Objects.isNull(documentId) && Objects.isNull(existingDocumentId) && (Objects.nonNull(content))) {
+		if (Objects.isNull(documentId) && Objects.isNull(existingDocumentId) && Objects.nonNull(content)) {
 			event = createEvent;
 		}
 		if (Objects.isNull(documentId) && Objects.nonNull(existingDocumentId)) {
@@ -40,7 +40,7 @@ public class DefaultModifyAttachmentEventFactory extends ProcessingBase implemen
 				event = deleteContentEvent;
 			}
 		}
-		if (Objects.nonNull(documentId) && documentId.equals(existingDocumentId) && (Objects.nonNull(content))) {
+		if (Objects.nonNull(documentId) && documentId.equals(existingDocumentId) && Objects.nonNull(content)) {
 			event = updateEvent;
 		}
 		return Optional.ofNullable(event);

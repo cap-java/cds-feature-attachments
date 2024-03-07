@@ -5,7 +5,6 @@ import static org.mockito.Mockito.*;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.Result;
-import com.sap.cds.Row;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.impl.RowImpl;
@@ -30,17 +29,16 @@ abstract class ModifyApplicationEventTestBase {
 		event = mock(ModifyAttachmentEvent.class);
 	}
 
-	Row mockSelectionResult() {
-		return mockSelectionResult(1L);
+	void mockSelectionResult() {
+		mockSelectionResult(1L);
 	}
 
-	Row mockSelectionResult(long rowCount) {
+	void mockSelectionResult(long rowCount) {
 		var row = RowImpl.row(cdsData);
 		var result = mock(Result.class);
 		when(result.single()).thenReturn(row);
 		when(result.rowCount()).thenReturn(rowCount);
 		when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
-		return row;
 	}
 
 }
