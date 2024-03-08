@@ -5,6 +5,8 @@ import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachme
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
+import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.BeforeReadItemsModifier;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.CreateAttachmentEvent;
@@ -40,7 +42,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		var factory = buildAttachmentEventFactory(attachmentService);
 		configurer.eventHandler(buildCreateHandler(persistenceService, factory));
 		configurer.eventHandler(buildUpdateHandler(persistenceService, factory));
-		configurer.eventHandler(buildDeleteHandler());
+		configurer.eventHandler(buildDeleteHandler(persistenceService));
 		configurer.eventHandler(buildReadHandler(attachmentService));
 		configurer.eventHandler(new DraftAttachmentsHandler());
 	}
@@ -61,8 +63,10 @@ public class Registration implements CdsRuntimeConfiguration {
 		return new CreateAttachmentsHandler(persistenceService, factory);
 	}
 
-	protected EventHandler buildDeleteHandler() {
-		return new DeleteAttachmentsHandler();
+	protected EventHandler buildDeleteHandler(PersistenceService persistenceService) {
+		var cascader = new DefaultAssociationCascader();
+		var attachmentsReader = new DefaultAttachmentsReader(cascader, persistenceService);
+		return new DeleteAttachmentsHandler(attachmentsReader);
 	}
 
 	protected EventHandler buildReadHandler(AttachmentService attachmentService) {

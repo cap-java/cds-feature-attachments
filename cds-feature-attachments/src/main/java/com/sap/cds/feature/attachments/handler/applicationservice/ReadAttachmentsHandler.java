@@ -1,10 +1,10 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
@@ -18,6 +18,7 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.reflect.CdsAssociationType;
+import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.cds.ApplicationService;
@@ -86,15 +87,12 @@ public class ReadAttachmentsHandler extends ApplicationHandlerBase implements Ev
 			});
 		});
 
-		//TODO refactor with map method in stream
-		Map<String, CdsEntity> annotatedEntitiesMap = new HashMap<>();
-		entity.elements().filter(element -> element.getType().isAssociation()).forEach(element -> annotatedEntitiesMap.put(element.getName(), element.getType().as(CdsAssociationType.class).getTarget()));
+		Map<String, CdsEntity> annotatedEntitiesMap = entity.elements().filter(element -> element.getType().isAssociation()).collect(Collectors.toMap(CdsElementDefinition::getName, element -> element.getType().as(CdsAssociationType.class).getTarget()));
 
 		if (annotatedEntitiesMap.isEmpty()) {
 			return associationNames;
 		}
 
-		//TODO refactor: forEach
 		for (var associatedElement : annotatedEntitiesMap.entrySet()) {
 			if (!associationNames.contains(associatedElement.getKey()) && !processedEntities.contains(associatedElement.getKey())) {
 				processedEntities.add(associatedElement.getKey());

@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler;
+package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -6,7 +6,7 @@ import static org.mockito.Mockito.mock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
 import com.sap.cds.services.cds.CqnService;
@@ -20,7 +20,7 @@ class DeleteAttachmentsHandlerTest {
 
 	@BeforeEach
 	void setup() {
-		cut = new DeleteAttachmentsHandler();
+		cut = new DeleteAttachmentsHandler(mock(AttachmentsReader.class));
 	}
 
 	@Test

@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler;
+package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;

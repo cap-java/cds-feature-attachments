@@ -1,10 +1,12 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
+import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
 import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.After;
+import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
@@ -12,6 +14,19 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 //TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
 public class DeleteAttachmentsHandler implements EventHandler {
+
+	private final AttachmentsReader attachmentsReader;
+
+	public DeleteAttachmentsHandler(AttachmentsReader attachmentsReader) {
+		this.attachmentsReader = attachmentsReader;
+	}
+
+	@Before(event = CqnService.EVENT_DELETE)
+	@HandlerOrder(HandlerOrder.LATE)
+	public void processBefore(CdsDeleteEventContext context) {
+		var attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn());
+	}
+
 
 	@After(event = CqnService.EVENT_DELETE)
 	@HandlerOrder(HandlerOrder.LATE)
