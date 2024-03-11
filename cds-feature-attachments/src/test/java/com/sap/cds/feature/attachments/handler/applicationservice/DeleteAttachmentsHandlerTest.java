@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,17 +88,20 @@ class DeleteAttachmentsHandlerTest {
 		when(context.getTarget()).thenReturn(rootEntity);
 		when(context.getModel()).thenReturn(runtime.getCdsModel());
 		var inputStream = mock(InputStream.class);
-		var attachment = buildAttachment("id1", inputStream);
+		var attachment1 = buildAttachment("id1", inputStream);
+		var attachment2 = buildAttachment(UUID.randomUUID().toString(), inputStream);
 		var root = Roots.create();
 		var items = Items.create();
 		root.setItemTable(List.of(items));
-		items.setAttachments(List.of(attachment));
+		items.setAttachments(List.of(attachment1, attachment2));
 		when(attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn())).thenReturn(List.of(root));
 
 		cut.processBefore(context);
 
-		verify(modifyAttachmentEvent).processEvent(any(Path.class), eq(entity.getElement(Attachment.CONTENT)), eq(inputStream), eq(attachment), eq(Map.of("ID", attachment.getId())));
-		assertThat(attachment.getContent()).isNull();
+		verify(modifyAttachmentEvent).processEvent(any(Path.class), any(), eq(inputStream), eq(attachment1), eq(Map.of("ID", attachment1.getId())));
+		verify(modifyAttachmentEvent).processEvent(any(Path.class), any(), eq(inputStream), eq(attachment2), eq(Map.of("ID", attachment2.getId())));
+		assertThat(attachment1.getContent()).isNull();
+		assertThat(attachment2.getContent()).isNull();
 	}
 
 	@Test
