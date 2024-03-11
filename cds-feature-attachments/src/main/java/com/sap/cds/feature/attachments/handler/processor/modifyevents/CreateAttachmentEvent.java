@@ -11,7 +11,7 @@ import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInp
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
 
-public class CreateAttachmentEvent extends ModifyAttachmentEventBase implements ModifyAttachmentEvent {
+public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
 	private final AttachmentService attachmentService;
 
@@ -22,8 +22,8 @@ public class CreateAttachmentEvent extends ModifyAttachmentEventBase implements 
 	@Override
 	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds) {
 		var values = path.target().values();
-		var mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, existingData);
-		var fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, existingData);
+		var mimeTypeOptional = ModifyAttachmentEventHelper.getFieldValue(MediaData.MIME_TYPE, values, existingData);
+		var fileNameOptional = ModifyAttachmentEventHelper.getFieldValue(MediaData.FILE_NAME, values, existingData);
 
 		var createEventInput = new CreateAttachmentInput(attachmentIds, path.target().entity().getQualifiedName(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
 		var result = attachmentService.createAttachment(createEventInput);

@@ -6,9 +6,12 @@ import java.util.Optional;
 
 import com.sap.cds.CdsData;
 
-abstract class ModifyAttachmentEventBase {
+public final class ModifyAttachmentEventHelper {
 
-	protected Optional<String> getFieldValue(String fieldName, Map<String, Object> values, CdsData existingData) {
+	private ModifyAttachmentEventHelper() {
+	}
+
+	public static Optional<String> getFieldValue(String fieldName, Map<String, Object> values, CdsData existingData) {
 		var annotationValue = values.get(fieldName);
 		var value = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(fieldName);
 		return Optional.ofNullable((String) value);

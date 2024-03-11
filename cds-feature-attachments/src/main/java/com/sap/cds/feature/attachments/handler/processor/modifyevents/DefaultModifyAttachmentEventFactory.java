@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
 
 public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEventFactory {
 

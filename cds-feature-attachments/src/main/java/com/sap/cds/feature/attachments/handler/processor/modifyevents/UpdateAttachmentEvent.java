@@ -11,7 +11,7 @@ import com.sap.cds.feature.attachments.service.model.service.UpdateAttachmentInp
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
 
-public class UpdateAttachmentEvent extends ModifyAttachmentEventBase implements ModifyAttachmentEvent {
+public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
 	private final AttachmentService attachmentService;
 
@@ -23,8 +23,8 @@ public class UpdateAttachmentEvent extends ModifyAttachmentEventBase implements 
 	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds) {
 		var values = path.target().values();
 
-		var mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, existingData);
-		var fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, existingData);
+		var mimeTypeOptional = ModifyAttachmentEventHelper.getFieldValue(MediaData.MIME_TYPE, values, existingData);
+		var fileNameOptional = ModifyAttachmentEventHelper.getFieldValue(MediaData.FILE_NAME, values, existingData);
 		var documentId = (String) existingData.get(Attachments.DOCUMENT_ID);
 
 		var input = new UpdateAttachmentInput(documentId, attachmentIds, path.target().entity().getQualifiedName(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);

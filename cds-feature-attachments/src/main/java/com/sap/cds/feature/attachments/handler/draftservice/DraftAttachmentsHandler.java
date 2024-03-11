@@ -6,7 +6,7 @@ import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerBase;
+import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.draft.DraftService;
@@ -16,7 +16,7 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 @ServiceName(value = "*", type = DraftService.class)
-public class DraftAttachmentsHandler extends ApplicationHandlerBase implements EventHandler {
+public class DraftAttachmentsHandler implements EventHandler {
 
 	@Before(event = {DraftService.EVENT_DRAFT_PATCH})
 	@HandlerOrder(HandlerOrder.LATE)
@@ -25,12 +25,13 @@ public class DraftAttachmentsHandler extends ApplicationHandlerBase implements E
 	}
 
 	void removeDocumentIdForAttachments(CdsEntity entity, List<CdsData> data) {
-		Filter filter = buildFilterForMediaTypeEntity();
+		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
 			path.target().values().put(Attachments.DOCUMENT_ID, null);
 			return value;
 		};
-		callProcessor(entity, data, filter, converter);
+
+		ApplicationHandlerHelper.callProcessor(entity, data, filter, converter);
 	}
 
 }
