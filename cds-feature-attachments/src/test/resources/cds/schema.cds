@@ -17,7 +17,7 @@ entity Roots : cuid {
 entity Items : cuid {
     rootId      : UUID;
     note        : String;
-    events      : Association to many Events;
+    events      : Composition of many Events;
     attachments : Composition of many Attachment
                       on attachments.parentKey = $self.ID;
 }

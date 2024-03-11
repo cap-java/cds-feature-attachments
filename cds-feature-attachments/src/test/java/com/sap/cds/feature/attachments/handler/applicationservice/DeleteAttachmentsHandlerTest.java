@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
@@ -20,7 +21,7 @@ class DeleteAttachmentsHandlerTest {
 
 	@BeforeEach
 	void setup() {
-		cut = new DeleteAttachmentsHandler(mock(AttachmentsReader.class));
+		cut = new DeleteAttachmentsHandler(mock(AttachmentsReader.class), mock(ModifyAttachmentEvent.class));
 	}
 
 	@Test

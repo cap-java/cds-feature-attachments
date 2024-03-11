@@ -33,6 +33,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachme
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.model.LazyProxyInputStream;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DeleteContentAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
@@ -74,8 +75,10 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 		persistenceService = mock(PersistenceService.class);
 		attachmentService = mock(AttachmentService.class);
 
-		createHandler = (CreateAttachmentsHandler) buildCreateHandler(persistenceService, buildAttachmentEventFactory(attachmentService));
-		updateHandler = (UpdateAttachmentsHandler) buildUpdateHandler(persistenceService, buildAttachmentEventFactory(attachmentService));
+		var deleteContentEvent = new DeleteContentAttachmentEvent(attachmentService);
+		var factory = buildAttachmentEventFactory(attachmentService, deleteContentEvent);
+		createHandler = (CreateAttachmentsHandler) buildCreateHandler(persistenceService, factory);
+		updateHandler = (UpdateAttachmentsHandler) buildUpdateHandler(persistenceService, factory);
 		readHandler = (ReadAttachmentsHandler) buildReadHandler(attachmentService);
 
 		createContext = mock(CdsCreateEventContext.class);

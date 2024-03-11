@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -21,7 +20,7 @@ public class DefaultAssociationCascader implements AssociationCascader {
 	@Override
 	public List<LinkedList<AssociationIdentifier>> findEntityPath(CdsModel model, CdsEntity entity) {
 		var firstList = new LinkedList<AssociationIdentifier>();
-		var internalResultList = getAttachmentAssociationPath(model, entity, "", firstList, new ArrayList<>());
+		var internalResultList = getAttachmentAssociationPath(model, entity, "", firstList, new ArrayList<>(List.of(entity.getQualifiedName())));
 
 		return new ArrayList<>(internalResultList);
 	}
@@ -34,21 +33,16 @@ public class DefaultAssociationCascader implements AssociationCascader {
 		currentList.set(new LinkedList<>());
 
 		var query = entity.query();
-		Optional<String> entityNames = query.map(cqnSelect -> cqnSelect.from().asRef().segments().stream().map(Segment::id).findFirst()).orElseGet(() -> Optional.of(entity.getQualifiedName()));
+		var entityName = query.flatMap(cqnSelect -> cqnSelect.from().asRef().segments().stream().map(Segment::id).findFirst()).orElseGet(() -> entity.getQualifiedName());
 
-		var isMediaType = new AtomicReference<Boolean>();
-		isMediaType.set(false);
-		entityNames.ifPresent(name -> {
-			var baseEntity = model.findEntity(name);
-			baseEntity.ifPresent(base -> {
-				isMediaType.set(isMediaEntity(base));
-				if (isMediaType(isMediaType)) {
-					var identifier = new AssociationIdentifier(associationName, name, isMediaType.get());
-					firstList.addLast(identifier);
-				}
-			});
-		});
-		if (isMediaType(isMediaType)) {
+		var baseEntity = model.findEntity(entityName).orElseThrow();
+		var isMediaEntity = isMediaEntity(baseEntity);
+		if (isMediaEntity) {
+			var identifier = new AssociationIdentifier(associationName, entity.getQualifiedName(), isMediaEntity);
+			firstList.addLast(identifier);
+		}
+
+		if (isMediaEntity) {
 			internalResultList.add(firstList);
 			return internalResultList;
 		}
@@ -79,10 +73,6 @@ public class DefaultAssociationCascader implements AssociationCascader {
 		}
 
 		return internalResultList;
-	}
-
-	private boolean isMediaType(AtomicReference<Boolean> isMediaType) {
-		return Boolean.TRUE.equals(isMediaType.get());
 	}
 
 	protected boolean isMediaEntity(CdsStructuredType baseEntity) {

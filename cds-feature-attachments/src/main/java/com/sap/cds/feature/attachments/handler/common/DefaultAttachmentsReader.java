@@ -13,7 +13,7 @@ import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Expand;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.StructuredType;
-import com.sap.cds.ql.cqn.CqnDelete;
+import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnPredicate;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
@@ -32,7 +32,7 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 	private final PersistenceService persistence;
 
 	@Override
-	public List<CdsData> readAttachments(CdsModel model, CdsEntity entity, CqnDelete delete) {
+	public List<CdsData> readAttachments(CdsModel model, CdsEntity entity, CqnFilterableStatement delete) {
 		var dataList = new ArrayList<CdsData>();
 
 		var resultWhere = getWhere(delete);
@@ -49,7 +49,7 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 		return dataList;
 	}
 
-	private Optional<CqnPredicate> getWhere(CqnDelete delete) {
+	private Optional<CqnPredicate> getWhere(CqnFilterableStatement delete) {
 		var filter = delete.ref().asRef().rootSegment().filter();
 		var where = delete.where();
 		if (filter.isPresent() && where.isPresent()) {
@@ -79,7 +79,7 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 				if (Objects.isNull(func)) {
 					func = item -> item.to(next.associationName()).expand();
 				} else {
-					Function<StructuredType<?>, Expand<?>> finalFunc = func;
+					var finalFunc = func;
 					func = item -> item.to(next.associationName()).expand((Function) finalFunc);
 				}
 			}

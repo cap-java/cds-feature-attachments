@@ -10,6 +10,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DefaultModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DeleteContentAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DoNothingAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.UpdateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
@@ -39,10 +40,12 @@ public class Registration implements CdsRuntimeConfiguration {
 		var persistenceService = configurer.getCdsRuntime().getServiceCatalog().getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
 		var attachmentService = configurer.getCdsRuntime().getServiceCatalog().getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
 
-		var factory = buildAttachmentEventFactory(attachmentService);
+		var deleteContentEvent = new DeleteContentAttachmentEvent(attachmentService);
+		var factory = buildAttachmentEventFactory(attachmentService, deleteContentEvent);
+
 		configurer.eventHandler(buildCreateHandler(persistenceService, factory));
 		configurer.eventHandler(buildUpdateHandler(persistenceService, factory));
-		configurer.eventHandler(buildDeleteHandler(persistenceService));
+		configurer.eventHandler(buildDeleteHandler(persistenceService, deleteContentEvent));
 		configurer.eventHandler(buildReadHandler(attachmentService));
 		configurer.eventHandler(new DraftAttachmentsHandler());
 	}
@@ -51,22 +54,22 @@ public class Registration implements CdsRuntimeConfiguration {
 		return new DefaultAttachmentsService();
 	}
 
-	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService) {
+	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService, ModifyAttachmentEvent deleteContentEvent) {
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
-		var deleteAttachmentEvent = new DeleteContentAttachmentEvent(attachmentService);
+
 		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();
-		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteAttachmentEvent, doNothingAttachmentEvent);
+		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent, doNothingAttachmentEvent);
 	}
 
 	protected EventHandler buildCreateHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory factory) {
 		return new CreateAttachmentsHandler(persistenceService, factory);
 	}
 
-	protected EventHandler buildDeleteHandler(PersistenceService persistenceService) {
+	protected EventHandler buildDeleteHandler(PersistenceService persistenceService, ModifyAttachmentEvent deleteContentEvent) {
 		var cascader = new DefaultAssociationCascader();
 		var attachmentsReader = new DefaultAttachmentsReader(cascader, persistenceService);
-		return new DeleteAttachmentsHandler(attachmentsReader);
+		return new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent);
 	}
 
 	protected EventHandler buildReadHandler(AttachmentService attachmentService) {
