@@ -9,6 +9,7 @@ import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
+import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.reflect.CdsElement;
@@ -25,18 +26,23 @@ public final class ApplicationHandlerHelper {
 
 		Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)
 																																													&& hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
-		Converter converter = (path, element, value) -> {
+		Validator validator = (path, element, value) -> {
 			isIncluded.set(true);
-			return value;
 		};
 
-		callProcessor(entity, data, filter, converter);
+		callValidator(entity, data, filter, validator);
 		return isIncluded.get();
 	}
 
 	public static void callProcessor(CdsEntity entity, List<CdsData> data, Filter filter, Converter converter) {
 		CdsDataProcessor.create().addConverter(
 						filter, converter)
+				.process(data, entity);
+	}
+
+	public static void callValidator(CdsEntity entity, List<CdsData> data, Filter filter, Validator validator) {
+		CdsDataProcessor.create().addValidator(
+						filter, validator)
 				.process(data, entity);
 	}
 
