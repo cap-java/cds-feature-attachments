@@ -34,12 +34,12 @@ public class CreateAttachmentsHandler implements EventHandler {
 	@Before(event = CqnService.EVENT_CREATE)
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsCreateEventContext context, List<CdsData> data) {
-		if (!ApplicationHandlerBase.isContentFieldInData(context.getTarget(), data)) {
+		if (!ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
 
 		setKeysInData(context.getTarget(), data);
-		ModifyApplicationHandlerBase.uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_CREATE, eventFactory, persistenceService);
+		ModifyApplicationHandlerHelper.uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_CREATE, eventFactory, persistenceService);
 	}
 
 	private void setKeysInData(CdsEntity entity, List<CdsData> data) {

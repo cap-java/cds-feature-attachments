@@ -12,9 +12,9 @@ import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 
-public final class ApplicationHandlerBase {
+public final class ApplicationHandlerHelper {
 
-	private ApplicationHandlerBase() {
+	private ApplicationHandlerHelper() {
 	}
 
 	public static boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {

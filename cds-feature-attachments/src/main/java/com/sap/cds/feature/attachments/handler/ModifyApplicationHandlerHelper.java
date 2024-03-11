@@ -13,15 +13,15 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.persistence.PersistenceService;
 
-public final class ModifyApplicationHandlerBase {
+public final class ModifyApplicationHandlerHelper {
 
 	private static final String DRAFT_ENTITY_ACTIVE_FIELD = "IsActiveEntity";
 
-	private ModifyApplicationHandlerBase() {
+	private ModifyApplicationHandlerHelper() {
 	}
 
 	public static void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, String event, ModifyAttachmentEventFactory eventFactory, PersistenceService persistenceService) {
-		Filter filter = ApplicationHandlerBase.buildFilterForMediaTypeEntity();
+		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
 			var targetEntity = path.target().entity();
 			var keys = draftKeysRemoved(path.target().keys());
@@ -30,7 +30,7 @@ public final class ModifyApplicationHandlerBase {
 			var eventToProcess = eventFactory.getEvent(event, value, oldData);
 			return eventToProcess.processEvent(path, element, value, oldData, keys);
 		};
-		ApplicationHandlerBase.callProcessor(entity, data, filter, converter);
+		ApplicationHandlerHelper.callProcessor(entity, data, filter, converter);
 	}
 
 	private static CdsData getExistingData(String event, Map<String, Object> keys, CdsEntity entity, PersistenceService persistenceService) {

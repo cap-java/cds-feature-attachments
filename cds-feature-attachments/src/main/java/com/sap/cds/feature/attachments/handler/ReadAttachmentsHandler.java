@@ -55,8 +55,8 @@ public class ReadAttachmentsHandler implements EventHandler {
 	@After(event = CqnService.EVENT_READ)
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processAfter(CdsReadEventContext context, List<CdsData> data) {
-		if (ApplicationHandlerBase.isContentFieldInData(context.getTarget(), data)) {
-			Filter filter = ApplicationHandlerBase.buildFilterForMediaTypeEntity();
+		if (ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
+			Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 			Generator generator = (path, element, isNull) -> {
 				if (path.target().values().containsKey(element.getName())) {
 					var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
@@ -79,7 +79,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 		entityNames.forEach(name -> {
 			var baseEntity = model.findEntity(name);
 			baseEntity.ifPresent(base -> {
-				if (ApplicationHandlerBase.isMediaEntity(base)) {
+				if (ApplicationHandlerHelper.isMediaEntity(base)) {
 					associationNames.add(associationName);
 				}
 			});

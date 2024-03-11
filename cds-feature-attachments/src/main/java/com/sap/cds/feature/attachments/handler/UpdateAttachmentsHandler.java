@@ -29,11 +29,11 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	@Before(event = CqnService.EVENT_UPDATE)
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
-		if (!ApplicationHandlerBase.isContentFieldInData(context.getTarget(), data)) {
+		if (!ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
 
-		ModifyApplicationHandlerBase.uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_UPDATE, eventFactory, persistenceService);
+		ModifyApplicationHandlerHelper.uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_UPDATE, eventFactory, persistenceService);
 	}
 
 }
