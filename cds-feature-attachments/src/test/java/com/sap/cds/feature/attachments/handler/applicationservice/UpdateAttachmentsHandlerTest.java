@@ -19,6 +19,7 @@ import org.mockito.ArgumentCaptor;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsException;
 import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -99,11 +100,31 @@ class UpdateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	@Test
 	void existingDataFoundAndUsed() throws IOException {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
+		cdsData.put(Attachment.DOCUMENT_ID, "some ID");
 		mockSelectionResult();
 		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
 
-		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
 
+		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
+			var root = fillRootData(testStream);
+
+			cut.processBefore(updateContext, List.of(root));
+
+			verify(eventFactory).getEvent(testStream, null, false, cdsData);
+			verify(persistenceService).run(selectArgumentCaptor.capture());
+			var select = selectArgumentCaptor.getValue();
+			assertThat(select.where().toString()).contains(root.getAttachmentTable().get(0).getId());
+			assertThat(select.where().toString()).contains(root.getId());
+		}
+	}
+
+	@Test
+	void noExistingDataFound() throws IOException {
+		getEntityAndMockContext(RootTable_.CDS_NAME);
+		mockSelectionResult(0);
+		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+
+		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
 			var root = fillRootData(testStream);
 
 			cut.processBefore(updateContext, List.of(root));

@@ -26,7 +26,7 @@ abstract class ModifyApplicationEventTestBase {
 		persistenceService = mock(PersistenceService.class);
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
 
-		cdsData = mock(CdsData.class);
+		cdsData = CdsData.create();
 		event = mock(ModifyAttachmentEvent.class);
 	}
 
