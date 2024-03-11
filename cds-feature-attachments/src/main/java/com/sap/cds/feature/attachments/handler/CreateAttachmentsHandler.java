@@ -22,7 +22,7 @@ import com.sap.cds.services.persistence.PersistenceService;
 @ServiceName(value = "*", type = ApplicationService.class)
 public class CreateAttachmentsHandler extends ModifyApplicationHandlerBase implements EventHandler {
 
-	private static final CdsDataProcessor processor = CdsDataProcessor.create();
+	private CdsDataProcessor processor = CdsDataProcessor.create();
 
 	public CreateAttachmentsHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
 		super(persistenceService, eventFactory);
