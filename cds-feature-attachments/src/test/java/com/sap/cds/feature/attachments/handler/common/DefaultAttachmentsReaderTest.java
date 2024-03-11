@@ -15,6 +15,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.Result;
+import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Attachment_;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.ql.CQL;
@@ -127,6 +128,22 @@ class DefaultAttachmentsReaderTest {
 		assertThat(resultData).isEqualTo(data);
 	}
 
+	@Test
+	void selectCorrectWithWhereAndFilterForAttachments() {
+		mockPathListAndEntity(Attachment_.CDS_NAME);
+		var keys = buildDefaultKeyMap();
+		var entityWithKeys = CQL.entity(Attachment_.CDS_NAME).matching(keys);
+		CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
+		List<CdsData> data = List.of(CdsData.create());
+		when(result.listOf(CdsData.class)).thenReturn(data);
+
+		var resultData = cut.readAttachments(model, entity, deleteFromEntity);
+
+		verify(persistenceService).run(selectArgumentCaptor.capture());
+		assertThat(selectArgumentCaptor.getValue()).hasToString(getExpectedSelectStatementForAttachmentsWithWhereAndFilter((String) keys.get("ID")));
+		assertThat(resultData).isEqualTo(data);
+	}
+
 	private HashMap<String, Object> buildDefaultKeyMap() {
 		var keys = new HashMap<String, Object>();
 		keys.put("IsActiveEntity", true);
@@ -143,7 +160,7 @@ class DefaultAttachmentsReaderTest {
 		var rootPath = new LinkedList<AssociationIdentifier>();
 		rootPath.add(new AssociationIdentifier("", RootTable_.CDS_NAME, false));
 		rootPath.add(new AssociationIdentifier("items", Items_.CDS_NAME, false));
-		rootPath.add(new AssociationIdentifier("attachments", "ATTACHMENTS", true));
+		rootPath.add(new AssociationIdentifier("attachments", Attachment_.CDS_NAME, true));
 		pathList.add(rootPath);
 		when(cascader.findEntityPath(model, entity)).thenReturn(pathList);
 		when(entity.getQualifiedName()).thenReturn(entityName);
@@ -167,6 +184,17 @@ class DefaultAttachmentsReaderTest {
 				{"SELECT":{"from":{"ref":["unit.test.TestService.Items"]},
 				          "columns":[{"ref":["attachments"],
 				          "expand":["*"]}],
+				          "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
+				                   "and",{"ref":["ID"]},"=",{"val":"%s"},
+				                   "and",{"ref":["$key"]},"=",{"val":"test"}]}}
+				""".formatted(id);
+		return removeSpaceInString(select);
+	}
+
+	private String getExpectedSelectStatementForAttachmentsWithWhereAndFilter(String id) {
+		var select = """
+				{"SELECT":{"from":{"ref":["unit.test.Attachment"]},
+				          "columns":["*"],
 				          "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
 				                   "and",{"ref":["ID"]},"=",{"val":"%s"},
 				                   "and",{"ref":["$key"]},"=",{"val":"test"}]}}

@@ -10,12 +10,12 @@ import java.util.function.Function;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.ql.CQL;
-import com.sap.cds.ql.Expand;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.StructuredType;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnPredicate;
 import com.sap.cds.ql.cqn.CqnSelect;
+import com.sap.cds.ql.cqn.CqnSelectListItem;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -68,7 +68,7 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 
 			var descendingIterator = path.descendingIterator();
 
-			Function<StructuredType<?>, Expand<?>> func = null;
+			Function<StructuredType<?>, CqnSelectListItem> func = null;
 
 			while (descendingIterator.hasNext()) {
 				var next = descendingIterator.next();
@@ -84,10 +84,14 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 				}
 			}
 
+			if (Objects.isNull(func)) {
+				func = item -> item.to(entity.getQualifiedName())._all();
+			}
 			CqnSelect selectFunc = where.isPresent() ? Select.from(entry.fullEntityName()).where(where.get()).columns(func)
 																												: Select.from(entry.fullEntityName()).columns(func);
 			resultSelect.set(selectFunc);
 		});
 		return Optional.ofNullable(resultSelect.get());
 	}
+
 }
