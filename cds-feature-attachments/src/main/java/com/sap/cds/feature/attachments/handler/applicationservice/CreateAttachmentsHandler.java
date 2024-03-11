@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.reflect.CdsBaseType;
 import com.sap.cds.reflect.CdsEntity;
@@ -20,23 +22,26 @@ import com.sap.cds.services.persistence.PersistenceService;
 //TODO add Java Doc
 //TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
-public class CreateAttachmentsHandler extends ModifyApplicationHandlerBase implements EventHandler {
+public class CreateAttachmentsHandler implements EventHandler {
 
-	private static final CdsDataProcessor processor = CdsDataProcessor.create();
+	private final PersistenceService persistenceService;
+	private final ModifyAttachmentEventFactory eventFactory;
+	private CdsDataProcessor processor = CdsDataProcessor.create();
 
 	public CreateAttachmentsHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
-		super(persistenceService, eventFactory);
+		this.persistenceService = persistenceService;
+		this.eventFactory = eventFactory;
 	}
 
 	@Before(event = CqnService.EVENT_CREATE)
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsCreateEventContext context, List<CdsData> data) {
-		if (processingNotNeeded(context.getTarget(), data)) {
+		if (!ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
 
 		setKeysInData(context.getTarget(), data);
-		uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_CREATE);
+		ModifyApplicationHandlerHelper.uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_CREATE, eventFactory, persistenceService);
 	}
 
 	private void setKeysInData(CdsEntity entity, List<CdsData> data) {
