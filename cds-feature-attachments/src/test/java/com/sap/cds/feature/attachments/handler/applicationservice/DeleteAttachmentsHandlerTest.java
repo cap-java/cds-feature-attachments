@@ -84,7 +84,6 @@ class DeleteAttachmentsHandlerTest {
 	@Test
 	void attachmentDataExistsAsExpandServiceIsCalled() {
 		var rootEntity = runtime.getCdsModel().findEntity(Roots_.CDS_NAME).orElseThrow();
-		var entity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
 		when(context.getTarget()).thenReturn(rootEntity);
 		when(context.getModel()).thenReturn(runtime.getCdsModel());
 		var inputStream = mock(InputStream.class);
