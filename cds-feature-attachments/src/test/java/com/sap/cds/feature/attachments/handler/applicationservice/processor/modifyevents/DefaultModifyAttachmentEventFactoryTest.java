@@ -78,6 +78,19 @@ class DefaultModifyAttachmentEventFactoryTest {
 		assertThat(event).isEqualTo(updateEvent);
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {"some document Id"})
+	@NullSource
+	@EmptySource
+	void documentIdNotPresentAndExistingNotNullReturnsUpdateEvent(String documentId) {
+		var data = CdsData.create();
+		data.put(Attachments.DOCUMENT_ID, "someValue");
+
+		var event = cut.getEvent(mock(InputStream.class), documentId, false, data);
+
+		assertThat(event).isEqualTo(updateEvent);
+	}
+
 	@Test
 	void documentIdsSameContentNullReturnsNothingToDo() {
 		var documentId = "test ID";
@@ -93,24 +106,33 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@ValueSource(strings = {"some document Id"})
 	@NullSource
 	@EmptySource
-	void documentIdNotPresentAndExistingNotNullReturnsUpdateEvent(String documentId) {
-		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
-
-		var event = cut.getEvent(mock(InputStream.class), documentId, false, data);
-
-		assertThat(event).isEqualTo(updateEvent);
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = {"some document Id"})
-	@NullSource
-	@EmptySource
 	void documentIdNotPresentAndExistingNotNullReturnsDeleteEvent(String documentId) {
 		var data = CdsData.create();
 		data.put(Attachments.DOCUMENT_ID, "someValue");
 
 		var event = cut.getEvent(null, documentId, false, data);
+
+		assertThat(event).isEqualTo(deleteContentEvent);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"some document Id"})
+	@EmptySource
+	void documentIdPresentAndExistingNotNullReturnsDoNothingEvent(String documentId) {
+		var data = CdsData.create();
+		data.put(Attachments.DOCUMENT_ID, "someValue");
+
+		var event = cut.getEvent(null, documentId, true, data);
+
+		assertThat(event).isEqualTo(doNothingEvent);
+	}
+
+	@Test
+	void documentIdPresentAndExistingNotNullButContentNullReturnsDeleteEvent() {
+		var data = CdsData.create();
+		data.put(Attachments.DOCUMENT_ID, "someValue");
+
+		var event = cut.getEvent(null, null, true, data);
 
 		assertThat(event).isEqualTo(deleteContentEvent);
 	}
