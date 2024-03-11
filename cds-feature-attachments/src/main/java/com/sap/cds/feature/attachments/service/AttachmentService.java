@@ -49,7 +49,7 @@ public interface AttachmentService extends Service {
 	/**
 		* Creates a document with the given parameter
 		*
-		* @param input Contains needed data to store the attachment like
+		* @param input Contains needed data to store the document like
 		*                - attachmentIds - list of keys for attachment entity
 		*                - attachmentEntityName - full qualified name of the entity in which the attachment will be stored
 		*                - fileName
