@@ -19,7 +19,7 @@ abstract class ApplicationHandlerBase extends ProcessingBase {
 		var isIncluded = new AtomicBoolean();
 
 		Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)
-																																													&& hasElementAnnotation(element, ModelConstants.ANNOTATION_MEDIA_TYPE);
+																																													&& hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
 		Converter converter = (path, element, value) -> {
 			isIncluded.set(true);
 			return value;
@@ -36,7 +36,7 @@ abstract class ApplicationHandlerBase extends ProcessingBase {
 	}
 
 	protected Filter buildFilterForMediaTypeEntity() {
-		return (path, element, type) -> isMediaEntity(path.target().type()) && hasElementAnnotation(element, ModelConstants.ANNOTATION_MEDIA_TYPE);
+		return (path, element, type) -> isMediaEntity(path.target().type()) && hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
 	}
 
 	protected boolean isMediaEntity(CdsStructuredType baseEntity) {
