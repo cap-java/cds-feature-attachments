@@ -9,7 +9,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <excluded.generation.package>com/sap/cds/feature/attachments/generation/</excluded.generation.package>
+        <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
         <cds.services.version>2.7.0</cds.services.version>
         <spring.version>3.2.1-sap-02</spring.version>
     </properties>
