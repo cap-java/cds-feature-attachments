@@ -16,20 +16,24 @@ import com.sap.cds.services.persistence.PersistenceService;
 //TODO add Java Doc
 //TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
-public class UpdateAttachmentsHandler extends ModifyApplicationHandlerBase implements EventHandler {
+public class UpdateAttachmentsHandler implements EventHandler {
+
+	private final PersistenceService persistenceService;
+	private final ModifyAttachmentEventFactory eventFactory;
 
 	public UpdateAttachmentsHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
-		super(persistenceService, eventFactory);
+		this.persistenceService = persistenceService;
+		this.eventFactory = eventFactory;
 	}
 
 	@Before(event = CqnService.EVENT_UPDATE)
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
-		if (processingNotNeeded(context.getTarget(), data)) {
+		if (!ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
 
-		uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_UPDATE);
+		ModifyApplicationHandlerHelper.uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_UPDATE, eventFactory, persistenceService);
 	}
 
 }

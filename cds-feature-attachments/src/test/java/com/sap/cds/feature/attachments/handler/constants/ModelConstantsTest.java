@@ -13,12 +13,12 @@ class ModelConstantsTest {
 
 	@Test
 	void correctValueForMediaTypeAnnotation() {
-		assertThat(ModelConstants.ANNOTATION_MEDIA_TYPE).isEqualTo("Core.MediaType");
+		assertThat(ModelConstants.ANNOTATION_CORE_MEDIA_TYPE).isEqualTo("Core.MediaType");
 	}
 
 	@Test
 	void correctValueForFileNameAnnotation() {
-		assertThat(ModelConstants.ANNOTATION_FILE_NAME).isEqualTo("ContentDisposition.Filename");
+		assertThat(ModelConstants.ANNOTATION_CONTENT_DISPOSITION_FILENAME).isEqualTo("ContentDisposition.Filename");
 	}
 
 }
