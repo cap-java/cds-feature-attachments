@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.CdsException;
 import com.sap.cds.Result;
 import com.sap.cds.Row;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEvent;
@@ -39,6 +40,9 @@ abstract class ModifyApplicationEventTestBase {
 		var result = mock(Result.class);
 		when(result.single()).thenReturn(row);
 		when(result.rowCount()).thenReturn(rowCount);
+		if (rowCount > 1) {
+			when(result.single()).thenThrow(new CdsException("More than one result"));
+		}
 		when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
 		return row;
 	}

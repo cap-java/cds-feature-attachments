@@ -8,14 +8,16 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
-import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 
-abstract class ApplicationHandlerBase extends ProcessingBase {
+public final class ApplicationHandlerBase {
 
-	protected boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
+	private ApplicationHandlerBase() {
+	}
+
+	public static boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
 		var isIncluded = new AtomicBoolean();
 
 		Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)
@@ -29,21 +31,21 @@ abstract class ApplicationHandlerBase extends ProcessingBase {
 		return isIncluded.get();
 	}
 
-	protected void callProcessor(CdsEntity entity, List<CdsData> data, Filter filter, Converter converter) {
+	public static void callProcessor(CdsEntity entity, List<CdsData> data, Filter filter, Converter converter) {
 		CdsDataProcessor.create().addConverter(
 						filter, converter)
 				.process(data, entity);
 	}
 
-	protected Filter buildFilterForMediaTypeEntity() {
+	public static Filter buildFilterForMediaTypeEntity() {
 		return (path, element, type) -> isMediaEntity(path.target().type()) && hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
 	}
 
-	protected boolean isMediaEntity(CdsStructuredType baseEntity) {
+	public static boolean isMediaEntity(CdsStructuredType baseEntity) {
 		return baseEntity.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false);
 	}
 
-	protected boolean hasElementAnnotation(CdsElement element, String annotation) {
+	public static boolean hasElementAnnotation(CdsElement element, String annotation) {
 		return element.findAnnotation(annotation).isPresent();
 	}
 

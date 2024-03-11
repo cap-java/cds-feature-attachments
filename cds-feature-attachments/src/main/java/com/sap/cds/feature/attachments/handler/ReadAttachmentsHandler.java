@@ -31,7 +31,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 //TODO add Java Doc
 //TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
-public class ReadAttachmentsHandler extends ApplicationHandlerBase implements EventHandler {
+public class ReadAttachmentsHandler implements EventHandler {
 
 	private final AttachmentService attachmentService;
 	private final ItemModifierProvider provider;
@@ -55,8 +55,8 @@ public class ReadAttachmentsHandler extends ApplicationHandlerBase implements Ev
 	@After(event = CqnService.EVENT_READ)
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processAfter(CdsReadEventContext context, List<CdsData> data) {
-		if (isContentFieldInData(context.getTarget(), data)) {
-			Filter filter = buildFilterForMediaTypeEntity();
+		if (ApplicationHandlerBase.isContentFieldInData(context.getTarget(), data)) {
+			Filter filter = ApplicationHandlerBase.buildFilterForMediaTypeEntity();
 			Generator generator = (path, element, isNull) -> {
 				if (path.target().values().containsKey(element.getName())) {
 					var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
@@ -79,7 +79,7 @@ public class ReadAttachmentsHandler extends ApplicationHandlerBase implements Ev
 		entityNames.forEach(name -> {
 			var baseEntity = model.findEntity(name);
 			baseEntity.ifPresent(base -> {
-				if (isMediaEntity(base)) {
+				if (ApplicationHandlerBase.isMediaEntity(base)) {
 					associationNames.add(associationName);
 				}
 			});
