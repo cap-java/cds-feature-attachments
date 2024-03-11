@@ -97,6 +97,9 @@
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                        <configuration>
+                            <excludePackageNames>com.sap.cds.feature.attachments.generated.*</excludePackageNames>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
