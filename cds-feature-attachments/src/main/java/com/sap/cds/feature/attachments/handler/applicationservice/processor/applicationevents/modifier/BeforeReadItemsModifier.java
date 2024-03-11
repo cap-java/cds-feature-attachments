@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnSelectListItem;
 import com.sap.cds.ql.cqn.Modifier;

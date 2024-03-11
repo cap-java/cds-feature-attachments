@@ -2,7 +2,7 @@ package com.sap.cds.feature.attachments.service;
 
 import java.io.InputStream;
 
-import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.feature.attachments.service.model.service.UpdateAttachmentInput;

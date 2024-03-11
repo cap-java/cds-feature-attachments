@@ -10,11 +10,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Events;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Events_;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;

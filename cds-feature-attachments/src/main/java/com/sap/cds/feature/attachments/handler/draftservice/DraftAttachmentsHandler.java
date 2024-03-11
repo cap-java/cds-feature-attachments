@@ -5,7 +5,7 @@ import java.util.List;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
-import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;

@@ -4,8 +4,8 @@ import java.io.InputStream;
 import java.util.Map;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.ql.cqn.Path;

@@ -18,10 +18,10 @@ import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsException;
-import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;

@@ -6,15 +6,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.EventItems_;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Events;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Events_;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Roots_;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items_;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.services.runtime.CdsRuntime;
 
@@ -95,10 +95,10 @@ class DefaultAssociationCascaderTest {
 		assertThat(itemPath.get(0).fullEntityName()).isEqualTo(Events_.CDS_NAME);
 		assertThat(itemPath.get(0).isMediaType()).isFalse();
 		assertThat(itemPath.get(1).associationName()).isEqualTo(Events.ITEMS_COMPO);
-		assertThat(itemPath.get(1).fullEntityName()).isEqualTo(com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Items_.CDS_NAME);
+		assertThat(itemPath.get(1).fullEntityName()).isEqualTo(com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Items_.CDS_NAME);
 		assertThat(itemPath.get(1).isMediaType()).isFalse();
 		assertThat(itemPath.get(2).associationName()).isEqualTo(Items.ATTACHMENTS);
-		assertThat(itemPath.get(2).fullEntityName()).isEqualTo(com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Attachment_.CDS_NAME);
+		assertThat(itemPath.get(2).fullEntityName()).isEqualTo(com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_.CDS_NAME);
 		assertThat(itemPath.get(2).isMediaType()).isTrue();
 	}
 
@@ -125,10 +125,10 @@ class DefaultAssociationCascaderTest {
 		assertThat(itemPath.get(0).fullEntityName()).isEqualTo(Roots_.CDS_NAME);
 		assertThat(itemPath.get(0).isMediaType()).isFalse();
 		assertThat(itemPath.get(1).associationName()).isEqualTo("itemTable");
-		assertThat(itemPath.get(1).fullEntityName()).isEqualTo(com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Items_.CDS_NAME);
+		assertThat(itemPath.get(1).fullEntityName()).isEqualTo(com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Items_.CDS_NAME);
 		assertThat(itemPath.get(1).isMediaType()).isFalse();
 		assertThat(itemPath.get(2).associationName()).isEqualTo("attachments");
-		assertThat(itemPath.get(2).fullEntityName()).isEqualTo(com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Attachment_.CDS_NAME);
+		assertThat(itemPath.get(2).fullEntityName()).isEqualTo(com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_.CDS_NAME);
 		assertThat(itemPath.get(2).isMediaType()).isTrue();
 	}
 

@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.MediaData;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Attachment;
+import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.UpdateAttachmentInput;
 
