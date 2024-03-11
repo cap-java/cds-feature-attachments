@@ -9,8 +9,9 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <excluded.generation.package>com/sap/cds/feature/attachments/generation/</excluded.generation.package>
         <cds.services.version>2.7.0</cds.services.version>
-        <spring-version>3.2.1-sap-02</spring-version>
+        <spring.version>3.2.1-sap-02</spring.version>
     </properties>
 
     <groupId>com.sap.cds</groupId>
@@ -38,7 +39,7 @@
             <dependency>
                 <groupId>com.sap.sgs</groupId>
                 <artifactId>security-patched-spring-boot-dependencies</artifactId>
-                <version>${spring-version}</version>
+                <version>${spring.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -120,7 +121,7 @@
                 <configuration>
                     <excludes>
                         <exclude>
-                            com/sap/cds/feature/attachments/generation/**/*
+                            ${excluded.generation.package}**/*
                         </exclude>
                     </excludes>
                 </configuration>
@@ -219,7 +220,7 @@
                     </rulesets>
                     <excludes>
                         <exclude>
-                            **/com/sap/cds/feature/attachments/generation/**
+                            **/${excluded.generation.package}**
                         </exclude>
                     </excludes>
                 </configuration>
