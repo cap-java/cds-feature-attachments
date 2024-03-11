@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.processor.modifyevents;
+package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
 import java.util.Map;
 import java.util.Objects;

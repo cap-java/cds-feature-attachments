@@ -21,9 +21,9 @@ import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservi
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.model.LazyProxyInputStream;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
-import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.LazyProxyInputStream;
-import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;

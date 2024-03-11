@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier;
+package com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.modifier;
 
 import java.util.ArrayList;
 import java.util.List;
