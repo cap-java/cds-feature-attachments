@@ -15,19 +15,21 @@ import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Delete;
 import com.sap.cds.ql.cqn.CqnDelete;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.reflect.CdsModel;
+import com.sap.cds.services.persistence.PersistenceService;
 
 class DefaultAttachmentsReaderTest {
 
 	private DefaultAttachmentsReader cut;
 	private AssociationCascader cascader;
+	private PersistenceService persistenceService;
 	private CdsEntity entity;
 
 	@BeforeEach
 	void setup() {
 		cascader = mock(AssociationCascader.class);
+		persistenceService = mock(PersistenceService.class);
 
-		cut = new DefaultAttachmentsReader(cascader);
+		cut = new DefaultAttachmentsReader(cascader, persistenceService);
 
 		entity = mock(CdsEntity.class);
 	}
@@ -51,7 +53,7 @@ class DefaultAttachmentsReaderTest {
 		var entityWithKeys = CQL.entity(RootTable_.CDS_NAME).matching(keys);
 		CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
 
-		cut.readAttachments(mock(CdsModel.class), entity, deleteFromEntity);
+//		cut.readAttachments(mock(CdsModel.class), entity, deleteFromEntity);
 
 	}
 

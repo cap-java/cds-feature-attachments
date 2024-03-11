@@ -30,6 +30,7 @@ public class DefaultAssociationCascader implements AssociationCascader {
 	private List<LinkedList<AssociationIdentifier>> getAttachmentAssociationPath(CdsModel model, CdsEntity entity, String associationName, LinkedList<AssociationIdentifier> firstList, List<String> processedEntities) {
 		var internalResultList = new ArrayList<LinkedList<AssociationIdentifier>>();
 		var currentList = new AtomicReference<LinkedList<AssociationIdentifier>>();
+		var localProcessEntities = new ArrayList<String>();
 		currentList.set(new LinkedList<>());
 
 		var query = entity.query();
@@ -41,18 +42,18 @@ public class DefaultAssociationCascader implements AssociationCascader {
 			var baseEntity = model.findEntity(name);
 			baseEntity.ifPresent(base -> {
 				isMediaType.set(isMediaEntity(base));
-				if (isMediaType.get()) {
+				if (isMediaType(isMediaType)) {
 					var identifier = new AssociationIdentifier(associationName, name, isMediaType.get());
 					firstList.addLast(identifier);
 				}
 			});
 		});
-		if (isMediaType.get()) {
+		if (isMediaType(isMediaType)) {
 			internalResultList.add(firstList);
 			return internalResultList;
 		}
 
-		Map<String, CdsEntity> associations = entity.elements().filter(element -> element.getType().isAssociation()).collect(Collectors.toMap(CdsElementDefinition::getName, element -> element.getType().as(CdsAssociationType.class).getTarget()));
+		Map<String, CdsEntity> associations = entity.elements().filter(element -> element.getType().isAssociation() && element.getType().as(CdsAssociationType.class).isComposition()).collect(Collectors.toMap(CdsElementDefinition::getName, element -> element.getType().as(CdsAssociationType.class).getTarget()));
 
 		if (associations.isEmpty()) {
 			return internalResultList;
@@ -60,16 +61,17 @@ public class DefaultAssociationCascader implements AssociationCascader {
 
 		var newListNeeded = false;
 		for (var associatedElement : associations.entrySet()) {
-			if (!processedEntities.contains(associatedElement.getKey())) {
-				processedEntities.add(associatedElement.getKey());
+			if (!processedEntities.contains(associatedElement.getValue().getQualifiedName())) {
 				if (newListNeeded) {
 					currentList.set(new LinkedList<>());
 					currentList.get().addAll(firstList);
+					processedEntities = localProcessEntities;
 				} else {
 					firstList.add(new AssociationIdentifier(associationName, entity.getQualifiedName(), false));
 					currentList.get().addAll(firstList);
+					localProcessEntities = new ArrayList<>(processedEntities);
 				}
-
+				processedEntities.add(associatedElement.getValue().getQualifiedName());
 				newListNeeded = true;
 				var result = getAttachmentAssociationPath(model, associatedElement.getValue(), associatedElement.getKey(), currentList.get(), processedEntities);
 				internalResultList.addAll(result);
@@ -77,6 +79,10 @@ public class DefaultAssociationCascader implements AssociationCascader {
 		}
 
 		return internalResultList;
+	}
+
+	private boolean isMediaType(AtomicReference<Boolean> isMediaType) {
+		return Boolean.TRUE.equals(isMediaType.get());
 	}
 
 	protected boolean isMediaEntity(CdsStructuredType baseEntity) {

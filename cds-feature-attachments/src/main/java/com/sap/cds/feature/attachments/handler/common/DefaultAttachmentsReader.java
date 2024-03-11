@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Expand;
 import com.sap.cds.ql.Select;
@@ -85,8 +84,8 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 				}
 			}
 
-			CqnSelect selectFunc = where.isPresent() ? Select.from(RootTable_.CDS_NAME).where(where.get()).columns(func)
-																												: Select.from(RootTable_.CDS_NAME).columns(func);
+			CqnSelect selectFunc = where.isPresent() ? Select.from(entry.fullEntityName()).where(where.get()).columns(func)
+																												: Select.from(entry.fullEntityName()).columns(func);
 			resultSelect.set(selectFunc);
 		});
 		return Optional.ofNullable(resultSelect.get());

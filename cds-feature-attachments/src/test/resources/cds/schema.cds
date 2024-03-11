@@ -27,6 +27,7 @@ entity Events {
     key id2        : Integer;
         content    : String(100);
         items      : Association to many Items;
+        itemsCompo : Composition of many Items;
         eventItems : Composition of many EventItems;
 }
 

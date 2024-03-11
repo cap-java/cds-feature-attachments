@@ -40,7 +40,6 @@ class DefaultAssociationCascaderTest {
 
 		assertThat(pathList).hasSize(2);
 
-
 		var rootPath = pathList.get(0);
 		assertThat(rootPath).hasSize(2);
 		assertThat(rootPath.get(0).associationName()).isEmpty();
@@ -94,7 +93,7 @@ class DefaultAssociationCascaderTest {
 		assertThat(itemPath.get(0).associationName()).isEmpty();
 		assertThat(itemPath.get(0).fullEntityName()).isEqualTo(Events_.CDS_NAME);
 		assertThat(itemPath.get(0).isMediaType()).isFalse();
-		assertThat(itemPath.get(1).associationName()).isEqualTo(Events.ITEMS);
+		assertThat(itemPath.get(1).associationName()).isEqualTo(Events.ITEMS_COMPO);
 		assertThat(itemPath.get(1).fullEntityName()).isEqualTo(com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.Items_.CDS_NAME);
 		assertThat(itemPath.get(1).isMediaType()).isFalse();
 		assertThat(itemPath.get(2).associationName()).isEqualTo(Items.ATTACHMENTS);

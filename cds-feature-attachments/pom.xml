@@ -27,11 +27,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>com.sap.cds</groupId>-->
-        <!--            <artifactId>cds4j-core</artifactId>-->
-        <!--            <version>${cds.services.version}</version>-->
-        <!--        </dependency>-->
 
         <!-- TESTS -->
         <dependency>
