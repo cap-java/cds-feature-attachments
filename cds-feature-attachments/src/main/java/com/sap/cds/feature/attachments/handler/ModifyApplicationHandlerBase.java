@@ -25,10 +25,6 @@ abstract class ModifyApplicationHandlerBase extends ApplicationHandlerBase {
 		this.eventFactory = eventFactory;
 	}
 
-	boolean processingNotNeeded(CdsEntity entity, List<CdsData> data) {
-		return !isContentFieldInData(entity, data);
-	}
-
 	void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, String event) {
 		Filter filter = buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
