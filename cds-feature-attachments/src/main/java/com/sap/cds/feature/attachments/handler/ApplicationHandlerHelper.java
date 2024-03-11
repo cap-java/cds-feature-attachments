@@ -1,12 +1,15 @@
 package com.sap.cds.feature.attachments.handler;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
+import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
@@ -47,6 +50,10 @@ public final class ApplicationHandlerHelper {
 
 	public static boolean hasElementAnnotation(CdsElement element, String annotation) {
 		return element.findAnnotation(annotation).isPresent();
+	}
+
+	public static boolean doesDocumentIdExistsBefore(Map<?, Object> existingData) {
+		return Objects.nonNull(existingData.get(Attachments.DOCUMENT_ID));
 	}
 
 }

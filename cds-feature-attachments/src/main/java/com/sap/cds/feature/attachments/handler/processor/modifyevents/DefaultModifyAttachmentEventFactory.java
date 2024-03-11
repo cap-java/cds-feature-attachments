@@ -3,10 +3,10 @@ package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 import java.util.Objects;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
+import com.sap.cds.feature.attachments.handler.ApplicationHandlerHelper;
 import com.sap.cds.services.cds.CqnService;
 
-public class DefaultModifyAttachmentEventFactory extends ProcessingBase implements ModifyAttachmentEventFactory {
+public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEventFactory {
 
 	private final ModifyAttachmentEvent createEvent;
 	private final ModifyAttachmentEvent updateEvent;
@@ -24,7 +24,7 @@ public class DefaultModifyAttachmentEventFactory extends ProcessingBase implemen
 			if (Objects.isNull(value)) {
 				return deleteContentEvent;
 			}
-			if (doesDocumentIdExistsBefore(existingData)) {
+			if (ApplicationHandlerHelper.doesDocumentIdExistsBefore(existingData)) {
 				return updateEvent;
 			} else {
 				return createEvent;
