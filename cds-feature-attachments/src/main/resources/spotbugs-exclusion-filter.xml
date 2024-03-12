@@ -8,4 +8,16 @@
             <Bug pattern="EI_EXPOSE_REP"/>
         </Or>
     </Match>
+    <Match>
+        <Or>
+            <!-- All regular unit tests end in ~Test -->
+            <Class name="~.*\.*Test"/>
+            <!-- ~TestBase classes are abstract classes to share functionality between tests -->
+            <Class name="~.*\.*TestBase"/>
+        </Or>
+        <Or>
+            <!-- Allow null objects to import for testing -->
+            <Bug pattern="NP_NULL_PARAM_DEREF_ALL_TARGETS_DANGEROUS"/>
+        </Or>
+    </Match>
 </FindBugsFilter>

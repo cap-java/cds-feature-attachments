@@ -4,7 +4,7 @@ import com.sap.cds.feature.attachments.handler.CreateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.UpdateAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.DefaultItemModifierProvider;
+import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.BeforeReadItemsModifier;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.CreateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.DefaultModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.DeleteContentAttachmentEvent;
@@ -55,8 +55,7 @@ public class Registration implements CdsRuntimeConfiguration {
 	}
 
 	protected EventHandler buildReadHandler(AttachmentService attachmentService) {
-		var itemModifierProvider = new DefaultItemModifierProvider();
-		return new ReadAttachmentsHandler(attachmentService, itemModifierProvider);
+		return new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new);
 	}
 
 	protected EventHandler buildUpdateHandler(PersistenceService persistenceService, AttachmentService attachmentService) {

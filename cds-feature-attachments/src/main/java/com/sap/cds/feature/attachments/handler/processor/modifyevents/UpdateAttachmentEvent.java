@@ -1,17 +1,17 @@
 package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 
 import java.io.InputStream;
-import java.util.Objects;
+import java.util.Map;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
+import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.AttachmentUpdateEventContext;
 import com.sap.cds.feature.attachments.service.model.service.UpdateAttachmentInput;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
 
-public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
+public class UpdateAttachmentEvent extends ModifyAttachmentEventBase implements ModifyAttachmentEvent {
 
 	private final AttachmentService attachmentService;
 
@@ -20,29 +20,16 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 	}
 
 	@Override
-	public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) {
-		var updateEventContext = AttachmentUpdateEventContext.create();
-		updateEventContext.setAttachmentId(attachmentId);
-
+	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds) {
 		var values = path.target().values();
-		updateEventContext.setContent((InputStream) value);
 
-		var mimeTypeOptional = fieldNames.mimeTypeField().map(anno -> {
-			var annotationValue = values.get(anno);
-			var mimeType = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
-			return (String) mimeType;
-		});
+		var mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, existingData);
+		var fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, existingData);
+		var documentId = (String) existingData.get(Attachments.DOCUMENT_ID);
 
-		var fileNameOptional = fieldNames.fileNameField().map(anno -> {
-			var annotationValue = values.get(anno);
-			var fileName = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(anno);
-			return (String) fileName;
-		});
-		var documentId = fieldNames.documentIdField().map(docId -> (String) existingData.get(docId));
-
-		var input = new UpdateAttachmentInput(documentId.orElse(null), attachmentId, path.target().entity().getName(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
+		var input = new UpdateAttachmentInput(documentId, attachmentIds, path.target().entity().getQualifiedName(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
 		var result = attachmentService.updateAttachment(input);
-		fieldNames.documentIdField().ifPresent(doc -> path.target().values().put(doc, result.documentId()));
+		path.target().values().put(Attachments.DOCUMENT_ID, result.documentId());
 		return result.isExternalStored() ? null : value;
 	}
 

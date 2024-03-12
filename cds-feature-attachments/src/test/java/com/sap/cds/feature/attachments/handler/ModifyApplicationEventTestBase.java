@@ -1,15 +1,12 @@
 package com.sap.cds.feature.attachments.handler;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import org.mockito.ArgumentCaptor;
-
 import com.sap.cds.CdsData;
+import com.sap.cds.CdsException;
 import com.sap.cds.Result;
 import com.sap.cds.Row;
-import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.impl.RowImpl;
@@ -23,7 +20,6 @@ abstract class ModifyApplicationEventTestBase {
 
 	PersistenceService persistenceService;
 	ModifyAttachmentEventFactory eventFactory;
-	ArgumentCaptor<AttachmentFieldNames> fieldNamesArgumentCaptor;
 	CdsData cdsData;
 	ModifyAttachmentEvent event;
 
@@ -31,26 +27,24 @@ abstract class ModifyApplicationEventTestBase {
 		persistenceService = mock(PersistenceService.class);
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
 
-		fieldNamesArgumentCaptor = ArgumentCaptor.forClass(AttachmentFieldNames.class);
 		cdsData = mock(CdsData.class);
 		event = mock(ModifyAttachmentEvent.class);
 	}
 
 	Row mockSelectionResult() {
+		return mockSelectionResult(1L);
+	}
+
+	Row mockSelectionResult(long rowCount) {
 		var row = RowImpl.row(cdsData);
 		var result = mock(Result.class);
 		when(result.single()).thenReturn(row);
+		when(result.rowCount()).thenReturn(rowCount);
+		if (rowCount > 1) {
+			when(result.single()).thenThrow(new CdsException("More than one result"));
+		}
 		when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
 		return row;
-	}
-
-	void verifyFilledFieldNames() {
-		//field names taken from model for entity Attachments defined in csn which can be found in AttachmentsHandlerTestBase.CSN_FILE_PATH
-		var fieldNames = fieldNamesArgumentCaptor.getValue();
-		assertThat(fieldNames.keyField()).isEqualTo("ID");
-		assertThat(fieldNames.documentIdField()).isPresent().contains("documentId");
-		assertThat(fieldNames.mimeTypeField()).isPresent().contains("mimeType");
-		assertThat(fieldNames.fileNameField()).isPresent().contains("filename");
 	}
 
 }

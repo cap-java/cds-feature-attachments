@@ -5,13 +5,11 @@ import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
@@ -36,50 +34,31 @@ class DeleteContentAttachmentEventTest {
 	}
 
 	@Test
-	void noDocumentIdFieldNameNoDeletion() {
-		var fieldNames = new AttachmentFieldNames("key", Optional.empty(), Optional.of("mimeType"), Optional.of("fileName"), "content");
-		var value = "test";
-
-		var expectedValue = cut.processEvent(null, null, fieldNames, value, null, null);
-
-		assertThat(expectedValue).isEqualTo(value);
-		verifyNoInteractions(attachmentService);
-	}
-
-	@Test
 	void documentIsExternallyDeleted() {
-		var fieldNames = getDefaultFieldNames();
 		var value = "test";
 		var documentId = "some id";
 		var data = Attachments.create();
 		data.setDocumentId(documentId);
 
-		var expectedValue = cut.processEvent(path, null, fieldNames, value, data, null);
+		var expectedValue = cut.processEvent(path, null, value, data, null);
 
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isEqualTo(documentId);
 		verify(attachmentService).deleteAttachment(documentId);
-		assertThat(currentData).containsKey(fieldNames.documentIdField().orElseThrow());
-		assertThat(currentData.get(fieldNames.documentIdField().get())).isNull();
+		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
 	}
 
 	@Test
 	void documentIsNotExternallyDeletedBecauseDoesNotExistBefore() {
-		var fieldNames = getDefaultFieldNames();
 		var value = "test";
 		var data = Attachments.create();
 
-		var expectedValue = cut.processEvent(path, null, fieldNames, value, data, null);
+		var expectedValue = cut.processEvent(path, null, value, data, null);
 
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isNull();
 		verifyNoInteractions(attachmentService);
-		assertThat(currentData).containsKey(fieldNames.documentIdField().orElseThrow());
-		assertThat(currentData.get(fieldNames.documentIdField().get())).isNull();
-	}
-
-	private AttachmentFieldNames getDefaultFieldNames() {
-		return new AttachmentFieldNames("key", Optional.of("documentId"), Optional.of("mimeType"), Optional.of("fileName"), "content");
+		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
 	}
 
 }

@@ -5,21 +5,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Generator;
-import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
-import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.DocumentFieldNames;
+import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.reflect.CdsAssociationType;
-import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.cds.ApplicationService;
@@ -34,7 +31,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 //TODO add Java Doc
 //TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
-public class ReadAttachmentsHandler extends ApplicationEventBase implements EventHandler {
+public class ReadAttachmentsHandler implements EventHandler {
 
 	private final AttachmentService attachmentService;
 	private final ItemModifierProvider provider;
@@ -47,8 +44,8 @@ public class ReadAttachmentsHandler extends ApplicationEventBase implements Even
 	@Before(event = CqnService.EVENT_READ)
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processBefore(CdsReadEventContext context) {
-		var cdsModel = context.getCdsRuntime().getCdsModel();
-		var fieldNames = getContentFieldName(cdsModel, context.getTarget(), "", new ArrayList<>());
+		var cdsModel = context.getModel();
+		var fieldNames = getAttachmentAssociations(cdsModel, context.getTarget(), "", new ArrayList<>());
 		if (!fieldNames.isEmpty()) {
 			var resultCqn = CQL.copy(context.getCqn(), provider.getBeforeReadDocumentIdEnhancer(fieldNames));
 			context.setCqn(resultCqn);
@@ -58,16 +55,13 @@ public class ReadAttachmentsHandler extends ApplicationEventBase implements Even
 	@After(event = CqnService.EVENT_READ)
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processAfter(CdsReadEventContext context, List<CdsData> data) {
-		if (isContentFieldInData(context.getTarget(), data)) {
-			Filter filter = buildFilterForMediaTypeEntity();
+		if (ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
+			Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 			Generator generator = (path, element, isNull) -> {
 				if (path.target().values().containsKey(element.getName())) {
-					var fieldNames = getFieldNames(element, path.target());
-					if (fieldNames.documentIdField().isPresent()) {
-						var documentId = (String) path.target().values().get(fieldNames.documentIdField().get());
-						if (Objects.nonNull(documentId)) {
-							return new LazyProxyInputStream(() -> attachmentService.readAttachment(documentId));
-						}
+					var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
+					if (Objects.nonNull(documentId)) {
+						return new LazyProxyInputStream(() -> attachmentService.readAttachment(documentId));
 					}
 				}
 				return null;
@@ -77,27 +71,16 @@ public class ReadAttachmentsHandler extends ApplicationEventBase implements Even
 		}
 	}
 
-	private Map<String, DocumentFieldNames> getContentFieldName(CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {
+	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {
 		var query = entity.query();
 		List<String> entityNames = query.map(cqnSelect -> cqnSelect.from().asRef().segments().stream().map(Segment::id).toList()).orElseGet(() -> List.of(entity.getQualifiedName()));
-		Map<String, DocumentFieldNames> associationNameMap = new HashMap<>();
+		var associationNames = new ArrayList<String>();
 
 		entityNames.forEach(name -> {
 			var baseEntity = model.findEntity(name);
 			baseEntity.ifPresent(base -> {
-				if (isMediaEntity(base)) {
-					var contentFieldName = new AtomicReference<String>();
-					var documentIdFieldName = new AtomicReference<String>();
-					var contentElement = base.elements().filter(elem -> hasElementAnnotation(elem, ModelConstants.ANNOTATION_MEDIA_TYPE)).findAny();
-					var resultName = contentElement.map(CdsElementDefinition::getName);
-					resultName.ifPresent(contentFieldName::set);
-					var documentIdElement = base.elements().filter(elem -> hasElementAnnotation(elem, ModelConstants.ANNOTATION_IS_EXTERNAL_DOCUMENT_ID)).findAny();
-					var documentIdName = documentIdElement.map(CdsElementDefinition::getName);
-					documentIdName.ifPresent(documentIdFieldName::set);
-					if (Objects.nonNull(contentFieldName.get()) && Objects.nonNull(documentIdFieldName.get())) {
-						var fieldNames = new DocumentFieldNames(contentFieldName.get(), documentIdFieldName.get());
-						associationNameMap.put(associationName, fieldNames);
-					}
+				if (ApplicationHandlerHelper.isMediaEntity(base)) {
+					associationNames.add(associationName);
 				}
 			});
 		});
@@ -106,17 +89,17 @@ public class ReadAttachmentsHandler extends ApplicationEventBase implements Even
 		entity.elements().filter(element -> element.getType().isAssociation()).forEach(element -> annotatedEntitiesMap.put(element.getName(), element.getType().as(CdsAssociationType.class).getTarget()));
 
 		if (annotatedEntitiesMap.isEmpty()) {
-			return associationNameMap;
+			return associationNames;
 		}
 
 		for (var associatedElement : annotatedEntitiesMap.entrySet()) {
-			if (!associationNameMap.containsKey(associatedElement.getKey()) && !processedEntities.contains(associatedElement.getKey())) {
+			if (!associationNames.contains(associatedElement.getKey()) && !processedEntities.contains(associatedElement.getKey())) {
 				processedEntities.add(associatedElement.getKey());
-				var result = getContentFieldName(model, associatedElement.getValue(), associatedElement.getKey(), processedEntities);
-				associationNameMap.putAll(result);
+				var result = getAttachmentAssociations(model, associatedElement.getValue(), associatedElement.getKey(), processedEntities);
+				associationNames.addAll(result);
 			}
 		}
-		return associationNameMap;
+		return associationNames;
 	}
 
 }

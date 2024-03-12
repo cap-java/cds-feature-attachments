@@ -14,13 +14,13 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 public class DeleteAttachmentsHandler implements EventHandler {
 
 	@After(event = CqnService.EVENT_DELETE)
-	@HandlerOrder(HandlerOrder.EARLY)
+	@HandlerOrder(HandlerOrder.LATE)
 	public void processAfter(CdsDeleteEventContext context) {
 
 		//TODO Implement
 		//TODO implement cascading delete e.g. Root is deleted and items -> attachments shall also be deleted
 
-//				var cdsModel = context.getCdsRuntime().getCdsModel();
+//				var cdsModel = context.getModel();
 //
 //				//check if entity is of type attachment
 //				if (context.getTarget().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)) {

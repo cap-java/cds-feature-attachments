@@ -94,7 +94,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
 			var roots = RootTable.create();
 
-			createHandler.processAfter(createContext, List.of(roots));
+			createHandler.processBefore(createContext, List.of(roots));
 
 			verifyNoInteractions(attachmentService);
 			assertThat(roots.getId()).isNull();
@@ -115,18 +115,18 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			var mimeType = "test/type";
 			try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
 				attachment.setContent(testStream);
-				attachment.setFilename(fileName);
+				attachment.setFileName(fileName);
 				attachment.setMimeType(mimeType);
 
-				createHandler.processAfter(createContext, List.of(attachment));
+				createHandler.processBefore(createContext, List.of(attachment));
 
 				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 				var createInput = createEventInputCaptor.getValue();
 				var expectedContent = isExternalStored ? null : testStream;
 				assertThat(attachment.getContent()).isEqualTo(expectedContent);
 				assertThat(createInput.content()).isEqualTo(testStream);
-				assertThat(createInput.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(createInput.attachmentEntityName()).isNotEmpty().isEqualTo("attachment.getId()");
+				assertThat(createInput.attachmentIds()).isNotEmpty().containsEntry("ID", attachment.getId());
+				assertThat(createInput.attachmentEntityName()).isNotEmpty().isEqualTo(Attachment_.CDS_NAME);
 				assertThat(createInput.fileName()).isEqualTo(fileName);
 				assertThat(createInput.mimeType()).isEqualTo(mimeType);
 			}
@@ -144,12 +144,12 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			var roots = RootTable.create();
 			var item = Items.create();
 			var attachment = Attachments.create();
-			attachment.setFilename(fileName);
+			attachment.setFileName(fileName);
 			attachment.setMimeType(mimeType);
 			item.setAttachments(List.of(attachment));
 			roots.setItems(List.of(item));
 
-			createHandler.processAfter(createContext, List.of(roots));
+			createHandler.processBefore(createContext, List.of(roots));
 
 			verifyNoInteractions(attachmentService);
 		}
@@ -169,19 +169,19 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				var item = Items.create();
 				var attachment = Attachments.create();
 				attachment.setContent(testStream);
-				attachment.setFilename(fileName);
+				attachment.setFileName(fileName);
 				attachment.setMimeType(mimeType);
 				item.setAttachments(List.of(attachment));
 				roots.setItems(List.of(item));
 
-				createHandler.processAfter(createContext, List.of(roots));
+				createHandler.processBefore(createContext, List.of(roots));
 
 				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 				var input = createEventInputCaptor.getValue();
 				assertThat(attachment.getContent()).isEqualTo(testStream);
 				assertThat(input.content()).isEqualTo(testStream);
-				assertThat(input.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(input.attachmentEntityName()).isNotEmpty().isEqualTo("attachment.getId()");
+				assertThat(input.attachmentIds()).isNotEmpty().containsEntry("ID", attachment.getId());
+				assertThat(input.attachmentEntityName()).isNotEmpty().isEqualTo(Attachment_.CDS_NAME);
 				assertThat(input.fileName()).isEqualTo(fileName);
 				assertThat(input.mimeType()).isEqualTo(mimeType);
 			}
@@ -212,15 +212,15 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				attachmentAspect.setId(UUID.randomUUID().toString());
 				roots.setAttachmentTable(List.of(attachmentAspect));
 
-				updateHandler.processAfter(updateContext, List.of(roots));
+				updateHandler.processBefore(updateContext, List.of(roots));
 
 				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 				var creationInput = createEventInputCaptor.getValue();
 				assertThat(attachmentAspect.getContent()).isEqualTo(testStream);
 				assertThat(creationInput.content()).isEqualTo(testStream);
-				assertThat(creationInput.attachmentId()).isNotEmpty().isEqualTo(attachmentAspect.getId());
-				assertThat(creationInput.attachmentEntityName()).isNotEmpty().isEqualTo("attachmentAspect.getId()");
-				assertThat(creationInput.fileName()).isEqualTo(existingData.getFilename());
+				assertThat(creationInput.attachmentIds()).isNotEmpty().containsEntry("ID", attachmentAspect.getId());
+				assertThat(creationInput.attachmentEntityName()).isNotEmpty().isEqualTo(RootTable_.CDS_NAME + ".attachments");
+				assertThat(creationInput.fileName()).isEqualTo(existingData.getFileName());
 				assertThat(creationInput.mimeType()).isEqualTo(existingData.getMimeType());
 				verify(persistenceService).run(selectArgumentCaptor.capture());
 				var select = selectArgumentCaptor.getValue();
@@ -238,7 +238,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			var roots = RootTable.create();
 			roots.setTitle("new title");
 
-			updateHandler.processAfter(updateContext, List.of(roots));
+			updateHandler.processBefore(updateContext, List.of(roots));
 
 			verifyNoInteractions(attachmentService);
 			assertThat(roots.getId()).isNull();
@@ -258,15 +258,15 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				attachment.setContent(testStream);
 				attachment.setId(UUID.randomUUID().toString());
 
-				updateHandler.processAfter(updateContext, List.of(attachment));
+				updateHandler.processBefore(updateContext, List.of(attachment));
 
 				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 				var creationInput = createEventInputCaptor.getValue();
 				assertThat(attachment.getContent()).isEqualTo(testStream);
 				assertThat(creationInput.content()).isEqualTo(testStream);
-				assertThat(creationInput.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(creationInput.attachmentEntityName()).isNotEmpty().isEqualTo("attachment.getId()");
-				assertThat(creationInput.fileName()).isEqualTo(existingData.getFilename());
+				assertThat(creationInput.attachmentIds()).isNotEmpty().containsEntry("ID", attachment.getId());
+				assertThat(creationInput.attachmentEntityName()).isNotEmpty().isEqualTo(Attachment_.CDS_NAME);
+				assertThat(creationInput.fileName()).isEqualTo(existingData.getFileName());
 				assertThat(creationInput.mimeType()).isEqualTo(existingData.getMimeType());
 				verify(persistenceService).run(selectArgumentCaptor.capture());
 				var select = selectArgumentCaptor.getValue();
@@ -289,15 +289,15 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 				attachment.setContent(testStream);
 				attachment.setId(UUID.randomUUID().toString());
 
-				updateHandler.processAfter(updateContext, List.of(attachment));
+				updateHandler.processBefore(updateContext, List.of(attachment));
 
 				verify(attachmentService).updateAttachment(updateEventInputCaptor.capture());
 				var updateInput = updateEventInputCaptor.getValue();
 				assertThat(attachment.getContent()).isEqualTo(testStream);
 				assertThat(updateInput.content()).isEqualTo(testStream);
-				assertThat(updateInput.attachmentId()).isNotEmpty().isEqualTo(attachment.getId());
-				assertThat(updateInput.attachmentEntityName()).isNotEmpty().isEqualTo("attachment.getId()");
-				assertThat(updateInput.fileName()).isEqualTo(existingData.getFilename());
+				assertThat(updateInput.attachmentIds()).isNotEmpty().containsEntry("ID", attachment.getId());
+				assertThat(updateInput.attachmentEntityName()).isNotEmpty().isEqualTo(Attachment_.CDS_NAME);
+				assertThat(updateInput.fileName()).isEqualTo(existingData.getFileName());
 				assertThat(updateInput.mimeType()).isEqualTo(existingData.getMimeType());
 				verify(persistenceService).run(selectArgumentCaptor.capture());
 				var select = selectArgumentCaptor.getValue();
@@ -316,13 +316,14 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			oldData.setId(UUID.randomUUID().toString());
 			var row = RowImpl.row(oldData);
 			when(result.single()).thenReturn(row);
+			when(result.rowCount()).thenReturn(1L);
 			when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
 
 			var attachment = Attachments.create();
 			attachment.setId(oldData.getId());
 			attachment.setContent(null);
 
-			updateHandler.processAfter(updateContext, List.of(attachment));
+			updateHandler.processBefore(updateContext, List.of(attachment));
 
 			verify(attachmentService).deleteAttachment(oldData.getDocumentId());
 			assertThat(attachment.getContent()).isNull();
@@ -336,9 +337,10 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 		private Attachments mockExistingData() {
 			var result = mock(Result.class);
 			var oldData = Attachments.create();
-			oldData.setFilename("some file name");
+			oldData.setFileName("some file name");
 			oldData.setMimeType("some mime type");
 			var row = RowImpl.row(oldData);
+			when(result.rowCount()).thenReturn(1L);
 			when(result.single()).thenReturn(row);
 			when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
 			return oldData;
@@ -496,6 +498,7 @@ class AttachmentsHandlerIntegratedTest extends Registration {
 			var serviceEntity = runtime.getCdsModel().findEntity(entityName);
 			when(readContext.getCqn()).thenReturn(select);
 			when(readContext.getCdsRuntime()).thenReturn(runtime);
+			when(readContext.getModel()).thenReturn(runtime.getCdsModel());
 			when(readContext.getEvent()).thenReturn(CqnService.EVENT_READ);
 			when(readContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 		}

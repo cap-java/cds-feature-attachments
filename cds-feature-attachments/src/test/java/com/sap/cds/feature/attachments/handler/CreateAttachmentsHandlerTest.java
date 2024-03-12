@@ -2,7 +2,7 @@ package com.sap.cds.feature.attachments.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
@@ -25,7 +25,7 @@ import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CqnService;
-import com.sap.cds.services.handler.annotations.After;
+import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
@@ -52,7 +52,7 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 		var attachment = Attachments.create();
 
-		cut.processAfter(createContext, List.of(attachment));
+		cut.processBefore(createContext, List.of(attachment));
 
 		verifyNoInteractions(persistenceService);
 		verifyNoInteractions(eventFactory);
@@ -63,13 +63,13 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
 		var roots = RootTable.create();
 		var attachment = Attachments.create();
-		attachment.setFilename("test.txt");
+		attachment.setFileName("test.txt");
 		attachment.setContent(null);
 		attachment.put("up__ID", "test");
 		roots.setAttachmentTable(List.of(attachment));
-		when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-		cut.processAfter(createContext, List.of(roots));
+		cut.processBefore(createContext, List.of(roots));
 
 		assertThat(roots.getId()).isNotEmpty();
 		assertThat(attachment.getId()).isNotEmpty();
@@ -82,13 +82,12 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
 			var attachment = Attachments.create();
 			attachment.setContent(testStream);
-			when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
+			when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 			var row = mockSelectionResult();
 
-			cut.processAfter(createContext, List.of(attachment));
+			cut.processBefore(createContext, List.of(attachment));
 
-			verify(eventFactory).getEvent(eq(CqnService.EVENT_CREATE), eq(testStream), fieldNamesArgumentCaptor.capture(), eq(row));
-			verifyFilledFieldNames();
+			verify(eventFactory).getEvent(CqnService.EVENT_CREATE, testStream, row);
 		}
 	}
 
@@ -96,13 +95,13 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 	void attachmentAccessExceptionCorrectHandledForCreate() {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 		var attachment = Attachments.create();
-		attachment.setFilename("test.txt");
+		attachment.setFileName("test.txt");
 		attachment.setContent(null);
-		when(eventFactory.getEvent(any(), any(), any(), any())).thenReturn(event);
-		when(event.processEvent(any(), any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+		when(event.processEvent(any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
 
 		List<CdsData> input = List.of(attachment);
-		assertThrows(ServiceException.class, () -> cut.processAfter(createContext, input));
+		assertThrows(ServiceException.class, () -> cut.processBefore(createContext, input));
 	}
 
 	@Test
@@ -115,13 +114,13 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processAfter", CdsCreateEventContext.class, List.class);
+		var method = cut.getClass().getMethod("processBefore", CdsCreateEventContext.class, List.class);
 
-		var createAfterAnnotation = method.getAnnotation(After.class);
+		var createBeforeAnnotation = method.getAnnotation(Before.class);
 		var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-		assertThat(createAfterAnnotation.event()).containsOnly(CqnService.EVENT_CREATE);
-		assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
+		assertThat(createBeforeAnnotation.event()).containsOnly(CqnService.EVENT_CREATE);
+		assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 
 	private void getEntityAndMockContext(String cdsName) {

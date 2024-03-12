@@ -8,7 +8,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,14 +17,11 @@ import org.mockito.ArgumentCaptor;
 import com.sap.cds.feature.attachments.generation.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.EventItems;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.EventItems_;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.WrongAttachment;
-import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.WrongAttachment_;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generation.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
-import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.DocumentFieldNames;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.model.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.processor.applicationevents.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -51,7 +47,7 @@ class ReadAttachmentsHandlerTest {
 	private ItemModifierProvider provider;
 	private CdsReadEventContext readEventContext;
 	private Modifier modifier;
-	private ArgumentCaptor<Map> fieldNamesArgumentCaptor;
+	private ArgumentCaptor<List<String>> fieldNamesArgumentCaptor;
 
 	@BeforeAll
 	static void classSetup() {
@@ -68,7 +64,7 @@ class ReadAttachmentsHandlerTest {
 		modifier = spy(new Modifier() {
 		});
 		when(provider.getBeforeReadDocumentIdEnhancer(any())).thenReturn(modifier);
-		fieldNamesArgumentCaptor = ArgumentCaptor.forClass(Map.class);
+		fieldNamesArgumentCaptor = ArgumentCaptor.forClass(List.class);
 	}
 
 	@Test
@@ -81,13 +77,7 @@ class ReadAttachmentsHandlerTest {
 		verify(provider).getBeforeReadDocumentIdEnhancer(fieldNamesArgumentCaptor.capture());
 		verify(modifier).items(any());
 		var fields = fieldNamesArgumentCaptor.getValue();
-		assertThat(fields).hasSize(2);
-		var attachmentFields = (DocumentFieldNames) fields.get("attachments");
-		var attachmentTableFields = (DocumentFieldNames) fields.get("attachmentTable");
-		assertThat(attachmentFields.contentFieldName()).isEqualTo("content");
-		assertThat(attachmentFields.documentIdFieldName()).isEqualTo("documentId");
-		assertThat(attachmentTableFields.contentFieldName()).isEqualTo("content");
-		assertThat(attachmentTableFields.documentIdFieldName()).isEqualTo("documentId");
+		assertThat(fields).hasSize(2).contains("attachments").contains("attachmentTable");
 	}
 
 	@Test
@@ -100,27 +90,13 @@ class ReadAttachmentsHandlerTest {
 		verify(provider).getBeforeReadDocumentIdEnhancer(fieldNamesArgumentCaptor.capture());
 		verify(modifier).items(any());
 		var fields = fieldNamesArgumentCaptor.getValue();
-		assertThat(fields).hasSize(1);
-		var attachmentFields = (DocumentFieldNames) fields.get("");
-		assertThat(attachmentFields.contentFieldName()).isEqualTo("content");
-		assertThat(attachmentFields.documentIdFieldName()).isEqualTo("documentId");
+		assertThat(fields).hasSize(1).contains("");
 	}
 
 	@Test
 	void noFieldNamesFound() {
 		var select = Select.from(EventItems_.class).columns(EventItems_::note);
 		mockEventContext(EventItems_.CDS_NAME, select);
-
-		cut.processBefore(readEventContext);
-
-		verifyNoInteractions(provider);
-		verifyNoInteractions(modifier);
-	}
-
-	@Test
-	void noFieldNamesFoundForWrongAttachment() {
-		var select = Select.from(WrongAttachment_.class).columns(WrongAttachment_::content);
-		mockEventContext(WrongAttachment_.CDS_NAME, select);
 
 		cut.processBefore(readEventContext);
 
@@ -208,18 +184,6 @@ class ReadAttachmentsHandlerTest {
 	}
 
 	@Test
-	void attachmentServiceNotCalledIfWrongAttachment() {
-		var wrongAttachment = WrongAttachment.create();
-		wrongAttachment.setId(1);
-		wrongAttachment.setContent(null);
-		mockEventContext(WrongAttachment_.CDS_NAME, mock(CqnSelect.class));
-
-		cut.processAfter(readEventContext, List.of(wrongAttachment));
-
-		verifyNoInteractions(attachmentService);
-	}
-
-	@Test
 	void classHasCorrectAnnotation() {
 		var readHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
 
@@ -252,7 +216,7 @@ class ReadAttachmentsHandlerTest {
 	private void mockEventContext(String entityName, CqnSelect select) {
 		var serviceEntity = runtime.getCdsModel().findEntity(entityName);
 		when(readEventContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
-		when(readEventContext.getCdsRuntime()).thenReturn(runtime);
+		when(readEventContext.getModel()).thenReturn(runtime.getCdsModel());
 		when(readEventContext.getCqn()).thenReturn(select);
 	}
 

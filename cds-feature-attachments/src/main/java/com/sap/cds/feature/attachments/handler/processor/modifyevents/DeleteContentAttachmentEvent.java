@@ -1,13 +1,15 @@
 package com.sap.cds.feature.attachments.handler.processor.modifyevents;
 
+import java.util.Map;
+
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.handler.model.AttachmentFieldNames;
-import com.sap.cds.feature.attachments.handler.processor.common.ProcessingBase;
+import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
 
-public class DeleteContentAttachmentEvent extends ProcessingBase implements ModifyAttachmentEvent {
+public class DeleteContentAttachmentEvent implements ModifyAttachmentEvent {
 
 	private final AttachmentService attachmentService;
 
@@ -16,15 +18,11 @@ public class DeleteContentAttachmentEvent extends ProcessingBase implements Modi
 	}
 
 	@Override
-	public Object processEvent(Path path, CdsElement element, AttachmentFieldNames fieldNames, Object value, CdsData existingData, String attachmentId) {
-		if (fieldNames.documentIdField().isEmpty()) {
-			return value;
+	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds) {
+		if (ApplicationHandlerHelper.doesDocumentIdExistsBefore(existingData)) {
+			attachmentService.deleteAttachment((String) existingData.get(Attachments.DOCUMENT_ID));
 		}
-
-		if (doesDocumentIdExistsBefore(fieldNames, existingData)) {
-			attachmentService.deleteAttachment((String) existingData.get(fieldNames.documentIdField().get()));
-		}
-		path.target().values().put(fieldNames.documentIdField().get(), null);
+		path.target().values().put(Attachments.DOCUMENT_ID, null);
 		return value;
 	}
 
