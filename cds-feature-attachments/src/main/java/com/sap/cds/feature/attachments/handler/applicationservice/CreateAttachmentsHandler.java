@@ -1,5 +1,6 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,19 +18,16 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
-import com.sap.cds.services.persistence.PersistenceService;
 
 //TODO add Java Doc
 //TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
 public class CreateAttachmentsHandler implements EventHandler {
 
-	private final PersistenceService persistenceService;
 	private final ModifyAttachmentEventFactory eventFactory;
 	private CdsDataProcessor processor = CdsDataProcessor.create();
 
-	public CreateAttachmentsHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory eventFactory) {
-		this.persistenceService = persistenceService;
+	public CreateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory) {
 		this.eventFactory = eventFactory;
 	}
 
@@ -41,7 +39,7 @@ public class CreateAttachmentsHandler implements EventHandler {
 		}
 
 		setKeysInData(context.getTarget(), data);
-		ModifyApplicationHandlerHelper.uploadAttachmentForEntity(context.getTarget(), data, CqnService.EVENT_CREATE, eventFactory, persistenceService);
+		ModifyApplicationHandlerHelper.uploadAttachmentForEntity(context.getTarget(), data, new ArrayList<>(), eventFactory);
 	}
 
 	private void setKeysInData(CdsEntity entity, List<CdsData> data) {

@@ -1,5 +1,7 @@
 package com.sap.cds.feature.attachments.handler.common;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -18,6 +20,8 @@ import com.sap.cds.reflect.CdsStructuredType;
 
 public final class ApplicationHandlerHelper {
 
+	public static final String DRAFT_ENTITY_ACTIVE_FIELD = "IsActiveEntity";
+
 	private ApplicationHandlerHelper() {
 	}
 
@@ -26,9 +30,7 @@ public final class ApplicationHandlerHelper {
 
 		Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)
 																																													&& hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
-		Validator validator = (path, element, value) -> {
-			isIncluded.set(true);
-		};
+		Validator validator = (path, element, value) -> isIncluded.set(true);
 
 		callValidator(entity, data, filter, validator);
 		return isIncluded.get();
@@ -60,6 +62,30 @@ public final class ApplicationHandlerHelper {
 
 	public static boolean doesDocumentIdExistsBefore(Map<?, Object> existingData) {
 		return Objects.nonNull(existingData.get(Attachments.DOCUMENT_ID));
+	}
+
+	public static List<CdsData> condenseData(List<CdsData> data, CdsEntity entity) {
+		var resultList = new ArrayList<CdsData>();
+
+		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
+		Validator validator = (path, element, value) -> resultList.add(CdsData.create(path.target().values()));
+
+		ApplicationHandlerHelper.callValidator(entity, data, filter, validator);
+		return resultList;
+	}
+
+	public static boolean isKeyInData(Map<String, Object> keys, CdsData data) {
+		return keys.entrySet().stream().allMatch(entry -> data.get(entry.getKey()).equals(entry.getValue()));
+	}
+
+	public static Map<String, Object> removeDraftKeys(Map<String, Object> keys) {
+		var keyMap = new HashMap<>(keys);
+		keyMap.entrySet().removeIf(entry -> isDraftActiveEntityField(entry.getKey()));
+		return keyMap;
+	}
+
+	private static boolean isDraftActiveEntityField(String key) {
+		return key.equals(DRAFT_ENTITY_ACTIVE_FIELD);
 	}
 
 }

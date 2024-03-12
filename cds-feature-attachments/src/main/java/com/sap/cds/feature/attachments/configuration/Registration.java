@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.UpdateAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftAttachmentsHandler;
@@ -42,10 +43,11 @@ public class Registration implements CdsRuntimeConfiguration {
 
 		var deleteContentEvent = new DeleteContentAttachmentEvent(attachmentService);
 		var factory = buildAttachmentEventFactory(attachmentService, deleteContentEvent);
+		var attachmentsReader = buildAttachmentsReader(persistenceService);
 
-		configurer.eventHandler(buildCreateHandler(persistenceService, factory));
-		configurer.eventHandler(buildUpdateHandler(persistenceService, factory));
-		configurer.eventHandler(buildDeleteHandler(persistenceService, deleteContentEvent));
+		configurer.eventHandler(buildCreateHandler(factory));
+		configurer.eventHandler(buildUpdateHandler(factory, attachmentsReader, attachmentService));
+		configurer.eventHandler(buildDeleteHandler(attachmentsReader, deleteContentEvent));
 		configurer.eventHandler(buildReadHandler(attachmentService));
 		configurer.eventHandler(new DraftAttachmentsHandler());
 	}
@@ -62,13 +64,11 @@ public class Registration implements CdsRuntimeConfiguration {
 		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent, doNothingAttachmentEvent);
 	}
 
-	protected EventHandler buildCreateHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory factory) {
-		return new CreateAttachmentsHandler(persistenceService, factory);
+	protected EventHandler buildCreateHandler(ModifyAttachmentEventFactory factory) {
+		return new CreateAttachmentsHandler(factory);
 	}
 
-	protected EventHandler buildDeleteHandler(PersistenceService persistenceService, ModifyAttachmentEvent deleteContentEvent) {
-		var cascader = new DefaultAssociationCascader();
-		var attachmentsReader = new DefaultAttachmentsReader(cascader, persistenceService);
+	protected EventHandler buildDeleteHandler(AttachmentsReader attachmentsReader, ModifyAttachmentEvent deleteContentEvent) {
 		return new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent);
 	}
 
@@ -76,8 +76,13 @@ public class Registration implements CdsRuntimeConfiguration {
 		return new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new);
 	}
 
-	protected EventHandler buildUpdateHandler(PersistenceService persistenceService, ModifyAttachmentEventFactory factory) {
-		return new UpdateAttachmentsHandler(persistenceService, factory);
+	protected EventHandler buildUpdateHandler(ModifyAttachmentEventFactory factory, AttachmentsReader attachmentsReader, AttachmentService attachmentService) {
+		return new UpdateAttachmentsHandler(factory, attachmentsReader, attachmentService);
+	}
+
+	protected AttachmentsReader buildAttachmentsReader(PersistenceService persistenceService) {
+		var cascader = new DefaultAssociationCascader();
+		return new DefaultAttachmentsReader(cascader, persistenceService);
 	}
 
 }

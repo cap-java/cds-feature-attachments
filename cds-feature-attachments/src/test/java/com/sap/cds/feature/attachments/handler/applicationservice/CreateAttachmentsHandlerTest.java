@@ -22,6 +22,8 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
@@ -31,11 +33,16 @@ import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.runtime.CdsRuntime;
 
-class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
+class CreateAttachmentsHandlerTest {
+
+	private static CdsRuntime runtime;
 
 	private CreateAttachmentsHandler cut;
+	private ModifyAttachmentEventFactory eventFactory;
 	private CdsCreateEventContext createContext;
+	private ModifyAttachmentEvent event;
 
 	@BeforeAll
 	static void classSetup() {
@@ -44,10 +51,11 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 	@BeforeEach
 	void setup() {
-		super.setup();
-		cut = new CreateAttachmentsHandler(persistenceService, eventFactory);
+		eventFactory = mock(ModifyAttachmentEventFactory.class);
+		cut = new CreateAttachmentsHandler(eventFactory);
 
 		createContext = mock(CdsCreateEventContext.class);
+		event = mock(ModifyAttachmentEvent.class);
 	}
 
 	@Test
@@ -57,7 +65,6 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 
 		cut.processBefore(createContext, List.of(attachment));
 
-		verifyNoInteractions(persistenceService);
 		verifyNoInteractions(eventFactory);
 	}
 
@@ -86,7 +93,6 @@ class CreateAttachmentsHandlerTest extends ModifyApplicationEventTestBase {
 			var attachment = Attachments.create();
 			attachment.setContent(testStream);
 			when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
-			mockSelectionResult();
 
 			cut.processBefore(createContext, List.of(attachment));
 

@@ -23,19 +23,18 @@ import com.sap.cds.services.persistence.PersistenceService;
 public class DefaultAttachmentsReader implements AttachmentsReader {
 
 	private final AssociationCascader cascader;
+	private final PersistenceService persistence;
 
 	public DefaultAttachmentsReader(AssociationCascader cascader, PersistenceService persistence) {
 		this.cascader = cascader;
 		this.persistence = persistence;
 	}
 
-	private final PersistenceService persistence;
-
 	@Override
-	public List<CdsData> readAttachments(CdsModel model, CdsEntity entity, CqnFilterableStatement delete) {
+	public List<CdsData> readAttachments(CdsModel model, CdsEntity entity, CqnFilterableStatement statement) {
 		var dataList = new ArrayList<CdsData>();
 
-		var resultWhere = getWhere(delete);
+		var resultWhere = getWhere(statement);
 		var pathLists = cascader.findEntityPath(model, entity);
 		pathLists.forEach(path -> {
 			var select = getSelectStatement(path, resultWhere, entity);
