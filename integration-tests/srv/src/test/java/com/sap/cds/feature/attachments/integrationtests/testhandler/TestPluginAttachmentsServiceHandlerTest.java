@@ -1,8 +1,10 @@
 package com.sap.cds.feature.attachments.integrationtests.testhandler;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,12 +28,30 @@ class TestPluginAttachmentsServiceHandlerTest {
 	}
 
 	@Test
-	void dummyTestForRead() {
+	void readIsWorking() {
 		var context = AttachmentReadEventContext.create();
 		context.setDocumentId("test");
 		context.setData(MediaData.create());
 
-		assertDoesNotThrow(() -> cut.readAttachment(context));
+		cut.readAttachment(context);
+
+		assertThat(context.getData().getContent()).isNull();
+	}
+
+	@Test
+	void readWithContentIsWorking() throws IOException {
+		var createContext = AttachmentCreateEventContext.create();
+		createContext.setData(MediaData.create());
+		createContext.getData().setContent(new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8)));
+		cut.createAttachment(createContext);
+
+		var context = AttachmentReadEventContext.create();
+		context.setDocumentId(createContext.getDocumentId());
+		context.setData(MediaData.create());
+
+		cut.readAttachment(context);
+
+		assertThat(context.getData().getContent().readAllBytes()).isEqualTo("test".getBytes(StandardCharsets.UTF_8));
 	}
 
 	@Test

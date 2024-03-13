@@ -11,7 +11,8 @@
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
         <cds.services.version>2.7.0</cds.services.version>
-        <spring.version>3.2.1-sap-02</spring.version>
+
+        <generation-folder>src/gen</generation-folder>
     </properties>
 
     <groupId>com.sap.cds</groupId>
@@ -53,12 +54,6 @@
             <groupId>com.sap.cds</groupId>
             <artifactId>cds-services-api</artifactId>
         </dependency>
-
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework.boot</groupId>-->
-        <!--            <artifactId>spring-boot-test</artifactId>-->
-        <!--            <scope>test</scope>-->
-        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>

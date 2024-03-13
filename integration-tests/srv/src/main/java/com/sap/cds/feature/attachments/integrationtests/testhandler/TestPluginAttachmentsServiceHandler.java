@@ -11,7 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.springframework.context.annotation.Profile;
 
+import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentDeleteEventContext;
@@ -21,8 +23,8 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
-//TODO remove if integration tests are in place, only for manual testing for now
 @ServiceName(value = "*", type = AttachmentService.class)
+@Profile(Profiles.TEST_HANDLER_ENABLED)
 public class TestPluginAttachmentsServiceHandler implements EventHandler {
 
 	private static final Marker marker = MarkerFactory.getMarker("DUMMY_HANDLER");

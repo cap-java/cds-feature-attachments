@@ -19,15 +19,9 @@
         <cds.install-cdsdk.version>7.6.0</cds.install-cdsdk.version>
         <generation-package>com.sap.cds.feature.attachments.generated</generation-package>
         <test-generation-folder>src/test/gen</test-generation-folder>
-        <generation-folder>src/gen</generation-folder>
     </properties>
 
     <dependencies>
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework</groupId>-->
-        <!--            <artifactId>spring-context</artifactId>-->
-        <!--        </dependency>-->
-
         <!-- TESTS -->
         <dependency>
             <groupId>com.sap.cds</groupId>

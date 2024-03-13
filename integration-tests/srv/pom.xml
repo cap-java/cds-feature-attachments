@@ -16,6 +16,7 @@
 
     <properties>
         <packageName>com.sap.cds.feature.attachments.integrationtests</packageName>
+        <generation-package>com.sap.cds.feature.attachments.generated</generation-package>
     </properties>
 
     <!-- ACTUAL DEPENDENCIES -->
@@ -55,6 +56,45 @@
     <build>
         <finalName>${project.artifactId}</finalName>
         <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${generation-folder}</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
+                            <directory>src/test/resources</directory>
+                            <includes>
+                                <include>schema.sql</include>
+                            </includes>
+                        </fileset>
+                        <fileset>
+                            <directory>src/test/resources/cds</directory>
+                            <includes>
+                                <include>csn.json</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- SPRING BOOT PLUGIN -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -137,7 +177,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <basePackage>cds.gen</basePackage>
+                            <basePackage>${generation-package}.integration.test.cds4j</basePackage>
                         </configuration>
                     </execution>
                 </executions>
