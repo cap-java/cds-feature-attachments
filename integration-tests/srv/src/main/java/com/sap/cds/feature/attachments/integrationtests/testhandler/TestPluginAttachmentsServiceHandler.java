@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.dummy;
+package com.sap.cds.feature.attachments.integrationtests.testhandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -23,10 +23,10 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 
 //TODO remove if integration tests are in place, only for manual testing for now
 @ServiceName(value = "*", type = AttachmentService.class)
-public class DummyAttachmentsServiceHandler implements EventHandler {
+public class TestPluginAttachmentsServiceHandler implements EventHandler {
 
 	private static final Marker marker = MarkerFactory.getMarker("DUMMY_HANDLER");
-	private static final Logger logger = LoggerFactory.getLogger(DummyAttachmentsServiceHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(TestPluginAttachmentsServiceHandler.class);
 
 	private static final Map<String, byte[]> documents = new HashMap<>();
 

@@ -64,9 +64,9 @@ class RegistrationTest {
 
 		cut.eventHandlers(configurer);
 
-		verify(configurer, times(7)).eventHandler(handlerArgumentCaptor.capture());
+		verify(configurer, times(6)).eventHandler(handlerArgumentCaptor.capture());
 		var handlers = handlerArgumentCaptor.getAllValues();
-		assertThat(handlers).hasSize(7);
+		assertThat(handlers).hasSize(6);
 		isHandlerForClassIncluded(handlers, DefaultAttachmentsServiceHandler.class);
 		isHandlerForClassIncluded(handlers, CreateAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, UpdateAttachmentsHandler.class);

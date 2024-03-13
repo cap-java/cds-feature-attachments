@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.dummy;
+package com.sap.cds.feature.attachments.integrationtests.testhandler;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
@@ -16,13 +16,13 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentDe
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentUpdateEventContext;
 
-//TODO remove dummy tests
-class DummyAttachmentsServiceHandlerTest {
-	private DummyAttachmentsServiceHandler cut;
+class TestPluginAttachmentsServiceHandlerTest {
+
+	private TestPluginAttachmentsServiceHandler cut;
 
 	@BeforeEach
 	void setup() {
-		cut = new DummyAttachmentsServiceHandler();
+		cut = new TestPluginAttachmentsServiceHandler();
 	}
 
 	@Test

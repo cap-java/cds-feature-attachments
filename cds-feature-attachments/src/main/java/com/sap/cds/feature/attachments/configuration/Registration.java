@@ -1,6 +1,5 @@
 package com.sap.cds.feature.attachments.configuration;
 
-import com.sap.cds.feature.attachments.dummy.DummyAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
@@ -36,7 +35,6 @@ public class Registration implements CdsRuntimeConfiguration {
 	@Override
 	public void eventHandlers(CdsRuntimeConfigurer configurer) {
 		configurer.eventHandler(new DefaultAttachmentsServiceHandler());
-		configurer.eventHandler(new DummyAttachmentsServiceHandler());
 
 		var persistenceService = configurer.getCdsRuntime().getServiceCatalog().getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
 		var attachmentService = configurer.getCdsRuntime().getServiceCatalog().getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);

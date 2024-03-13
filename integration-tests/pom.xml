@@ -1,0 +1,110 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-feature-attachments-root</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>cds-feature-attachments-integration-tests-parent</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+
+    <name>integration tests parent</name>
+
+    <properties>
+        <!-- DEPENDENCIES VERSION -->
+        <jdk.version>17</jdk.version>
+        <spring.boot.version.security>3.2.3-sap-02</spring.boot.version.security>
+        <spring.boot.version>3.2.3</spring.boot.version>
+        <cds.install-cdsdk.version>7.7.0</cds.install-cdsdk.version>
+
+        <cds.install-node.downloadUrl>https://nodejs.org/dist/</cds.install-node.downloadUrl>
+    </properties>
+
+    <modules>
+        <module>db</module>
+        <module>srv</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- SPRING BOOT -->
+            <dependency>
+                <groupId>com.sap.sgs</groupId>
+                <artifactId>security-patched-spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version.security}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.sap.cds</groupId>
+            <artifactId>cds-feature-attachments</artifactId>
+            <version>0.0.35-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- JAVA VERSION -->
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>${jdk.version}</release>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <!-- MAKE SPRING BOOT PLUGIN RUNNABLE FROM ROOT -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <!-- SUREFIRE VERSION -->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.2</version>
+            </plugin>
+
+            <!-- PROJECT STRUCTURE CHECKS -->
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>Project Structure Checks</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>3.5.0</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>${jdk.version}</version>
+                                </requireJavaVersion>
+                                <reactorModuleConvergence/>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
