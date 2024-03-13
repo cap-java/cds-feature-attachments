@@ -75,7 +75,7 @@ public class DefaultAssociationCascader implements AssociationCascader {
 		return internalResultList;
 	}
 
-	protected boolean isMediaEntity(CdsStructuredType baseEntity) {
+	private boolean isMediaEntity(CdsStructuredType baseEntity) {
 		return baseEntity.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false);
 	}
 

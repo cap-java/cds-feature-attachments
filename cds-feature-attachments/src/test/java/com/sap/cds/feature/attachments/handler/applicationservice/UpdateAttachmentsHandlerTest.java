@@ -87,7 +87,7 @@ class UpdateAttachmentsHandlerTest {
 	}
 
 	@Test
-	void eventProcessorCalledForUpdate() {
+	void eventProcessorNotCalledForUpdateIfNoExistingData() {
 		var id = getEntityAndMockContext(Attachment_.CDS_NAME);
 		var testStream = mock(InputStream.class);
 		var attachment = Attachments.create();
@@ -96,7 +96,22 @@ class UpdateAttachmentsHandlerTest {
 
 		cut.processBefore(updateContext, List.of(attachment));
 
-		verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
+		verifyNoInteractions(eventFactory);
+		verifyNoInteractions(event);
+	}
+
+	@Test
+	void eventProcessorCalledForUpdate() {
+		var id = getEntityAndMockContext(Attachment_.CDS_NAME);
+		var testStream = mock(InputStream.class);
+		var attachment = Attachments.create();
+		attachment.setContent(testStream);
+		attachment.setId(id);
+		when(attachmentsReader.readAttachments(any(), any(), any())).thenReturn(List.of(attachment));
+
+		cut.processBefore(updateContext, List.of(attachment));
+
+		verify(eventFactory).getEvent(testStream, null, false, attachment);
 	}
 
 	@Test
@@ -107,6 +122,7 @@ class UpdateAttachmentsHandlerTest {
 		attachment.setContent(null);
 		attachment.setId(id);
 		when(event.processEvent(any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
+		when(attachmentsReader.readAttachments(any(), any(), any())).thenReturn(List.of(attachment));
 
 		List<CdsData> input = List.of(attachment);
 		assertThrows(ServiceException.class, () -> cut.processBefore(updateContext, input));

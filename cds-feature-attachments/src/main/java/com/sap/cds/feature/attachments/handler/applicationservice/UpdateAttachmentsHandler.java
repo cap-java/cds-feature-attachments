@@ -10,6 +10,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyA
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Select;
@@ -17,6 +18,7 @@ import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnPredicate;
 import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
@@ -43,19 +45,22 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	@Before(event = CqnService.EVENT_UPDATE)
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
-		var noContentInData = !ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data);
-		var associationsAreUnchanged = associationsAreUnchanged(context.getTarget(), data);
+		var target = context.getTarget();
+		var noContentInData = !ApplicationHandlerHelper.isContentFieldInData(target, data);
+		var associationsAreUnchanged = associationsAreUnchanged(target, data);
 		if (noContentInData && associationsAreUnchanged) {
 			return;
 		}
-		var select = getSelect(context.getTarget(), context.getCqn(), data);
-		var attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), select);
+		var select = getSelect(target, context.getCqn(), data);
+		var attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
-		var condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, context.getTarget());
-		ModifyApplicationHandlerHelper.uploadAttachmentForEntity(context.getTarget(), data, condensedAttachments, eventFactory);
+		var condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
+		if (!isMediaEntity(target) || (isMediaEntity(target) && data.size() == attachments.size())) {
+			ModifyApplicationHandlerHelper.uploadAttachmentForEntity(target, data, condensedAttachments, eventFactory);
+		}
 
 		if (!associationsAreUnchanged) {
-			deleteRemovedAttachments(attachments, data, context.getTarget());
+			deleteRemovedAttachments(attachments, data, target);
 		}
 	}
 
@@ -102,5 +107,10 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		};
 		ApplicationHandlerHelper.callValidator(entity, exitingDataList, filter, validator);
 	}
+
+	private boolean isMediaEntity(CdsStructuredType entity) {
+		return entity.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false);
+	}
+
 
 }
