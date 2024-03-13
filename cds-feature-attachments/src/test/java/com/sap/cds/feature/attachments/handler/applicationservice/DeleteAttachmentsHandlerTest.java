@@ -130,5 +130,4 @@ class DeleteAttachmentsHandlerTest {
 		return attachment;
 	}
 
-
 }
