@@ -2,6 +2,8 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Validator;
@@ -16,6 +18,7 @@ import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnPredicate;
+import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
@@ -69,7 +72,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	}
 
 	private CqnFilterableStatement getSelect(CdsEntity entity, CqnUpdate update, List<CdsData> data) {
-		var filter = update.ref().asRef().rootSegment().filter();
+		var filter = getLastSegmentFilter(update);
 		var where = update.where();
 		CqnPredicate resultPredicate;
 		if (filter.isPresent() && where.isPresent()) {
@@ -93,6 +96,22 @@ public class UpdateAttachmentsHandler implements EventHandler {
 			resultPredicate = CQL.or(predicates);
 		}
 		return Select.from(entity.getQualifiedName()).where(resultPredicate);
+	}
+
+	private Optional<CqnPredicate> getLastSegmentFilter(CqnUpdate update) {
+		var segmentSize = update.ref().asRef().segments().size();
+		if (segmentSize > 1) {
+			var pathSegments = update.ref().asRef().path().split(Pattern.quote("."));
+			var pathSegmentSize = pathSegments.length;
+			var lastPathSegment = pathSegments[pathSegmentSize - 1];
+
+			var lastSegment = update.ref().asRef().segments().stream().filter(segment -> segment.id().equals(lastPathSegment)).findAny();
+			return lastSegment.flatMap(Segment::filter);
+		} else if (segmentSize == 1) {
+			return update.ref().asRef().rootSegment().filter();
+		} else {
+			return Optional.empty();
+		}
 	}
 
 	private void deleteRemovedAttachments(List<CdsData> exitingDataList, List<CdsData> updatedDataList, CdsEntity entity) {

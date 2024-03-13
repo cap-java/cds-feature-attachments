@@ -16,13 +16,13 @@ entity Roots : cuid {
 }
 
 entity Items : cuid {
-    parentID         : UUID;
-    title            : String;
-    events           : Composition of many Events
-                           on events.itemId = $self.ID;
-    attachments      : Composition of many Attachments;
-    attachmentsTable : Composition of many AttachmentEntity
-                           on attachmentsTable.parentKey = $self.ID;
+    parentID           : UUID;
+    title              : String;
+    events             : Composition of many Events
+                             on events.itemId = $self.ID;
+    attachments        : Composition of many Attachments;
+    attachmentEntities : Composition of many AttachmentEntity
+                             on attachmentEntities.parentKey = $self.ID;
 }
 
 entity Events : cuid {

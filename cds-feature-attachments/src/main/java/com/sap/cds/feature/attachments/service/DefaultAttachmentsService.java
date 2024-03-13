@@ -12,7 +12,6 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRe
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentUpdateEventContext;
 import com.sap.cds.services.ServiceDelegator;
 
-//TODO implement
 //TODO add java doc
 //TODO exception handling
 //TODO i18n properties
