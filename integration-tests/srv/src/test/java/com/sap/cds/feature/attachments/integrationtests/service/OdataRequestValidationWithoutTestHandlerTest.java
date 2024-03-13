@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -45,21 +46,11 @@ class OdataRequestValidationWithoutTestHandlerTest {
 		var selectedRoot = selectStoredRootWithDeepData();
 		verifySelectedRoot(selectedRoot, serviceRoot);
 
-		var itemAttachment = selectedRoot.getItems().get(0).getAttachments().get(0);
+		var itemAttachment = getRandomItemAttachment(selectedRoot);
+		var testContent = putContentForAttachment(selectedRoot, itemAttachment);
+		var attachment = selectUpdatedAttachment(selectedRoot, itemAttachment);
 
-		var url = "/odata/v4/TestService/Roots(" + selectedRoot.getId() + ")/items(" + selectedRoot.getItems().get(0).getId() + ")/attachments(ID=" + itemAttachment.getId() + ",up__ID=" + selectedRoot.getItems().get(0).getId() + ")/content";
-		var testContent = "testContent";
-		mockMvc.perform(put(url).contentType(MediaType.APPLICATION_OCTET_STREAM).content(testContent.getBytes(StandardCharsets.UTF_8)))
-				.andExpect(status().isNoContent());
-
-		CqnSelect attachmentSelect = Select.from(Items_.class).where(a -> a.ID().eq(selectedRoot.getItems().get(0).getId())).columns(item -> item.attachments().expand());
-		var result = persistenceService.run(attachmentSelect);
-		var items = result.single(Items.class);
-		var attachment = items.getAttachments().stream().filter(attach -> itemAttachment.getId().equals(attach.getId())).findAny().orElseThrow();
-
-		assertThat(attachment.getContent().readAllBytes()).isEqualTo(testContent.getBytes(StandardCharsets.UTF_8));
-		assertThat(attachment.getDocumentId()).isEqualTo(itemAttachment.getId());
-
+		verifyContentAndDocumentId(attachment, testContent, itemAttachment);
 	}
 
 	private Roots buildServiceRootWithDeepData() {
@@ -112,6 +103,30 @@ class OdataRequestValidationWithoutTestHandlerTest {
 		assertThat(selectedRoot.getItems().get(1).getId()).isNotEmpty();
 		assertThat(selectedRoot.getItems().get(1).getTitle()).isEqualTo(serviceRoot.getItems().get(1).getTitle());
 		assertThat(selectedRoot.getItems().get(1).getAttachments()).isEmpty();
+	}
+
+	private Attachments getRandomItemAttachment(Roots selectedRoot) {
+		return selectedRoot.getItems().get(0).getAttachments().get(0);
+	}
+
+	private String putContentForAttachment(Roots selectedRoot, Attachments itemAttachment) throws Exception {
+		var url = "/odata/v4/TestService/Roots(" + selectedRoot.getId() + ")/items(" + selectedRoot.getItems().get(0).getId() + ")/attachments(ID=" + itemAttachment.getId() + ",up__ID=" + selectedRoot.getItems().get(0).getId() + ")/content";
+		var testContent = "testContent";
+		mockMvc.perform(put(url).contentType(MediaType.APPLICATION_OCTET_STREAM).content(testContent.getBytes(StandardCharsets.UTF_8)))
+				.andExpect(status().isNoContent());
+		return testContent;
+	}
+
+	private Attachments selectUpdatedAttachment(Roots selectedRoot, Attachments itemAttachment) {
+		CqnSelect attachmentSelect = Select.from(Items_.class).where(a -> a.ID().eq(selectedRoot.getItems().get(0).getId())).columns(item -> item.attachments().expand());
+		var result = persistenceService.run(attachmentSelect);
+		var items = result.single(Items.class);
+		return items.getAttachments().stream().filter(attach -> itemAttachment.getId().equals(attach.getId())).findAny().orElseThrow();
+	}
+
+	private void verifyContentAndDocumentId(Attachments attachment, String testContent, Attachments itemAttachment) throws IOException {
+		assertThat(attachment.getContent().readAllBytes()).isEqualTo(testContent.getBytes(StandardCharsets.UTF_8));
+		assertThat(attachment.getDocumentId()).isEqualTo(itemAttachment.getId());
 	}
 
 }
