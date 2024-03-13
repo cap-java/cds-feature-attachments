@@ -55,7 +55,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		var attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
 		var condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
-		if (!isMediaEntity(target) || (isMediaEntity(target) && data.size() == attachments.size())) {
+		if (!isMediaEntity(target) || isMediaEntity(target) && data.size() == attachments.size()) {
 			ModifyApplicationHandlerHelper.uploadAttachmentForEntity(target, data, condensedAttachments, eventFactory);
 		}
 
