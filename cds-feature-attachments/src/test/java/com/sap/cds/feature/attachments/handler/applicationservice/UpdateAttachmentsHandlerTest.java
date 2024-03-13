@@ -173,9 +173,9 @@ class UpdateAttachmentsHandlerTest {
 
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
 		var select = selectCaptor.getValue();
+		assertThat(select.toString()).contains(getRefString("$key", "test"));
 		assertThat(select.toString()).contains(getRefString(Attachment.ID, attachment.getId()));
 		assertThat(select.toString()).contains(getRefString(UP__ID, (String) attachment.get(UP__ID)));
-		assertThat(select.toString()).contains(getRefString("$key", "test"));
 	}
 
 	@Test
@@ -220,10 +220,10 @@ class UpdateAttachmentsHandlerTest {
 	void selectIsUsedWithAttachmentId() {
 		var attachment = Attachments.create();
 		attachment.setId(UUID.randomUUID().toString());
-		attachment.put(UP__ID, "test_where");
+		attachment.put(UP__ID, "test_up_id");
 		attachment.setContent(mock(InputStream.class));
-		CqnUpdate update = Update.entity(Attachment_.CDS_NAME);
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
+		CqnUpdate update = Update.entity(Attachment_.CDS_NAME);
 		mockTargetInUpdateContext(serviceEntity, update);
 
 		cut.processBefore(updateContext, List.of(attachment));
