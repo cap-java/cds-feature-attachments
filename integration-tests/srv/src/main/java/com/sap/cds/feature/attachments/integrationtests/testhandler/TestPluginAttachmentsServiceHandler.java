@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -25,6 +26,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 
 @ServiceName(value = "*", type = AttachmentService.class)
 @Profile(Profiles.TEST_HANDLER_ENABLED)
+@Component
 public class TestPluginAttachmentsServiceHandler implements EventHandler {
 
 	private static final Marker marker = MarkerFactory.getMarker("DUMMY_HANDLER");

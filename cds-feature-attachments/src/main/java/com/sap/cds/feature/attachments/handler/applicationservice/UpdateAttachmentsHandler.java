@@ -3,7 +3,6 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Validator;
@@ -100,15 +99,10 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
 	private Optional<CqnPredicate> getLastSegmentFilter(CqnUpdate update) {
 		var segmentSize = update.ref().asRef().segments().size();
-		if (segmentSize > 1) {
-			var pathSegments = update.ref().asRef().path().split(Pattern.quote("."));
-			var pathSegmentSize = pathSegments.length;
-			var lastPathSegment = pathSegments[pathSegmentSize - 1];
-
+		if (segmentSize > 0) {
+			var lastPathSegment = update.ref().asRef().lastSegment();
 			var lastSegment = update.ref().asRef().segments().stream().filter(segment -> segment.id().equals(lastPathSegment)).findAny();
 			return lastSegment.flatMap(Segment::filter);
-		} else if (segmentSize == 1) {
-			return update.ref().asRef().rootSegment().filter();
 		} else {
 			return Optional.empty();
 		}
