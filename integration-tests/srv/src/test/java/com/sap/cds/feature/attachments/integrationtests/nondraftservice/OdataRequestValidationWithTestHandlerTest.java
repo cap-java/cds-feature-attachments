@@ -67,7 +67,7 @@ class OdataRequestValidationWithTestHandlerTest {
 
 		var selectedRoot = selectStoredRootWithDeepData();
 		verifySelectedRoot(selectedRoot, serviceRoot);
-		assertThat(serviceHandler.getEventContext()).isEmpty();
+		verifyNoAttachmentEventsCalled();
 	}
 
 	@Test
@@ -118,7 +118,7 @@ class OdataRequestValidationWithTestHandlerTest {
 			assertThat(attachment.get("content@mediaContentType")).isNull();
 			assertThat(attachment.getDocumentId()).isNull();
 		});
-		assertThat(serviceHandler.getEventContext()).isEmpty();
+		verifyNoAttachmentEventsCalled();
 	}
 
 	@Test
@@ -160,7 +160,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		var response = requestHelper.executeGet(url);
 
 		assertThat(response.getResponse().getContentAsString()).isEqualTo(content);
-		assertThat(serviceHandler.getEventContext()).isEmpty();
+		verifyNoAttachmentEventsCalled();
 	}
 
 	@Test
@@ -189,7 +189,7 @@ class OdataRequestValidationWithTestHandlerTest {
 			assertThat(attachment.get("content@mediaContentType")).isNull();
 			assertThat(attachment.getDocumentId()).isNull();
 		});
-		assertThat(serviceHandler.getEventContext()).isEmpty();
+		verifyNoAttachmentEventsCalled();
 	}
 
 	@Test
@@ -213,7 +213,7 @@ class OdataRequestValidationWithTestHandlerTest {
 			assertThat(attachment.get("content@mediaContentType")).isNull();
 			assertThat(attachment.getDocumentId()).isNull();
 		});
-		assertThat(serviceHandler.getEventContext()).isEmpty();
+		verifyNoAttachmentEventsCalled();
 	}
 
 	@Test
@@ -231,7 +231,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		var result = requestHelper.executeDelete(url);
 
 		assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-		assertThat(serviceHandler.getEventContext()).isEmpty();
+		verifyNoAttachmentEventsCalled();
 	}
 
 	@Test
@@ -249,7 +249,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		assertThat(responseAttachment.get("content@mediaContentType")).isNull();
 		assertThat(responseAttachment.getDocumentId()).isNull();
 		assertThat(responseAttachment.getFileName()).isEqualTo(itemAttachment.getFileName());
-		assertThat(serviceHandler.getEventContext()).isEmpty();
+		verifyNoAttachmentEventsCalled();
 	}
 
 	@Test
@@ -268,7 +268,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		assertThat(responseAttachment).containsEntry("content@mediaContentType", "application/octet-stream;charset=UTF-8")
 				.containsEntry(Attachments.FILE_NAME, itemAttachment.getFileName());
 		assertThat(responseAttachment.getDocumentId()).isNotEmpty().isNotEqualTo(itemAttachment.getId());
-		assertThat(serviceHandler.getEventContext()).isEmpty();
+		verifyNoAttachmentEventsCalled();
 	}
 
 	@Test
@@ -285,7 +285,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		var response = requestHelper.executeGet(url);
 
 		assertThat(response.getResponse().getContentAsString()).isEqualTo(content);
-		assertThat(serviceHandler.getEventContext()).isEmpty();
+		verifyNoAttachmentEventsCalled();
 	}
 
 	@Test
@@ -314,7 +314,7 @@ class OdataRequestValidationWithTestHandlerTest {
 			assertThat(attachment.get("content@mediaContentType")).isNull();
 			assertThat(attachment.getDocumentId()).isNull();
 		});
-		assertThat(serviceHandler.getEventContext()).isEmpty();
+		verifyNoAttachmentEventsCalled();
 	}
 
 	@Test
@@ -333,7 +333,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		var responseItem = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(expandUrl, Items.class, HttpStatus.OK);
 
 		assertThat(responseItem.getAttachmentEntities()).isEmpty();
-		assertThat(serviceHandler.getEventContext()).isEmpty();
+		verifyNoAttachmentEventsCalled();
 	}
 
 	@Test
@@ -351,7 +351,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		MvcResult mvcResult = requestHelper.executeDelete(url);
 
 		assertThat(mvcResult.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-		assertThat(serviceHandler.getEventContext()).isEmpty();
+		verifyNoAttachmentEventsCalled();
 	}
 
 	@Test
@@ -517,6 +517,10 @@ class OdataRequestValidationWithTestHandlerTest {
 			var createContext = (AttachmentCreateEventContext) event.context();
 			assertThat(createContext.getDocumentId()).isEqualTo(documentId);
 		});
+	}
+
+	private void verifyNoAttachmentEventsCalled() {
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	private void verifyEventContextEmptyForEvent(String... events) {
