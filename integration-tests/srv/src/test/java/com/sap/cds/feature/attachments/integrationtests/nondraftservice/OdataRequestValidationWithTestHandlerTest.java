@@ -1,6 +1,7 @@
 package com.sap.cds.feature.attachments.integrationtests.nondraftservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.charset.StandardCharsets;
@@ -351,6 +352,11 @@ class OdataRequestValidationWithTestHandlerTest {
 
 		assertThat(mvcResult.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
 		assertThat(serviceHandler.getEventContext()).isEmpty();
+	}
+
+	@Test
+	void rootDeleteDeletesAllContents() {
+		fail("not implemented");
 	}
 
 	private Roots buildServiceRootWithDeepData() {
