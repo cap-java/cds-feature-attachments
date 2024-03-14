@@ -1,7 +1,6 @@
 package com.sap.cds.feature.attachments.integrationtests.nondraftservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.charset.StandardCharsets;
@@ -34,6 +33,7 @@ import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.T
 import com.sap.cds.feature.attachments.integrationtests.testhandler.TestPluginAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentDeleteEventContext;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.StructuredType;
 import com.sap.cds.ql.cqn.CqnSelect;
@@ -355,8 +355,34 @@ class OdataRequestValidationWithTestHandlerTest {
 	}
 
 	@Test
-	void rootDeleteDeletesAllContents() {
-		fail("not implemented");
+	void rootDeleteDeletesAllContents() throws Exception {
+		var serviceRoot = buildServiceRootWithDeepData();
+		postServiceRoot(serviceRoot);
+		var selectedRoot = selectStoredRootWithDeepData();
+		var item = getItemWithAttachmentEntity(selectedRoot);
+		var itemAttachmentEntity = getRandomItemAttachmentEntity(item);
+		var itemAttachment = getRandomItemAttachment(item);
+
+		putContentForAttachmentWithNavigation(selectedRoot, itemAttachment);
+		putContentForAttachmentWithoutNavigation(itemAttachmentEntity);
+		assertThat(serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT)).hasSize(2);
+		serviceHandler.clearEventContext();
+		var selectedRootAfterContentCreated = selectStoredRootWithDeepData();
+		var selectedItemAfterChange = selectedRootAfterContentCreated.getItems().stream()
+																																		.filter(i -> i.getId().equals(item.getId())).findAny().orElseThrow();
+		var itemAttachmentEntityAfterChange = getRandomItemAttachmentEntity(selectedItemAfterChange);
+		var itemAttachmentAfterChange = getRandomItemAttachment(selectedItemAfterChange);
+
+		var url = MockHttpRequestHelper.ODATA_BASE_URL + "TestService/Roots(" + selectedRoot.getId() + ")";
+		requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
+
+		verifyEventContextEmptyForEvent(AttachmentService.EVENT_UPDATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_CREATE_ATTACHMENT);
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_DELETE_ATTACHMENT);
+		assertThat(deleteEvents).hasSize(2);
+		assertThat(deleteEvents.stream().anyMatch(event -> ((AttachmentDeleteEventContext) event.context()).getDocumentId()
+																																																							.equals(itemAttachmentEntityAfterChange.getDocumentId()))).isTrue();
+		assertThat(deleteEvents.stream().anyMatch(event -> ((AttachmentDeleteEventContext) event.context()).getDocumentId()
+																																																							.equals(itemAttachmentAfterChange.getDocumentId()))).isTrue();
 	}
 
 	private Roots buildServiceRootWithDeepData() {
@@ -370,7 +396,10 @@ class OdataRequestValidationWithTestHandlerTest {
 																																																																																																						.setTitle("some item 2 title")
 																																																																																																						.addAttachmentEntities(AttachmentsEntityBuilder.create()
 																																																																																																																															.setFileName("fileItem3.text")
-																																																																																																																															.setMimeType("text/plain")))
+																																																																																																																															.setMimeType("text/plain"))
+																																																																																																																											.addAttachments(AttachmentsBuilder.create()
+																																																																																																																																													.setFileName("fileItem3.text")
+																																																																																																																																													.setMimeType("text/plain")))
 											.build();
 	}
 

@@ -1,12 +1,11 @@
 package com.sap.cds.feature.attachments.integrationtests.nondraftservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -49,8 +48,8 @@ class OdataRequestValidationWithoutTestHandlerTest {
 	private PersistenceService persistenceService;
 	@Autowired
 	private TableDataDeleter dataDeleter;
-	@Autowired
-	private Optional<TestPluginAttachmentsServiceHandler> serviceHandler;
+	@Autowired(required = false)
+	private TestPluginAttachmentsServiceHandler serviceHandler;
 
 	@AfterEach
 	void teardown() {
@@ -60,7 +59,7 @@ class OdataRequestValidationWithoutTestHandlerTest {
 
 	@Test
 	void serviceHandlerIsEmpty() {
-		assertThat(serviceHandler).isEmpty();
+		assertThat(serviceHandler).isNull();
 	}
 
 	@Test
@@ -343,8 +342,18 @@ class OdataRequestValidationWithoutTestHandlerTest {
 	}
 
 	@Test
-	void rootDeleteDeletesAllContents() {
-		fail("not implemented");
+	void rootDeleteDeletesAllContents() throws Exception {
+		var serviceRoot = buildServiceRootWithDeepData();
+		postServiceRoot(serviceRoot);
+		var selectedRoot = selectStoredRootWithDeepData();
+		var item = getItemWithAttachmentEntity(selectedRoot);
+		var itemAttachmentEntity = getRandomItemAttachmentEntity(item);
+		var itemAttachment = getRandomItemAttachment(item);
+		putContentForAttachmentWithNavigation(selectedRoot, itemAttachment);
+		putContentForAttachmentWithoutNavigation(itemAttachmentEntity);
+
+		var url = MockHttpRequestHelper.ODATA_BASE_URL + "TestService/Roots(" + selectedRoot.getId() + ")";
+		assertDoesNotThrow(() -> requestHelper.executeDeleteWithMatcher(url, status().isNoContent()));
 	}
 
 	private Roots buildServiceRootWithDeepData() {
@@ -358,7 +367,10 @@ class OdataRequestValidationWithoutTestHandlerTest {
 																																																																																																						.setTitle("some item 2 title")
 																																																																																																						.addAttachmentEntities(AttachmentsEntityBuilder.create()
 																																																																																																																															.setFileName("fileItem3.text")
-																																																																																																																															.setMimeType("text/plain")))
+																																																																																																																															.setMimeType("text/plain"))
+																																																																																																																											.addAttachments(AttachmentsBuilder.create()
+																																																																																																																																													.setFileName("fileItem3.text")
+																																																																																																																																													.setMimeType("text/plain")))
 											.build();
 	}
 
@@ -392,7 +404,7 @@ class OdataRequestValidationWithoutTestHandlerTest {
 		});
 		assertThat(selectedRoot.getItems().get(1).getId()).isNotEmpty();
 		assertThat(selectedRoot.getItems().get(1).getTitle()).isEqualTo(serviceRoot.getItems().get(1).getTitle());
-		assertThat(selectedRoot.getItems().get(1).getAttachments()).isEmpty();
+		assertThat(selectedRoot.getItems().get(1).getAttachments()).hasSize(1);
 	}
 
 	private Attachments getRandomItemAttachment(Items selectedItem) {

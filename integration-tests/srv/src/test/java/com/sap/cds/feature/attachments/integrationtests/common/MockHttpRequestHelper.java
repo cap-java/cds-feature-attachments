@@ -57,9 +57,12 @@ public class MockHttpRequestHelper {
 				.andExpect(matcher);
 	}
 
-
 	public MvcResult executeDelete(String url) throws Exception {
 		return mvc.perform(MockMvcRequestBuilders.delete(url).contentType(contentType).accept(accept)).andReturn();
+	}
+
+	public void executeDeleteWithMatcher(String url, ResultMatcher matcher) throws Exception {
+		mvc.perform(MockMvcRequestBuilders.delete(url).contentType(contentType).accept(accept)).andExpect(matcher);
 	}
 
 	//	public List<CdsData> executePostWithODataResponseAndAssertStatusCreated(String url, String body) throws Exception {
