@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -55,10 +54,6 @@ class OdataRequestValidationWithoutTestHandlerTest {
 	@AfterEach
 	void teardown() {
 		dataDeleter.deleteData(Roots_.CDS_NAME);
-	}
-
-	@BeforeEach
-	void setup() {
 		requestHelper.resetHelper();
 	}
 

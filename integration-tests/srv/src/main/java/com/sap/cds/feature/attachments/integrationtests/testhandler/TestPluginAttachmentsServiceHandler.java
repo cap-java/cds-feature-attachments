@@ -2,7 +2,9 @@ package com.sap.cds.feature.attachments.integrationtests.testhandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -33,6 +35,7 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 	private static final Logger logger = LoggerFactory.getLogger(TestPluginAttachmentsServiceHandler.class);
 
 	private static final Map<String, byte[]> documents = new HashMap<>();
+	private static final List<EventContextHolder> eventContextHolder = new ArrayList<>();
 
 	@On(event = AttachmentService.EVENT_CREATE_ATTACHMENT)
 	public void createAttachment(AttachmentCreateEventContext context) throws IOException {
@@ -42,7 +45,7 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 		context.setIsExternalCreated(true);
 		context.setDocumentId(documentId);
 		context.setCompleted();
-		logger.info(marker, "CREATE Attachment created attachment with document id {}", documentId);
+		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_CREATE_ATTACHMENT, context));
 	}
 
 	@On(event = AttachmentService.EVENT_UPDATE_ATTACHMENT)
@@ -51,6 +54,7 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 		documents.put(context.getDocumentId(), context.getData().getContent().readAllBytes());
 		context.setIsExternalCreated(true);
 		context.setCompleted();
+		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_UPDATE_ATTACHMENT, context));
 	}
 
 	@On(event = AttachmentService.EVENT_DELETE_ATTACHMENT)
@@ -58,6 +62,7 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 		logger.info(marker, "DELETE Attachment called in dummy handler for document id {}", context.getDocumentId());
 		documents.remove(context.getDocumentId());
 		context.setCompleted();
+		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_DELETE_ATTACHMENT, context));
 	}
 
 	@On(event = AttachmentService.EVENT_READ_ATTACHMENT)
@@ -67,6 +72,19 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 		var stream = Objects.nonNull(document) ? new ByteArrayInputStream(document) : null;
 		context.getData().setContent(stream);
 		context.setCompleted();
+		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_READ_ATTACHMENT, context));
+	}
+
+	public List<EventContextHolder> getEventContextForEvent(String event) {
+		return eventContextHolder.stream().filter(e -> e.event().equals(event)).toList();
+	}
+
+	public List<EventContextHolder> getEventContext() {
+		return eventContextHolder;
+	}
+
+	public void clearEventContext() {
+		eventContextHolder.clear();
 	}
 
 }

@@ -1,13 +1,12 @@
 package com.sap.cds.feature.attachments.integrationtests.nondraftservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -32,6 +31,8 @@ import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.I
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.RootEntityBuilder;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.TableDataDeleter;
 import com.sap.cds.feature.attachments.integrationtests.testhandler.TestPluginAttachmentsServiceHandler;
+import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.StructuredType;
 import com.sap.cds.ql.cqn.CqnSelect;
@@ -54,10 +55,7 @@ class OdataRequestValidationWithTestHandlerTest {
 	@AfterEach
 	void teardown() {
 		dataDeleter.deleteData(Roots_.CDS_NAME);
-	}
-
-	@BeforeEach
-	void setup() {
+		serviceHandler.clearEventContext();
 		requestHelper.resetHelper();
 	}
 
@@ -68,6 +66,7 @@ class OdataRequestValidationWithTestHandlerTest {
 
 		var selectedRoot = selectStoredRootWithDeepData();
 		verifySelectedRoot(selectedRoot, serviceRoot);
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	@Test
@@ -82,6 +81,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		var attachment = selectUpdatedAttachmentWithExpand(selectedRoot, itemAttachment);
 
 		verifyContentAndDocumentId(attachment, itemAttachment);
+		verifySingleCreateContext(attachment.getDocumentId());
 	}
 
 	@Test
@@ -97,6 +97,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		var attachment = selectUpdatedAttachment(itemAttachment);
 
 		verifyContentAndDocumentIdForAttachmentEntity(attachment, itemAttachment);
+		verifySingleCreateContext(attachment.getDocumentId());
 	}
 
 	@Test
@@ -116,6 +117,7 @@ class OdataRequestValidationWithTestHandlerTest {
 			assertThat(attachment.get("content@mediaContentType")).isNull();
 			assertThat(attachment.getDocumentId()).isNull();
 		});
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	@Test
@@ -139,6 +141,8 @@ class OdataRequestValidationWithTestHandlerTest {
 		assertThat(attachmentWithExpectedContent).containsEntry("content@mediaContentType", "application/octet-stream;charset=UTF-8")
 				.containsEntry(Attachments.FILE_NAME, itemAttachment.getFileName());
 		assertThat(attachmentWithExpectedContent.getDocumentId()).isNotEmpty().isNotEqualTo(itemAttachment.getId());
+
+		verifySingleCreateContext(attachmentWithExpectedContent.getDocumentId());
 	}
 
 	@Test
@@ -155,6 +159,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		var response = requestHelper.executeGet(url);
 
 		assertThat(response.getResponse().getContentAsString()).isEqualTo(content);
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	@Test
@@ -183,6 +188,7 @@ class OdataRequestValidationWithTestHandlerTest {
 			assertThat(attachment.get("content@mediaContentType")).isNull();
 			assertThat(attachment.getDocumentId()).isNull();
 		});
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	@Test
@@ -206,6 +212,7 @@ class OdataRequestValidationWithTestHandlerTest {
 			assertThat(attachment.get("content@mediaContentType")).isNull();
 			assertThat(attachment.getDocumentId()).isNull();
 		});
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	@Test
@@ -223,6 +230,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		var result = requestHelper.executeDelete(url);
 
 		assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	@Test
@@ -240,6 +248,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		assertThat(responseAttachment.get("content@mediaContentType")).isNull();
 		assertThat(responseAttachment.getDocumentId()).isNull();
 		assertThat(responseAttachment.getFileName()).isEqualTo(itemAttachment.getFileName());
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	@Test
@@ -258,6 +267,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		assertThat(responseAttachment).containsEntry("content@mediaContentType", "application/octet-stream;charset=UTF-8")
 				.containsEntry(Attachments.FILE_NAME, itemAttachment.getFileName());
 		assertThat(responseAttachment.getDocumentId()).isNotEmpty().isNotEqualTo(itemAttachment.getId());
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	@Test
@@ -274,6 +284,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		var response = requestHelper.executeGet(url);
 
 		assertThat(response.getResponse().getContentAsString()).isEqualTo(content);
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	@Test
@@ -302,6 +313,7 @@ class OdataRequestValidationWithTestHandlerTest {
 			assertThat(attachment.get("content@mediaContentType")).isNull();
 			assertThat(attachment.getDocumentId()).isNull();
 		});
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	@Test
@@ -320,6 +332,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		var responseItem = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(expandUrl, Items.class, HttpStatus.OK);
 
 		assertThat(responseItem.getAttachmentEntities()).isEmpty();
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	@Test
@@ -337,11 +350,7 @@ class OdataRequestValidationWithTestHandlerTest {
 		MvcResult mvcResult = requestHelper.executeDelete(url);
 
 		assertThat(mvcResult.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-	}
-
-	@Test
-	void validateServiceCalledInAllTests() {
-		fail("not implemented");
+		assertThat(serviceHandler.getEventContext()).isEmpty();
 	}
 
 	private Roots buildServiceRootWithDeepData() {
@@ -463,6 +472,22 @@ class OdataRequestValidationWithTestHandlerTest {
 	private void verifyContentAndDocumentIdForAttachmentEntity(AttachmentEntity attachment, AttachmentEntity itemAttachment) {
 		assertThat(attachment.getContent()).isNull();
 		assertThat(attachment.getDocumentId()).isNotEmpty().isNotEqualTo(itemAttachment.getId());
+	}
+
+	private void verifySingleCreateContext(String documentId) {
+		verifyEventContextEmptyForEvent(AttachmentService.EVENT_UPDATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_DELETE_ATTACHMENT);
+		var createEvent = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
+		assertThat(createEvent).hasSize(1).first().satisfies(event -> {
+			assertThat(event.context()).isInstanceOf(AttachmentCreateEventContext.class);
+			var createContext = (AttachmentCreateEventContext) event.context();
+			assertThat(createContext.getDocumentId()).isEqualTo(documentId);
+		});
+	}
+
+	private void verifyEventContextEmptyForEvent(String... events) {
+		Arrays.stream(events).forEach(event -> {
+			assertThat(serviceHandler.getEventContextForEvent(event)).isEmpty();
+		});
 	}
 
 }
