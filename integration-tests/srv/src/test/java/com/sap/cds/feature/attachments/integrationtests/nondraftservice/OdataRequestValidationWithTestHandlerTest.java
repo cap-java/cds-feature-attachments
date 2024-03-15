@@ -63,6 +63,11 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	}
 
 	@Override
+	protected void clearServiceHandlerDocuments() {
+		serviceHandler.clearDocuments();
+	}
+
+	@Override
 	protected void verifySingleCreateEvent(String documentId, String content) {
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_UPDATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_DELETE_ATTACHMENT);
 		var createEvent = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);

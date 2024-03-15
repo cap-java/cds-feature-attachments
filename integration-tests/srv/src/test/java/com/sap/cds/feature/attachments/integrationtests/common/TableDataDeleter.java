@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper;
+package com.sap.cds.feature.attachments.integrationtests.common;
 
 import java.util.Arrays;
 

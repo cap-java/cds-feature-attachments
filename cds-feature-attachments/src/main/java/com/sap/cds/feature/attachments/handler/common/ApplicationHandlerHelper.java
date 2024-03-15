@@ -80,7 +80,10 @@ public final class ApplicationHandlerHelper {
 	}
 
 	public static boolean isKeyInData(Map<String, Object> keys, CdsData data) {
-		return keys.entrySet().stream().allMatch(entry -> data.get(entry.getKey()).equals(entry.getValue()));
+		return keys.entrySet().stream().allMatch(entry -> {
+			var keyInData = data.get(entry.getKey());
+			return Objects.nonNull(keyInData) && keyInData.equals(entry.getValue());
+		});
 	}
 
 	public static Map<String, Object> removeDraftKeys(Map<String, Object> keys) {

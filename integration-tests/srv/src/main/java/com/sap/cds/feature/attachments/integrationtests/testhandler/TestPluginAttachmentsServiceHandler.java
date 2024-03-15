@@ -83,6 +83,12 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 				createContext.getData().setContent(new ByteArrayInputStream(documents.get(createContext.getDocumentId())));
 			});
 		}
+		if (event.equals(AttachmentService.EVENT_UPDATE_ATTACHMENT) && !context.isEmpty()) {
+			context.forEach(c -> {
+				var createContext = (AttachmentUpdateEventContext) c.context();
+				createContext.getData().setContent(new ByteArrayInputStream(documents.get(createContext.getDocumentId())));
+			});
+		}
 		return context;
 	}
 
@@ -91,6 +97,10 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 	}
 
 	public void clearEventContext() {
+		eventContextHolder.clear();
+	}
+
+	public void clearDocuments() {
 		eventContextHolder.clear();
 	}
 

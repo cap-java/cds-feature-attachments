@@ -16,7 +16,7 @@ import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 class OdataRequestValidationWithoutTestHandlerTest extends OdataRequestValidationBase {
 
 	@Test
-	void serviceHandlerIsEmpty() {
+	void serviceHandlerIsNull() {
 		assertThat(serviceHandler).isNull();
 	}
 
@@ -49,6 +49,11 @@ class OdataRequestValidationWithoutTestHandlerTest extends OdataRequestValidatio
 
 	@Override
 	protected void clearServiceHandlerContext() {
+		//no service handler - nothing to do
+	}
+
+	@Override
+	protected void clearServiceHandlerDocuments() {
 		//no service handler - nothing to do
 	}
 

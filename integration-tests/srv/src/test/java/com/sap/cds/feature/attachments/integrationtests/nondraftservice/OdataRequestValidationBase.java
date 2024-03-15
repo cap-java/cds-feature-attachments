@@ -23,11 +23,11 @@ import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testserv
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Roots;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Roots_;
 import com.sap.cds.feature.attachments.integrationtests.common.MockHttpRequestHelper;
+import com.sap.cds.feature.attachments.integrationtests.common.TableDataDeleter;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.AttachmentsBuilder;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.AttachmentsEntityBuilder;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.ItemEntityBuilder;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.RootEntityBuilder;
-import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.TableDataDeleter;
 import com.sap.cds.feature.attachments.integrationtests.testhandler.TestPluginAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.Select;
@@ -52,6 +52,7 @@ abstract class OdataRequestValidationBase {
 	void teardown() {
 		dataDeleter.deleteData(Roots_.CDS_NAME);
 		clearServiceHandlerContext();
+		clearServiceHandlerDocuments();
 		requestHelper.resetHelper();
 	}
 
@@ -527,6 +528,8 @@ abstract class OdataRequestValidationBase {
 	protected abstract void verifyContentAndDocumentIdForAttachmentEntity(AttachmentEntity attachment, String testContent, AttachmentEntity itemAttachment) throws IOException;
 
 	protected abstract void clearServiceHandlerContext();
+
+	protected abstract void clearServiceHandlerDocuments();
 
 	protected abstract void verifySingleCreateEvent(String documentId, String content);
 

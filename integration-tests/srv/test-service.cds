@@ -7,5 +7,5 @@ service TestService {
 
 service TestDraftService {
     @odata.draft.enabled
-    entity Roots as projection on db.Roots;
+    entity DraftRoots as projection on db.Roots;
 }
