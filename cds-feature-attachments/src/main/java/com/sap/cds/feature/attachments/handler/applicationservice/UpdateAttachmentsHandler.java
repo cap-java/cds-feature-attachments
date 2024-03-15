@@ -2,7 +2,6 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Validator;
@@ -17,7 +16,6 @@ import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnPredicate;
-import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
@@ -71,41 +69,26 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	}
 
 	private CqnFilterableStatement getSelect(CdsEntity entity, CqnUpdate update, List<CdsData> data) {
-		var filter = getLastSegmentFilter(update);
-		var where = update.where();
-		CqnPredicate resultPredicate;
-		if (filter.isPresent() && where.isPresent()) {
-			resultPredicate = CQL.and(filter.get(), where.get());
-		} else if (filter.isPresent()) {
-			resultPredicate = filter.get();
-		} else if (where.isPresent()) {
-			resultPredicate = where.get();
-		} else {
-			List<CqnPredicate> predicates = new ArrayList<>();
-			data.forEach(d -> {
-				var keyData = CdsData.create();
-				entity.keyElements().forEach(key -> {
-					if (!ApplicationHandlerHelper.DRAFT_ENTITY_ACTIVE_FIELD.equals(key.getName()) && d.containsKey(key.getName())) {
-						keyData.put(key.getName(), d.get(key.getName()));
-					}
-				});
-				var select = Select.from(entity.getQualifiedName()).matching(keyData);
-				select.where().ifPresent(predicates::add);
-			});
-			resultPredicate = CQL.or(predicates);
-		}
+		var where = ApplicationHandlerHelper.getWhere(update);
+		CqnPredicate resultPredicate = where.orElse(getWhereBasedOfKeyFields(entity, data));
 		return Select.from(entity.getQualifiedName()).where(resultPredicate);
 	}
 
-	private Optional<CqnPredicate> getLastSegmentFilter(CqnUpdate update) {
-		var segmentSize = update.ref().asRef().segments().size();
-		if (segmentSize > 0) {
-			var lastPathSegment = update.ref().asRef().lastSegment();
-			var lastSegment = update.ref().asRef().segments().stream().filter(segment -> segment.id().equals(lastPathSegment)).findAny();
-			return lastSegment.flatMap(Segment::filter);
-		} else {
-			return Optional.empty();
-		}
+	private CqnPredicate getWhereBasedOfKeyFields(CdsEntity entity, List<CdsData> data) {
+		CqnPredicate resultPredicate;
+		List<CqnPredicate> predicates = new ArrayList<>();
+		data.forEach(d -> {
+			var keyData = CdsData.create();
+			entity.keyElements().forEach(key -> {
+				if (!ApplicationHandlerHelper.DRAFT_ENTITY_ACTIVE_FIELD.equals(key.getName()) && d.containsKey(key.getName())) {
+					keyData.put(key.getName(), d.get(key.getName()));
+				}
+			});
+			var select = Select.from(entity.getQualifiedName()).matching(keyData);
+			select.where().ifPresent(predicates::add);
+		});
+		resultPredicate = CQL.or(predicates);
+		return resultPredicate;
 	}
 
 	private void deleteRemovedAttachments(List<CdsData> exitingDataList, List<CdsData> updatedDataList, CdsEntity entity) {

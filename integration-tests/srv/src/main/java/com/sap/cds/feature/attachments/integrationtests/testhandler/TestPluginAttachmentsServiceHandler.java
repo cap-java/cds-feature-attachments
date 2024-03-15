@@ -76,7 +76,14 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 	}
 
 	public List<EventContextHolder> getEventContextForEvent(String event) {
-		return eventContextHolder.stream().filter(e -> e.event().equals(event)).toList();
+		var context = eventContextHolder.stream().filter(e -> e.event().equals(event)).toList();
+		if (event.equals(AttachmentService.EVENT_CREATE_ATTACHMENT) && !context.isEmpty()) {
+			context.forEach(c -> {
+				var createContext = (AttachmentCreateEventContext) c.context();
+				createContext.getData().setContent(new ByteArrayInputStream(documents.get(createContext.getDocumentId())));
+			});
+		}
+		return context;
 	}
 
 	public List<EventContextHolder> getEventContext() {

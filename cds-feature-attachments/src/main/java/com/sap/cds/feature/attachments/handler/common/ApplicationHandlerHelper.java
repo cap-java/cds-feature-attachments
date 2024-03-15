@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.sap.cds.CdsData;
@@ -14,6 +15,10 @@ import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
+import com.sap.cds.ql.CQL;
+import com.sap.cds.ql.cqn.CqnFilterableStatement;
+import com.sap.cds.ql.cqn.CqnPredicate;
+import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
@@ -84,8 +89,32 @@ public final class ApplicationHandlerHelper {
 		return keyMap;
 	}
 
+	public static Optional<CqnPredicate> getWhere(CqnFilterableStatement statement) {
+		var filter = getLastSegmentFilter(statement);
+		var where = statement.where();
+		if (filter.isPresent() && where.isPresent()) {
+			return Optional.of(CQL.and(filter.get(), where.get()));
+		} else if (filter.isPresent()) {
+			return filter;
+		} else {
+			return where;
+		}
+	}
+
 	private static boolean isDraftActiveEntityField(String key) {
 		return key.equals(DRAFT_ENTITY_ACTIVE_FIELD);
+	}
+
+	private static Optional<CqnPredicate> getLastSegmentFilter(CqnFilterableStatement statement) {
+		var segmentSize = statement.ref().asRef().segments().size();
+		if (segmentSize > 0) {
+			var lastPathSegment = statement.ref().asRef().lastSegment();
+			var lastSegment = statement.ref().asRef().segments().stream().filter(segment -> segment.id().equals(lastPathSegment))
+																							.findAny();
+			return lastSegment.flatMap(Segment::filter);
+		} else {
+			return Optional.empty();
+		}
 	}
 
 }

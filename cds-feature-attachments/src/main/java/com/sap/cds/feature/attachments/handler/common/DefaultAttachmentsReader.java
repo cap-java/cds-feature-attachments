@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.StructuredType;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
@@ -34,7 +33,7 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 	public List<CdsData> readAttachments(CdsModel model, CdsEntity entity, CqnFilterableStatement statement) {
 		var dataList = new ArrayList<CdsData>();
 
-		var resultWhere = getWhere(statement);
+		var resultWhere = ApplicationHandlerHelper.getWhere(statement);
 		var pathLists = cascader.findEntityPath(model, entity);
 		pathLists.forEach(path -> {
 			var select = getSelectStatement(path, resultWhere, entity);
@@ -46,18 +45,6 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 		});
 
 		return dataList;
-	}
-
-	private Optional<CqnPredicate> getWhere(CqnFilterableStatement delete) {
-		var filter = delete.ref().asRef().rootSegment().filter();
-		var where = delete.where();
-		if (filter.isPresent() && where.isPresent()) {
-			return Optional.of(CQL.and(filter.get(), where.get()));
-		} else if (filter.isPresent()) {
-			return filter;
-		} else {
-			return where;
-		}
 	}
 
 	private Optional<CqnSelect> getSelectStatement(LinkedList<AssociationIdentifier> path, Optional<CqnPredicate> where, CdsEntity entity) {
