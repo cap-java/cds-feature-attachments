@@ -15,12 +15,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 
 import com.sap.cds.Struct;
+import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.AttachmentEntity;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.DraftRoots;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.DraftRoots_;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.Items;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.TestDraftService_;
-import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.integrationtests.common.MockHttpRequestHelper;
 import com.sap.cds.feature.attachments.integrationtests.common.TableDataDeleter;
 import com.sap.cds.feature.attachments.integrationtests.testhandler.TestPluginAttachmentsServiceHandler;
