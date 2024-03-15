@@ -11,7 +11,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.util.ObjectUtils;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.Struct;
@@ -28,14 +27,10 @@ public class MockHttpRequestHelper {
 
 	private String contentType = MediaType.APPLICATION_JSON.toString();
 	private String accept = MediaType.APPLICATION_JSON.toString();
-	private String language = null;
 
 	public MvcResult executeGet(String url) throws Exception {
 		MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get(url).contentType(contentType)
 																																																			.accept(accept);
-		if (!ObjectUtils.isEmpty(language)) {
-			requestBuilder.header("Accept-Language", language);
-		}
 		return mvc.perform(requestBuilder).andReturn();
 	}
 
@@ -111,7 +106,6 @@ public class MockHttpRequestHelper {
 	public void resetHelper() {
 		contentType = MediaType.APPLICATION_JSON.toString();
 		accept = MediaType.APPLICATION_JSON.toString();
-		language = null;
 	}
 
 }
