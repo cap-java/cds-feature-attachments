@@ -226,18 +226,7 @@ abstract class DraftOdataRequestValidationBase {
 		var selectedRoot = deepCreateAndActivate(attachmentContent, attachmentEntityContent);
 		clearServiceHandlerContext();
 
-		var attachmentUrl = getAttachmentBaseUrl(selectedRoot.getItems().get(0).getId(), selectedRoot.getItems().get(0)
-																																																																																					.getAttachments().get(0)
-																																																																																					.getId(), true) + "/content";
-		var attachmentEntityUrl = getAttachmentEntityBaseUrl(selectedRoot.getItems().get(0).getAttachmentEntities().get(0)
-																																																									.getId(), true) + "/content";
-
-		var attachmentResponse = requestHelper.executeGet(attachmentUrl);
-		var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
-
-		assertThat(attachmentResponse.getResponse().getContentAsString()).isEqualTo(attachmentContent);
-		assertThat(attachmentEntityResponse.getResponse().getContentAsString()).isEqualTo(attachmentEntityContent);
-		verifyTwoReadEvents();
+		readAndValidateActiveContent(selectedRoot, attachmentContent, attachmentEntityContent);
 	}
 
 	@Test
@@ -254,18 +243,7 @@ abstract class DraftOdataRequestValidationBase {
 		prepareAndActiveDraft(rootUrl);
 		verifyNoAttachmentEventsCalled();
 
-		var attachmentUrl = getAttachmentBaseUrl(selectedRoot.getItems().get(0).getId(), selectedRoot.getItems().get(0)
-																																																																																					.getAttachments().get(0)
-																																																																																					.getId(), true) + "/content";
-		var attachmentEntityUrl = getAttachmentEntityBaseUrl(selectedRoot.getItems().get(0).getAttachmentEntities().get(0)
-																																																									.getId(), true) + "/content";
-
-		var attachmentResponse = requestHelper.executeGet(attachmentUrl);
-		var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
-
-		assertThat(attachmentResponse.getResponse().getContentAsString()).isEqualTo(attachmentContent);
-		assertThat(attachmentEntityResponse.getResponse().getContentAsString()).isEqualTo(attachmentEntityContent);
-		verifyTwoReadEvents();
+		readAndValidateActiveContent(selectedRoot, attachmentContent, attachmentEntityContent);
 	}
 
 	@Test
@@ -421,6 +399,21 @@ abstract class DraftOdataRequestValidationBase {
 																																																																																																			.expand(), item1 -> item1.attachmentEntities()
 																																																																																																																									.expand()));
 		return persistenceService.run(select).single(DraftRoots.class);
+	}
+
+	private void readAndValidateActiveContent(DraftRoots selectedRoot, String attachmentContent, String attachmentEntityContent) throws Exception {
+		var attachmentUrl = getAttachmentBaseUrl(selectedRoot.getItems().get(0).getId(), selectedRoot.getItems().get(0)
+																																																																																					.getAttachments().get(0)
+																																																																																					.getId(), true) + "/content";
+		var attachmentEntityUrl = getAttachmentEntityBaseUrl(selectedRoot.getItems().get(0).getAttachmentEntities().get(0)
+																																																									.getId(), true) + "/content";
+
+		var attachmentResponse = requestHelper.executeGet(attachmentUrl);
+		var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
+
+		assertThat(attachmentResponse.getResponse().getContentAsString()).isEqualTo(attachmentContent);
+		assertThat(attachmentEntityResponse.getResponse().getContentAsString()).isEqualTo(attachmentEntityContent);
+		verifyTwoReadEvents();
 	}
 
 	protected abstract void verifyDocumentId(String documentId, String attachmentId);
