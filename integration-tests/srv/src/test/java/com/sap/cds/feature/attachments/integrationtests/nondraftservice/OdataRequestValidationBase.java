@@ -173,14 +173,7 @@ abstract class OdataRequestValidationBase {
 		var selectedItemAfterChange = selectItem(item);
 		var itemAttachmentAfterChange = getRandomItemAttachment(selectedItemAfterChange);
 
-		var url = buildNavigationAttachmentUrl(selectedRoot.getId(), item.getId(), itemAttachment.getId()) + "/content";
-		requestHelper.executeDelete(url);
-		verifySingleDeletionEvent(itemAttachmentAfterChange.getDocumentId());
-		clearServiceHandlerContext();
-		var response = requestHelper.executeGet(url);
-
-		assertThat(response.getResponse().getContentLength()).isZero();
-		assertThat(response.getResponse().getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
+		executeDeleteAndCheckNoDataCanBeRead(buildNavigationAttachmentUrl(selectedRoot.getId(), item.getId(), itemAttachment.getId()), itemAttachmentAfterChange.getDocumentId());
 
 		var expandUrl = buildExpandAttachmentUrl(selectedRoot.getId(), item.getId());
 		var responseItem = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(expandUrl, Items.class, HttpStatus.OK);
@@ -313,14 +306,7 @@ abstract class OdataRequestValidationBase {
 		var selectedItemAfterChange = selectItem(item);
 		var itemAttachmentAfterChange = getRandomItemAttachmentEntity(selectedItemAfterChange);
 
-		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId()) + "/content";
-		requestHelper.executeDelete(url);
-		verifySingleDeletionEvent(itemAttachmentAfterChange.getDocumentId());
-		clearServiceHandlerContext();
-		var response = requestHelper.executeGet(url);
-
-		assertThat(response.getResponse().getContentLength()).isZero();
-		assertThat(response.getResponse().getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
+		executeDeleteAndCheckNoDataCanBeRead(buildDirectAttachmentEntityUrl(itemAttachment.getId()), itemAttachmentAfterChange.getDocumentId());
 
 		var expandUrl = buildExpandAttachmentUrl(selectedRoot.getId(), item.getId());
 		var responseItem = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(expandUrl, Items.class, HttpStatus.OK);
@@ -517,6 +503,17 @@ abstract class OdataRequestValidationBase {
 		CqnSelect attachmentSelect = Select.from(AttachmentEntity_.class).where(a -> a.ID().eq(itemAttachment.getId()));
 		var result = persistenceService.run(attachmentSelect);
 		return result.single(AttachmentEntity.class);
+	}
+
+	private void executeDeleteAndCheckNoDataCanBeRead(String baseUrl, String documentId) throws Exception {
+		var url = baseUrl + "/content";
+		requestHelper.executeDelete(url);
+		verifySingleDeletionEvent(documentId);
+		clearServiceHandlerContext();
+		var response = requestHelper.executeGet(url);
+
+		assertThat(response.getResponse().getContentLength()).isZero();
+		assertThat(response.getResponse().getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
 	}
 
 	protected abstract void verifyTwoDeleteEvents(AttachmentEntity itemAttachmentEntityAfterChange, Attachments itemAttachmentAfterChange);
