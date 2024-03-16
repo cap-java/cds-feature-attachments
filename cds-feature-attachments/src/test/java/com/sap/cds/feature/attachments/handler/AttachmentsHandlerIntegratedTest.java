@@ -109,11 +109,11 @@
 //
 //		@ParameterizedTest
 //		@ValueSource(booleans = {true, false})
-//		void simpleCreateCallsAttachment(boolean isExternalStored) throws IOException {
+//		void simpleCreateCallsAttachment(boolean isInternalStored) throws IOException {
 //			var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME);
 //			when(createContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 //			when(createContext.getEvent()).thenReturn(CqnService.EVENT_CREATE);
-//			when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "document id"));
+//			when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isInternalStored, "document id"));
 //
 //			var attachment = Attachments.create();
 //
@@ -129,7 +129,7 @@
 //
 //				verify(attachmentService).createAttachment(createEventInputCaptor.capture());
 //				var createInput = createEventInputCaptor.getValue();
-//				var expectedContent = isExternalStored ? null : testStream;
+//				var expectedContent = isInternalStored ? null : testStream;
 //				assertThat(attachment.getContent()).isEqualTo(expectedContent);
 //				assertThat(createInput.content()).isEqualTo(testStream);
 //				assertThat(createInput.attachmentIds()).isNotEmpty().containsEntry("ID", attachment.getId());

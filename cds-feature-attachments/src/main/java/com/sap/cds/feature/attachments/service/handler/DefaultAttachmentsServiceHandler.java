@@ -20,7 +20,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@HandlerOrder(DEFAULT_ON)
 	public void createAttachment(AttachmentCreateEventContext context) {
 		//TODO Malware Scan
-		context.setIsExternalCreated(false);
+		context.setIsInternalStored(true);
 		context.setDocumentId((String) context.getAttachmentIds().get(Attachments.ID));
 		context.setCompleted();
 	}
@@ -28,7 +28,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_UPDATE_ATTACHMENT)
 	@HandlerOrder(DEFAULT_ON)
 	public void updateAttachment(AttachmentUpdateEventContext context) {
-		context.setIsExternalCreated(false);
+		context.setIsInternalStored(true);
 		context.setDocumentId(context.getDocumentId());
 		context.setCompleted();
 	}

@@ -60,7 +60,7 @@ abstract class ModifyAttachmentEventTestBase {
 
 		var result = cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()));
 
-		var expectedContent = isExternalStored ? null : attachment.getContent();
+		var expectedContent = isExternalStored ? attachment.getContent() : null;
 		assertThat(result).isEqualTo(expectedContent);
 	}
 

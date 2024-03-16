@@ -42,7 +42,6 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 		logger.info(marker, "CREATE Attachment called in dummy handler");
 		var documentId = UUID.randomUUID().toString();
 		documents.put(documentId, context.getData().getContent().readAllBytes());
-		context.setIsExternalCreated(true);
 		context.setDocumentId(documentId);
 		context.setCompleted();
 		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_CREATE_ATTACHMENT, context));
@@ -52,7 +51,6 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 	public void updateAttachment(AttachmentUpdateEventContext context) throws IOException {
 		logger.info(marker, "UPDATE Attachment called in dummy handler for document id {}", context.getDocumentId());
 		documents.put(context.getDocumentId(), context.getData().getContent().readAllBytes());
-		context.setIsExternalCreated(true);
 		context.setCompleted();
 		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_UPDATE_ATTACHMENT, context));
 	}

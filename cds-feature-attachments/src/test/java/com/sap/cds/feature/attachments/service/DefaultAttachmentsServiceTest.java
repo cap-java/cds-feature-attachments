@@ -70,7 +70,7 @@ class DefaultAttachmentsServiceTest {
 			var context = (AttachmentCreateEventContext) input.getArgument(0);
 			contextReference.set(context);
 			context.setCompleted();
-			context.setIsExternalCreated(isExternalCreated);
+			context.setIsInternalStored(isExternalCreated);
 			context.setDocumentId(documentId);
 			return null;
 		}).when(handler).process(any());
@@ -81,7 +81,7 @@ class DefaultAttachmentsServiceTest {
 
 		var result = cut.createAttachment(input);
 
-		assertThat(result.isExternalStored()).isEqualTo(Boolean.TRUE.equals(isExternalCreated));
+		assertThat(result.isInternalStored()).isEqualTo(Boolean.TRUE.equals(isExternalCreated));
 		assertThat(result.documentId()).isEqualTo(documentId);
 		var createContext = contextReference.get();
 		assertThat(createContext.getAttachmentIds()).isEqualTo(input.attachmentIds());
@@ -104,7 +104,7 @@ class DefaultAttachmentsServiceTest {
 
 		var result = cut.createAttachment(input);
 
-		assertThat(result.isExternalStored()).isFalse();
+		assertThat(result.isInternalStored()).isFalse();
 	}
 
 	@Test

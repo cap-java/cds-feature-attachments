@@ -72,17 +72,17 @@ public interface AttachmentUpdateEventContext extends EventContext {
 	void setData(MediaData data);
 
 	/**
-		* Sets the flag which show that the document was external created
+		* Sets the flag which show that the document will be internal stored in the database
 		*
-		* @param isExternalCreated Flag that the document was external created
+		* @param isInternalStored Flag that the document will be internal stored in the Database
 		*/
-	void setIsExternalCreated(Boolean isExternalCreated);
+	void setIsInternalStored(Boolean isInternalStored);
 
 	/**
-		* Flag that shows if the document was external created
+		* Flag that shows if the document will be internal stored in the database
 		*
-		* @return The flag for external creation
+		* @return The flag for internal storage
 		*/
-	Boolean getIsExternalCreated();
+	Boolean getIsInternalStored();
 
 }

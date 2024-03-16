@@ -56,7 +56,7 @@ public interface AttachmentService extends Service {
 		*                - mimeType
 		*                - content (mandatory)
 		* @return the result of the storage:
-		* 		- isExternalStored - shows if the document was stored externally, this does not indicate errors, in case of errors ServiceException is thrown
+		* 		- isInternalStored - shows if the document was stored internally, this does not indicate errors, in case of errors ServiceException is thrown
 		* 		- documentId - id of the stored document
 		* @throws com.sap.cds.services.ServiceException Exception to be thrown in case of errors during accessing the attachment
 		*/
@@ -73,7 +73,7 @@ public interface AttachmentService extends Service {
 		*                - mimeType
 		*                - content (mandatory)
 		* @return the result of the storage:
-		* 		- isExternalStored - shows if the document was stored externally, this does not indicate errors, in case of errors ServiceException is thrown
+		* 		- isInternalStored - shows if the document was stored internally, this does not indicate errors, in case of errors ServiceException is thrown
 		* 		- documentId - id of the stored document
 		* @throws com.sap.cds.services.ServiceException Exception to be thrown in case of errors during accessing the attachment
 		*/

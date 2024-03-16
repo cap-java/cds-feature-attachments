@@ -38,7 +38,7 @@ class DefaultAttachmentsServiceHandlerTest {
 
 		assertThat(createContext.isCompleted()).isTrue();
 		assertThat(createContext.getDocumentId()).isEqualTo(attachmentId);
-		assertThat(createContext.getIsExternalCreated()).isFalse();
+		assertThat(createContext.getIsInternalStored()).isTrue();
 	}
 
 	@Test
@@ -52,7 +52,7 @@ class DefaultAttachmentsServiceHandlerTest {
 
 		assertThat(updateContext.isCompleted()).isTrue();
 		assertThat(updateContext.getDocumentId()).isEqualTo(documentId);
-		assertThat(updateContext.getIsExternalCreated()).isFalse();
+		assertThat(updateContext.getIsInternalStored()).isTrue();
 	}
 
 	@Test

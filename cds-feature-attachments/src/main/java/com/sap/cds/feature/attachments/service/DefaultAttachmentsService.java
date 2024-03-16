@@ -45,7 +45,7 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 
 		emit(createContext);
 
-		return new AttachmentModificationResult(Boolean.TRUE.equals(createContext.getIsExternalCreated()), createContext.getDocumentId());
+		return new AttachmentModificationResult(Boolean.TRUE.equals(createContext.getIsInternalStored()), createContext.getDocumentId());
 	}
 
 	@Override
@@ -62,7 +62,7 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 
 		emit(updateContext);
 
-		return new AttachmentModificationResult(Boolean.TRUE.equals(updateContext.getIsExternalCreated()), updateContext.getDocumentId());
+		return new AttachmentModificationResult(Boolean.TRUE.equals(updateContext.getIsInternalStored()), updateContext.getDocumentId());
 	}
 
 	@Override

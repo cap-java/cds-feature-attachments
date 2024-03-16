@@ -30,7 +30,7 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 		var input = new UpdateAttachmentInput(documentId, attachmentIds, path.target().entity().getQualifiedName(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
 		var result = attachmentService.updateAttachment(input);
 		path.target().values().put(Attachments.DOCUMENT_ID, result.documentId());
-		return result.isExternalStored() ? null : value;
+		return result.isInternalStored() ? value : null;
 	}
 
 }
