@@ -17,7 +17,6 @@
 
     <properties>
         <!-- DEPENDENCIES VERSION -->
-        <jdk.version>17</jdk.version>
         <spring.boot.version>3.2.3</spring.boot.version>
         <cds.install-cdsdk.version>7.7.0</cds.install-cdsdk.version>
         <cds.install-node.downloadUrl>https://nodejs.org/dist/</cds.install-node.downloadUrl>
@@ -54,6 +53,7 @@
         <plugins>
             <!-- JAVA VERSION -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
@@ -72,32 +72,6 @@
                 </configuration>
             </plugin>
 
-            <!-- PROJECT STRUCTURE CHECKS -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <id>Project Structure Checks</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireMavenVersion>
-                                    <version>3.5.0</version>
-                                </requireMavenVersion>
-                                <requireJavaVersion>
-                                    <version>${jdk.version}</version>
-                                </requireJavaVersion>
-                                <reactorModuleConvergence/>
-                            </rules>
-                            <fail>true</fail>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>
