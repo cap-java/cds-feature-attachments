@@ -32,4 +32,4 @@ jobs:
     - name: mavenBuild
       uses: SAP/project-piper-action@master
       with:
-        help: mavenBuild
+        command: mavenBuild
