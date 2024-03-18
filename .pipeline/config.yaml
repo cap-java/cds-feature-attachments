@@ -1,0 +1,7 @@
+general:
+
+steps:
+  setupPipelineEnvironment:
+    storeGithubStatistics: false
+    runNightly: true
+    nightlySchedule: 'H H(0-1) * * *' # between 00:00-01:59 UTC
