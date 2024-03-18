@@ -18,7 +18,6 @@
     <properties>
         <!-- DEPENDENCIES VERSION -->
         <jdk.version>17</jdk.version>
-        <spring.boot.version.security>3.2.3-sap-02</spring.boot.version.security>
         <spring.boot.version>3.2.3</spring.boot.version>
         <cds.install-cdsdk.version>7.7.0</cds.install-cdsdk.version>
 
@@ -34,9 +33,9 @@
         <dependencies>
             <!-- SPRING BOOT -->
             <dependency>
-                <groupId>com.sap.sgs</groupId>
-                <artifactId>security-patched-spring-boot-dependencies</artifactId>
-                <version>${spring.boot.version.security}</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
