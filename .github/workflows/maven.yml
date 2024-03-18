@@ -30,6 +30,6 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: mavenBuild
-      uses: SAP/project-piper-action@master
+      uses: SAP/project-piper-action@main
       with:
         command: mavenBuild
