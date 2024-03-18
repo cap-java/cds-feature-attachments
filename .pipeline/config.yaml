@@ -2,5 +2,5 @@ general:
 
 steps:
   mavenBuild:
-    flatten: false
+    flatten: true
     verify: true
