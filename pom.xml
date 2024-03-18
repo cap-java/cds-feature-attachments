@@ -13,6 +13,8 @@
         <cds.services.version>2.7.0</cds.services.version>
 
         <generation-folder>src/gen</generation-folder>
+
+        <test-spring-boot-version>3.2.3</test-spring-boot-version>
     </properties>
 
     <groupId>com.sap.cds</groupId>
