@@ -29,5 +29,7 @@ jobs:
         java-version: ${{ matrix.java-version }}
         distribution: 'temurin'
         cache: maven
-    - name: Build with Maven
-      run: mvn -B clean verify --file pom.xml
+    - name: mavenBuild
+      uses: SAP/project-piper-action@master
+      with:
+        command: mvn -B clean verify
