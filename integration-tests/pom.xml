@@ -46,7 +46,6 @@
         <dependency>
             <groupId>com.sap.cds</groupId>
             <artifactId>cds-feature-attachments</artifactId>
-            <version>0.0.35-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -54,6 +53,7 @@
         <plugins>
             <!-- JAVA VERSION -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
@@ -72,14 +72,9 @@
                 </configuration>
             </plugin>
 
-            <!-- SUREFIRE VERSION -->
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.2</version>
-            </plugin>
-
             <!-- PROJECT STRUCTURE CHECKS -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>3.3.0</version>
                 <executions>
