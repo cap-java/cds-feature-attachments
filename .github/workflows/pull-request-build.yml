@@ -14,12 +14,7 @@ jobs:
         java-version: [17, 21]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK ${{ matrix.java-version }}
-      uses: actions/setup-java@v4
+      - name: Build with Maven
+        uses: ./.github/actions/build
       with:
         java-version: ${{ matrix.java-version }}
-        distribution: 'temurin'
-        cache: maven
-    - name: Build with Maven
-      run: mvn -B clean verify --file pom.xml
