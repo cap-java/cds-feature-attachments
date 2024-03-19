@@ -44,7 +44,6 @@ runs:
         -Durl=${{ inputs.repository-url }}
         -DrepositoryId=${{ inputs.repository-id }}
         -Dmaven.install.skip=true
-        -Dmaven.test.skip
         -Dmaven.compiler.showCompilationChanges
         -Dhttp.keepAlive=false
         clean deploy

@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build
+
     runs-on: ubuntu-latest
 
     strategy:
@@ -23,15 +23,25 @@ jobs:
           java-version: ${{ matrix.java-version }}
 
   deploy:
-    name: Deploy to Artifactory
+    name: Build and Deploy to Artifactory
     runs-on: ubuntu-latest
     needs: build
     steps:
       - run: echo "Start the deploy to Artifactory"
         name: deploy start
-      - name: deploy
-        uses: SAP/project-piper-action@master
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build with Maven
+        uses: ./.github/actions/deploy
         with:
-          help: sapCallStagingService
+          java-version: 17
+          user: ${{ secrets.DEPLOYMENT_USER }}
+          password: ${{ secrets.DEPLOYMENT_PASS }}
+          repository-url: "https://common.repositories.cloud.sap/artifactory/capjava"
+          repository-id: "capjava"
+          pom-file: "./cds-feature-attachments/pom.xml"
+
       - name: status
         run: echo "The job status is ${{ job.status }}"
