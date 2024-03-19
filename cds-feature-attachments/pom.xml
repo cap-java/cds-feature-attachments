@@ -72,6 +72,12 @@
                                 <include>csn.json</include>
                             </includes>
                         </fileset>
+                        <fileset>
+                            <directory>./</directory>
+                            <includes>
+                                <include>.flattened-pom.xml</include>
+                            </includes>
+                        </fileset>
                     </filesets>
                 </configuration>
                 <executions>

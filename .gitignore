@@ -11,3 +11,5 @@
 
 ## Java
 target/
+
+.flattened-pom.xml
