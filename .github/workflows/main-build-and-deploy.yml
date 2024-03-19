@@ -1,8 +1,9 @@
 name: Java CI with Maven
 
 on:
-  push:
+  release:
     branches: [ "main" ]
+    types: [ "published" ]
 
 jobs:
   build:
@@ -14,7 +15,8 @@ jobs:
         java-version: [ 17, 21 ]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Build with Maven
         uses: ./.github/actions/build
         with:

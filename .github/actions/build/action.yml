@@ -1,4 +1,5 @@
 name: Maven Build
+description: "Builds a Maven project."
 
 inputs:
   java-version:
