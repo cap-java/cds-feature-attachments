@@ -14,9 +14,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17
@@ -29,6 +27,9 @@ jobs:
       uses: SAP/project-piper-action@master
       with:
         command: mavenBuild
+
+  deploy:
+    - needs: build
     - name: deploy
       uses: SAP/project-piper-action@master
       with:
