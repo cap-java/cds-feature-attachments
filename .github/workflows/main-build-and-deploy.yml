@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo "The job was triggered by a ${{ github.event_name }} event"
+        name: build start
       - uses: actions/checkout@v4
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -17,7 +18,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-      - name: mavenBuild
+      - name: maven build
         uses: SAP/project-piper-action@master
         with:
           command: mavenBuild
@@ -28,7 +29,10 @@ jobs:
     needs: build
     steps:
       - run: echo "Start the deploy to Artifactory"
+        name: deploy start
       - name: deploy
         uses: SAP/project-piper-action@master
         with:
           help: sapCallStagingService
+      - name: status
+        run: echo "The job status is ${{ job.status }}"
