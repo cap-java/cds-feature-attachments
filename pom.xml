@@ -46,6 +46,12 @@
                 <scope>import</scope>
             </dependency>
 
+            <dependency>
+                <groupId>com.sap.cds</groupId>
+                <artifactId>cds-feature-attachments</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
