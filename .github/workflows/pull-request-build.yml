@@ -16,5 +16,5 @@ jobs:
     steps:
       - name: Build with Maven
         uses: ./.github/actions/build
-      with:
-        java-version: ${{ matrix.java-version }}
+        with:
+          java-version: ${{ matrix.java-version }}
