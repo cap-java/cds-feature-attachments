@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build with Maven
-        uses: ./.github/actions/build.yaml
+        uses: ./.github/actions/build
         with:
           java-version: ${{ matrix.java-version }}
 
