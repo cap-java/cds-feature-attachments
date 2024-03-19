@@ -32,4 +32,4 @@ jobs:
     - name: deploy
       uses: SAP/project-piper-action@master
       with:
-        command: sapCallStagingService
+        help: sapCallStagingService
