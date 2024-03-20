@@ -32,7 +32,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: your-artifact${{ matrix.java-version }}
-          path: ".*"
+          path: |
+            "./cds-feature-attachments/**/*"
+            "./.github/actions/**/*"
 
   deploy:
     name: Build and Deploy to Artifactory
