@@ -15,7 +15,7 @@
 
     <groupId>com.sap.cds</groupId>
     <artifactId>cds-feature-attachments-root</artifactId>
-    <version>0.0.34-SNAPSHOT</version>
+    <version>v0.0.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>CDS Feature for Attachments - Root</name>
