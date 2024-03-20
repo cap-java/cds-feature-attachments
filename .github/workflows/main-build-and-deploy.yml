@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: your-artifact17
-          path: target
+          path: cds-feature-attachments/target
           retention-days: 1
 
   deploy:
