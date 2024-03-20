@@ -5,7 +5,7 @@ env:
   TARGET_ARTIFACT_PATH: 'target'
   JAVA_VERSION: '17'
   DEPLOY_REPOSITORY_URL: 'https://common.repositories.cloud.sap/artifactory/'
-  DEPLOY_REPOSITORY_ID: 'capjava'
+  DEPLOY_REPOSITORY_ID: 'cap-java'
   SERVICE_POM: './cds-feature-attachments/pom.xml'
   JAR_NAME: 'cds-feature-attachments.jar'
 
