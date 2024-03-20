@@ -26,6 +26,7 @@ inputs:
 runs:
   using: composite
   steps:
+
     - name: Publish package
       run: >
         mvn deploy:deploy-file 
