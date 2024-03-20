@@ -33,8 +33,7 @@ jobs:
         with:
           name: your-artifact${{ matrix.java-version }}
           path: |
-            "../.github/actions/*",
-            "./target/*"
+            "./.github/actions/*"
 
   deploy:
     name: Build and Deploy to Artifactory
