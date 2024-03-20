@@ -28,12 +28,21 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
 
+      - name: Upload Changed Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: root
+          path: .
+          retention-days: 1
+
   build:
     runs-on: ubuntu-latest
     needs: update-version
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: root
 
       - name: Build with Maven
         uses: ./.github/actions/build
