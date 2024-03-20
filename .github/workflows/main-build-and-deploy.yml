@@ -55,7 +55,7 @@ jobs:
           repository-url: "https://common.repositories.cloud.sap/artifactory/capjava"
           repository-id: "capjava"
           pom-file-path: "./cds-feature-attachments/pom.xml"
-          jar-file-path: "./cds-feature-attachments/target/cds-feature-attachments.jar"
+          jar-file-path: "./target/cds-feature-attachments.jar"
 
       - name: status
         run: echo "The job status is ${{ job.status }}"
