@@ -26,6 +26,15 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Echo Inputs
+      run: |
+        echo "repository-url: ${{ inputs.repository-url }}"
+        echo "repository-id: ${{ inputs.repository-id }}"
+        echo "user: ${{ inputs.user }}"
+        echo "password: ${{ inputs.password }}"
+        echo "pom-file-path: ${{ inputs.pom-file-path }}"
+        echo "jar-file-path: ${{ inputs.jar-file-path }}"
+      shell: bash
 
     - name: Publish package
       run: >
