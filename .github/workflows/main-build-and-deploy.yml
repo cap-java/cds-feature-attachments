@@ -13,8 +13,6 @@ on:
   release:
     branches: [ "main" ]
     types: [ "published" ]
-#  push:
-#    branches: [ "main" ]
 
 jobs:
   update-version:
