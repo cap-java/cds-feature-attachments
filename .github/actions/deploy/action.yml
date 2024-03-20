@@ -36,6 +36,9 @@ runs:
         echo "jar-file-path: ${{ inputs.jar-file-path }}"
       shell: bash
 
+    - name: List files
+      run: find . -type f
+
     - name: Publish package
       run: >
         mvn 
