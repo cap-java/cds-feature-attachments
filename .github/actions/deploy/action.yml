@@ -2,10 +2,10 @@ name: Maven Deploy
 description: "Deploys a Maven package to a repository."
 
 inputs:
-  repostory-url:
+  repository-url:
     description: "The URL of the repository to upload to."
     required: true
-  repostory-id:
+  repository-id:
     description: "The ID of the repository to upload to."
     required: true
   user:
@@ -14,40 +14,25 @@ inputs:
   password:
     description: "The password used for the upload."
     required: true
-  java-version:
-    description: "The Java version the build shall run with."
-    required: true
-  pom-file:
+  pom-file-path:
     description: "The path to the pom file."
     required: false
     default: "pom.xml"
+  jar-file-path:
+    description: "The path to the jar file."
+    required: false
+    default: "target/*.jar"
 
 runs:
   using: composite
   steps:
-    - name: Set up JDK ${{ inputs.java-version }}
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ inputs.java-version }}
-        distribution: 'temurin'
-        cache: maven
-        server-username: MAVEN_USERNAME
-        server-password: MAVEN_PASSWORD
-
     - name: Publish package
       run: >
-        mvn 
-        --batch-mode
-        --no-transfer-progress
-        --fail-at-end
-        --threads 1C
-        -Durl=${{ inputs.repository-url }}
-        -DrepositoryId=${{ inputs.repository-id }}
-        -Dmaven.install.skip=true
-        -Dmaven.compiler.showCompilationChanges
-        -Dhttp.keepAlive=false
-        clean deploy
+        mvn deploy:deploy-file 
+            -DpomFile=${{ inputs.pom-file-path }} 
+            -Dfile=${{ inputs.jar-file-path }} 
+            -DrepositoryId=${{ inputs.repository-id }} 
+            -Durl=${{ inputs.repository-url }} 
+            -DrepositoryUsername=${{ inputs.user }} 
+            -DrepositoryPassword=${{ inputs.password }}
       shell: bash
-      env:
-        MAVEN_USERNAME: ${{ inputs.user }}
-        MAVEN_PASSWORD: ${{ inputs.password }}

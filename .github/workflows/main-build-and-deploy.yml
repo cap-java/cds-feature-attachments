@@ -21,6 +21,11 @@ jobs:
         uses: ./.github/actions/build
         with:
           java-version: ${{ matrix.java-version }}
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: your-artifact
+          path: "./cds-feature-attachments/*"
 
   deploy:
     name: Build and Deploy to Artifactory
@@ -30,18 +35,20 @@ jobs:
       - run: echo "Start the deploy to Artifactory"
         name: deploy start
 
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: your-artifact
 
       - name: Build with Maven
         uses: ./.github/actions/deploy
         with:
-          java-version: 17
           user: ${{ secrets.DEPLOYMENT_USER }}
           password: ${{ secrets.DEPLOYMENT_PASS }}
           repository-url: "https://common.repositories.cloud.sap/artifactory/capjava"
           repository-id: "capjava"
-          pom-file: "./cds-feature-attachments/pom.xml"
+          pom-file-path: "./cds-feature-attachments/pom.xml"
+          jar-file-path: "./cds-feature-attachments/target/*.jar"
 
       - name: status
         run: echo "The job status is ${{ job.status }}"
