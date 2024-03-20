@@ -27,7 +27,7 @@ jobs:
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
-          name: your-artifact17
+          name: service-target
           path: cds-feature-attachments/target
           retention-days: 1
 
@@ -39,10 +39,13 @@ jobs:
       - run: echo "Start the deploy to Artifactory"
         name: deploy start
 
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download JAR artifact
         uses: actions/download-artifact@v4
         with:
-          name: your-artifact17
+          name: service-target
 
       - name: Build with Maven
         uses: ./.github/actions/deploy
