@@ -1,5 +1,10 @@
 name: Java CI with Maven
 
+env:
+  TARGET_ARTIFACT_NAME: 'service-target'
+  TARGET_ARTIFACT_PATH: 'target'
+  JAVA_VERSION: '17'
+
 on:
   release:
     branches: [ "main" ]
@@ -19,12 +24,12 @@ jobs:
       - name: Build with Maven
         uses: ./.github/actions/build
         with:
-          java-version: 17
+          java-version: ${{ env.JAVA_VERSION }}
 
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
-          name: service-target
+          name: ${{ env.TARGET_ARTIFACT_NAME }}
           path: cds-feature-attachments/target
           retention-days: 1
 
@@ -42,10 +47,10 @@ jobs:
       - name: Download JAR artifact
         uses: actions/download-artifact@v4
         with:
-          name: service-target
-          path: target
+          name: ${{ env.TARGET_ARTIFACT_NAME }}
+          path: ${{ env.TARGET_ARTIFACT_PATH }}
 
-      - name: Build with Maven
+      - name: Deploy with Maven
         uses: ./.github/actions/deploy
         with:
           user: ${{ secrets.DEPLOYMENT_USER }}
@@ -53,7 +58,7 @@ jobs:
           repository-url: "https://common.repositories.cloud.sap/artifactory/capjava"
           repository-id: "capjava"
           pom-file-path: "./cds-feature-attachments/pom.xml"
-          jar-file-path: "./target/cds-feature-attachments.jar"
+          jar-file-path: "./"${{ env.TARGET_ARTIFACT_PATH }}"/cds-feature-attachments.jar"
 
       - name: status
         run: echo "The job status is ${{ job.status }}"
