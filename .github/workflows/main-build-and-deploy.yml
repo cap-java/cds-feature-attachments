@@ -25,6 +25,9 @@ jobs:
         with:
           java-version: ${{ matrix.java-version }}
 
+      - name: List files
+        run: find . -type f
+
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
