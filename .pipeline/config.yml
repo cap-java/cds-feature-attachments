@@ -1,0 +1,5 @@
+steps:
+  mavenBuild:
+    verbose: true
+    verify: true
+    flatten: false
