@@ -10,9 +10,9 @@ env:
   JAR_NAME: 'cds-feature-attachments.jar'
 
 on:
-  release:
-    branches: [ "main" ]
-    types: [ "published" ]
+  #  release:
+  #    branches: [ "main" ]
+  #    types: [ "published" ]
   push:
     branches: [ "main" ]
 
