@@ -27,4 +27,4 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git checkout -b main
           git commit -am "Update version to $VERSION"
-          git push
+          git push --set-upstream origin main
