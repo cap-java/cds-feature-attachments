@@ -30,7 +30,7 @@ jobs:
         with:
           name: your-artifact${{ matrix.java-version }}
           path: |
-            "./cds-feature-attachments/*"
+            "./cds-feature-attachments/*",
             "./.github/actions/*"
 
   deploy:
