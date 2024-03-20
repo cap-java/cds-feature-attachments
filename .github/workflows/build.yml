@@ -22,3 +22,10 @@ jobs:
         uses: ./.github/actions/build
         with:
           java-version: ${{ matrix.java-version }}
+      - name: CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
+        with:
+          languages: java
+          queries: security-and-quality.qls
+          metadata: true
+          output: codeql-results
