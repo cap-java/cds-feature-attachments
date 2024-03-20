@@ -24,7 +24,7 @@ jobs:
         with:
           java-version: ${{ matrix.java-version }}
       - name: Upload JAR artifact
-        uses: actions/upload-artifact@latest
+        uses: actions/upload-artifact@v3
         with:
           name: your-artifact
           path: "./cds-feature-attachments/*"
@@ -38,7 +38,7 @@ jobs:
         name: deploy start
 
       - name: Download JAR artifact
-        uses: actions/download-artifact@latest
+        uses: actions/download-artifact@v3
         with:
           name: your-artifact
 
