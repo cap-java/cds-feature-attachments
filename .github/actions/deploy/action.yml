@@ -38,6 +38,7 @@ runs:
 
     - name: List files
       run: find . -type f
+      shell: bash
 
     - name: Publish package
       run: >
