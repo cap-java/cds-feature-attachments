@@ -47,8 +47,6 @@ runs:
         --no-transfer-progress
         --fail-at-end
         --threads 1C
-        -X
-        -e
         deploy:deploy-file \
             -DpomFile=${{ inputs.pom-file-path }} \
             -Dfile=${{ inputs.jar-file-path }} \

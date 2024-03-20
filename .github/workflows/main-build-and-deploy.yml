@@ -4,6 +4,10 @@ env:
   TARGET_ARTIFACT_NAME: 'service-target'
   TARGET_ARTIFACT_PATH: 'target'
   JAVA_VERSION: '17'
+  DEPLOY_REPOSITORY_URL: 'https://common.repositories.cloud.sap/artifactory/'
+  DEPLOY_REPOSITORY_ID: 'capjava'
+  SERVICE_POM: './cds-feature-attachments/pom.xml'
+  JAR_NAME: 'cds-feature-attachments.jar'
 
 on:
   release:
@@ -55,10 +59,10 @@ jobs:
         with:
           user: ${{ secrets.DEPLOYMENT_USER }}
           password: ${{ secrets.DEPLOYMENT_PASS }}
-          repository-url: "https://common.repositories.cloud.sap/artifactory/capjava"
-          repository-id: "capjava"
-          pom-file-path: "./cds-feature-attachments/pom.xml"
-          jar-file-path: "./${{ env.TARGET_ARTIFACT_PATH }}/cds-feature-attachments.jar"
+          repository-url: ${{ env.DEPLOY_REPOSITORY_URL }}
+          repository-id: ${{ env.DEPLOY_REPOSITORY_ID }}
+          pom-file-path: ${{ env.SERVICE_POM }}
+          jar-file-path: "./${{ env.TARGET_ARTIFACT_PATH }}/${{ env.JAR_NAME }}"
 
       - name: status
         run: echo "The job status is ${{ job.status }}"
