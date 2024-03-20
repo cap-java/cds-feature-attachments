@@ -28,7 +28,7 @@ jobs:
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
-          name: your-artifact + ${{ matrix.java-version }}
+          name: your-artifact${{ matrix.java-version }}
           path: "./cds-feature-attachments/*"
 
   deploy:
