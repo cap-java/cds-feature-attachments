@@ -38,7 +38,12 @@ runs:
 
     - name: Publish package
       run: >
-        mvn deploy:deploy-file 
+        mvn 
+        --batch-mode
+        --no-transfer-progress
+        --fail-at-end
+        --threads 1C
+        deploy:deploy-file 
             -DpomFile=${{ inputs.pom-file-path }} 
             -Dfile=${{ inputs.jar-file-path }} 
             -DrepositoryId=${{ inputs.repository-id }} 
