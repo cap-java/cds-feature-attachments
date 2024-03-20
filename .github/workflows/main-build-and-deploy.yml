@@ -19,10 +19,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Build with Maven
         uses: ./.github/actions/build
         with:
           java-version: ${{ matrix.java-version }}
+
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v3
         with:
