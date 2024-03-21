@@ -1,0 +1,28 @@
+name: Update POM with new release
+description: Updates the revision property in the POM file with the new release version.
+
+inputs:
+  java-version:
+    description: "The Java version the build shall run with."
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set up JDK ${{ inputs.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Update version
+      run: |
+        VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+        mvn --no-transfer-progress versions:set-property -Dproperty=revision -DnewVersion=$VERSION
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git checkout -b main
+        git commit -am "Update version to $VERSION"
+        git push --set-upstream origin main
+      shell: bash

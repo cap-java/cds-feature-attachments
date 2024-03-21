@@ -1,35 +1,79 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 name: Java CI with Maven
 
+env:
+  TARGET_ARTIFACT_NAME: 'service-target'
+  TARGET_ARTIFACT_PATH: 'target'
+  JAVA_VERSION: '17'
+  DEPLOY_REPOSITORY_URL: 'https://common.repositories.cloud.sap/artifactory/cap-java'
+
 on:
-  push:
+  release:
     branches: [ "main" ]
+    types: [ "published" ]
 
 jobs:
-  build:
-
+  update-version:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-    - name: mavenBuild
-      uses: SAP/project-piper-action@master
-      with:
-        command: mavenBuild
-    - name: deploy
-      uses: SAP/project-piper-action@master
-      with:
-        help: sapCallStagingService
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update version
+        uses: ./.github/actions/newrelease
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Upload Changed Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: root
+          path: .
+          retention-days: 1
+
+  build:
+    runs-on: ubuntu-latest
+    needs: update-version
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: root
+
+      - name: Build with Maven
+        uses: ./.github/actions/build
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.TARGET_ARTIFACT_NAME }}
+          path: cds-feature-attachments/target
+          retention-days: 1
+
+  deploy:
+    name: Build and Deploy to Artifactory
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - run: echo "Start the deploy to Artifactory"
+        name: deploy start
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.TARGET_ARTIFACT_NAME }}
+          path: ${{ env.TARGET_ARTIFACT_PATH }}
+
+      - name: Deploy with Maven
+        uses: ./.github/actions/deploy
+        with:
+          user: ${{ secrets.DEPLOYMENT_USER }}
+          password: ${{ secrets.DEPLOYMENT_PASS }}
+          repository-url: ${{ env.DEPLOY_REPOSITORY_ID }}
+
+      - name: Echo Status
+        run: echo "The job status is ${{ job.status }}"

@@ -38,6 +38,7 @@
     </dependencies>
 
     <build>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
 
             <plugin>
@@ -184,5 +185,13 @@
 
         </plugins>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>artifactory</id>
+            <name>Artifactory_DMZ-snapshots</name>
+            <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
+        </snapshotRepository>
+    </distributionManagement>
 
 </project>
