@@ -1,8 +1,6 @@
 name: Java CI with Maven
 
 env:
-  TARGET_ARTIFACT_NAME: 'service-target'
-  TARGET_ARTIFACT_PATH: 'target'
   JAVA_VERSION: '17'
   DEPLOY_REPOSITORY_URL: 'https://common.repositories.cloud.sap/artifactory/cap-java'
   POM_FILE: 'cds-feature-attachments/pom.xml'
@@ -45,13 +43,6 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
 
-      - name: Upload JAR artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.TARGET_ARTIFACT_NAME }}
-          path: cds-feature-attachments/target
-          retention-days: 1
-
   deploy:
     name: Build and Deploy to Artifactory
     runs-on: ubuntu-latest
@@ -64,12 +55,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: root
-
-      - name: Download JAR artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ env.TARGET_ARTIFACT_NAME }}
-          path: ${{ env.TARGET_ARTIFACT_PATH }}
 
       - name: Deploy with Maven
         uses: ./.github/actions/deploy
