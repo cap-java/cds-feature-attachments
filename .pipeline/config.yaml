@@ -1,6 +1,0 @@
-general:
-
-steps:
-  mavenBuild:
-    flatten: true
-    verify: true
