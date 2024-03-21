@@ -25,7 +25,7 @@ jobs:
       - name: Upload Changed Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: root
+          name: root-new-version
           path: .
           retention-days: 1
 
@@ -36,7 +36,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: root
+          name: root-new-version
 
       - name: Build with Maven
         uses: ./.github/actions/build
@@ -46,7 +46,7 @@ jobs:
       - name: Upload Changed Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: root
+          name: root-build
           path: .
           retention-days: 1
 
@@ -61,7 +61,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: root
+          name: root-build
 
       - name: Deploy with Maven
         uses: ./.github/actions/deploy
