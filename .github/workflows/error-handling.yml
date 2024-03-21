@@ -2,6 +2,7 @@ name: Create Issue on Failure
 
 on:
   workflow_run:
+    workflows: [ Java Build with Maven, Java CI with Maven ]
     types:
       - completed
 
