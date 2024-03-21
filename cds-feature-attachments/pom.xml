@@ -113,7 +113,7 @@
                             <goal>install-node</goal>
                         </goals>
                         <configuration>
-                            <skip>${cdsdk-global}</skip>
+                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -123,7 +123,7 @@
                             <goal>install-cdsdk</goal>
                         </goals>
                         <configuration>
-                            <skip>${cdsdk-global}</skip>
+                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -138,6 +138,7 @@
                             <commands>
                                 <command>build --for java --src ./ --dest ../../../../../../gen/srv</command>
                             </commands>
+                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -149,6 +150,7 @@
                         <configuration>
                             <basePackage>${generation-package}.cds4j</basePackage>
                             <csnFile>${project.basedir}/src/gen/srv/src/main/resources/edmx/csn.json</csnFile>
+                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -163,6 +165,7 @@
                                 <command>compile schema.cds -2 csn > csn.json</command>
                                 <command>compile schema.cds -2 sql > ../schema.sql</command>
                             </commands>
+                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -177,6 +180,7 @@
                             <basePackage>${generation-package}.test.cds4j</basePackage>
                             <testSources>true</testSources>
                             <csnFile>${project.basedir}/src/test/resources/cds/csn.json</csnFile>
+                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
