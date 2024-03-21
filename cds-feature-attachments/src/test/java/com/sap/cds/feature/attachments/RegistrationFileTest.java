@@ -27,7 +27,6 @@ class RegistrationFileTest {
 		String runtimeRegistrationName = Registration.class.getCanonicalName();
 
 		assertThat(classes).doesNotContain(runtimeRegistrationName);
-
 	}
 
 }
