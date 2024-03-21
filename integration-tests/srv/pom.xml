@@ -102,7 +102,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring.boot.version}</version>
                 <configuration>
-                    <skip>false</skip>
+                    <skip>${skipDuringDeploy}</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -122,6 +122,9 @@
                 <groupId>com.sap.cds</groupId>
                 <artifactId>cds-maven-plugin</artifactId>
                 <version>${cds.services.version}</version>
+                <configuration>
+                    <skip>${skipDuringDeploy}</skip>
+                </configuration>
                 <executions>
                     <execution>
                         <id>cds.clean</id>

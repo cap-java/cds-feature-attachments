@@ -97,7 +97,7 @@
                 <artifactId>cds-maven-plugin</artifactId>
                 <version>${cds.services.version}</version>
                 <configuration>
-
+                    <skip>${skipDuringDeploy}</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -180,6 +180,25 @@
                         </configuration>
                     </execution>
 
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.basedir}/${generation-folder}/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 

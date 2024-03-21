@@ -228,6 +228,7 @@
                     <excludeFilterFile>/src/main/resources/spotbugs-exclusion-filter.xml</excludeFilterFile>
                     <spotbugsXmlOutputDirectory>${project.build.directory}</spotbugsXmlOutputDirectory>
                     <includeTests>true</includeTests>
+                    <skip>${skipDuringDeploy}</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -261,6 +262,7 @@
                             **/${excluded.generation.package}**
                         </exclude>
                     </excludes>
+                    <skip>${skipDuringDeploy}</skip>
                 </configuration>
                 <!-- https://mvnrepository.com/artifact/com.sap.cloud.sdk.quality/pmd-rules -->
                 <dependencies>
@@ -281,6 +283,26 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.4.0</version>
+                <executions>
+                    <execution>
+                        <id>no-duplicate-declared-dependencies</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <banDuplicatePomDependencyVersions/>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 

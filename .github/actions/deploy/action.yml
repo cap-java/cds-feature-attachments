@@ -49,6 +49,7 @@ runs:
         -Dmaven.test.skip
         -Dmaven.compiler.showCompilationChanges
         -Dhttp.keepAlive=false
+        -DskipDuringDeploy=true
         -f ${{ inputs.pom-file }}
         deploy
       env:

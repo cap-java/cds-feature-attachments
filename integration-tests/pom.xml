@@ -58,6 +58,7 @@
                 <configuration>
                     <release>${java.version}</release>
                     <encoding>UTF-8</encoding>
+                    <skip>${skipDuringDeploy}</skip>
                 </configuration>
             </plugin>
 
