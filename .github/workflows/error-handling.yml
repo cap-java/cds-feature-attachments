@@ -13,19 +13,20 @@ jobs:
 
     steps:
       - name: Create Issue
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
+            const runId = context.payload.workflow_run.id;
+            const runNumber = context.payload.workflow_run.run_number;
+            const workflow = context.payload.workflow_run.name;
             const issue = {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: "An error occurred in workflow: " + context.workflow,
+              title: "An error occurred in workflow: " + workflow + ", Run Number: " + runNumber,
               body: "An error occurred in the workflow. Here are the details:\n\n" +
-                    "**Workflow:** " + context.workflow + "\n" +
-                    "**Run ID:** " + context.runId + "\n" +
-                    "**Run Number:** " + context.runNumber + "\n" +
-                    "**Actor:** " + context.actor + "\n" +
-                    "**Job:** " + context.job + "\n" +
-                    "**Link to Run:** https://github.com/" + context.repo.owner + "/" + context.repo.repo + "/actions/runs/" + context.runId
+                    "**Workflow:** " + workflow + "\n" +
+                    "**Run ID:** " + runId + "\n" +
+                    "**Run Number:** " + runNumber + "\n" +
+                    "**Link to Run:** https://github.com/" + context.repo.owner + "/" + context.repo.repo + "/actions/runs/" + runId
             };
             github.rest.issues.create(issue);
