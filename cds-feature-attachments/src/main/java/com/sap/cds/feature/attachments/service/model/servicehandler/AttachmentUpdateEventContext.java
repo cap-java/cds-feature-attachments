@@ -2,7 +2,7 @@ package com.sap.cds.feature.attachments.service.model.servicehandler;
 
 import java.util.Map;
 
-import com.sap.cds.feature.attachments.generation.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.EventName;
@@ -70,5 +70,19 @@ public interface AttachmentUpdateEventContext extends EventContext {
 		* @param data The data of the document
 		*/
 	void setData(MediaData data);
+
+	/**
+		* Sets the flag which show that the document will be internal stored in the database
+		*
+		* @param isInternalStored Flag that the document will be internal stored in the Database
+		*/
+	void setIsInternalStored(Boolean isInternalStored);
+
+	/**
+		* Flag that shows if the document will be internal stored in the database
+		*
+		* @return The flag for internal storage
+		*/
+	Boolean getIsInternalStored();
 
 }

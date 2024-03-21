@@ -1,6 +1,6 @@
 # cds-feature-attachments
 Attachment feature for CDS Services Java
 
-## Storage Options
+## Pull Request
 
-see [storage options](./doc/StorageOptions.md)
+[![Java Build for Pull Requests with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/pull-request-build.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/pull-request-build.yml)

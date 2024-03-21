@@ -24,5 +24,5 @@ annotate Attachments with @UI: {LineItem: [
 ]} {
     fileName   @(title: '{i18n>fileName}');
     note       @(title: '{i18n>note}');
-    documentId @(readonly);
+    documentId @(UI.Hidden: true);
 }

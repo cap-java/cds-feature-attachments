@@ -1,0 +1,31 @@
+package com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper;
+
+import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.Attachments;
+
+public class AttachmentsBuilder {
+
+	private Attachments attachment;
+
+	public static AttachmentsBuilder create() {
+		return new AttachmentsBuilder();
+	}
+
+	private AttachmentsBuilder() {
+		attachment = Attachments.create();
+	}
+
+	public AttachmentsBuilder setMimeType(String mimeType) {
+		attachment.setMimeType(mimeType);
+		return this;
+	}
+
+	public AttachmentsBuilder setFileName(String fileName) {
+		attachment.setFileName(fileName);
+		return this;
+	}
+
+	public Attachments build() {
+		return attachment;
+	}
+
+}
