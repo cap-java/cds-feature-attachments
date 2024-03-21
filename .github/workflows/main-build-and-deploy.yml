@@ -60,8 +60,10 @@ jobs:
       - run: echo "Start the deploy to Artifactory"
         name: deploy start
 
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: root
 
       - name: Download JAR artifact
         uses: actions/download-artifact@v4
