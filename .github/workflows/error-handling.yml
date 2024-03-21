@@ -16,9 +16,9 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const runId = github.event.workflow_run.id;
-            const runNumber = github.event.workflow_run.run_number;
-            const workflow = github.event.workflow_run.name;
+            const runId = context.payload.workflow_run.id;
+            const runNumber = context.payload.workflow_run.run_number;
+            const workflow = context.payload.workflow_run.name;
             const issue = {
               owner: context.repo.owner,
               repo: context.repo.repo,
