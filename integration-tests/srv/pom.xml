@@ -139,7 +139,7 @@
                             <goal>install-node</goal>
                         </goals>
                         <configuration>
-                            <skip>${cdsdk-global}</skip>
+                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -149,7 +149,7 @@
                             <goal>install-cdsdk</goal>
                         </goals>
                         <configuration>
-                            <skip>${cdsdk-global}</skip>
+                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -172,6 +172,7 @@
                                     "${project.basedir}/src/main/resources/schema.sql"
                                 </command>
                             </commands>
+                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -182,6 +183,7 @@
                         </goals>
                         <configuration>
                             <basePackage>${generation-package}.integration.test.cds4j</basePackage>
+                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
                 </executions>
@@ -189,19 +191,4 @@
         </plugins>
     </build>
 
-    <profiles>
-        <!-- A profile that uses global installation of @sap/cds-dk -->
-        <profile>
-            <id>cdsdk-global</id>
-            <activation>
-                <property>
-                    <name>env.CDSDK_GLOBAL</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <properties>
-                <cdsdk-global>true</cdsdk-global>
-            </properties>
-        </profile>
-    </profiles>
 </project>
