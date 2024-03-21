@@ -5,6 +5,7 @@ env:
   TARGET_ARTIFACT_PATH: 'target'
   JAVA_VERSION: '17'
   DEPLOY_REPOSITORY_URL: 'https://common.repositories.cloud.sap/artifactory/cap-java'
+  POM_FILE: 'cds-feature-attachments/pom.xml'
 
 on:
   release:
@@ -74,6 +75,7 @@ jobs:
           user: ${{ secrets.DEPLOYMENT_USER }}
           password: ${{ secrets.DEPLOYMENT_PASS }}
           repository-url: ${{ env.DEPLOY_REPOSITORY_ID }}
+          pom-file: ${{ env.POM_FILE }}
 
       - name: Echo Status
         run: echo "The job status is ${{ job.status }}"

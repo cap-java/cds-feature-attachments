@@ -11,6 +11,10 @@ inputs:
   password:
     description: "The password used for the upload."
     required: true
+  pom-file:
+    description: "The path to the POM file."
+    required: false
+    default: "pom.xml"
 
 runs:
   using: composite
@@ -20,6 +24,7 @@ runs:
         echo "repository-url: ${{ inputs.repository-url }}"
         echo "user: ${{ inputs.user }}"
         echo "password: ${{ inputs.password }}"
+        echo "pom-file: ${{ inputs.pom-file }}"
       shell: bash
 
     - name: "Setup java"
@@ -44,6 +49,7 @@ runs:
         -Dmaven.test.skip
         -Dmaven.compiler.showCompilationChanges
         -Dhttp.keepAlive=false
+        -f ${{ inputs.pom-file }}
         deploy
       env:
         DEPLOYMENT_USER: ${{ inputs.user }}
