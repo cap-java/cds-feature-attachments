@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Create Issue
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             const runId = context.payload.workflow_run.id;
