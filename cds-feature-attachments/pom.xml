@@ -182,13 +182,8 @@
     </build>
 
     <distributionManagement>
-        <repository>
-            <id>central</id>
-            <name>Artifactory_DMZ-releases</name>
-            <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
-        </repository>
         <snapshotRepository>
-            <id>snapshots</id>
+            <id>artifactory</id>
             <name>Artifactory_DMZ-snapshots</name>
             <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
         </snapshotRepository>
