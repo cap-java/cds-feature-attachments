@@ -43,6 +43,13 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
 
+      - name: Upload Changed Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: root
+          path: .
+          retention-days: 1
+
   deploy:
     name: Build and Deploy to Artifactory
     runs-on: ubuntu-latest
