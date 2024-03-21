@@ -2,9 +2,6 @@ name: Maven Deploy
 description: "Deploys a Maven package to a repository."
 
 inputs:
-  repository-url:
-    description: "The URL of the repository to upload to."
-    required: true
   repository-id:
     description: "The ID of the repository to upload to."
     required: true
@@ -28,7 +25,6 @@ runs:
   steps:
     - name: Echo Inputs
       run: |
-        echo "repository-url: ${{ inputs.repository-url }}"
         echo "repository-id: ${{ inputs.repository-id }}"
         echo "user: ${{ inputs.user }}"
         echo "password: ${{ inputs.password }}"
@@ -47,7 +43,6 @@ runs:
             -DpomFile=${{ inputs.pom-file-path }} \
             -Dfile=${{ inputs.jar-file-path }} \
             -DrepositoryId=${{ inputs.repository-id }} \
-            -Durl=${{ inputs.repository-url }} \
             -DrepositoryUsername=${{ inputs.user }} \
             -DrepositoryPassword=${{ inputs.password }}
       shell: bash
