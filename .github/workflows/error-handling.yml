@@ -1,0 +1,29 @@
+name: Create Issue on Failure
+
+on:
+  workflow_run:
+    types:
+      - completed
+
+jobs:
+  create_issue:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: Create Issue
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const issue = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "An error occurred in workflow: " + context.workflow,
+              body: "An error occurred in the workflow. Here are the details:\n\n" +
+                    "**Workflow:** " + context.workflow + "\n" +
+                    "**Run ID:** " + context.runId + "\n" +
+                    "**Run Number:** " + context.runNumber + "\n" +
+                    "**Actor:** " + context.actor + "\n" +
+                    "**Job:** " + context.job + "\n" +
+                    "**Link to Run:** https://github.com/" + context.repo.owner + "/" + context.repo.repo + "/actions/runs/" + context.runId
+            };
+            github.rest.issues.create(issue);
