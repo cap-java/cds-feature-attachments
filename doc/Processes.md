@@ -30,6 +30,15 @@ event
 ## Delete
 
 The following overview shows the process of deleting an existing document inside the attachment entity.
+We will not delete the documents directly but only mark them as deleted.
+The reason is that we had input from customers that a possible scenario could be, that do to bugs or other reasons
+databases can be restored with the link to the documents.
+If we would delete the documents directly the documents would be lost.
+
+Because of this we only mark the documents as deleted. So the documents can be moved to a recycle bin or equal
+concepts can be implemented.
+
+If the database is restored an endpoint can be called to restore also the documents.
 
 ### Success
 
