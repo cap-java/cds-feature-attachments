@@ -20,7 +20,7 @@ The following overview shows the process of creating a new document inside the a
 
 ![Create](./img/Create_Success.png)
 
-Independent of draft or no draft process the steps are the same, only the handler will be a different.
+Independent of "draft" or "no draft" process, the steps are the same, only the handler will be a different.
 The handler will be listened to the event `CREATE` or `DRAFT_CREATE` and will be executed when the event is triggered.
 
 The handler call the attachment service for the create event and the handler of the attachment service will
