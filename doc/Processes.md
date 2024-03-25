@@ -5,10 +5,10 @@ The attachment entity itself is handled by the CAP stack as it is a part of the 
 
 The attachment service will have the following events. In this document it is described how these events are called.
 
-- CREATE
-- MARK AS DELETED
-- READ
-- RESTORE DELETED
+- `CREATE`
+- `MARK AS DELETED`
+- `READ`
+- `RESTORE DELETED`
 
 The following chapters will describe the processes for user events and how this match to the attachment service events.
 
