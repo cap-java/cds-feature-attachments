@@ -56,7 +56,7 @@ public class Registration implements CdsRuntimeConfiguration {
 
 	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService, ModifyAttachmentEvent deleteContentEvent) {
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
-		var updateAttachmentEvent = new UpdateAttachmentEvent(attachmentService);
+		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
 		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();
 		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent, doNothingAttachmentEvent);

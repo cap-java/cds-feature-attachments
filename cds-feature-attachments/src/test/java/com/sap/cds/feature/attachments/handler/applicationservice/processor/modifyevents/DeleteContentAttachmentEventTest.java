@@ -44,7 +44,7 @@ class DeleteContentAttachmentEventTest {
 
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isEqualTo(documentId);
-		verify(attachmentService).deleteAttachment(documentId);
+		verify(attachmentService).markAsDeleted(documentId);
 		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
 	}
 

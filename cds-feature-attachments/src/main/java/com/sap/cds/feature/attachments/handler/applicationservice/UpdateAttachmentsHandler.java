@@ -98,7 +98,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 			var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 			var entryExists = condensedUpdatedData.stream().anyMatch(updatedData -> ApplicationHandlerHelper.isKeyInData(keys, updatedData));
 			if (!entryExists) {
-				attachmentService.deleteAttachment((String) path.target().values().get(Attachments.DOCUMENT_ID));
+				attachmentService.markAsDeleted((String) path.target().values().get(Attachments.DOCUMENT_ID));
 			}
 		};
 		ApplicationHandlerHelper.callValidator(entity, exitingDataList, filter, validator);

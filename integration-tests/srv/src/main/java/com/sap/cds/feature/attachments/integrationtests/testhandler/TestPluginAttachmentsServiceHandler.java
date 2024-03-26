@@ -17,11 +17,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
-import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentDeleteEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentUpdateEventContext;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;

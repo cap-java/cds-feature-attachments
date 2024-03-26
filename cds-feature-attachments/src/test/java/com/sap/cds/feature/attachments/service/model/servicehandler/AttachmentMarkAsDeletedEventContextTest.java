@@ -5,13 +5,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class AttachmentDeleteEventContextTest {
+class AttachmentMarkAsDeletedEventContextTest {
 
-	private AttachmentDeleteEventContext cut;
+	private AttachmentMarkAsDeletedEventContext cut;
 
 	@BeforeEach
 	void setup() {
-		cut = AttachmentDeleteEventContext.create();
+		cut = AttachmentMarkAsDeletedEventContext.create();
 	}
 
 	@Test

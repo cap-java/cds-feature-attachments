@@ -12,27 +12,44 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
+import com.sap.cds.ql.cqn.Path;
+import com.sap.cds.ql.cqn.ResolvedSegment;
+import com.sap.cds.reflect.CdsEntity;
 
-class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
+class CreateAttachmentEventTest {
 
+	private static final String TEST_FULL_NAME = "test.full.Name";
+
+	private CreateAttachmentEvent cut;
+
+	private AttachmentService attachmentService;
+	private Path path;
+	private ResolvedSegment target;
+	private CdsEntity entity;
 	private ArgumentCaptor<CreateAttachmentInput> contextArgumentCaptor;
 
 	@BeforeEach
 	void setup() {
-		super.setup();
-		contextArgumentCaptor = ArgumentCaptor.forClass(CreateAttachmentInput.class);
-	}
+		attachmentService = mock(AttachmentService.class);
+		cut = new CreateAttachmentEvent(attachmentService);
 
-	@Override
-	ModifyAttachmentEvent defineCut() {
-		return new CreateAttachmentEvent(attachmentService);
+		contextArgumentCaptor = ArgumentCaptor.forClass(CreateAttachmentInput.class);
+		path = mock(Path.class);
+		target = mock(ResolvedSegment.class);
+		entity = mock(CdsEntity.class);
+		when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
+		when(target.entity()).thenReturn(entity);
+		when(path.target()).thenReturn(target);
 	}
 
 	@Test
@@ -68,7 +85,8 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 		var createInput = contextArgumentCaptor.getValue();
-		assertThat(createInput.attachmentIds()).hasSize(2).containsEntry("ID", attachment.getId()).containsEntry("up__ID", "test");
+		assertThat(createInput.attachmentIds()).hasSize(2).containsEntry("ID", attachment.getId())
+				.containsEntry("up__ID", "test");
 		assertThat(createInput.attachmentEntityName()).isEqualTo(TEST_FULL_NAME);
 		assertThat(createInput.mimeType()).isEqualTo(existingData.get(MediaData.MIME_TYPE));
 		assertThat(createInput.fileName()).isEqualTo(existingData.get(MediaData.FILE_NAME));
@@ -86,6 +104,25 @@ class CreateAttachmentEventTest extends ModifyAttachmentEventTestBase {
 		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()));
 
 		assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	void contentIsReturnedIfNotExternalStored(boolean isExternalStored) throws IOException {
+		var attachment = Attachments.create();
+
+		var testContent = "test content";
+		try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
+			attachment.setContent(testContentStream);
+			attachment.setId(UUID.randomUUID().toString());
+		}
+		when(target.values()).thenReturn(attachment);
+		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "id"));
+
+		var result = cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()));
+
+		var expectedContent = isExternalStored ? attachment.getContent() : null;
+		assertThat(result).isEqualTo(expectedContent);
 	}
 
 	private Attachments prepareAndExecuteEventWithData() throws IOException {

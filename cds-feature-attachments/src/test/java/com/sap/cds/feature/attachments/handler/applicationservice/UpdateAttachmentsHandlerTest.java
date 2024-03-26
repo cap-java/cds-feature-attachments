@@ -324,7 +324,7 @@ class UpdateAttachmentsHandlerTest {
 
 		verify(attachmentsReader).readAttachments(any(), any(), any());
 		verifyNoInteractions(eventFactory);
-		verify(attachmentService).deleteAttachment(attachment.getDocumentId());
+		verify(attachmentService).markAsDeleted(attachment.getDocumentId());
 	}
 
 	@Test

@@ -1,15 +1,15 @@
 package com.sap.cds.feature.attachments.service;
 
 import java.io.InputStream;
+import java.time.Instant;
 
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
-import com.sap.cds.feature.attachments.service.model.service.UpdateAttachmentInput;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentDeleteEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentUpdateEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreDeletedEventContext;
 import com.sap.cds.services.ServiceDelegator;
 
 //TODO add java doc
@@ -49,28 +49,19 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 	}
 
 	@Override
-	public AttachmentModificationResult updateAttachment(UpdateAttachmentInput input) {
-		var updateContext = AttachmentUpdateEventContext.create();
-		updateContext.setDocumentId(input.documentId());
-		updateContext.setAttachmentIds(input.attachmentIds());
-		updateContext.setAttachmentEntityName(input.attachmentEntityName());
-		var mediaData = MediaData.create();
-		mediaData.setFileName(input.fileName());
-		mediaData.setMimeType(input.mimeType());
-		mediaData.setContent(input.content());
-		updateContext.setData(mediaData);
-
-		emit(updateContext);
-
-		return new AttachmentModificationResult(Boolean.TRUE.equals(updateContext.getIsInternalStored()), updateContext.getDocumentId());
-	}
-
-	@Override
-	public void deleteAttachment(String documentId) {
-		var deleteContext = AttachmentDeleteEventContext.create();
+	public void markAsDeleted(String documentId) {
+		var deleteContext = AttachmentMarkAsDeletedEventContext.create();
 		deleteContext.setDocumentId(documentId);
 
 		emit(deleteContext);
+	}
+
+	@Override
+	public void restoreDeleted(Instant restoreTimestamp) {
+		var restoreContext = AttachmentRestoreDeletedEventContext.create();
+		restoreContext.setRestoreTimestamp(restoreTimestamp);
+
+		emit(restoreContext);
 	}
 
 }

@@ -1,10 +1,10 @@
 package com.sap.cds.feature.attachments.service;
 
 import java.io.InputStream;
+import java.time.Instant;
 
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
-import com.sap.cds.feature.attachments.service.model.service.UpdateAttachmentInput;
 import com.sap.cds.services.Service;
 
 /**
@@ -23,19 +23,19 @@ public interface AttachmentService extends Service {
 	String EVENT_CREATE_ATTACHMENT = "CREATE_ATTACHMENT";
 
 	/**
-		* This event is emitted when an attachment shall be updated
-		*/
-	String EVENT_UPDATE_ATTACHMENT = "UPDATE_ATTACHMENT";
-
-	/**
 		* This event is emitted when an attachment shall be uploaded
 		*/
 	String EVENT_READ_ATTACHMENT = "READ_ATTACHMENT";
 
 	/**
+		* This event is emitted when an attachment shall be marked as deleted
+		*/
+	String EVENT_MARK_AS_DELETED = "MARK_ATTACHMENT_AS_DELETED";
+
+	/**
 		* This event is emitted when an attachment shall be uploaded
 		*/
-	String EVENT_DELETE_ATTACHMENT = "DELETE_ATTACHMENT";
+	String EVENT_RESTORE_DELETED = "RESTORE_DELETED_ATTACHMENT";
 
 	/**
 		* Reads attachment based on the given attachment id
@@ -50,11 +50,11 @@ public interface AttachmentService extends Service {
 		* Creates a document with the given parameter
 		*
 		* @param input Contains needed data to store the document like
-		*                - attachmentIds - list of keys for attachment entity
-		*                - attachmentEntityName - full qualified name of the entity in which the attachment will be stored
-		*                - fileName
-		*                - mimeType
-		*                - content (mandatory)
+		*              - attachmentIds - list of keys for attachment entity
+		*              - attachmentEntityName - full qualified name of the entity in which the attachment will be stored
+		*              - fileName
+		*              - mimeType
+		*              - content (mandatory)
 		* @return the result of the storage:
 		* 		- isInternalStored - shows if the document was stored internally, this does not indicate errors, in case of errors ServiceException is thrown
 		* 		- documentId - id of the stored document
@@ -63,28 +63,21 @@ public interface AttachmentService extends Service {
 	AttachmentModificationResult createAttachment(CreateAttachmentInput input);
 
 	/**
-		* Updates a document with the given parameter
-		*
-		* @param input Contains needed data to update and store the attachment like
-		*                - documentId
-		*                - attachmentIds - list of keys for attachment entity
-		*                - attachmentEntityName - full qualified name of the entity in which the attachment will be stored
-		*                - fileName
-		*                - mimeType
-		*                - content (mandatory)
-		* @return the result of the storage:
-		* 		- isInternalStored - shows if the document was stored internally, this does not indicate errors, in case of errors ServiceException is thrown
-		* 		- documentId - id of the stored document
-		* @throws com.sap.cds.services.ServiceException Exception to be thrown in case of errors during accessing the attachment
-		*/
-	AttachmentModificationResult updateAttachment(UpdateAttachmentInput input);
-
-	/**
-		* Delete an attachment based on the given attachment id
+		* Marks an attachment as deleted based on the given attachment id
+		* The attachment will not be deleted physically, but marked as deleted
 		*
 		* @param documentId The document id of the document which shall be deleted
 		* @throws com.sap.cds.services.ServiceException Exception to be thrown in case of errors during accessing the attachment
 		*/
-	void deleteAttachment(String documentId);
+	void markAsDeleted(String documentId);
+
+	/**
+		* Marks an attachment as deleted based on the given attachment id
+		* The attachment will not be deleted physically, but marked as deleted
+		*
+		* @param restoreTimestamp The timestamp from which the documents shall be restored, every document which was deleted after or equal this timestamp will be restored
+		* @throws com.sap.cds.services.ServiceException Exception to be thrown in case of errors during processing
+		*/
+	void restoreDeleted(Instant restoreTimestamp);
 
 }
