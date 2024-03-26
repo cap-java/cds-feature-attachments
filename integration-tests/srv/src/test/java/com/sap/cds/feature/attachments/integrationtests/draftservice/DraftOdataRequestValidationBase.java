@@ -215,7 +215,7 @@ abstract class DraftOdataRequestValidationBase {
 		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachments().get(0).getContent(), newAttachmentContent);
 		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0)
 																		.getContent(), newAttachmentEntityContent);
-		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_DELETE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
+		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT);
 		verifyTwoUpdateEvents(newAttachmentContent, attachmentDocumentId, newAttachmentEntityContent, attachmentEntityDocumentId);
 	}
 

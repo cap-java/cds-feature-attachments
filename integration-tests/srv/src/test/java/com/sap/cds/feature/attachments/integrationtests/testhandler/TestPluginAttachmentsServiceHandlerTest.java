@@ -14,9 +14,8 @@ import org.junit.jupiter.api.Test;
 
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentDeleteEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentUpdateEventContext;
 
 class TestPluginAttachmentsServiceHandlerTest {
 
@@ -56,22 +55,10 @@ class TestPluginAttachmentsServiceHandlerTest {
 
 	@Test
 	void dummyTestForDelete() {
-		var context = AttachmentDeleteEventContext.create();
+		var context = AttachmentMarkAsDeletedEventContext.create();
 		context.setDocumentId("test");
 
 		assertDoesNotThrow(() -> cut.deleteAttachment(context));
-	}
-
-	@Test
-	void dummyTestForUpdate() throws IOException {
-		var context = AttachmentUpdateEventContext.create();
-		context.setData(MediaData.create());
-		var stream = mock(InputStream.class);
-		when(stream.readAllBytes()).thenReturn("test".getBytes(StandardCharsets.UTF_8));
-		context.getData().setContent(stream);
-		context.setDocumentId("test");
-
-		assertDoesNotThrow(() -> cut.updateAttachment(context));
 	}
 
 	@Test

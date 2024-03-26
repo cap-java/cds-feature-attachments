@@ -359,8 +359,8 @@ abstract class OdataRequestValidationBase {
 		MvcResult mvcResult = requestHelper.executeDelete(url);
 
 		assertThat(mvcResult.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-		verifyNumberOfEvents(AttachmentService.EVENT_DELETE_ATTACHMENT, 1);
-		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_UPDATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
+		verifyNumberOfEvents(AttachmentService.EVENT_MARK_AS_DELETED, 1);
+		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
 	}
 
 	@Test
