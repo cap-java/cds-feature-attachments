@@ -12,6 +12,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.UpdateAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.DefaultListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
@@ -20,6 +21,7 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.DefaultAttachmentsService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.services.handler.EventHandler;
+import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
@@ -36,11 +38,16 @@ public class Registration implements CdsRuntimeConfiguration {
 	public void eventHandlers(CdsRuntimeConfigurer configurer) {
 		configurer.eventHandler(new DefaultAttachmentsServiceHandler());
 
-		var persistenceService = configurer.getCdsRuntime().getServiceCatalog().getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
-		var attachmentService = configurer.getCdsRuntime().getServiceCatalog().getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
+		var persistenceService = configurer.getCdsRuntime().getServiceCatalog()
+																													.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
+		var attachmentService = configurer.getCdsRuntime().getServiceCatalog()
+																												.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
+		var outbox = configurer.getCdsRuntime().getServiceCatalog()
+																	.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
+		var outboxedAttachmentService = outbox.outboxed(attachmentService);
 
 		var deleteContentEvent = new DeleteContentAttachmentEvent(attachmentService);
-		var factory = buildAttachmentEventFactory(attachmentService, deleteContentEvent);
+		var factory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);
 		var attachmentsReader = buildAttachmentsReader(persistenceService);
 
 		configurer.eventHandler(buildCreateHandler(factory));
@@ -54,8 +61,9 @@ public class Registration implements CdsRuntimeConfiguration {
 		return new DefaultAttachmentsService();
 	}
 
-	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService, ModifyAttachmentEvent deleteContentEvent) {
-		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService);
+	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService, ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
+		var listenerProvider = new DefaultListenerProvider();
+		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, outboxedAttachmentService, listenerProvider);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
 		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();

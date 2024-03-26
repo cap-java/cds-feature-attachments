@@ -19,6 +19,7 @@ import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsService
 import com.sap.cds.services.Service;
 import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.handler.EventHandler;
+import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntime;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
@@ -30,6 +31,7 @@ class RegistrationTest {
 	private ServiceCatalog serviceCatalog;
 	private PersistenceService persistenceService;
 	private AttachmentService attachmentService;
+	private OutboxService outboxService;
 	private ArgumentCaptor<Service> serviceArgumentCaptor;
 	private ArgumentCaptor<EventHandler> handlerArgumentCaptor;
 
@@ -44,6 +46,7 @@ class RegistrationTest {
 		when(cdsRuntime.getServiceCatalog()).thenReturn(serviceCatalog);
 		persistenceService = mock(PersistenceService.class);
 		attachmentService = mock(AttachmentService.class);
+		outboxService = mock(OutboxService.class);
 		serviceArgumentCaptor = ArgumentCaptor.forClass(Service.class);
 		handlerArgumentCaptor = ArgumentCaptor.forClass(EventHandler.class);
 	}
@@ -61,6 +64,7 @@ class RegistrationTest {
 	void handlersAreRegistered() {
 		when(serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME)).thenReturn(persistenceService);
 		when(serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME)).thenReturn(attachmentService);
+		when(serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME)).thenReturn(outboxService);
 
 		cut.eventHandlers(configurer);
 
