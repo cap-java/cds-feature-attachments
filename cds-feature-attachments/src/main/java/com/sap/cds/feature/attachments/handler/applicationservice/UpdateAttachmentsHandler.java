@@ -56,7 +56,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
 		var condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
 		if (!isMediaEntity(target) || data.size() == attachments.size()) {
-			ModifyApplicationHandlerHelper.uploadAttachmentForEntity(target, data, condensedAttachments, eventFactory);
+			ModifyApplicationHandlerHelper.uploadAttachmentForEntity(target, data, condensedAttachments, eventFactory, context);
 		}
 
 		if (!associationsAreUnchanged) {
@@ -65,7 +65,8 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	}
 
 	private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
-		return entity.associations().noneMatch(association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
+		return entity.associations()
+											.noneMatch(association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
 	}
 
 	private CqnFilterableStatement getSelect(CdsEntity entity, CqnUpdate update, List<CdsData> data) {
@@ -96,7 +97,8 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Validator validator = (path, element, value) -> {
 			var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
-			var entryExists = condensedUpdatedData.stream().anyMatch(updatedData -> ApplicationHandlerHelper.isKeyInData(keys, updatedData));
+			var entryExists = condensedUpdatedData.stream()
+																							.anyMatch(updatedData -> ApplicationHandlerHelper.isKeyInData(keys, updatedData));
 			if (!entryExists) {
 				attachmentService.markAsDeleted((String) path.target().values().get(Attachments.DOCUMENT_ID));
 			}

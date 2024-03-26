@@ -10,13 +10,14 @@ import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attac
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.EventContext;
 
 public final class ModifyApplicationHandlerHelper {
 
 	private ModifyApplicationHandlerHelper() {
 	}
 
-	public static void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, List<CdsData> existingDataList, ModifyAttachmentEventFactory eventFactory) {
+	public static void uploadAttachmentForEntity(CdsEntity entity, List<CdsData> data, List<CdsData> existingDataList, ModifyAttachmentEventFactory eventFactory, EventContext eventContext) {
 		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
 			var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
@@ -25,7 +26,7 @@ public final class ModifyApplicationHandlerHelper {
 			var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
 
 			var eventToProcess = eventFactory.getEvent(value, documentId, documentIdExists, oldData);
-			return eventToProcess.processEvent(path, element, value, oldData, keys);
+			return eventToProcess.processEvent(path, element, value, oldData, keys, eventContext);
 		};
 		ApplicationHandlerHelper.callProcessor(entity, data, filter, converter);
 	}

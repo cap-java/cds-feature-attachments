@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import com.sap.cds.CdsData;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
+import com.sap.cds.services.EventContext;
 
 class UpdateAttachmentEventTest {
 
@@ -37,11 +38,12 @@ class UpdateAttachmentEventTest {
 		var testContentStream = mock(InputStream.class);
 		var existingData = CdsData.create();
 		Map<String, Object> keys = Map.of("ID", UUID.randomUUID().toString());
+		var eventContext = mock(EventContext.class);
 
-		cut.processEvent(path, element, testContentStream, existingData, keys);
+		cut.processEvent(path, element, testContentStream, existingData, keys, eventContext);
 
-		verify(createEvent).processEvent(path, element, testContentStream, existingData, keys);
-		verify(deleteEvent).processEvent(path, element, testContentStream, existingData, keys);
+		verify(createEvent).processEvent(path, element, testContentStream, existingData, keys, eventContext);
+		verify(deleteEvent).processEvent(path, element, testContentStream, existingData, keys, eventContext);
 	}
 
 }

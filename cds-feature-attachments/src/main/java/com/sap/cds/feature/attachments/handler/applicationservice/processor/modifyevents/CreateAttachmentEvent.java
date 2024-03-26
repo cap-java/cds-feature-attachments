@@ -10,6 +10,7 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
+import com.sap.cds.services.EventContext;
 
 public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
@@ -20,7 +21,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 	}
 
 	@Override
-	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds) {
+	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds, EventContext eventContext) {
 		var values = path.target().values();
 		var mimeTypeOptional = ModifyAttachmentEventHelper.getFieldValue(MediaData.MIME_TYPE, values, existingData);
 		var fileNameOptional = ModifyAttachmentEventHelper.getFieldValue(MediaData.FILE_NAME, values, existingData);

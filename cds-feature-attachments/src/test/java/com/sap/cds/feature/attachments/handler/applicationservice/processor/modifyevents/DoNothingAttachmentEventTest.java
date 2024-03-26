@@ -17,6 +17,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.sap.cds.CdsData;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
+import com.sap.cds.services.EventContext;
 
 class DoNothingAttachmentEventTest {
 	private DoNothingAttachmentEvent cut;
@@ -37,7 +38,7 @@ class DoNothingAttachmentEventTest {
 		var data = mock(CdsData.class);
 		var ids = new HashMap<String, Object>();
 
-		var result = cut.processEvent(path, element, streamInput, data, ids);
+		var result = cut.processEvent(path, element, streamInput, data, ids, mock(EventContext.class));
 
 		assertThat(result).isEqualTo(streamInput);
 		verifyNoInteractions(path, element, data);

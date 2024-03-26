@@ -77,7 +77,7 @@ class DeleteAttachmentsHandlerTest {
 
 		cut.processBefore(context);
 
-		verify(modifyAttachmentEvent).processEvent(any(), eq(entity.getElement(Attachment.CONTENT)), eq(inputStream), eq(data), eq(Map.of("ID", data.getId())));
+		verify(modifyAttachmentEvent).processEvent(any(), eq(entity.getElement(Attachment.CONTENT)), eq(inputStream), eq(data), eq(Map.of("ID", data.getId())), eq(context));
 		assertThat(data.getContent()).isNull();
 	}
 
@@ -97,8 +97,8 @@ class DeleteAttachmentsHandlerTest {
 
 		cut.processBefore(context);
 
-		verify(modifyAttachmentEvent).processEvent(any(Path.class), any(), eq(inputStream), eq(attachment1), eq(Map.of("ID", attachment1.getId())));
-		verify(modifyAttachmentEvent).processEvent(any(Path.class), any(), eq(inputStream), eq(attachment2), eq(Map.of("ID", attachment2.getId())));
+		verify(modifyAttachmentEvent).processEvent(any(Path.class), any(), eq(inputStream), eq(attachment1), eq(Map.of("ID", attachment1.getId())), eq(context));
+		verify(modifyAttachmentEvent).processEvent(any(Path.class), any(), eq(inputStream), eq(attachment2), eq(Map.of("ID", attachment2.getId())), eq(context));
 		assertThat(attachment1.getContent()).isNull();
 		assertThat(attachment2.getContent()).isNull();
 	}

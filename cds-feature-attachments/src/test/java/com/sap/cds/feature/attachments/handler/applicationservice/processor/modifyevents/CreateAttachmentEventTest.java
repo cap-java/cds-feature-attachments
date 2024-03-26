@@ -25,6 +25,7 @@ import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInp
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.EventContext;
 
 class CreateAttachmentEventTest {
 
@@ -81,7 +82,7 @@ class CreateAttachmentEventTest {
 		existingData.put(MediaData.FILE_NAME, "some file name");
 		existingData.put(MediaData.MIME_TYPE, "some mime type");
 
-		cut.processEvent(path, null, attachment.getContent(), existingData, Map.of("ID", attachment.getId(), "up__ID", "test"));
+		cut.processEvent(path, null, attachment.getContent(), existingData, Map.of("ID", attachment.getId(), "up__ID", "test"), mock(EventContext.class));
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 		var createInput = contextArgumentCaptor.getValue();
@@ -101,7 +102,7 @@ class CreateAttachmentEventTest {
 		when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
 		when(target.values()).thenReturn(attachment);
 
-		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()));
+		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()), mock(EventContext.class));
 
 		assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
 	}
@@ -119,7 +120,7 @@ class CreateAttachmentEventTest {
 		when(target.values()).thenReturn(attachment);
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "id"));
 
-		var result = cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()));
+		var result = cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()), mock(EventContext.class));
 
 		var expectedContent = isExternalStored ? attachment.getContent() : null;
 		assertThat(result).isEqualTo(expectedContent);
@@ -138,7 +139,7 @@ class CreateAttachmentEventTest {
 		when(target.values()).thenReturn(attachment);
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 
-		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()));
+		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()), mock(EventContext.class));
 		return attachment;
 	}
 

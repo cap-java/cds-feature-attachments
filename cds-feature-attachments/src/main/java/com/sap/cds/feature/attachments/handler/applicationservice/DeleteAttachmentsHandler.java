@@ -32,7 +32,9 @@ public class DeleteAttachmentsHandler implements EventHandler {
 	public void processBefore(CdsDeleteEventContext context) {
 		var attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn());
 		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
-		Converter converter = (path, element, value) -> deleteContentAttachmentEvent.processEvent(path, element, value, CdsData.create(path.target().values()), path.target().keys());
+		Converter converter = (path, element, value) -> deleteContentAttachmentEvent.processEvent(path, element, value, CdsData.create(path.target()
+																																																																																																																																			.values()), path.target()
+																																																																																																																																																	.keys(), context);
 		ApplicationHandlerHelper.callProcessor(context.getTarget(), attachments, filter, converter);
 	}
 

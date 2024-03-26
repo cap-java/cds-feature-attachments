@@ -5,6 +5,7 @@ import java.util.Map;
 import com.sap.cds.CdsData;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
+import com.sap.cds.services.EventContext;
 
 public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
@@ -17,9 +18,9 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 	}
 
 	@Override
-	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds) {
-		deleteAttachmentEvent.processEvent(path, element, value, existingData, attachmentIds);
-		return createAttachmentEvent.processEvent(path, element, value, existingData, attachmentIds);
+	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds, EventContext eventContext) {
+		deleteAttachmentEvent.processEvent(path, element, value, existingData, attachmentIds, eventContext);
+		return createAttachmentEvent.processEvent(path, element, value, existingData, attachmentIds, eventContext);
 	}
 
 }

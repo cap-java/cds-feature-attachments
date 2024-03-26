@@ -8,6 +8,7 @@ import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
+import com.sap.cds.services.EventContext;
 
 public class DeleteContentAttachmentEvent implements ModifyAttachmentEvent {
 
@@ -18,7 +19,7 @@ public class DeleteContentAttachmentEvent implements ModifyAttachmentEvent {
 	}
 
 	@Override
-	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds) {
+	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds, EventContext eventContext) {
 		if (ApplicationHandlerHelper.doesDocumentIdExistsBefore(existingData)) {
 			attachmentService.markAsDeleted((String) existingData.get(Attachments.DOCUMENT_ID));
 		}
