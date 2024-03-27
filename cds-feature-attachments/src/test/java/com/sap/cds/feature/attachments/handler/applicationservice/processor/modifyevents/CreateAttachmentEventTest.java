@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -95,7 +94,7 @@ class CreateAttachmentEventTest {
 		existingData.put(MediaData.FILE_NAME, "some file name");
 		existingData.put(MediaData.MIME_TYPE, "some mime type");
 
-		cut.processEvent(path, null, attachment.getContent(), existingData, Map.of("ID", attachment.getId(), "up__ID", "test"), eventContext);
+		cut.processEvent(path, attachment.getContent(), existingData, eventContext);
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 		var createInput = contextArgumentCaptor.getValue();
@@ -115,7 +114,7 @@ class CreateAttachmentEventTest {
 		when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
 		when(target.values()).thenReturn(attachment);
 
-		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()), eventContext);
+		cut.processEvent(path, attachment.getContent(), CdsData.create(), eventContext);
 
 		assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
 	}
@@ -129,7 +128,7 @@ class CreateAttachmentEventTest {
 		when(listenerProvider.provideListener(documentId, runtime, outboxedAttachmentService)).thenReturn(listener);
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, documentId));
 
-		cut.processEvent(path, null, null, CdsData.create(), Map.of("ID", UUID.randomUUID().toString()), eventContext);
+		cut.processEvent(path, null, CdsData.create(), eventContext);
 
 		verify(changeSetContext).register(listener);
 	}
@@ -147,7 +146,7 @@ class CreateAttachmentEventTest {
 		when(target.values()).thenReturn(attachment);
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "id"));
 
-		var result = cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()), eventContext);
+		var result = cut.processEvent(path, attachment.getContent(), CdsData.create(), eventContext);
 
 		var expectedContent = isExternalStored ? attachment.getContent() : null;
 		assertThat(result).isEqualTo(expectedContent);
@@ -166,7 +165,7 @@ class CreateAttachmentEventTest {
 		when(target.values()).thenReturn(attachment);
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
 
-		cut.processEvent(path, null, attachment.getContent(), CdsData.create(), Map.of("ID", attachment.getId()), eventContext);
+		cut.processEvent(path, attachment.getContent(), CdsData.create(), eventContext);
 		return attachment;
 	}
 

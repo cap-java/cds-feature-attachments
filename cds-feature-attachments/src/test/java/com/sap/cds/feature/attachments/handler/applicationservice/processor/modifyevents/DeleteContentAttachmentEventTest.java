@@ -41,7 +41,7 @@ class DeleteContentAttachmentEventTest {
 		var data = Attachments.create();
 		data.setDocumentId(documentId);
 
-		var expectedValue = cut.processEvent(path, null, value, data, null, mock(EventContext.class));
+		var expectedValue = cut.processEvent(path, value, data, mock(EventContext.class));
 
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isEqualTo(documentId);
@@ -54,7 +54,7 @@ class DeleteContentAttachmentEventTest {
 		var value = "test";
 		var data = Attachments.create();
 
-		var expectedValue = cut.processEvent(path, null, value, data, null, mock(EventContext.class));
+		var expectedValue = cut.processEvent(path, value, data, mock(EventContext.class));
 
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isNull();

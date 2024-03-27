@@ -5,7 +5,6 @@ import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Objects;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -36,13 +35,11 @@ class DoNothingAttachmentEventTest {
 		var path = mock(Path.class);
 		var element = mock(CdsElement.class);
 		var data = mock(CdsData.class);
-		var ids = new HashMap<String, Object>();
 
-		var result = cut.processEvent(path, element, streamInput, data, ids, mock(EventContext.class));
+		var result = cut.processEvent(path, streamInput, data, mock(EventContext.class));
 
 		assertThat(result).isEqualTo(streamInput);
 		verifyNoInteractions(path, element, data);
-		assertThat(ids).isEmpty();
 	}
 
 }

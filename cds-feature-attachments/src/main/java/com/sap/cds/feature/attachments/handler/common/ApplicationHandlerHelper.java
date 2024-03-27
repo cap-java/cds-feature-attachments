@@ -22,10 +22,11 @@ import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
+import com.sap.cds.services.draft.Drafts;
 
 public final class ApplicationHandlerHelper {
 
-	public static final String DRAFT_ENTITY_ACTIVE_FIELD = "IsActiveEntity";
+	public static final String DRAFT_ENTITY_ACTIVE_FIELD = Drafts.IS_ACTIVE_ENTITY;
 
 	private ApplicationHandlerHelper() {
 	}

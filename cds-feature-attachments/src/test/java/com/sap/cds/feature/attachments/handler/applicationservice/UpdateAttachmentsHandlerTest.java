@@ -139,7 +139,7 @@ class UpdateAttachmentsHandlerTest {
 		attachment.setFileName("test.txt");
 		attachment.setContent(null);
 		attachment.setId(id);
-		when(event.processEvent(any(), any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
+		when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));
 		when(attachmentsReader.readAttachments(any(), any(), any())).thenReturn(List.of(attachment));
 
 		List<CdsData> input = List.of(attachment);
@@ -160,8 +160,7 @@ class UpdateAttachmentsHandlerTest {
 		verify(eventFactory).getEvent(eq(testStream), eq(null), eq(false), cdsDataArgumentCaptor.capture());
 		assertThat(cdsDataArgumentCaptor.getValue()).isEqualTo(root.getAttachmentTable().get(0));
 		cdsDataArgumentCaptor.getAllValues().clear();
-		Map<String, Object> expectedKeyMap = getAttachmentKeyMap(root.getAttachmentTable().get(0));
-		verify(event).processEvent(any(), any(), eq(testStream), cdsDataArgumentCaptor.capture(), eq(expectedKeyMap), eq(updateContext));
+		verify(event).processEvent(any(), eq(testStream), cdsDataArgumentCaptor.capture(), eq(updateContext));
 	}
 
 	@Test

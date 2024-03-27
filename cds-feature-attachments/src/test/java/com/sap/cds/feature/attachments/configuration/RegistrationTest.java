@@ -13,7 +13,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachme
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.draftservice.DraftAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.services.Service;
@@ -76,7 +76,7 @@ class RegistrationTest {
 		isHandlerForClassIncluded(handlers, UpdateAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, DeleteAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, ReadAttachmentsHandler.class);
-		isHandlerForClassIncluded(handlers, DraftAttachmentsHandler.class);
+		isHandlerForClassIncluded(handlers, DraftPatchAttachmentsHandler.class);
 	}
 
 	private void isHandlerForClassIncluded(List<EventHandler> handlers, Class<? extends EventHandler> includedClass) {

@@ -16,7 +16,8 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.tran
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
-import com.sap.cds.feature.attachments.handler.draftservice.DraftAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.TestDraftHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.DefaultAttachmentsService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
@@ -47,14 +48,15 @@ public class Registration implements CdsRuntimeConfiguration {
 		var outboxedAttachmentService = outbox.outboxed(attachmentService);
 
 		var deleteContentEvent = new DeleteContentAttachmentEvent(outboxedAttachmentService);
-		var factory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);
+		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);
 		var attachmentsReader = buildAttachmentsReader(persistenceService);
 
-		configurer.eventHandler(buildCreateHandler(factory));
-		configurer.eventHandler(buildUpdateHandler(factory, attachmentsReader, outboxedAttachmentService));
+		configurer.eventHandler(buildCreateHandler(eventFactory));
+		configurer.eventHandler(buildUpdateHandler(eventFactory, attachmentsReader, outboxedAttachmentService));
 		configurer.eventHandler(buildDeleteHandler(attachmentsReader, deleteContentEvent));
 		configurer.eventHandler(buildReadHandler(attachmentService));
-		configurer.eventHandler(new DraftAttachmentsHandler());
+		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
+		configurer.eventHandler(new TestDraftHandler());
 	}
 
 	private AttachmentService buildAttachmentService() {
