@@ -14,7 +14,8 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
-import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
@@ -50,13 +51,15 @@ class DraftPatchAttachmentsHandlerTest {
 
 	@Test
 	void documentIdIsSetToNullForMediaEntity() {
-		getEntityAndMockContext(Items_.CDS_NAME);
+		getEntityAndMockContext(RootTable_.CDS_NAME);
 		var items = Items.create();
 		var attachments = Attachments.create();
 		attachments.setContent(mock(InputStream.class));
 		items.setAttachments(List.of(attachments));
+		var root = RootTable.create();
+		root.setItemTable(List.of(items));
 
-		cut.processBeforeDraftPatch(eventContext, List.of(items));
+		cut.processBeforeDraftPatch(eventContext, List.of(root));
 
 		assertThat(attachments).containsEntry(Attachments.DOCUMENT_ID, null);
 	}

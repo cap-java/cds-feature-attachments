@@ -134,9 +134,9 @@ class ReadAttachmentsHandlerTest {
 			item5.setId("item id4");
 			item5.setAttachments(List.of(attachmentWithStreamContentButWithoutDocumentId));
 			var root1 = RootTable.create();
-			root1.setItems(List.of(item2, item1, item4, item5));
+			root1.setItemTable(List.of(item2, item1, item4, item5));
 			var root2 = RootTable.create();
-			root2.setItems(List.of(item3));
+			root2.setItemTable(List.of(item3));
 
 			var select = Select.from(RootTable_.class);
 			mockEventContext(RootTable_.CDS_NAME, select);

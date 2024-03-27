@@ -74,6 +74,13 @@
                             </includes>
                         </fileset>
                         <fileset>
+                            <directory>src/test/resources/gen</directory>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                        <fileset>
                             <directory>./</directory>
                             <includes>
                                 <include>.flattened-pom.xml</include>
@@ -162,8 +169,8 @@
                         <configuration>
                             <workingDirectory>./src/test/resources/cds</workingDirectory>
                             <commands>
-                                <command>compile schema.cds -2 csn > csn.json</command>
-                                <command>compile schema.cds -2 sql > ../schema.sql</command>
+                                <command>build --for java --src . --dest ../../gen</command>
+                                <command>compile index.cds -2 sql > ../schema.sql</command>
                             </commands>
                             <skip>${skipDuringDeploy}</skip>
                         </configuration>
@@ -179,7 +186,8 @@
                             </codeOutputDirectory>
                             <basePackage>${generation-package}.test.cds4j</basePackage>
                             <testSources>true</testSources>
-                            <csnFile>${project.basedir}/src/test/resources/cds/csn.json</csnFile>
+                            <csnFile>${project.basedir}/src/test/resources/gen/src/main/resources/edmx/csn.json
+                            </csnFile>
                             <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>

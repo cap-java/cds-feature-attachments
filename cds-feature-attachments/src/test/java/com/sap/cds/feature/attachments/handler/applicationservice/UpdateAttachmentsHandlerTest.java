@@ -158,7 +158,7 @@ class UpdateAttachmentsHandlerTest {
 		cut.processBefore(updateContext, List.of(root));
 
 		verify(eventFactory).getEvent(eq(testStream), eq(null), eq(false), cdsDataArgumentCaptor.capture());
-		assertThat(cdsDataArgumentCaptor.getValue()).isEqualTo(root.getAttachmentTable().get(0));
+		assertThat(cdsDataArgumentCaptor.getValue()).isEqualTo(root.getAttachments().get(0));
 		cdsDataArgumentCaptor.getAllValues().clear();
 		verify(event).processEvent(any(), eq(testStream), cdsDataArgumentCaptor.capture(), eq(updateContext));
 	}
@@ -185,7 +185,7 @@ class UpdateAttachmentsHandlerTest {
 		var attachment = Attachments.create();
 		var testStream = mock(InputStream.class);
 		attachment.setContent(testStream);
-		root.setAttachmentTable(List.of(attachment));
+		root.setAttachments(List.of(attachment));
 
 		List<CdsData> roots = List.of(root);
 		assertDoesNotThrow(() -> cut.processBefore(updateContext, roots));
@@ -294,7 +294,7 @@ class UpdateAttachmentsHandlerTest {
 
 		var root = RootTable.create();
 		root.setId(id);
-		root.setAttachmentTable(Collections.emptyList());
+		root.setAttachments(Collections.emptyList());
 
 		cut.processBefore(updateContext, List.of(root));
 
@@ -309,14 +309,14 @@ class UpdateAttachmentsHandlerTest {
 
 		var root = RootTable.create();
 		root.setId(id);
-		root.setAttachmentTable(Collections.emptyList());
+		root.setAttachments(Collections.emptyList());
 
 		var attachment = Attachments.create();
 		attachment.setId(UUID.randomUUID().toString());
 		attachment.setContent(mock(InputStream.class));
 		attachment.setDocumentId("document id");
 		var existingRoot = RootTable.create();
-		existingRoot.setAttachmentTable(List.of(attachment));
+		existingRoot.setAttachments(List.of(attachment));
 		when(attachmentsReader.readAttachments(any(), any(), any())).thenReturn(List.of(existingRoot));
 
 		cut.processBefore(updateContext, List.of(root));
@@ -352,7 +352,7 @@ class UpdateAttachmentsHandlerTest {
 		attachment.setId(UUID.randomUUID().toString());
 		attachment.put("up__ID", root.getId());
 		attachment.setContent(testStream);
-		root.setAttachmentTable(List.of(attachment));
+		root.setAttachments(List.of(attachment));
 		return root;
 	}
 

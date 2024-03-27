@@ -28,22 +28,12 @@ entity Events {
     key id2        : Integer;
         content    : String(100);
         items      : Association to many Items;
-        itemsCompo : Composition of many Items;
+        itemsCompo : Association to many Items;
         eventItems : Composition of many EventItems;
 }
 
 entity EventItems {
-    key id1  : UUID;
-        note : String;
-}
-
-service TestService {
-    @odata.draft.enabled
-    entity RootTable as
-        projection on Roots {
-            ID,
-            title,
-            itemTable   as items,
-            attachments as attachmentTable
-        };
+    key id1         : UUID;
+        note        : String;
+        attachments : Composition of many Attachments;
 }

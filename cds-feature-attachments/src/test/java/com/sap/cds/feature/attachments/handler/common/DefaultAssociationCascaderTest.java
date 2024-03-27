@@ -46,7 +46,7 @@ class DefaultAssociationCascaderTest {
 		assertThat(rootPath.get(0).associationName()).isEmpty();
 		assertThat(rootPath.get(0).fullEntityName()).isEqualTo(RootTable_.CDS_NAME);
 		assertThat(rootPath.get(0).isMediaType()).isFalse();
-		assertThat(rootPath.get(1).associationName()).isEqualTo(RootTable.ATTACHMENT_TABLE);
+		assertThat(rootPath.get(1).associationName()).isEqualTo(RootTable.ATTACHMENTS);
 		assertThat(rootPath.get(1).fullEntityName()).isEqualTo("unit.test.TestService.RootTable.attachments");
 		assertThat(rootPath.get(1).isMediaType()).isTrue();
 
@@ -55,7 +55,7 @@ class DefaultAssociationCascaderTest {
 		assertThat(itemPath.get(0).associationName()).isEmpty();
 		assertThat(itemPath.get(0).fullEntityName()).isEqualTo(RootTable_.CDS_NAME);
 		assertThat(itemPath.get(0).isMediaType()).isFalse();
-		assertThat(itemPath.get(1).associationName()).isEqualTo(RootTable.ITEMS);
+		assertThat(itemPath.get(1).associationName()).isEqualTo(RootTable.ITEM_TABLE);
 		assertThat(itemPath.get(1).fullEntityName()).isEqualTo(Items_.CDS_NAME);
 		assertThat(itemPath.get(1).isMediaType()).isFalse();
 		assertThat(itemPath.get(2).associationName()).isEqualTo(Items.ATTACHMENTS);

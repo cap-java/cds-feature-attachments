@@ -35,7 +35,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 	public void processBeforeDraftPatch(EventContext context, List<CdsData> data) {
 		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
-			var draftElement = context.getTarget().getTargetOf(SIBLING_ENTITY);
+			var draftElement = path.target().entity().getTargetOf(SIBLING_ENTITY);
 			var select = Select.from(draftElement.getQualifiedName()).matching(path.target().keys());
 			var result = persistence.run(select);
 

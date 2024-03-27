@@ -76,7 +76,7 @@ class CreateAttachmentsHandlerTest {
 		attachment.setFileName("test.txt");
 		attachment.setContent(null);
 		attachment.put("up__ID", "test");
-		roots.setAttachmentTable(List.of(attachment));
+		roots.setAttachments(List.of(attachment));
 		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
 
 		cut.processBefore(createContext, List.of(roots));

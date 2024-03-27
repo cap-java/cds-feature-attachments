@@ -49,7 +49,6 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_MARK_AS_DELETED)
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
 		logger.info(marker, "DELETE Attachment called in dummy handler for document id {}", context.getDocumentId());
-		//		documents.remove(context.getDocumentId());
 		context.setCompleted();
 		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_MARK_AS_DELETED, context));
 	}
