@@ -26,11 +26,6 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 
 	@Override
 	protected void verifyTwoDeleteEvents(AttachmentEntity itemAttachmentEntityAfterChange, Attachments itemAttachmentAfterChange) {
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_CREATE_ATTACHMENT);
 		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
 		assertThat(deleteEvents).hasSize(2);
