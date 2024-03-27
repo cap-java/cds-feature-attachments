@@ -35,6 +35,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 	public void processBeforeDraftPatch(EventContext context, List<CdsData> data) {
 		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
+			//TODO only get sibling if not already draft table `_draft`
 			var draftElement = path.target().entity().getTargetOf(DraftConstants.SIBLING_ENTITY);
 			var select = Select.from(draftElement.getQualifiedName()).matching(path.target().keys());
 			var result = persistence.run(select);
