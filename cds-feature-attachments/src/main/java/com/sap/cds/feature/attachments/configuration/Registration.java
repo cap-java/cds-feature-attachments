@@ -46,12 +46,12 @@ public class Registration implements CdsRuntimeConfiguration {
 																	.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
 		var outboxedAttachmentService = outbox.outboxed(attachmentService);
 
-		var deleteContentEvent = new DeleteContentAttachmentEvent(attachmentService);
+		var deleteContentEvent = new DeleteContentAttachmentEvent(outboxedAttachmentService);
 		var factory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);
 		var attachmentsReader = buildAttachmentsReader(persistenceService);
 
 		configurer.eventHandler(buildCreateHandler(factory));
-		configurer.eventHandler(buildUpdateHandler(factory, attachmentsReader, attachmentService));
+		configurer.eventHandler(buildUpdateHandler(factory, attachmentsReader, outboxedAttachmentService));
 		configurer.eventHandler(buildDeleteHandler(attachmentsReader, deleteContentEvent));
 		configurer.eventHandler(buildReadHandler(attachmentService));
 		configurer.eventHandler(new DraftAttachmentsHandler());
@@ -82,8 +82,8 @@ public class Registration implements CdsRuntimeConfiguration {
 		return new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new);
 	}
 
-	protected EventHandler buildUpdateHandler(ModifyAttachmentEventFactory factory, AttachmentsReader attachmentsReader, AttachmentService attachmentService) {
-		return new UpdateAttachmentsHandler(factory, attachmentsReader, attachmentService);
+	protected EventHandler buildUpdateHandler(ModifyAttachmentEventFactory factory, AttachmentsReader attachmentsReader, AttachmentService outboxedAttachmentService) {
+		return new UpdateAttachmentsHandler(factory, attachmentsReader, outboxedAttachmentService);
 	}
 
 	protected AttachmentsReader buildAttachmentsReader(PersistenceService persistenceService) {

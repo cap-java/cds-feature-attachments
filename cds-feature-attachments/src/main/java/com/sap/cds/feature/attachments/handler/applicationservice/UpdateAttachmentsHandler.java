@@ -34,12 +34,12 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
 	private final ModifyAttachmentEventFactory eventFactory;
 	private final AttachmentsReader attachmentsReader;
-	private final AttachmentService attachmentService;
+	private final AttachmentService outboxedAttachmentService;
 
-	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader, AttachmentService attachmentService) {
+	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader, AttachmentService outboxedAttachmentService) {
 		this.eventFactory = eventFactory;
 		this.attachmentsReader = attachmentsReader;
-		this.attachmentService = attachmentService;
+		this.outboxedAttachmentService = outboxedAttachmentService;
 	}
 
 	@Before(event = CqnService.EVENT_UPDATE)
@@ -100,7 +100,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 			var entryExists = condensedUpdatedData.stream()
 																							.anyMatch(updatedData -> ApplicationHandlerHelper.isKeyInData(keys, updatedData));
 			if (!entryExists) {
-				attachmentService.markAsDeleted((String) path.target().values().get(Attachments.DOCUMENT_ID));
+				outboxedAttachmentService.markAsDeleted((String) path.target().values().get(Attachments.DOCUMENT_ID));
 			}
 		};
 		ApplicationHandlerHelper.callValidator(entity, exitingDataList, filter, validator);

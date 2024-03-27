@@ -1,11 +1,13 @@
 package com.sap.cds.feature.attachments.integrationtests.nondraftservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -384,6 +386,21 @@ abstract class OdataRequestValidationBase {
 		requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
 
 		verifyTwoDeleteEvents(itemAttachmentEntityAfterChange, itemAttachmentAfterChange);
+	}
+
+	@Test
+	void updateOfContentWorks() {
+		fail("not implemented");
+	}
+
+	@Test
+	void errorInTransactionAfterCreateCallsDelete() {
+		Assertions.fail("not implemented");
+	}
+
+	@Test
+	void errorInTransactionAfterUpdateCallsDelete() {
+		Assertions.fail("not implemented");
 	}
 
 	private Items selectItem(Items item) {

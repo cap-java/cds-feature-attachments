@@ -1,6 +1,6 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -28,6 +28,8 @@ import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.changeset.ChangeSetContext;
+import com.sap.cds.services.changeset.ChangeSetListener;
+import com.sap.cds.services.runtime.CdsRuntime;
 
 class CreateAttachmentEventTest {
 
@@ -120,7 +122,16 @@ class CreateAttachmentEventTest {
 
 	@Test
 	void changesetIstRegistered() {
-		fail("not implemented");
+		var documentId = "document id";
+		var runtime = mock(CdsRuntime.class);
+		when(eventContext.getCdsRuntime()).thenReturn(runtime);
+		var listener = mock(ChangeSetListener.class);
+		when(listenerProvider.provideListener(documentId, runtime, outboxedAttachmentService)).thenReturn(listener);
+		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, documentId));
+
+		cut.processEvent(path, null, null, CdsData.create(), Map.of("ID", UUID.randomUUID().toString()), eventContext);
+
+		verify(changeSetContext).register(listener);
 	}
 
 	@ParameterizedTest

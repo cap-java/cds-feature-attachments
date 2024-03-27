@@ -58,7 +58,7 @@ class TestPluginAttachmentsServiceHandlerTest {
 		var context = AttachmentMarkAsDeletedEventContext.create();
 		context.setDocumentId("test");
 
-		assertDoesNotThrow(() -> cut.deleteAttachment(context));
+		assertDoesNotThrow(() -> cut.markAttachmentAsDeleted(context));
 	}
 
 	@Test

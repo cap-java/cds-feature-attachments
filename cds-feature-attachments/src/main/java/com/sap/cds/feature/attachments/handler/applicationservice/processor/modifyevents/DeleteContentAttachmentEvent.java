@@ -12,16 +12,16 @@ import com.sap.cds.services.EventContext;
 
 public class DeleteContentAttachmentEvent implements ModifyAttachmentEvent {
 
-	private final AttachmentService attachmentService;
+	private final AttachmentService outboxedAttachmentService;
 
-	public DeleteContentAttachmentEvent(AttachmentService attachmentService) {
-		this.attachmentService = attachmentService;
+	public DeleteContentAttachmentEvent(AttachmentService outboxedAttachmentService) {
+		this.outboxedAttachmentService = outboxedAttachmentService;
 	}
 
 	@Override
 	public Object processEvent(Path path, CdsElement element, Object value, CdsData existingData, Map<String, Object> attachmentIds, EventContext eventContext) {
 		if (ApplicationHandlerHelper.doesDocumentIdExistsBefore(existingData)) {
-			attachmentService.markAsDeleted((String) existingData.get(Attachments.DOCUMENT_ID));
+			outboxedAttachmentService.markAsDeleted((String) existingData.get(Attachments.DOCUMENT_ID));
 		}
 		path.target().values().put(Attachments.DOCUMENT_ID, null);
 		return value;

@@ -1,6 +1,6 @@
 package com.sap.cds.feature.attachments.integrationtests.draftservice;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
@@ -287,6 +287,21 @@ abstract class DraftOdataRequestValidationBase {
 		var attachmentEntityDocumentId = selectedRoot.getItems().get(0).getAttachmentEntities().get(0).getDocumentId();
 
 		verifyTwoDeleteEvents(attachmentDocumentId, attachmentEntityDocumentId);
+	}
+
+	@Test
+	void draftDiscardRemoveCreatedDocuments() {
+		fail("not implemented");
+	}
+
+	@Test
+	void errorInTransactionAfterCreateCallsDelete() {
+		fail("not implemented");
+	}
+
+	@Test
+	void errorInTransactionAfterUpdateCallsDelete() {
+		fail("not implemented");
 	}
 
 	private DraftRoots deepCreateAndActivate(String testContentAttachment, String testContentAttachmentEntity) throws Exception {
