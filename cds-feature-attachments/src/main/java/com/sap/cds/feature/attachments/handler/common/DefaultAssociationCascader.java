@@ -25,7 +25,7 @@ public class DefaultAssociationCascader implements AssociationCascader {
 		return new ArrayList<>(internalResultList);
 	}
 
-	//TODO refactor and harmonize with ReadAttachmentsHandler
+	//TODO build directly expand structure
 	private List<LinkedList<AssociationIdentifier>> getAttachmentAssociationPath(CdsModel model, CdsEntity entity, String associationName, LinkedList<AssociationIdentifier> firstList, List<String> processedEntities) {
 		var internalResultList = new ArrayList<LinkedList<AssociationIdentifier>>();
 		var currentList = new AtomicReference<LinkedList<AssociationIdentifier>>();

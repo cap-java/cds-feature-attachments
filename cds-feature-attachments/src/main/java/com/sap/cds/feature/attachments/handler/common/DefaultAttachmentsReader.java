@@ -66,6 +66,7 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 					func = item -> item.to(next.associationName()).expand();
 				} else {
 					var finalFunc = func;
+					//TODO use list of expands and not function, see example from draft
 					func = item -> item.to(next.associationName()).expand((Function) finalFunc);
 				}
 			}

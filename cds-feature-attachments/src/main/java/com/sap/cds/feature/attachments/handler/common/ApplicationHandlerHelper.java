@@ -32,7 +32,7 @@ public final class ApplicationHandlerHelper {
 
 	public static boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
 		var isIncluded = new AtomicBoolean();
-
+		//TODO use reuse filter
 		Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)
 																																													&& hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
 		Validator validator = (path, element, value) -> isIncluded.set(true);
@@ -93,6 +93,7 @@ public final class ApplicationHandlerHelper {
 	}
 
 	public static Optional<CqnPredicate> getWhere(CqnFilterableStatement statement) {
+		//TODO anstatt filter die ref nutzen, um alle Filter zu nutzen -> in utils abschauen
 		var filter = getLastSegmentFilter(statement);
 		var where = statement.where();
 		if (filter.isPresent() && where.isPresent()) {

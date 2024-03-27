@@ -51,10 +51,12 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		if (noContentInData && associationsAreUnchanged) {
 			return;
 		}
+		//TODO not needed if media entity direct changed
 		var select = getSelect(target, context.getCqn(), data);
 		var attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
 		var condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
+		//TODO check if data.size() == attachments.size() is needed
 		if (!isMediaEntity(target) || data.size() == attachments.size()) {
 			ModifyApplicationHandlerHelper.uploadAttachmentForEntity(target, data, condensedAttachments, eventFactory);
 		}
@@ -64,6 +66,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		}
 	}
 
+	//TODO only check compositions which contains	attachments, ansonsten könnte es zu oft true sein
 	private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
 		return entity.associations().noneMatch(association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
 	}
@@ -74,6 +77,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		return Select.from(entity.getQualifiedName()).where(resultPredicate);
 	}
 
+	//TODO check for reuse in impl, check with Matthias
 	private CqnPredicate getWhereBasedOfKeyFields(CdsEntity entity, List<CdsData> data) {
 		CqnPredicate resultPredicate;
 		List<CqnPredicate> predicates = new ArrayList<>();
