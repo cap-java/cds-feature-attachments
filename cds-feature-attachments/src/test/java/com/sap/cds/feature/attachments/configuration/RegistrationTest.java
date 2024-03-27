@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachme
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
@@ -68,15 +69,17 @@ class RegistrationTest {
 
 		cut.eventHandlers(configurer);
 
-		verify(configurer, times(6)).eventHandler(handlerArgumentCaptor.capture());
+		var handlerSize = 7;
+		verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
 		var handlers = handlerArgumentCaptor.getAllValues();
-		assertThat(handlers).hasSize(6);
+		assertThat(handlers).hasSize(handlerSize);
 		isHandlerForClassIncluded(handlers, DefaultAttachmentsServiceHandler.class);
 		isHandlerForClassIncluded(handlers, CreateAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, UpdateAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, DeleteAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, ReadAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, DraftPatchAttachmentsHandler.class);
+		isHandlerForClassIncluded(handlers, DraftCancelAttachmentsHandler.class);
 	}
 
 	private void isHandlerForClassIncluded(List<EventHandler> handlers, Class<? extends EventHandler> includedClass) {

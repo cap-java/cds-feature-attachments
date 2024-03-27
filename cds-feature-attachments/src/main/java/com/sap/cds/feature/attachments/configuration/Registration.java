@@ -16,8 +16,8 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.tran
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.draftservice.TestDraftHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.DefaultAttachmentsService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
@@ -56,7 +56,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(buildDeleteHandler(attachmentsReader, deleteContentEvent));
 		configurer.eventHandler(buildReadHandler(attachmentService));
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
-		configurer.eventHandler(new TestDraftHandler());
+		configurer.eventHandler(new DraftCancelAttachmentsHandler());
 	}
 
 	private AttachmentService buildAttachmentService() {

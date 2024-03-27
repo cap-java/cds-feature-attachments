@@ -204,7 +204,6 @@ abstract class DraftOdataRequestValidationBase {
 
 		var newAttachmentContent = "new content attachment";
 		putNewContentForAttachment(newAttachmentContent, selectedRoot.getItems().get(0).getId(), itemAttachment.getId());
-		putNewContentForAttachment(newAttachmentContent, selectedRoot.getItems().get(0).getId(), itemAttachment.getId());
 		var newAttachmentEntityContent = "new content attachmentEntity";
 		putNewContentForAttachmentEntity(newAttachmentEntityContent, itemAttachmentEntity.getId());
 
