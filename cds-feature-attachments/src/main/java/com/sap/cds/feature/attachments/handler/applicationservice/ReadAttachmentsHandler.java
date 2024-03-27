@@ -14,6 +14,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attac
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.model.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnReference.Segment;
@@ -76,7 +77,8 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {
 		var query = entity.query();
-		List<String> entityNames = query.map(cqnSelect -> cqnSelect.from().asRef().segments().stream().map(Segment::id).toList()).orElseGet(() -> List.of(entity.getQualifiedName()));
+		List<String> entityNames = query.map(cqnSelect -> cqnSelect.from().asRef().segments().stream().map(Segment::id)
+																																																						.toList()).orElseGet(() -> List.of(entity.getQualifiedName()));
 		var associationNames = new ArrayList<String>();
 
 		entityNames.forEach(name -> {
@@ -88,14 +90,17 @@ public class ReadAttachmentsHandler implements EventHandler {
 			});
 		});
 
-		Map<String, CdsEntity> annotatedEntitiesMap = entity.elements().filter(element -> element.getType().isAssociation()).collect(Collectors.toMap(CdsElementDefinition::getName, element -> element.getType().as(CdsAssociationType.class).getTarget()));
+		Map<String, CdsEntity> annotatedEntitiesMap = entity.elements().filter(element -> element.getType().isAssociation())
+																																																		.collect(Collectors.toMap(CdsElementDefinition::getName, element -> element.getType()
+																																																																																																																								.as(CdsAssociationType.class)
+																																																																																																																								.getTarget()));
 
 		if (annotatedEntitiesMap.isEmpty()) {
 			return associationNames;
 		}
 
 		for (var associatedElement : annotatedEntitiesMap.entrySet()) {
-			if (!associationNames.contains(associatedElement.getKey()) && !processedEntities.contains(associatedElement.getKey())) {
+			if (!associationNames.contains(associatedElement.getKey()) && !processedEntities.contains(associatedElement.getKey()) && !DraftConstants.SIBLING_ENTITY.equals(associatedElement.getKey())) {
 				processedEntities.add(associatedElement.getKey());
 				var result = getAttachmentAssociations(model, associatedElement.getValue(), associatedElement.getKey(), processedEntities);
 				associationNames.addAll(result);
