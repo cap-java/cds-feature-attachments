@@ -48,6 +48,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 	public void processBefore(CdsReadEventContext context) {
 		var cdsModel = context.getModel();
 		var fieldNames = getAttachmentAssociations(cdsModel, context.getTarget(), "", new ArrayList<>());
+		//TODO use content field name directly
 		if (!fieldNames.isEmpty()) {
 			var resultCqn = CQL.copy(context.getCqn(), provider.getBeforeReadDocumentIdEnhancer(fieldNames));
 			context.setCqn(resultCqn);
