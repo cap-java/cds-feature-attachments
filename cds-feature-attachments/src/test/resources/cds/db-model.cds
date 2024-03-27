@@ -35,5 +35,4 @@ entity Events {
 entity EventItems {
     key id1         : UUID;
         note        : String;
-        attachments : Composition of many Attachments;
 }
