@@ -138,7 +138,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	}
 
 	@Test
-	void documentIdPresentAndExistingNullReturnsNothingToDo() {
+	void documentIdPresentAndExistingIdIsNullReturnsNothingToDo() {
 		var event = cut.getEvent(mock(InputStream.class), "test", true, CdsData.create());
 
 		assertThat(event).isEqualTo(doNothingEvent);
