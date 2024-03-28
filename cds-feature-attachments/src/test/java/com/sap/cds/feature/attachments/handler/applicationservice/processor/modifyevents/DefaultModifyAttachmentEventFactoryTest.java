@@ -137,6 +137,13 @@ class DefaultModifyAttachmentEventFactoryTest {
 		assertThat(event).isEqualTo(deleteContentEvent);
 	}
 
+	@Test
+	void documentIdPresentAndExistingNullReturnsNothingToDo() {
+		var event = cut.getEvent(mock(InputStream.class), "test", true, CdsData.create());
+
+		assertThat(event).isEqualTo(doNothingEvent);
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = {"some document Id"})
 	@NullSource
