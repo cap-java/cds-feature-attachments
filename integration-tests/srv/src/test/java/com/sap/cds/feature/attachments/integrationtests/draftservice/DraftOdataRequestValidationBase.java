@@ -171,6 +171,26 @@ abstract class DraftOdataRequestValidationBase {
 	}
 
 	@Test
+	void createAttachmentAndCancelDraft() throws Exception {
+		var selectedRoot = deepCreateAndActivate("testContent attachment", "testContent attachmentEntity");
+		clearServiceHandlerContext();
+		createNewDraftForExistingRoot(selectedRoot.getId());
+
+		var itemAttachment = selectedRoot.getItems().get(0);
+
+		var newAttachmentContent = "new attachment content";
+		createAttachmentWithContent(newAttachmentContent, itemAttachment.getId());
+		var newAttachmentEntityContent = "new attachmentEntity content";
+		createAttachmentEntityWithContent(newAttachmentEntityContent, itemAttachment);
+
+		cancelDraft(getRootUrl(selectedRoot.getId(), false));
+		var selectedRootAfterCreate = selectStoredData(selectedRoot);
+		assertThat(selectedRootAfterCreate.getItems().get(0).getAttachments()).hasSize(2);
+		assertThat(selectedRootAfterCreate.getItems().get(0).getAttachmentEntities()).hasSize(2);
+		verifyTwoCreateEvents(newAttachmentContent, newAttachmentEntityContent);
+	}
+
+	@Test
 	void deleteContentInDraft() throws Exception {
 		var selectedRoot = deepCreateAndActivate("testContent attachment", "testContent attachmentEntity");
 		clearServiceHandlerContext();
@@ -405,6 +425,10 @@ abstract class DraftOdataRequestValidationBase {
 		var draftActivateUrl = rootUrl + "/TestDraftService.draftActivate";
 		requestHelper.executePostWithMatcher(draftPrepareUrl, "{\"SideEffectsQualifier\":\"\"}", status().isOk());
 		requestHelper.executePostWithMatcher(draftActivateUrl, "{}", status().isOk());
+	}
+
+	private void cancelDraft(String rootUrl) throws Exception {
+		requestHelper.executeDeleteWithMatcher(rootUrl, status().isNoContent());
 	}
 
 	private DraftRoots selectStoredData(DraftRoots responseRoot) {

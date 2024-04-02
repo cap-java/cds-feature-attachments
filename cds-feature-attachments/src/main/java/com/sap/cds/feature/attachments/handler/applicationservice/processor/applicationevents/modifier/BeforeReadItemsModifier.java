@@ -1,8 +1,8 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.modifier;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
@@ -30,9 +30,8 @@ public class BeforeReadItemsModifier implements Modifier {
 	}
 
 	private List<CqnSelectListItem> addDocumentIdItem(List<CqnSelectListItem> list) {
-		List<CqnSelectListItem> newItems = new ArrayList<>();
-		var fieldOptional = getNewFieldForMediaAssociation(ROOT_ASSOCIATION, list);
-		fieldOptional.ifPresent(newItems::add);
+		var fieldsToAdd = getNewFieldForMediaAssociation(ROOT_ASSOCIATION, list);
+		List<CqnSelectListItem> newItems = new ArrayList<>(fieldsToAdd);
 
 		List<CqnSelectListItem> expandedItems = list.stream().filter(CqnSelectListItem::isExpand).toList();
 		newItems.addAll(processExpandedEntities(expandedItems));
@@ -43,11 +42,13 @@ public class BeforeReadItemsModifier implements Modifier {
 		List<CqnSelectListItem> newItems = new ArrayList<>();
 
 		expandedItems.forEach(item -> {
-			List<CqnSelectListItem> newItemsFromExpand = new ArrayList<>(item.asExpand().items().stream().filter(i -> !i.isExpand()).toList());
-			var fieldOptional = getNewFieldForMediaAssociation(item.asExpand().displayName(), newItemsFromExpand);
-			fieldOptional.ifPresent(newItemsFromExpand::add);
+			List<CqnSelectListItem> newItemsFromExpand = new ArrayList<>(item.asExpand().items().stream()
+																																																																		.filter(i -> !i.isExpand()).toList());
+			var fieldsToAdd = getNewFieldForMediaAssociation(item.asExpand().displayName(), newItemsFromExpand);
+			newItemsFromExpand.addAll(fieldsToAdd);
 
-			List<CqnSelectListItem> expandedSubItems = item.asExpand().items().stream().filter(CqnSelectListItem::isExpand).toList();
+			List<CqnSelectListItem> expandedSubItems = item.asExpand().items().stream().filter(CqnSelectListItem::isExpand)
+																																																.toList();
 			var result = processExpandedEntities(expandedSubItems);
 			newItemsFromExpand.addAll(result);
 			var copy = CQL.copy(item.asExpand());
@@ -58,16 +59,17 @@ public class BeforeReadItemsModifier implements Modifier {
 		return newItems;
 	}
 
-	private Optional<CqnSelectListItem> getNewFieldForMediaAssociation(String association, List<CqnSelectListItem> list) {
+	private List<CqnSelectListItem> getNewFieldForMediaAssociation(String association, List<CqnSelectListItem> list) {
 		if (isMediaAssociationAndNeedNewDocumentIdField(association, list)) {
-			return Optional.of(CQL.get(Attachments.DOCUMENT_ID));
+			return List.of(CQL.get(Attachments.DOCUMENT_ID), CQL.get(Attachments.STATUS_CODE));
 		}
-		return Optional.empty();
+		return Collections.emptyList();
 	}
 
 	private boolean isMediaAssociationAndNeedNewDocumentIdField(String association, List<CqnSelectListItem> list) {
-		return mediaAssociations.contains(association) && list.stream().anyMatch(item -> isItemRefFieldWithName(item, MediaData.CONTENT)) &&
-											list.stream().noneMatch(item -> isItemRefFieldWithName(item, Attachments.DOCUMENT_ID));
+		return mediaAssociations.contains(association) && list.stream()
+																																																						.anyMatch(item -> isItemRefFieldWithName(item, MediaData.CONTENT)) && list.stream()
+																																																																																																																														.noneMatch(item -> isItemRefFieldWithName(item, Attachments.DOCUMENT_ID));
 	}
 
 	private boolean isItemRefFieldWithName(CqnSelectListItem item, String fieldName) {

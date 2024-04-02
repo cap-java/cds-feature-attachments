@@ -32,7 +32,6 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 //TODO add Java Doc
-//TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
 public class ReadAttachmentsHandler implements EventHandler {
 
@@ -64,8 +63,9 @@ public class ReadAttachmentsHandler implements EventHandler {
 			Generator generator = (path, element, isNull) -> {
 				if (path.target().values().containsKey(element.getName())) {
 					var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
+					var status = (String) path.target().values().get(Attachments.STATUS_CODE);
 					if (Objects.nonNull(documentId)) {
-						return new LazyProxyInputStream(() -> attachmentService.readAttachment(documentId));
+						return new LazyProxyInputStream(() -> attachmentService.readAttachment(documentId), status);
 					}
 				}
 				return null;

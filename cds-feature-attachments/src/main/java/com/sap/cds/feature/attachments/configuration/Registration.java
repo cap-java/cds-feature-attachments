@@ -56,7 +56,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(buildDeleteHandler(attachmentsReader, deleteContentEvent));
 		configurer.eventHandler(buildReadHandler(attachmentService));
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
-		configurer.eventHandler(new DraftCancelAttachmentsHandler());
+		configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent));
 	}
 
 	private AttachmentService buildAttachmentService() {

@@ -1,6 +1,7 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -10,8 +11,12 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.services.ServiceException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -26,7 +31,7 @@ class LazyProxyInputStreamTest {
 		inputStream = mock(InputStream.class);
 		attachmentService = mock(AttachmentService.class);
 		when(attachmentService.readAttachment(any())).thenReturn(inputStream);
-		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()));
+		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), StatusCode.CLEAN);
 	}
 
 	@Test
@@ -97,6 +102,14 @@ class LazyProxyInputStreamTest {
 		verify(inputStream, times(1)).read();
 		verify(inputStream, times(1)).close();
 		verify(attachmentService).readAttachment(any());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {StatusCode.SCANNING, StatusCode.UNSCANNED, StatusCode.NO_SCANNER, StatusCode.INFECTED})
+	void exceptionIfWrongStatus(String status) {
+		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), status);
+
+		assertThrows(ServiceException.class, () -> cut.read());
 	}
 
 }

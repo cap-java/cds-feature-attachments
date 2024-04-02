@@ -42,12 +42,15 @@ The following overview shows the process of deleting an existing document inside
 We will not delete the documents directly but only mark them as deleted.
 The reason is that we had input from customers that a possible scenario could be, that do to bugs or other reasons
 databases can be restored with the link to the documents.
-If we would delete the documents directly the documents would be lost.
+If we delete the documents directly the documents would be lost.
 
 Because of this we only mark the documents as deleted. So the documents can be moved to a recycle bin or equal
 concepts can be implemented.
 
 If the database is restored an endpoint can be called to restore also the documents.
+
+In case of draft, the delete handler will not be called. It will only be called if the draft is activated.
+If we call the deletion also for draft and the draft is cancelled we could not restore or unmark the document easily.
 
 ### Success
 
@@ -96,9 +99,9 @@ update handler needs to check if a document needs to be created, updated or dele
 
 So the starting point is always the update handler.
 
-## Discard Draft
+## Cancel Draft
 
-The discard draft is the same as a deep delete.
+The cancel draft is the same as a deep delete.
 The process for deletion of a document is the same as for the deletion, but handled in a discard draft handler.
 
 ## Restore Deleted Document
