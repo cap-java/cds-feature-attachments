@@ -18,6 +18,7 @@ import com.sap.cds.ql.cqn.CqnPredicate;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.DraftCancelEventContext;
 import com.sap.cds.services.draft.DraftService;
+import com.sap.cds.services.draft.Drafts;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -55,7 +56,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 																																																																																					.type()) && element.getName()
 																																																																																																			.equals(Attachments.DOCUMENT_ID);
 			Validator validator = (path, element, value) -> {
-				if (Boolean.FALSE.equals(path.target().values().get("HasActiveEntity"))) {
+				if (Boolean.FALSE.equals(path.target().values().get(Drafts.HAS_ACTIVE_ENTITY))) {
 					deleteContentAttachmentEvent.processEvent(path, null, CdsData.create(path.target().values()), context);
 					return;
 				}
@@ -80,7 +81,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 		var keyData = CdsData.create();
 		entity.keyElements().forEach(key -> {
-			if (!DraftConstants.DRAFT_ENTITY_ACTIVE_FIELD.equals(key.getName()) && data.containsKey(key.getName())) {
+			if (!Drafts.IS_ACTIVE_ENTITY.equals(key.getName()) && data.containsKey(key.getName())) {
 				keyData.put(key.getName(), data.get(key.getName()));
 			}
 

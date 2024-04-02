@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import org.assertj.core.api.Assertions;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -363,9 +364,10 @@ abstract class OdataRequestValidationBase {
 
 		assertThat(mvcResult.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
 		if (Objects.nonNull(serviceHandler)) {
+			Awaitility.await().until(() -> serviceHandler.getEventContext().size() == 1);
 			verifyNumberOfEvents(AttachmentService.EVENT_MARK_AS_DELETED, 1);
+			verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
 		}
-		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
 	}
 
 	@Test

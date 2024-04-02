@@ -15,7 +15,6 @@ import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
-import com.sap.cds.feature.attachments.handler.draftservice.DraftConstants;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnPredicate;
@@ -23,6 +22,7 @@ import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
+import com.sap.cds.services.draft.Drafts;
 
 public final class ApplicationHandlerHelper {
 
@@ -105,7 +105,7 @@ public final class ApplicationHandlerHelper {
 	}
 
 	private static boolean isDraftActiveEntityField(String key) {
-		return key.equals(DraftConstants.DRAFT_ENTITY_ACTIVE_FIELD);
+		return key.equals(Drafts.IS_ACTIVE_ENTITY);
 	}
 
 	private static Optional<CqnPredicate> getLastSegmentFilter(CqnFilterableStatement statement) {

@@ -11,7 +11,6 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
-import com.sap.cds.feature.attachments.handler.draftservice.DraftConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Select;
@@ -23,6 +22,7 @@ import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
+import com.sap.cds.services.draft.Drafts;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -85,7 +85,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		data.forEach(d -> {
 			var keyData = CdsData.create();
 			entity.keyElements().forEach(key -> {
-				if (!DraftConstants.DRAFT_ENTITY_ACTIVE_FIELD.equals(key.getName()) && d.containsKey(key.getName())) {
+				if (!Drafts.IS_ACTIVE_ENTITY.equals(key.getName()) && d.containsKey(key.getName())) {
 					keyData.put(key.getName(), d.get(key.getName()));
 				}
 			});
