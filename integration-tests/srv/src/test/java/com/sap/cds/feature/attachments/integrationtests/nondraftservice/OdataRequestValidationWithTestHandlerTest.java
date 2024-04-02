@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -26,6 +27,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 
 	@Override
 	protected void verifyTwoDeleteEvents(AttachmentEntity itemAttachmentEntityAfterChange, Attachments itemAttachmentAfterChange) {
+		waitTillExpectedHandlerMessageSize(2);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_CREATE_ATTACHMENT);
 		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
 		assertThat(deleteEvents).hasSize(2);
@@ -83,6 +85,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 
 	@Override
 	protected void verifySingleDeletionEvent(String documentId) {
+		waitTillExpectedHandlerMessageSize(1);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
 		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
 		assertThat(deleteEvents).hasSize(1).first().satisfies(event -> {
@@ -90,6 +93,10 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 			var deleteContext = (AttachmentMarkAsDeletedEventContext) event.context();
 			assertThat(deleteContext.getDocumentId()).isEqualTo(documentId);
 		});
+	}
+
+	private void waitTillExpectedHandlerMessageSize(int expectedSize) {
+		Awaitility.await().until(() -> serviceHandler.getEventContext().size() == expectedSize);
 	}
 
 	@Override

@@ -21,13 +21,13 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 	}
 
 	@Override
-	public ModifyAttachmentEvent getEvent(Object content, String documentId, boolean documentIdExist, CdsData existingData) {
+	public ModifyAttachmentEvent getEvent(Object content, String documentId, boolean documentIdExist, CdsData existingData, boolean isDraftEntity) {
 		var existingDocumentId = existingData.get(Attachments.DOCUMENT_ID);
-		var event = documentIdExist ? handleExistingDocumentId(content, documentId, existingDocumentId) : handleNonExistingDocumentId(content, existingDocumentId);
+		var event = documentIdExist ? handleExistingDocumentId(content, documentId, existingDocumentId, isDraftEntity) : handleNonExistingDocumentId(content, existingDocumentId, isDraftEntity);
 		return event.orElse(doNothingEvent);
 	}
 
-	private Optional<ModifyAttachmentEvent> handleExistingDocumentId(Object content, String documentId, Object existingDocumentId) {
+	private Optional<ModifyAttachmentEvent> handleExistingDocumentId(Object content, String documentId, Object existingDocumentId, boolean isDraftEntity) {
 		ModifyAttachmentEvent event = null;
 		if (Objects.isNull(documentId) && Objects.isNull(existingDocumentId) && Objects.nonNull(content)) {
 			event = createEvent;
@@ -42,10 +42,13 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 		if (Objects.nonNull(documentId) && documentId.equals(existingDocumentId) && Objects.nonNull(content)) {
 			event = updateEvent;
 		}
+		if (Objects.nonNull(documentId) && Objects.nonNull(existingDocumentId) && !documentId.equals(existingDocumentId) && Objects.isNull(content)) {
+			event = deleteContentEvent;
+		}
 		return Optional.ofNullable(event);
 	}
 
-	private Optional<ModifyAttachmentEvent> handleNonExistingDocumentId(Object content, Object existingDocumentId) {
+	private Optional<ModifyAttachmentEvent> handleNonExistingDocumentId(Object content, Object existingDocumentId, boolean isDraftEntity) {
 		ModifyAttachmentEvent event = null;
 		if (Objects.nonNull(existingDocumentId)) {
 			if (Objects.nonNull(content)) {

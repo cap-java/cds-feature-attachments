@@ -16,6 +16,7 @@ import org.slf4j.MarkerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -42,6 +43,7 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 		var documentId = UUID.randomUUID().toString();
 		documents.put(documentId, context.getData().getContent().readAllBytes());
 		context.setDocumentId(documentId);
+		context.getData().setStatusCode(StatusCode.CLEAN);
 		context.setCompleted();
 		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_CREATE_ATTACHMENT, context));
 	}

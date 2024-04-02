@@ -39,7 +39,7 @@ public class CreateAttachmentsHandler implements EventHandler {
 		}
 
 		setKeysInData(context.getTarget(), data);
-		ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(), eventFactory, context);
+		ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(), eventFactory, context, false);
 	}
 
 	private void setKeysInData(CdsEntity entity, List<CdsData> data) {

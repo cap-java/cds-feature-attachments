@@ -33,28 +33,20 @@ class DefaultModifyAttachmentEventFactoryTest {
 		cut = new DefaultModifyAttachmentEventFactory(createEvent, updateEvent, deleteContentEvent, doNothingEvent);
 	}
 
-	@Test
-	void allNullNothingToDo() {
-		var event = cut.getEvent(null, null, true, CdsData.create());
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	void allNullNothingToDo(boolean isDraftEntity) {
+		var event = cut.getEvent(null, null, true, CdsData.create(), isDraftEntity);
 
 		assertThat(event).isEqualTo(doNothingEvent);
 	}
 
-	@Test
-	void documentIdsNullContentFilledReturnedCreateEvent() {
-		var event = cut.getEvent(mock(InputStream.class), null, true, CdsData.create());
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	void documentIdsNullContentFilledReturnedCreateEvent(boolean isDraftEntity) {
+		var event = cut.getEvent(mock(InputStream.class), null, true, CdsData.create(), isDraftEntity);
 
 		assertThat(event).isEqualTo(createEvent);
-	}
-
-	@Test
-	void documentIdNullButtExistingNotNullReturnsUpdate() {
-		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
-
-		var event = cut.getEvent(null, null, true, data);
-
-		assertThat(event).isEqualTo(deleteContentEvent);
 	}
 
 	@Test
@@ -62,18 +54,50 @@ class DefaultModifyAttachmentEventFactoryTest {
 		var data = CdsData.create();
 		data.put(Attachments.DOCUMENT_ID, "someValue");
 
-		var event = cut.getEvent(mock(InputStream.class), null, true, data);
+		var event = cut.getEvent(null, null, true, data, false);
+
+		assertThat(event).isEqualTo(deleteContentEvent);
+	}
+
+	@Test
+	void documentIdPresentAndExistingNotNullButContentNullReturnsNothingToDoEventInCaseOfDraft() {
+		var data = CdsData.create();
+		data.put(Attachments.DOCUMENT_ID, "someValue");
+
+		var event = cut.getEvent(null, null, true, data, true);
+
+		assertThat(event).isEqualTo(doNothingEvent);
+	}
+
+	@Test
+	void documentIdNullButtExistingNotNullReturnsNothingToDoInCaseOfDraft() {
+		var data = CdsData.create();
+		data.put(Attachments.DOCUMENT_ID, "someValue");
+
+		var event = cut.getEvent(null, null, true, data, true);
+
+		assertThat(event).isEqualTo(doNothingEvent);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	void documentIdNullButtExistingNotNullReturnsDelete(boolean isDraftEntity) {
+		var data = CdsData.create();
+		data.put(Attachments.DOCUMENT_ID, "someValue");
+
+		var event = cut.getEvent(mock(InputStream.class), null, true, data, isDraftEntity);
 
 		assertThat(event).isEqualTo(updateEvent);
 	}
 
-	@Test
-	void documentIdsSameContentFillReturnsUpdate() {
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	void documentIdsSameContentFillReturnsUpdate(boolean isDraftEntity) {
 		var documentId = "test ID";
 		var data = CdsData.create();
 		data.put(Attachments.DOCUMENT_ID, documentId);
 
-		var event = cut.getEvent(mock(InputStream.class), documentId, true, data);
+		var event = cut.getEvent(mock(InputStream.class), documentId, true, data, isDraftEntity);
 
 		assertThat(event).isEqualTo(updateEvent);
 	}
@@ -86,18 +110,19 @@ class DefaultModifyAttachmentEventFactoryTest {
 		var data = CdsData.create();
 		data.put(Attachments.DOCUMENT_ID, "someValue");
 
-		var event = cut.getEvent(mock(InputStream.class), documentId, false, data);
+		var event = cut.getEvent(mock(InputStream.class), documentId, false, data, false);
 
 		assertThat(event).isEqualTo(updateEvent);
 	}
 
-	@Test
-	void documentIdsSameContentNullReturnsNothingToDo() {
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	void documentIdsSameContentNullReturnsNothingToDo(boolean isDraftEntity) {
 		var documentId = "test ID";
 		var data = CdsData.create();
 		data.put(Attachments.DOCUMENT_ID, documentId);
 
-		var event = cut.getEvent(null, documentId, true, data);
+		var event = cut.getEvent(null, documentId, true, data, isDraftEntity);
 
 		assertThat(event).isEqualTo(doNothingEvent);
 	}
@@ -110,9 +135,22 @@ class DefaultModifyAttachmentEventFactoryTest {
 		var data = CdsData.create();
 		data.put(Attachments.DOCUMENT_ID, "someValue");
 
-		var event = cut.getEvent(null, documentId, false, data);
+		var event = cut.getEvent(null, documentId, false, data, false);
 
 		assertThat(event).isEqualTo(deleteContentEvent);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"some document Id"})
+	@NullSource
+	@EmptySource
+	void documentIdNotPresentAndExistingNotNullReturnsDoNothingEventIfDraftEvent(String documentId) {
+		var data = CdsData.create();
+		data.put(Attachments.DOCUMENT_ID, "someValue");
+
+		var event = cut.getEvent(null, documentId, false, data, true);
+
+		assertThat(event).isEqualTo(doNothingEvent);
 	}
 
 	@ParameterizedTest
@@ -122,24 +160,15 @@ class DefaultModifyAttachmentEventFactoryTest {
 		var data = CdsData.create();
 		data.put(Attachments.DOCUMENT_ID, "someValue");
 
-		var event = cut.getEvent(null, documentId, true, data);
+		var event = cut.getEvent(null, documentId, true, data, true);
 
 		assertThat(event).isEqualTo(doNothingEvent);
 	}
 
-	@Test
-	void documentIdPresentAndExistingNotNullButContentNullReturnsDeleteEvent() {
-		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
-
-		var event = cut.getEvent(null, null, true, data);
-
-		assertThat(event).isEqualTo(deleteContentEvent);
-	}
-
-	@Test
-	void documentIdPresentAndExistingIdIsNullReturnsNothingToDo() {
-		var event = cut.getEvent(mock(InputStream.class), "test", true, CdsData.create());
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	void documentIdPresentAndExistingIdIsNullReturnsNothingToDo(boolean isDraftEntity) {
+		var event = cut.getEvent(mock(InputStream.class), "test", true, CdsData.create(), isDraftEntity);
 
 		assertThat(event).isEqualTo(doNothingEvent);
 	}
@@ -149,7 +178,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@NullSource
 	@EmptySource
 	void documentIdNotPresentAndExistingNullReturnsCreateEvent(String documentId) {
-		var event = cut.getEvent(mock(InputStream.class), documentId, false, CdsData.create());
+		var event = cut.getEvent(mock(InputStream.class), documentId, false, CdsData.create(), true);
 
 		assertThat(event).isEqualTo(createEvent);
 	}
@@ -159,7 +188,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@NullSource
 	@EmptySource
 	void documentIdNotPresentAndExistingNullReturnsDoNothingEvent(String documentId) {
-		var event = cut.getEvent(null, documentId, false, CdsData.create());
+		var event = cut.getEvent(null, documentId, false, CdsData.create(), true);
 
 		assertThat(event).isEqualTo(doNothingEvent);
 	}

@@ -59,7 +59,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		var condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
 		//TODO check if data.size() == attachments.size() is needed
 		if (!isMediaEntity(target) || data.size() == attachments.size()) {
-			ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context);
+			ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context, false);
 		}
 
 		if (!associationsAreUnchanged) {
@@ -67,7 +67,6 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		}
 	}
 
-	//TODO only check compositions which contains	attachments, ansonsten könnte es zu oft true sein
 	private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
 		return entity.associations()
 											.noneMatch(association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
@@ -93,7 +92,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 			var select = Select.from(entity.getQualifiedName()).matching(keyData);
 			select.where().ifPresent(predicates::add);
 		});
-		resultPredicate = CQL.or(predicates);
+		resultPredicate = CQL.and(predicates);
 		return resultPredicate;
 	}
 

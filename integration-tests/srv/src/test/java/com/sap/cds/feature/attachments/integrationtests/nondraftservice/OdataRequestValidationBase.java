@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -361,7 +362,9 @@ abstract class OdataRequestValidationBase {
 		MvcResult mvcResult = requestHelper.executeDelete(url);
 
 		assertThat(mvcResult.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-		verifyNumberOfEvents(AttachmentService.EVENT_MARK_AS_DELETED, 1);
+		if (Objects.nonNull(serviceHandler)) {
+			verifyNumberOfEvents(AttachmentService.EVENT_MARK_AS_DELETED, 1);
+		}
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
 	}
 

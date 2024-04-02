@@ -22,6 +22,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.sap.cds</groupId>
+            <artifactId>cds4j-core</artifactId>
+            <version>${cds.services.version}</version>
+        </dependency>
         <!-- TESTS -->
         <dependency>
             <groupId>com.sap.cds</groupId>

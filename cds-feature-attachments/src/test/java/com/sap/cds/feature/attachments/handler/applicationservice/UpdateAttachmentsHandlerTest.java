@@ -29,6 +29,7 @@ import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Update;
+import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.reflect.CdsEntity;
@@ -71,7 +72,7 @@ class UpdateAttachmentsHandlerTest {
 		updateContext = mock(CdsUpdateEventContext.class);
 		cdsDataArgumentCaptor = ArgumentCaptor.forClass(CdsData.class);
 		selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), anyBoolean(), any(), anyBoolean())).thenReturn(event);
 	}
 
 	@Test
@@ -110,7 +111,7 @@ class UpdateAttachmentsHandlerTest {
 		var attachment2 = Attachments.create();
 		attachment2.setContent(testStream);
 		attachment2.setId(id);
-		when(attachmentsReader.readAttachments(any(), any(), any())).thenReturn(List.of(attachment2));
+		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(List.of(attachment2));
 
 		cut.processBefore(updateContext, List.of(attachment1, attachment2));
 
@@ -125,11 +126,11 @@ class UpdateAttachmentsHandlerTest {
 		var attachment = Attachments.create();
 		attachment.setContent(testStream);
 		attachment.setId(id);
-		when(attachmentsReader.readAttachments(any(), any(), any())).thenReturn(List.of(attachment));
+		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(List.of(attachment));
 
 		cut.processBefore(updateContext, List.of(attachment));
 
-		verify(eventFactory).getEvent(testStream, null, false, attachment);
+		verify(eventFactory).getEvent(testStream, null, false, attachment, false);
 	}
 
 	@Test
@@ -140,7 +141,7 @@ class UpdateAttachmentsHandlerTest {
 		attachment.setContent(null);
 		attachment.setId(id);
 		when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));
-		when(attachmentsReader.readAttachments(any(), any(), any())).thenReturn(List.of(attachment));
+		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(List.of(attachment));
 
 		List<CdsData> input = List.of(attachment);
 		assertThrows(ServiceException.class, () -> cut.processBefore(updateContext, input));
@@ -153,11 +154,11 @@ class UpdateAttachmentsHandlerTest {
 		var root = fillRootData(testStream, id);
 		var model = runtime.getCdsModel();
 		var target = updateContext.getTarget();
-		when(attachmentsReader.readAttachments(eq(model), eq(target), any())).thenReturn(List.of(root));
+		when(attachmentsReader.readAttachments(eq(model), eq(target), any(CqnFilterableStatement.class))).thenReturn(List.of(root));
 
 		cut.processBefore(updateContext, List.of(root));
 
-		verify(eventFactory).getEvent(eq(testStream), eq(null), eq(false), cdsDataArgumentCaptor.capture());
+		verify(eventFactory).getEvent(eq(testStream), eq(null), eq(false), cdsDataArgumentCaptor.capture(), eq(false));
 		assertThat(cdsDataArgumentCaptor.getValue()).isEqualTo(root.getAttachments().get(0));
 		cdsDataArgumentCaptor.getAllValues().clear();
 		verify(event).processEvent(any(), eq(testStream), cdsDataArgumentCaptor.capture(), eq(updateContext));
@@ -166,14 +167,14 @@ class UpdateAttachmentsHandlerTest {
 	@Test
 	void noExistingDataFound() {
 		var id = getEntityAndMockContext(RootTable_.CDS_NAME);
-		when(attachmentsReader.readAttachments(any(), any(), any())).thenReturn(List.of(CdsData.create()));
+		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(List.of(CdsData.create()));
 
 		var testStream = mock(InputStream.class);
 		var root = fillRootData(testStream, id);
 
 		cut.processBefore(updateContext, List.of(root));
 
-		verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
+		verify(eventFactory).getEvent(testStream, null, false, CdsData.create(), false);
 	}
 
 	@Test
@@ -298,7 +299,7 @@ class UpdateAttachmentsHandlerTest {
 
 		cut.processBefore(updateContext, List.of(root));
 
-		verify(attachmentsReader).readAttachments(any(), any(), any());
+		verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
 		verifyNoInteractions(eventFactory);
 		verifyNoInteractions(attachmentService);
 	}
@@ -317,11 +318,11 @@ class UpdateAttachmentsHandlerTest {
 		attachment.setDocumentId("document id");
 		var existingRoot = RootTable.create();
 		existingRoot.setAttachments(List.of(attachment));
-		when(attachmentsReader.readAttachments(any(), any(), any())).thenReturn(List.of(existingRoot));
+		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(List.of(existingRoot));
 
 		cut.processBefore(updateContext, List.of(root));
 
-		verify(attachmentsReader).readAttachments(any(), any(), any());
+		verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
 		verifyNoInteractions(eventFactory);
 		verify(attachmentService).markAsDeleted(attachment.getDocumentId());
 	}

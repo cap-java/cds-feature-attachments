@@ -50,7 +50,12 @@ class DraftOdataRequestValidationWithoutTestHandlerTest extends DraftOdataReques
 	}
 
 	@Override
-	protected void verifyTwoCreateEvents(String newAttachmentContent, String newAttachmentEntityContent) {
+	protected void verifyOnlyTwoCreateEvents(String newAttachmentContent, String newAttachmentEntityContent) {
+		//	no service handler - nothing to do
+	}
+
+	@Override
+	protected void verifyTwoCreateAndDeleteEvents(String newAttachmentContent, String newAttachmentEntityContent) {
 		//	no service handler - nothing to do
 	}
 
@@ -60,7 +65,7 @@ class DraftOdataRequestValidationWithoutTestHandlerTest extends DraftOdataReques
 	}
 
 	@Override
-	protected void verifyTwoDeleteEvents(String attachmentDocumentId, String attachmentEntityDocumentId) {
+	protected void verifyOnlyTwoDeleteEvents(String attachmentDocumentId, String attachmentEntityDocumentId) {
 		//	no service handler - nothing to do
 	}
 

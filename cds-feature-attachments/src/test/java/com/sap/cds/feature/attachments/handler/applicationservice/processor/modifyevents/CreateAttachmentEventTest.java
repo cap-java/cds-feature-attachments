@@ -89,7 +89,7 @@ class CreateAttachmentEventTest {
 			attachment.put("up__ID", "test");
 		}
 		when(target.values()).thenReturn(attachment);
-		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
+		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id", "test"));
 		var existingData = CdsData.create();
 		existingData.put(MediaData.FILE_NAME, "some file name");
 		existingData.put(MediaData.MIME_TYPE, "some mime type");
@@ -110,13 +110,14 @@ class CreateAttachmentEventTest {
 	void documentIdStoredInPath() {
 		var attachment = Attachments.create();
 		attachment.setId("test");
-		var attachmentServiceResult = new AttachmentModificationResult(false, "some document id");
+		var attachmentServiceResult = new AttachmentModificationResult(false, "some document id", "test");
 		when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
 		when(target.values()).thenReturn(attachment);
 
 		cut.processEvent(path, attachment.getContent(), CdsData.create(), eventContext);
 
 		assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
+		assertThat(attachment.getStatusCode()).isEqualTo(attachmentServiceResult.attachmentStatus());
 	}
 
 	@Test
@@ -126,7 +127,7 @@ class CreateAttachmentEventTest {
 		when(eventContext.getCdsRuntime()).thenReturn(runtime);
 		var listener = mock(ChangeSetListener.class);
 		when(listenerProvider.provideListener(documentId, runtime, outboxedAttachmentService)).thenReturn(listener);
-		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, documentId));
+		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, documentId, "test"));
 
 		cut.processEvent(path, null, CdsData.create(), eventContext);
 
@@ -144,7 +145,7 @@ class CreateAttachmentEventTest {
 			attachment.setId(UUID.randomUUID().toString());
 		}
 		when(target.values()).thenReturn(attachment);
-		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "id"));
+		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(isExternalStored, "id", "test"));
 
 		var result = cut.processEvent(path, attachment.getContent(), CdsData.create(), eventContext);
 
@@ -163,7 +164,7 @@ class CreateAttachmentEventTest {
 			attachment.setId(UUID.randomUUID().toString());
 		}
 		when(target.values()).thenReturn(attachment);
-		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id"));
+		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id", "test"));
 
 		cut.processEvent(path, attachment.getContent(), CdsData.create(), eventContext);
 		return attachment;

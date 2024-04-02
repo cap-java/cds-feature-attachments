@@ -31,9 +31,17 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 
 	@Override
 	public List<CdsData> readAttachments(CdsModel model, CdsEntity entity, CqnFilterableStatement statement) {
-		var dataList = new ArrayList<CdsData>();
-
 		var resultWhere = ApplicationHandlerHelper.getWhere(statement);
+		return getData(model, entity, resultWhere);
+	}
+
+	@Override
+	public List<CdsData> readAttachments(CdsModel model, CdsEntity entity, CqnPredicate predicate) {
+		return getData(model, entity, Optional.ofNullable(predicate));
+	}
+
+	private ArrayList<CdsData> getData(CdsModel model, CdsEntity entity, Optional<CqnPredicate> resultWhere) {
+		var dataList = new ArrayList<CdsData>();
 		var pathLists = cascader.findEntityPath(model, entity);
 		pathLists.forEach(path -> {
 			var select = getSelectStatement(path, resultWhere, entity);

@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -54,7 +55,7 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 	}
 
 	@Override
-	protected void verifyTwoCreateEvents(String newAttachmentContent, String newAttachmentEntityContent) {
+	protected void verifyOnlyTwoCreateEvents(String newAttachmentContent, String newAttachmentEntityContent) {
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_MARK_AS_DELETED, AttachmentService.EVENT_READ_ATTACHMENT);
 		var createEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
 		assertThat(createEvents).hasSize(2);
@@ -65,6 +66,29 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 	}
 
 	@Override
+	protected void verifyTwoCreateAndDeleteEvents(String newAttachmentContent, String newAttachmentEntityContent) {
+		awaitNumberOfExpectedEvents(4);
+		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT);
+		var createEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
+		assertThat(createEvents).hasSize(2);
+		var attachmentContentFound = isAttachmentContentFoundInCreateEvent(createEvents, newAttachmentContent);
+		assertThat(attachmentContentFound).isTrue();
+		var attachmentEntityContentFound = isAttachmentContentFoundInCreateEvent(createEvents, newAttachmentEntityContent);
+		assertThat(attachmentEntityContentFound).isTrue();
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
+		assertThat(deleteEvents).hasSize(2);
+		deleteEvents.forEach(event -> {
+			var deleteContext = (AttachmentMarkAsDeletedEventContext) event.context();
+			assertThat(deleteContext.getDocumentId()).isNotEmpty();
+			var createEventFound = createEvents.stream().anyMatch(createEvent -> {
+				var createContext = (AttachmentCreateEventContext) createEvent.context();
+				return createContext.getDocumentId().equals(deleteContext.getDocumentId());
+			});
+			assertThat(createEventFound).isTrue();
+		});
+	}
+
+	@Override
 	protected void verifyTwoReadEvents() {
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_MARK_AS_DELETED, AttachmentService.EVENT_CREATE_ATTACHMENT);
 		var readEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_READ_ATTACHMENT);
@@ -72,7 +96,8 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 	}
 
 	@Override
-	protected void verifyTwoDeleteEvents(String attachmentDocumentId, String attachmentEntityDocumentId) {
+	protected void verifyOnlyTwoDeleteEvents(String attachmentDocumentId, String attachmentEntityDocumentId) {
+		awaitNumberOfExpectedEvents(2);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
 		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
 		assertThat(deleteEvents).hasSize(2);
@@ -82,6 +107,7 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 
 	@Override
 	protected void verifyTwoUpdateEvents(String newAttachmentContent, String attachmentDocumentId, String newAttachmentEntityContent, String attachmentEntityDocumentId) {
+		awaitNumberOfExpectedEvents(4);
 		var createEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
 		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
 		assertThat(createEvents).hasSize(2);
@@ -90,6 +116,10 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 		assertThat(deleteEvents).hasSize(2);
 		verifyDeleteEventContainsDocumentId(deleteEvents, attachmentDocumentId);
 		verifyDeleteEventContainsDocumentId(deleteEvents, attachmentEntityDocumentId);
+	}
+
+	private void awaitNumberOfExpectedEvents(int expectedEvents) {
+		Awaitility.await().until(() -> serviceHandler.getEventContext().size() == expectedEvents);
 	}
 
 	private void verifyCreateEventFound(List<EventContextHolder> createEvents, String newContent) {

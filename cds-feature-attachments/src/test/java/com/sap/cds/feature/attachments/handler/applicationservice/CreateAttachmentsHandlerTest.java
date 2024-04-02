@@ -77,7 +77,7 @@ class CreateAttachmentsHandlerTest {
 		attachment.setContent(null);
 		attachment.put("up__ID", "test");
 		roots.setAttachments(List.of(attachment));
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), anyBoolean(), any(), anyBoolean())).thenReturn(event);
 
 		cut.processBefore(createContext, List.of(roots));
 
@@ -92,11 +92,11 @@ class CreateAttachmentsHandlerTest {
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
 			var attachment = Attachments.create();
 			attachment.setContent(testStream);
-			when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+			when(eventFactory.getEvent(any(), any(), anyBoolean(), any(), anyBoolean())).thenReturn(event);
 
 			cut.processBefore(createContext, List.of(attachment));
 
-			verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
+			verify(eventFactory).getEvent(testStream, null, false, CdsData.create(), false);
 		}
 	}
 
@@ -106,7 +106,7 @@ class CreateAttachmentsHandlerTest {
 		var attachment = Attachments.create();
 		attachment.setFileName("test.txt");
 		attachment.setContent(null);
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), anyBoolean(), any(), anyBoolean())).thenReturn(event);
 		when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));
 
 		List<CdsData> input = List.of(attachment);
@@ -123,7 +123,7 @@ class CreateAttachmentsHandlerTest {
 		attachment.setContent(mock(InputStream.class));
 		items.setAttachments(List.of(attachment));
 		events.setItems(List.of(items));
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), anyBoolean(), any(), anyBoolean())).thenReturn(event);
 
 		List<CdsData> input = List.of(events);
 		cut.processBefore(createContext, input);
@@ -142,7 +142,7 @@ class CreateAttachmentsHandlerTest {
 		attachment.setContent(mock(InputStream.class));
 		eventItems.setAttachments(List.of(attachment));
 		events.setEventItems(List.of(eventItems));
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), anyBoolean(), any(), anyBoolean())).thenReturn(event);
 
 		List<CdsData> input = List.of(events);
 		cut.processBefore(createContext, input);

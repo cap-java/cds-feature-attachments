@@ -1,6 +1,7 @@
 package com.sap.cds.feature.attachments.service.handler;
 
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
@@ -19,7 +20,8 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_CREATE_ATTACHMENT)
 	@HandlerOrder(DEFAULT_ON)
 	public void createAttachment(AttachmentCreateEventContext context) {
-		//TODO Malware Scan
+		//TODO Malware Scan and remove setting status here
+		context.getData().setStatusCode(StatusCode.CLEAN);
 		context.setIsInternalStored(true);
 		context.setDocumentId((String) context.getAttachmentIds().get(Attachments.ID));
 		context.setCompleted();
