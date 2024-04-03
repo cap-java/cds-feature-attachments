@@ -6,7 +6,9 @@ import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -60,13 +62,13 @@ class CreateAttachmentEventTest {
 		eventContext = mock(EventContext.class);
 		changeSetContext = mock(ChangeSetContext.class);
 		when(eventContext.getChangeSetContext()).thenReturn(changeSetContext);
-		when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
 		when(target.entity()).thenReturn(entity);
 		when(path.target()).thenReturn(target);
 	}
 
 	@Test
-	void storageCalledWithAllFieldsFilledFromPath() throws IOException {
+	void storageCalledWithAllFieldsFilledFromPath() {
+		when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
 		var attachment = prepareAndExecuteEventWithData();
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -79,16 +81,16 @@ class CreateAttachmentEventTest {
 	}
 
 	@Test
-	void storageCalledWithAllFieldsFilledFromExistingData() throws IOException {
+	void storageCalledWithAllFieldsFilledFromExistingData() {
+		when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
 		var attachment = Attachments.create();
 
-		var testContent = "test content";
-		try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
-			attachment.setContent(testContentStream);
-			attachment.setId(UUID.randomUUID().toString());
-			attachment.put("up__ID", "test");
-		}
+		attachment.setContent(mock(InputStream.class));
+		attachment.setId(UUID.randomUUID().toString());
+		attachment.put("up__ID", "test");
+
 		when(target.values()).thenReturn(attachment);
+		when(target.keys()).thenReturn(Map.of("ID", attachment.getId(), "up__ID", "test"));
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id", "test"));
 		var existingData = CdsData.create();
 		existingData.put(MediaData.FILE_NAME, "some file name");
@@ -107,7 +109,7 @@ class CreateAttachmentEventTest {
 	}
 
 	@Test
-	void documentIdStoredInPath() {
+	void resultFromServiceStoredInPath() {
 		var attachment = Attachments.create();
 		attachment.setId("test");
 		var attachmentServiceResult = new AttachmentModificationResult(false, "some document id", "test");
@@ -153,17 +155,16 @@ class CreateAttachmentEventTest {
 		assertThat(result).isEqualTo(expectedContent);
 	}
 
-	private Attachments prepareAndExecuteEventWithData() throws IOException {
+	private Attachments prepareAndExecuteEventWithData() {
 		var attachment = Attachments.create();
 
-		var testContent = "test content";
-		try (var testContentStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8))) {
-			attachment.setContent(testContentStream);
-			attachment.setMimeType("mimeType");
-			attachment.setFileName("file name");
-			attachment.setId(UUID.randomUUID().toString());
-		}
+		attachment.setContent(mock(InputStream.class));
+		attachment.setMimeType("mimeType");
+		attachment.setFileName("file name");
+		attachment.setId(UUID.randomUUID().toString());
+
 		when(target.values()).thenReturn(attachment);
+		when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id", "test"));
 
 		cut.processEvent(path, attachment.getContent(), CdsData.create(), eventContext);

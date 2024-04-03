@@ -7,6 +7,8 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -33,12 +35,14 @@ class DefaultAttachmentsServiceHandlerTest {
 		var createContext = AttachmentCreateEventContext.create();
 		var attachmentId = "test ID";
 		createContext.setAttachmentIds(Map.of(Attachments.ID, attachmentId, "OtherId", "OtherID value"));
+		createContext.setData(MediaData.create());
 
 		cut.createAttachment(createContext);
 
 		assertThat(createContext.isCompleted()).isTrue();
 		assertThat(createContext.getDocumentId()).isEqualTo(attachmentId);
 		assertThat(createContext.getIsInternalStored()).isTrue();
+		assertThat(createContext.getData().getStatusCode()).isEqualTo(StatusCode.CLEAN);
 	}
 
 	@Test

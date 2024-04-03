@@ -14,7 +14,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attac
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.model.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.draftservice.DraftConstants;
+import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnReference.Segment;

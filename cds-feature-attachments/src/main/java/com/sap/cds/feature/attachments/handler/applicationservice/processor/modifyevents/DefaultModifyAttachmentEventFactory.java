@@ -21,13 +21,13 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 	}
 
 	@Override
-	public ModifyAttachmentEvent getEvent(Object content, String documentId, boolean documentIdExist, CdsData existingData, boolean isDraftEntity) {
+	public ModifyAttachmentEvent getEvent(Object content, String documentId, boolean documentIdExist, CdsData existingData) {
 		var existingDocumentId = existingData.get(Attachments.DOCUMENT_ID);
-		var event = documentIdExist ? handleExistingDocumentId(content, documentId, existingDocumentId, isDraftEntity) : handleNonExistingDocumentId(content, existingDocumentId, isDraftEntity);
+		var event = documentIdExist ? handleExistingDocumentId(content, documentId, existingDocumentId) : handleNonExistingDocumentId(content, existingDocumentId);
 		return event.orElse(doNothingEvent);
 	}
 
-	private Optional<ModifyAttachmentEvent> handleExistingDocumentId(Object content, String documentId, Object existingDocumentId, boolean isDraftEntity) {
+	private Optional<ModifyAttachmentEvent> handleExistingDocumentId(Object content, String documentId, Object existingDocumentId) {
 		ModifyAttachmentEvent event = null;
 		if (Objects.isNull(documentId) && Objects.isNull(existingDocumentId) && Objects.nonNull(content)) {
 			event = createEvent;
@@ -45,10 +45,14 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 		if (Objects.nonNull(documentId) && Objects.nonNull(existingDocumentId) && !documentId.equals(existingDocumentId) && Objects.isNull(content)) {
 			event = deleteContentEvent;
 		}
+		if (Objects.nonNull(documentId) && Objects.nonNull(existingDocumentId) && !documentId.equals(existingDocumentId) && Objects.nonNull(content)) {
+			event = updateEvent;
+		}
+
 		return Optional.ofNullable(event);
 	}
 
-	private Optional<ModifyAttachmentEvent> handleNonExistingDocumentId(Object content, Object existingDocumentId, boolean isDraftEntity) {
+	private Optional<ModifyAttachmentEvent> handleNonExistingDocumentId(Object content, Object existingDocumentId) {
 		ModifyAttachmentEvent event = null;
 		if (Objects.nonNull(existingDocumentId)) {
 			if (Objects.nonNull(content)) {

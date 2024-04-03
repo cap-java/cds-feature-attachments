@@ -59,7 +59,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		var condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
 		//TODO check if data.size() == attachments.size() is needed
 		if (!isMediaEntity(target) || data.size() == attachments.size()) {
-			ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context, false);
+			ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context);
 		}
 
 		if (!associationsAreUnchanged) {
@@ -92,7 +92,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 			var select = Select.from(entity.getQualifiedName()).matching(keyData);
 			select.where().ifPresent(predicates::add);
 		});
-		resultPredicate = CQL.and(predicates);
+		resultPredicate = CQL.or(predicates);
 		return resultPredicate;
 	}
 

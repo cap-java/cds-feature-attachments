@@ -18,19 +18,19 @@ public final class ModifyApplicationHandlerHelper {
 	private ModifyApplicationHandlerHelper() {
 	}
 
-	public static void handleAttachmentForEntities(CdsEntity entity, List<CdsData> data, List<CdsData> existingDataList, ModifyAttachmentEventFactory eventFactory, EventContext eventContext, boolean isDraft) {
+	public static void handleAttachmentForEntities(CdsEntity entity, List<CdsData> data, List<CdsData> existingDataList, ModifyAttachmentEventFactory eventFactory, EventContext eventContext) {
 		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
-		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingDataList, eventFactory, eventContext, path, value, isDraft);
+		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingDataList, eventFactory, eventContext, path, value);
 		ApplicationHandlerHelper.callProcessor(entity, data, filter, converter);
 	}
 
-	public static Object handleAttachmentForEntity(List<CdsData> existingDataList, ModifyAttachmentEventFactory eventFactory, EventContext eventContext, Path path, Object value, boolean isDraft) {
+	public static Object handleAttachmentForEntity(List<CdsData> existingDataList, ModifyAttachmentEventFactory eventFactory, EventContext eventContext, Path path, Object value) {
 		var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 		var existingData = getExistingData(keys, existingDataList);
 		var documentIdExists = path.target().values().containsKey(Attachments.DOCUMENT_ID);
 		var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
 
-		var eventToProcess = eventFactory.getEvent(value, documentId, documentIdExists, existingData, isDraft);
+		var eventToProcess = eventFactory.getEvent(value, documentId, documentIdExists, existingData);
 		return eventToProcess.processEvent(path, value, existingData, eventContext);
 	}
 

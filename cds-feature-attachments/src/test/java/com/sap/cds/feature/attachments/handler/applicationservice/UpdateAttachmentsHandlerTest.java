@@ -72,7 +72,7 @@ class UpdateAttachmentsHandlerTest {
 		updateContext = mock(CdsUpdateEventContext.class);
 		cdsDataArgumentCaptor = ArgumentCaptor.forClass(CdsData.class);
 		selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any(), anyBoolean())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
 	}
 
 	@Test
@@ -130,7 +130,7 @@ class UpdateAttachmentsHandlerTest {
 
 		cut.processBefore(updateContext, List.of(attachment));
 
-		verify(eventFactory).getEvent(testStream, null, false, attachment, false);
+		verify(eventFactory).getEvent(testStream, null, false, attachment);
 	}
 
 	@Test
@@ -158,7 +158,7 @@ class UpdateAttachmentsHandlerTest {
 
 		cut.processBefore(updateContext, List.of(root));
 
-		verify(eventFactory).getEvent(eq(testStream), eq(null), eq(false), cdsDataArgumentCaptor.capture(), eq(false));
+		verify(eventFactory).getEvent(eq(testStream), eq(null), eq(false), cdsDataArgumentCaptor.capture());
 		assertThat(cdsDataArgumentCaptor.getValue()).isEqualTo(root.getAttachments().get(0));
 		cdsDataArgumentCaptor.getAllValues().clear();
 		verify(event).processEvent(any(), eq(testStream), cdsDataArgumentCaptor.capture(), eq(updateContext));
@@ -174,7 +174,7 @@ class UpdateAttachmentsHandlerTest {
 
 		cut.processBefore(updateContext, List.of(root));
 
-		verify(eventFactory).getEvent(testStream, null, false, CdsData.create(), false);
+		verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
 	}
 
 	@Test
