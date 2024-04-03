@@ -48,7 +48,6 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			var result = analyser.analyze(context.getCqn());
 
 			var activeAttachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), cqlResult);
-
 			var condensedActiveData = ApplicationHandlerHelper.condenseData(activeAttachments, context.getTarget());
 
 			Filter filter = (path, element, type) -> ApplicationHandlerHelper.isMediaEntity(path.target()
