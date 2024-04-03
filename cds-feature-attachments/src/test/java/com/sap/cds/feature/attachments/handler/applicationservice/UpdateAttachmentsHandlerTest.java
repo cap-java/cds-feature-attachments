@@ -257,7 +257,7 @@ class UpdateAttachmentsHandlerTest {
 		attachment.put(UP__ID, "test_up_id");
 		attachment.setContent(mock(InputStream.class));
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
-		CqnUpdate update = Update.entity(Attachment_.CDS_NAME);
+		CqnUpdate update = Update.entity(Attachment_.class).where(entity -> entity.ID().eq(attachment.getId()));
 		mockTargetInUpdateContext(serviceEntity, update);
 
 		cut.processBefore(updateContext, List.of(attachment));
@@ -278,7 +278,9 @@ class UpdateAttachmentsHandlerTest {
 		attachment2.setId(UUID.randomUUID().toString());
 		attachment2.put(UP__ID, "test_multiple 2");
 		attachment2.setContent(mock(InputStream.class));
-		CqnUpdate update = Update.entity(Attachment_.CDS_NAME);
+		CqnUpdate update = Update.entity(Attachment_.class).where(attachment -> attachment.ID().eq(attachment1.getId())
+																																																																												.or(attachment.ID()
+																																																																																		.eq(attachment2.getId())));
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
 		mockTargetInUpdateContext(serviceEntity, update);
 
