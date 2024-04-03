@@ -9,26 +9,28 @@ import com.sap.cds.ql.cqn.CqnComparisonPredicate.Operator;
 import com.sap.cds.ql.cqn.CqnPredicate;
 import com.sap.cds.ql.cqn.CqnStructuredTypeRef;
 import com.sap.cds.ql.cqn.Modifier;
-import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.Drafts;
 
+//TODO Unit Tests
 public class ActiveEntityModifier implements Modifier {
 
-	private final CdsEntity root;
 	private final boolean isActiveEntity;
+	private final String fullEntityName;
 
-	public ActiveEntityModifier(CdsEntity root, boolean isActiveEntity) {
-		this.root = root;
+	public ActiveEntityModifier(boolean isActiveEntity, String fullEntityName) {
 		this.isActiveEntity = isActiveEntity;
+		this.fullEntityName = fullEntityName;
 	}
 
 	@Override
 	public CqnStructuredTypeRef ref(CqnStructuredTypeRef original) {
 		RefBuilder<StructuredTypeRef> ref = CQL.copy(original);
+		RefSegment rootSegment = ref.rootSegment();
+		rootSegment.id(fullEntityName);
 
 		for (RefSegment segment : ref.segments()) {
 			if (segment.filter().isPresent()) {
-				segment.filter(CQL.copy(segment.filter().orElseThrow(), new ActiveEntityModifier(root, isActiveEntity)));
+				segment.filter(CQL.copy(segment.filter().orElseThrow(), new ActiveEntityModifier(isActiveEntity, fullEntityName)));
 			}
 		}
 		return ref.build();
@@ -42,6 +44,7 @@ public class ActiveEntityModifier implements Modifier {
 		}
 		return CQL.comparison(lhs, op, rhsNew);
 	}
+
 
 }
 

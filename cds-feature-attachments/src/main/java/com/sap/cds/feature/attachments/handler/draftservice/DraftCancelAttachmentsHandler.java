@@ -7,9 +7,11 @@ import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attac
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.handler.draftservice.modifier.ActiveEntityModifierProvider;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnAnalyzer;
+import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.DraftCancelEventContext;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.draft.Drafts;
@@ -39,15 +41,17 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 		var where = context.getCqn().where();
 		if (where.isEmpty()) {
 
-			var cqlResult = CQL.copy(context.getCqn(), activeEntityModifierProvider.getModifier(context.getTarget(), true));
-			var draftAttachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget()
-																																																																																		.getTargetOf("SiblingEntity"), context.getCqn());
+			var activeEntity = isDraftEntity(context) ? context.getTarget().getTargetOf("SiblingEntity") : context.getTarget();
+			var inactiveEntity = isDraftEntity(context) ? context.getTarget() : context.getTarget().getTargetOf("SiblingEntity");
 
+			var cqnInactiveEntity = CQL.copy(context.getCqn(), activeEntityModifierProvider.getModifier(false, inactiveEntity.getQualifiedName()));
+			var draftAttachments = attachmentsReader.readAttachments(context.getModel(), (CdsEntity) inactiveEntity, cqnInactiveEntity);
 
 			var analyser = CqnAnalyzer.create(context.getModel());
 			var result = analyser.analyze(context.getCqn());
 
-			var activeAttachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), cqlResult);
+			var cqnActiveEntity = CQL.copy(context.getCqn(), activeEntityModifierProvider.getModifier(true, activeEntity.getQualifiedName()));
+			var activeAttachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), cqnActiveEntity);
 			var condensedActiveData = ApplicationHandlerHelper.condenseData(activeAttachments, context.getTarget());
 
 			Filter filter = (path, element, type) -> ApplicationHandlerHelper.isMediaEntity(path.target()
@@ -71,6 +75,10 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 		}
 
+	}
+
+	private boolean isDraftEntity(DraftCancelEventContext context) {
+		return context.getTarget().getQualifiedName().endsWith(DraftConstants.DRAFT_TABLE_POSTFIX);
 	}
 
 }

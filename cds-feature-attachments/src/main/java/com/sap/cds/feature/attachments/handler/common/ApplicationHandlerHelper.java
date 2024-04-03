@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.sap.cds.CdsData;
@@ -15,10 +14,6 @@ import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
-import com.sap.cds.ql.CQL;
-import com.sap.cds.ql.cqn.CqnFilterableStatement;
-import com.sap.cds.ql.cqn.CqnPredicate;
-import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
@@ -34,8 +29,8 @@ public final class ApplicationHandlerHelper {
 	public static boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
 		var isIncluded = new AtomicBoolean();
 		//TODO use reuse filter
-		Filter filter = (path, element, type) -> path.target().type().getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false)
-																																													&& hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
+		Filter filter = (path, element, type) -> path.target().type()
+																																													.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false) && hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
 		Validator validator = (path, element, value) -> isIncluded.set(true);
 
 		callValidator(entity, data, filter, validator);
@@ -43,19 +38,16 @@ public final class ApplicationHandlerHelper {
 	}
 
 	public static void callProcessor(CdsEntity entity, List<CdsData> data, Filter filter, Converter converter) {
-		CdsDataProcessor.create().addConverter(
-						filter, converter)
-				.process(data, entity);
+		CdsDataProcessor.create().addConverter(filter, converter).process(data, entity);
 	}
 
 	public static void callValidator(CdsEntity entity, List<CdsData> data, Filter filter, Validator validator) {
-		CdsDataProcessor.create().addValidator(
-						filter, validator)
-				.process(data, entity);
+		CdsDataProcessor.create().addValidator(filter, validator).process(data, entity);
 	}
 
 	public static Filter buildFilterForMediaTypeEntity() {
-		return (path, element, type) -> isMediaEntity(path.target().type()) && hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
+		return (path, element, type) -> isMediaEntity(path.target()
+																																																		.type()) && hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
 	}
 
 	public static boolean isMediaEntity(CdsStructuredType baseEntity) {
@@ -93,19 +85,6 @@ public final class ApplicationHandlerHelper {
 		return keyMap;
 	}
 
-	public static Optional<CqnPredicate> getWhere(CqnFilterableStatement statement) {
-		//TODO anstatt filter die ref nutzen, um alle Filter zu nutzen -> in utils abschauen
-		var filter = getLastSegmentFilter(statement);
-		var where = statement.where();
-		if (filter.isPresent() && where.isPresent()) {
-			return Optional.of(CQL.and(filter.get(), where.get()));
-		} else if (filter.isPresent()) {
-			return filter;
-		} else {
-			return where;
-		}
-	}
-
 	public static CdsEntity getBaseEntity(CdsModel model, CdsEntity entity) {
 		var entityResultOptional = entity.query().map(q -> CdsModelUtils.getEntityPath(q, model).rootEntity());
 		return entityResultOptional.orElseGet(() -> model.findEntity(entity.getQualifiedName()).orElseThrow());
@@ -113,18 +92,6 @@ public final class ApplicationHandlerHelper {
 
 	private static boolean isDraftActiveEntityField(String key) {
 		return key.equals(Drafts.IS_ACTIVE_ENTITY);
-	}
-
-	private static Optional<CqnPredicate> getLastSegmentFilter(CqnFilterableStatement statement) {
-		var segmentSize = statement.ref().asRef().segments().size();
-		if (segmentSize > 0) {
-			var lastPathSegment = statement.ref().asRef().lastSegment();
-			var lastSegment = statement.ref().asRef().segments().stream().filter(segment -> segment.id().equals(lastPathSegment))
-																							.findAny();
-			return lastSegment.flatMap(Segment::filter);
-		} else {
-			return Optional.empty();
-		}
 	}
 
 }
