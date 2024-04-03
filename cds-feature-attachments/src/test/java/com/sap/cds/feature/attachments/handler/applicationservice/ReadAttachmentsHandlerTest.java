@@ -84,7 +84,7 @@ class ReadAttachmentsHandlerTest {
 		verify(provider).getBeforeReadDocumentIdEnhancer(fieldNamesArgumentCaptor.capture());
 		verify(modifier).items(any());
 		var fields = fieldNamesArgumentCaptor.getValue();
-		assertThat(fields).hasSize(2).contains("attachments").contains("itemAttachment");
+		assertThat(fields).hasSize(2).contains("attachments").contains("itemAttachments");
 	}
 
 	@Test
