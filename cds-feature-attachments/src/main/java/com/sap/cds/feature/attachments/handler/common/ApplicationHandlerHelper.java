@@ -21,8 +21,10 @@ import com.sap.cds.ql.cqn.CqnPredicate;
 import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.Drafts;
+import com.sap.cds.services.utils.model.CdsModelUtils;
 
 public final class ApplicationHandlerHelper {
 
@@ -102,6 +104,11 @@ public final class ApplicationHandlerHelper {
 		} else {
 			return where;
 		}
+	}
+
+	public static CdsEntity getBaseEntity(CdsModel model, CdsEntity entity) {
+		var entityResultOptional = entity.query().map(q -> CdsModelUtils.getEntityPath(q, model).rootEntity());
+		return entityResultOptional.orElseGet(() -> model.findEntity(entity.getQualifiedName()).orElseThrow());
 	}
 
 	private static boolean isDraftActiveEntityField(String key) {

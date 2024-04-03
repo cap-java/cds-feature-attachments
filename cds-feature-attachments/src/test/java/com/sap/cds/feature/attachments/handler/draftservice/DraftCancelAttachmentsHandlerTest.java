@@ -8,18 +8,21 @@ import org.junit.jupiter.api.Test;
 
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.draftservice.modifier.ActiveEntityModifierProvider;
 
 class DraftCancelAttachmentsHandlerTest {
 
 	private DraftCancelAttachmentsHandler cut;
 	private AttachmentsReader attachmentsReader;
 	private ModifyAttachmentEvent deleteContentAttachmentEvent;
+	private ActiveEntityModifierProvider modifierProvider;
 
 	@BeforeEach
 	void setup() {
 		attachmentsReader = mock(AttachmentsReader.class);
 		deleteContentAttachmentEvent = mock(ModifyAttachmentEvent.class);
-		cut = new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentAttachmentEvent);
+		modifierProvider = mock(ActiveEntityModifierProvider.class);
+		cut = new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentAttachmentEvent, modifierProvider);
 	}
 
 	@Test

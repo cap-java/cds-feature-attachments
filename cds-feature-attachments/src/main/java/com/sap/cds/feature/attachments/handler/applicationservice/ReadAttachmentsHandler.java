@@ -17,7 +17,6 @@ import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.CQL;
-import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
@@ -75,19 +74,11 @@ public class ReadAttachmentsHandler implements EventHandler {
 	}
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {
-		var query = entity.query();
-		List<String> entityNames = query.map(cqnSelect -> cqnSelect.from().asRef().segments().stream().map(Segment::id)
-																																																						.toList()).orElseGet(() -> List.of(entity.getQualifiedName()));
 		var associationNames = new ArrayList<String>();
-
-		entityNames.forEach(name -> {
-			var baseEntity = model.findEntity(name);
-			baseEntity.ifPresent(base -> {
-				if (ApplicationHandlerHelper.isMediaEntity(base)) {
-					associationNames.add(associationName);
-				}
-			});
-		});
+		var baseEntity = ApplicationHandlerHelper.getBaseEntity(model, entity);
+		if (ApplicationHandlerHelper.isMediaEntity(baseEntity)) {
+			associationNames.add(associationName);
+		}
 
 		Map<String, CdsEntity> annotatedEntitiesMap = entity.elements().filter(element -> element.getType().isAssociation())
 																																																		.collect(Collectors.toMap(CdsElementDefinition::getName, element -> element.getType()

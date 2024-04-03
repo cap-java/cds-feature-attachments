@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
-import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
@@ -32,10 +31,7 @@ public class DefaultAssociationCascader implements AssociationCascader {
 		var localProcessEntities = new ArrayList<String>();
 		currentList.set(new LinkedList<>());
 
-		var query = entity.query();
-		var entityName = query.flatMap(cqnSelect -> cqnSelect.from().asRef().segments().stream().map(Segment::id).findFirst()).orElseGet(() -> entity.getQualifiedName());
-
-		var baseEntity = model.findEntity(entityName).orElseThrow();
+		var baseEntity = ApplicationHandlerHelper.getBaseEntity(model, entity);
 		var isMediaEntity = isMediaEntity(baseEntity);
 		if (isMediaEntity) {
 			var identifier = new AssociationIdentifier(associationName, entity.getQualifiedName(), isMediaEntity);
@@ -47,7 +43,13 @@ public class DefaultAssociationCascader implements AssociationCascader {
 			return internalResultList;
 		}
 
-		Map<String, CdsEntity> associations = entity.elements().filter(element -> element.getType().isAssociation() && element.getType().as(CdsAssociationType.class).isComposition()).collect(Collectors.toMap(CdsElementDefinition::getName, element -> element.getType().as(CdsAssociationType.class).getTarget()));
+		Map<String, CdsEntity> associations = entity.elements()
+																																										.filter(element -> element.getType().isAssociation() && element.getType()
+																																																																																																				.as(CdsAssociationType.class)
+																																																																																																				.isComposition())
+																																										.collect(Collectors.toMap(CdsElementDefinition::getName, element -> element.getType()
+																																																																																																																.as(CdsAssociationType.class)
+																																																																																																																.getTarget()));
 
 		if (associations.isEmpty()) {
 			return internalResultList;

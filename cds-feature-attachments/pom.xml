@@ -24,15 +24,14 @@
     <dependencies>
         <dependency>
             <groupId>com.sap.cds</groupId>
-            <artifactId>cds4j-core</artifactId>
-            <version>${cds.services.version}</version>
+            <artifactId>cds-services-utils</artifactId>
         </dependency>
-        <!-- TESTS -->
         <dependency>
             <groupId>com.sap.cds</groupId>
             <artifactId>cds-services-impl</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- TESTS -->
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
