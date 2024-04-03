@@ -84,8 +84,7 @@ class ReadAttachmentsHandlerTest {
 		verify(provider).getBeforeReadDocumentIdEnhancer(fieldNamesArgumentCaptor.capture());
 		verify(modifier).items(any());
 		var fields = fieldNamesArgumentCaptor.getValue();
-		//TODO check if association with same name on different level works
-		assertThat(fields).hasSize(2).contains("attachments").contains("attachmentTable");
+		assertThat(fields).hasSize(2).contains("attachments").contains("itemAttachment");
 	}
 
 	@Test

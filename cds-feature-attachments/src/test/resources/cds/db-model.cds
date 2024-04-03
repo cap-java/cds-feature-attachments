@@ -21,6 +21,7 @@ entity Items : cuid {
     events      : Composition of many Events;
     attachments : Composition of many Attachment
                       on attachments.parentKey = $self.ID;
+    itemAttachments : Composition of many Attachments;
 }
 
 entity Events {

@@ -36,6 +36,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	}
 
 	//TODO Unit Tests
+	//TODO refactor
 	@Before(event = DraftService.EVENT_DRAFT_CANCEL)
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBeforeDraftCancel(DraftCancelEventContext context, List<CdsData> data) {
