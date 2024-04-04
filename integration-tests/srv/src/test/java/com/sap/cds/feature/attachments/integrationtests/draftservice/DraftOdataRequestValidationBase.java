@@ -122,7 +122,7 @@ abstract class DraftOdataRequestValidationBase {
 
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
 
-		var selectedRootAfterDelete = selectStoredData(selectedRoot);
+		var selectedRootAfterDelete = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterDelete.getItems().get(0).getAttachments()).isEmpty();
 		assertThat(selectedRootAfterDelete.getItems().get(0).getAttachmentEntities()).isEmpty();
 		verifyOnlyTwoDeleteEvents(itemAttachment.getDocumentId(), itemAttachmentEntity.getDocumentId());
@@ -143,7 +143,7 @@ abstract class DraftOdataRequestValidationBase {
 		updateFileName(selectedRoot, itemAttachment, itemAttachmentEntity, changedAttachmentFileName, changedAttachmentEntityFileName);
 
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterUpdate = selectStoredData(selectedRoot);
+		var selectedRootAfterUpdate = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterUpdate.getItems().get(0).getAttachments().get(0)
 															.getFileName()).isEqualTo(changedAttachmentFileName);
 		assertThat(selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0)
@@ -166,7 +166,7 @@ abstract class DraftOdataRequestValidationBase {
 		updateFileName(selectedRoot, itemAttachment, itemAttachmentEntity, "changedAttachmentFileName.txt", "changedAttachmentEntityFileName.txt");
 
 		cancelDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterUpdate = selectStoredData(selectedRoot);
+		var selectedRootAfterUpdate = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterUpdate.getItems().get(0).getAttachments().get(0)
 															.getFileName()).isEqualTo(originAttachmentFileName);
 		assertThat(selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0)
@@ -188,7 +188,7 @@ abstract class DraftOdataRequestValidationBase {
 		createAttachmentEntityWithContent(newAttachmentEntityContent, itemAttachment);
 
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterCreate = selectStoredData(selectedRoot);
+		var selectedRootAfterCreate = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterCreate.getItems().get(0).getAttachments()).hasSize(2);
 		assertThat(selectedRootAfterCreate.getItems().get(0).getAttachmentEntities()).hasSize(2);
 		verifyOnlyTwoCreateEvents(newAttachmentContent, newAttachmentEntityContent);
@@ -208,7 +208,7 @@ abstract class DraftOdataRequestValidationBase {
 		createAttachmentEntityWithContent(newAttachmentEntityContent, itemAttachment);
 
 		cancelDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterCreate = selectStoredData(selectedRoot);
+		var selectedRootAfterCreate = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterCreate.getItems().get(0).getAttachments()).hasSize(1);
 		assertThat(selectedRootAfterCreate.getItems().get(0).getAttachmentEntities()).hasSize(1);
 		verifyTwoCreateAndDeleteEvents(newAttachmentContent, newAttachmentEntityContent);
@@ -225,7 +225,7 @@ abstract class DraftOdataRequestValidationBase {
 		deleteContent(selectedRoot, itemAttachment, itemAttachmentEntity);
 
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterDelete = selectStoredData(selectedRoot);
+		var selectedRootAfterDelete = selectStoredRootData(selectedRoot);
 		verifyContent(selectedRootAfterDelete.getItems().get(0).getAttachments().get(0).getContent(), null);
 		verifyContent(selectedRootAfterDelete.getItems().get(0).getAttachmentEntities().get(0).getContent(), null);
 		verifyOnlyTwoDeleteEvents(itemAttachment.getDocumentId(), itemAttachmentEntity.getDocumentId());
@@ -243,7 +243,7 @@ abstract class DraftOdataRequestValidationBase {
 		deleteContent(selectedRoot, itemAttachment, itemAttachmentEntity);
 
 		cancelDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterDelete = selectStoredData(selectedRoot);
+		var selectedRootAfterDelete = selectStoredRootData(selectedRoot);
 		verifyContent(selectedRootAfterDelete.getItems().get(0).getAttachments().get(0)
 																		.getContent(), "testContent attachment");
 		verifyContent(selectedRootAfterDelete.getItems().get(0).getAttachmentEntities().get(0)
@@ -269,13 +269,13 @@ abstract class DraftOdataRequestValidationBase {
 		putNewContentForAttachmentEntity(newAttachmentEntityContent, itemAttachmentEntity.getId());
 
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterUpdate = selectStoredData(selectedRoot);
+		var selectedRootAfterUpdate = selectStoredRootData(selectedRoot);
 		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachments().get(0).getContent(), newAttachmentContent);
 		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0)
 																		.getContent(), newAttachmentEntityContent);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT);
 		verifyTwoUpdateEvents(newAttachmentContent, attachmentDocumentId, newAttachmentEntityContent, attachmentEntityDocumentId);
-		var selectedRootAfterDeletion = selectStoredData(selectedRoot);
+		var selectedRootAfterDeletion = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachments().get(0).getDocumentId()).isNotEmpty();
 		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachmentEntities().get(0).getDocumentId()).isNotEmpty();
 	}
@@ -319,7 +319,7 @@ abstract class DraftOdataRequestValidationBase {
 		requestHelper.executeDeleteWithMatcher(itemUrl, status().isNoContent());
 
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterDelete = selectStoredData(selectedRoot);
+		var selectedRootAfterDelete = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterDelete.getItems()).isEmpty();
 		verifyOnlyTwoDeleteEvents(selectedRoot.getItems().get(0).getAttachments().get(0)
 																														.getDocumentId(), selectedRoot.getItems().get(0).getAttachmentEntities().get(0)
@@ -338,7 +338,7 @@ abstract class DraftOdataRequestValidationBase {
 		requestHelper.executeDeleteWithMatcher(itemUrl, status().isNoContent());
 
 		cancelDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterDelete = selectStoredData(selectedRoot);
+		var selectedRootAfterDelete = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterDelete.getItems()).isNotEmpty();
 		assertThat(selectedRootAfterDelete.getItems().get(0).getAttachments()).isNotEmpty();
 		assertThat(selectedRootAfterDelete.getItems().get(0).getAttachments().get(0).getDocumentId()).isNotEmpty();
@@ -378,7 +378,7 @@ abstract class DraftOdataRequestValidationBase {
 		createNewContentAndValidateEvents(selectedRoot);
 
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterCreate = selectStoredData(selectedRoot);
+		var selectedRootAfterCreate = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterCreate.getItems().get(0).getAttachments()).hasSize(2);
 		assertThat(selectedRootAfterCreate.getItems().get(0).getAttachmentEntities()).hasSize(2);
 		verifyNoAttachmentEventsCalled();
@@ -393,7 +393,7 @@ abstract class DraftOdataRequestValidationBase {
 		createNewContentAndValidateEvents(selectedRoot);
 
 		cancelDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterCreate = selectStoredData(selectedRoot);
+		var selectedRootAfterCreate = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterCreate.getItems().get(0).getAttachments()).hasSize(1);
 		assertThat(selectedRootAfterCreate.getItems().get(0).getAttachmentEntities()).hasSize(1);
 		verifyNoAttachmentEventsCalled();
@@ -435,6 +435,45 @@ abstract class DraftOdataRequestValidationBase {
 		verifyNothingHasChangedInDraft(selectedRoot, attachmentContent, attachmentEntityContent);
 	}
 
+	@Test
+	void createAndDeleteAttachmentWorks() throws Exception {
+		var selectedRoot = deepCreateAndActivate("testContent attachment", "testContent attachmentEntity");
+		clearServiceHandlerContext();
+		createNewDraftForExistingRoot(selectedRoot.getId());
+
+		var itemAttachment = selectedRoot.getItems().get(0);
+
+		var newAttachmentContent = "new attachment content";
+		createAttachmentWithContent(newAttachmentContent, itemAttachment.getId());
+		var newAttachmentEntityContent = "new attachmentEntity content";
+		createAttachmentEntityWithContent(newAttachmentEntityContent, itemAttachment);
+
+		var draftRoot = selectStoredRootData(DraftRoots_.CDS_NAME + "_drafts", selectedRoot);
+
+		var existingAttachment = selectedRoot.getItems().get(0).getAttachments().get(0);
+		var existingAttachmentEntity = selectedRoot.getItems().get(0).getAttachmentEntities().get(0);
+
+		var newAttachment = draftRoot.getItems().get(0).getAttachments().stream()
+																								.filter(attachment -> !attachment.getId().equals(existingAttachment.getId())).findAny()
+																								.orElseThrow();
+		var newAttachmentEntity = draftRoot.getItems().get(0).getAttachmentEntities().stream()
+																														.filter(attachmentEntity -> !attachmentEntity.getId()
+																																																													.equals(existingAttachmentEntity.getId())).findAny()
+																														.orElseThrow();
+
+		var attachmentDeleteUrl = getAttachmentBaseUrl(selectedRoot.getItems().get(0).getId(), newAttachment.getId(), false);
+		var attachmentEntityDeleteUrl = getAttachmentEntityBaseUrl(newAttachmentEntity.getId(), false);
+
+		requestHelper.executeDeleteWithMatcher(attachmentDeleteUrl, status().isNoContent());
+		requestHelper.executeDeleteWithMatcher(attachmentEntityDeleteUrl, status().isNoContent());
+
+		verifyTwoCreateAndDeleteEvents(newAttachmentContent, newAttachmentEntityContent);
+		clearServiceHandlerContext();
+
+		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
+		verifyNoAttachmentEventsCalled();
+	}
+
 	private DraftRoots deepCreateAndActivate(String testContentAttachment, String testContentAttachmentEntity) throws Exception {
 		var responseRoot = createNewDraft();
 		var rootUrl = updateRoot(responseRoot);
@@ -443,7 +482,7 @@ abstract class DraftOdataRequestValidationBase {
 		createAttachmentEntityWithContent(testContentAttachmentEntity, responseItem);
 		prepareAndActiveDraft(rootUrl);
 
-		return selectStoredData(responseRoot);
+		return selectStoredRootData(responseRoot);
 	}
 
 	private DraftRoots createNewDraft() throws Exception {
@@ -562,12 +601,16 @@ abstract class DraftOdataRequestValidationBase {
 		requestHelper.executeDeleteWithMatcher(rootUrl, status().isNoContent());
 	}
 
-	private DraftRoots selectStoredData(DraftRoots responseRoot) {
-		var select = Select.from(TestDraftService_.DRAFT_ROOTS).where(root -> root.ID().eq(responseRoot.getId()))
-																	.columns(StructuredType::_all, root -> root.items()
-																																																										.expand(StructuredType::_all, item1 -> item1.attachments()
-																																																																																																			.expand(), item1 -> item1.attachmentEntities()
-																																																																																																																									.expand()));
+	private DraftRoots selectStoredRootData(DraftRoots responseRoot) {
+		return selectStoredRootData(DraftRoots_.CDS_NAME, responseRoot);
+	}
+
+	private DraftRoots selectStoredRootData(String entityName, DraftRoots responseRoot) {
+		var select = Select.from(entityName).where(root -> root.get(DraftRoots.ID).eq(responseRoot.getId()))
+																	.columns(StructuredType::_all, root -> root.to(DraftRoots.ITEMS)
+																																																										.expand(StructuredType::_all, item -> item.to(Items.ATTACHMENTS)
+																																																																																																		.expand(), item -> item.to(Items.ATTACHMENT_ENTITIES)
+																																																																																																																							.expand()));
 		return persistenceService.run(select).single(DraftRoots.class);
 	}
 
@@ -619,13 +662,13 @@ abstract class DraftOdataRequestValidationBase {
 	}
 
 	private void verifyNothingHasChangedInDraft(DraftRoots selectedRoot, String attachmentContent, String attachmentEntityContent) throws IOException {
-		var selectedRootAfterUpdate = selectStoredData(selectedRoot);
+		var selectedRootAfterUpdate = selectStoredRootData(selectedRoot);
 
 		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachments().get(0).getContent(), attachmentContent);
 		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0)
 																		.getContent(), attachmentEntityContent);
 		verifyNoAttachmentEventsCalled();
-		var selectedRootAfterDeletion = selectStoredData(selectedRoot);
+		var selectedRootAfterDeletion = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachments().get(0).getDocumentId()).isNotEmpty();
 		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachmentEntities().get(0).getDocumentId()).isNotEmpty();
 	}
