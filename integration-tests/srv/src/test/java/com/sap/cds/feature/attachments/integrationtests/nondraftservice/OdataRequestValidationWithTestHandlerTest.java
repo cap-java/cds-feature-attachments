@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
@@ -127,7 +128,8 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	}
 
 	private void waitTillExpectedHandlerMessageSize(int expectedSize) {
-		Awaitility.await().until(() -> serviceHandler.getEventContext().size() == expectedSize);
+		Awaitility.await().atMost(10000, TimeUnit.MILLISECONDS)
+				.until(() -> serviceHandler.getEventContext().size() == expectedSize);
 	}
 
 	@Override
