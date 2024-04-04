@@ -375,15 +375,8 @@ abstract class DraftOdataRequestValidationBase {
 		clearServiceHandlerContext();
 		createNewDraftForExistingRoot(selectedRoot.getId());
 
-		var itemAttachment = selectedRoot.getItems().get(0);
-		var newAttachmentContent = "new attachment content";
-		createAttachmentWithContent(newAttachmentContent, itemAttachment.getId(), status().is5xxServerError(), true);
-		testPersistenceHandler.reset();
-		var newAttachmentEntityContent = "new attachmentEntity content";
-		createAttachmentEntityWithContent(newAttachmentEntityContent, itemAttachment, status().is5xxServerError(), true);
-		verifyTwoCreateAndDeleteEvents(newAttachmentContent, newAttachmentEntityContent);
-		clearServiceHandlerContext();
-		testPersistenceHandler.reset();
+		createNewContentAndValidateEvents(selectedRoot);
+
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
 		var selectedRootAfterCreate = selectStoredData(selectedRoot);
 		assertThat(selectedRootAfterCreate.getItems().get(0).getAttachments()).hasSize(2);
@@ -397,15 +390,7 @@ abstract class DraftOdataRequestValidationBase {
 		clearServiceHandlerContext();
 		createNewDraftForExistingRoot(selectedRoot.getId());
 
-		var itemAttachment = selectedRoot.getItems().get(0);
-		var newAttachmentContent = "new attachment content";
-		createAttachmentWithContent(newAttachmentContent, itemAttachment.getId(), status().is5xxServerError(), true);
-		testPersistenceHandler.reset();
-		var newAttachmentEntityContent = "new attachmentEntity content";
-		createAttachmentEntityWithContent(newAttachmentEntityContent, itemAttachment, status().is5xxServerError(), true);
-		verifyTwoCreateAndDeleteEvents(newAttachmentContent, newAttachmentEntityContent);
-		clearServiceHandlerContext();
-		testPersistenceHandler.reset();
+		createNewContentAndValidateEvents(selectedRoot);
 
 		cancelDraft(getRootUrl(selectedRoot.getId(), false));
 		var selectedRootAfterCreate = selectStoredData(selectedRoot);
@@ -425,26 +410,11 @@ abstract class DraftOdataRequestValidationBase {
 		var itemAttachment = selectedRoot.getItems().get(0).getAttachments().get(0);
 		var itemAttachmentEntity = selectedRoot.getItems().get(0).getAttachmentEntities().get(0);
 
-		testPersistenceHandler.setThrowExceptionOnUpdate(true);
-		var newAttachmentContent = "new content attachment";
-		putNewContentForAttachment(newAttachmentContent, selectedRoot.getItems().get(0)
-																																																					.getId(), itemAttachment.getId(), status().is5xxServerError());
-		var newAttachmentEntityContent = "new content attachmentEntity";
-		putNewContentForAttachmentEntity(newAttachmentEntityContent, itemAttachmentEntity.getId(), status().is5xxServerError());
-		verifyTwoCreateAndRevertedDeleteEvents();
-		clearServiceHandlerContext();
+		updateContentWithErrorAndValidateEvents(selectedRoot, itemAttachment, itemAttachmentEntity);
 
 		testPersistenceHandler.reset();
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterUpdate = selectStoredData(selectedRoot);
-
-		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachments().get(0).getContent(), attachmentContent);
-		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0)
-																		.getContent(), attachmentEntityContent);
-		verifyNoAttachmentEventsCalled();
-		var selectedRootAfterDeletion = selectStoredData(selectedRoot);
-		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachments().get(0).getDocumentId()).isNotEmpty();
-		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachmentEntities().get(0).getDocumentId()).isNotEmpty();
+		verifyNothingHasChangedInDraft(selectedRoot, attachmentContent, attachmentEntityContent);
 	}
 
 	@Test
@@ -458,26 +428,11 @@ abstract class DraftOdataRequestValidationBase {
 		var itemAttachment = selectedRoot.getItems().get(0).getAttachments().get(0);
 		var itemAttachmentEntity = selectedRoot.getItems().get(0).getAttachmentEntities().get(0);
 
-		testPersistenceHandler.setThrowExceptionOnUpdate(true);
-		var newAttachmentContent = "new content attachment";
-		putNewContentForAttachment(newAttachmentContent, selectedRoot.getItems().get(0)
-																																																					.getId(), itemAttachment.getId(), status().is5xxServerError());
-		var newAttachmentEntityContent = "new content attachmentEntity";
-		putNewContentForAttachmentEntity(newAttachmentEntityContent, itemAttachmentEntity.getId(), status().is5xxServerError());
-		verifyTwoCreateAndRevertedDeleteEvents();
-		clearServiceHandlerContext();
+		updateContentWithErrorAndValidateEvents(selectedRoot, itemAttachment, itemAttachmentEntity);
 
 		testPersistenceHandler.reset();
 		cancelDraft(getRootUrl(selectedRoot.getId(), false));
-		var selectedRootAfterUpdate = selectStoredData(selectedRoot);
-
-		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachments().get(0).getContent(), attachmentContent);
-		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0)
-																		.getContent(), attachmentEntityContent);
-		verifyNoAttachmentEventsCalled();
-		var selectedRootAfterDeletion = selectStoredData(selectedRoot);
-		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachments().get(0).getDocumentId()).isNotEmpty();
-		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachmentEntities().get(0).getDocumentId()).isNotEmpty();
+		verifyNothingHasChangedInDraft(selectedRoot, attachmentContent, attachmentEntityContent);
 	}
 
 	private DraftRoots deepCreateAndActivate(String testContentAttachment, String testContentAttachmentEntity) throws Exception {
@@ -650,6 +605,41 @@ abstract class DraftOdataRequestValidationBase {
 
 		requestHelper.executePatchWithODataResponseAndAssertStatus(attachmentUrl, "{\"fileName\":\"" + changedAttachmentFileName + "\"}", httpStatus);
 		requestHelper.executePatchWithODataResponseAndAssertStatus(attachmentEntityUrl, "{\"fileName\":\"" + changedAttachmentEntityFileName + "\"}", httpStatus);
+	}
+
+	private void updateContentWithErrorAndValidateEvents(DraftRoots selectedRoot, Attachments itemAttachment, AttachmentEntity itemAttachmentEntity) throws Exception {
+		testPersistenceHandler.setThrowExceptionOnUpdate(true);
+		var newAttachmentContent = "new content attachment";
+		putNewContentForAttachment(newAttachmentContent, selectedRoot.getItems().get(0)
+																																																					.getId(), itemAttachment.getId(), status().is5xxServerError());
+		var newAttachmentEntityContent = "new content attachmentEntity";
+		putNewContentForAttachmentEntity(newAttachmentEntityContent, itemAttachmentEntity.getId(), status().is5xxServerError());
+		verifyTwoCreateAndRevertedDeleteEvents();
+		clearServiceHandlerContext();
+	}
+
+	private void verifyNothingHasChangedInDraft(DraftRoots selectedRoot, String attachmentContent, String attachmentEntityContent) throws IOException {
+		var selectedRootAfterUpdate = selectStoredData(selectedRoot);
+
+		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachments().get(0).getContent(), attachmentContent);
+		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0)
+																		.getContent(), attachmentEntityContent);
+		verifyNoAttachmentEventsCalled();
+		var selectedRootAfterDeletion = selectStoredData(selectedRoot);
+		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachments().get(0).getDocumentId()).isNotEmpty();
+		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachmentEntities().get(0).getDocumentId()).isNotEmpty();
+	}
+
+	private void createNewContentAndValidateEvents(DraftRoots selectedRoot) throws Exception {
+		var itemAttachment = selectedRoot.getItems().get(0);
+		var newAttachmentContent = "new attachment content";
+		createAttachmentWithContent(newAttachmentContent, itemAttachment.getId(), status().is5xxServerError(), true);
+		testPersistenceHandler.reset();
+		var newAttachmentEntityContent = "new attachmentEntity content";
+		createAttachmentEntityWithContent(newAttachmentEntityContent, itemAttachment, status().is5xxServerError(), true);
+		verifyTwoCreateAndDeleteEvents(newAttachmentContent, newAttachmentEntityContent);
+		clearServiceHandlerContext();
+		testPersistenceHandler.reset();
 	}
 
 	protected abstract void verifyDocumentId(String documentId, String attachmentId);
