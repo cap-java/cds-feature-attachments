@@ -15,7 +15,6 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 //TODO add Java Doc
-//TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
 public class DeleteAttachmentsHandler implements EventHandler {
 
@@ -32,7 +31,9 @@ public class DeleteAttachmentsHandler implements EventHandler {
 	public void processBefore(CdsDeleteEventContext context) {
 		var attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn());
 		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
-		Converter converter = (path, element, value) -> deleteContentAttachmentEvent.processEvent(path, element, value, CdsData.create(path.target().values()), path.target().keys());
+		Converter converter = (path, element, value) -> deleteContentAttachmentEvent.processEvent(path, value, CdsData.create(path.target()
+																																																																																																																										.values()), context);
+
 		ApplicationHandlerHelper.callProcessor(context.getTarget(), attachments, filter, converter);
 	}
 

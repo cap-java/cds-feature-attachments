@@ -1,11 +1,12 @@
 package com.sap.cds.feature.attachments.service.handler;
 
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentDeleteEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentUpdateEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreDeletedEventContext;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
@@ -19,23 +20,23 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_CREATE_ATTACHMENT)
 	@HandlerOrder(DEFAULT_ON)
 	public void createAttachment(AttachmentCreateEventContext context) {
-		//TODO Malware Scan
+		//TODO Malware Scan and remove setting status here
+		context.getData().setStatusCode(StatusCode.CLEAN);
 		context.setIsInternalStored(true);
 		context.setDocumentId((String) context.getAttachmentIds().get(Attachments.ID));
 		context.setCompleted();
 	}
 
-	@On(event = AttachmentService.EVENT_UPDATE_ATTACHMENT)
+	@On(event = AttachmentService.EVENT_MARK_AS_DELETED)
 	@HandlerOrder(DEFAULT_ON)
-	public void updateAttachment(AttachmentUpdateEventContext context) {
-		context.setIsInternalStored(true);
-		context.setDocumentId(context.getDocumentId());
+	public void deleteAttachment(AttachmentMarkAsDeletedEventContext context) {
+		//nothing to do
 		context.setCompleted();
 	}
 
-	@On(event = AttachmentService.EVENT_DELETE_ATTACHMENT)
+	@On(event = AttachmentService.EVENT_RESTORE_DELETED)
 	@HandlerOrder(DEFAULT_ON)
-	public void deleteAttachment(AttachmentDeleteEventContext context) {
+	public void restoreDeleteAttachment(AttachmentRestoreDeletedEventContext context) {
 		//nothing to do
 		context.setCompleted();
 	}

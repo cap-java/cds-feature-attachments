@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
+import com.sap.cds.services.EventContext;
 
 class DeleteContentAttachmentEventTest {
 
@@ -40,11 +41,11 @@ class DeleteContentAttachmentEventTest {
 		var data = Attachments.create();
 		data.setDocumentId(documentId);
 
-		var expectedValue = cut.processEvent(path, null, value, data, null);
+		var expectedValue = cut.processEvent(path, value, data, mock(EventContext.class));
 
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isEqualTo(documentId);
-		verify(attachmentService).deleteAttachment(documentId);
+		verify(attachmentService).markAsDeleted(documentId);
 		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
 	}
 
@@ -53,7 +54,7 @@ class DeleteContentAttachmentEventTest {
 		var value = "test";
 		var data = Attachments.create();
 
-		var expectedValue = cut.processEvent(path, null, value, data, null);
+		var expectedValue = cut.processEvent(path, value, data, mock(EventContext.class));
 
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isNull();

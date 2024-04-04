@@ -5,7 +5,6 @@ import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.Objects;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +16,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.sap.cds.CdsData;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsElement;
+import com.sap.cds.services.EventContext;
 
 class DoNothingAttachmentEventTest {
 	private DoNothingAttachmentEvent cut;
@@ -35,12 +35,11 @@ class DoNothingAttachmentEventTest {
 		var path = mock(Path.class);
 		var element = mock(CdsElement.class);
 		var data = mock(CdsData.class);
-		var ids = mock(Map.class);
 
-		var result = cut.processEvent(path, element, streamInput, data, ids);
+		var result = cut.processEvent(path, streamInput, data, mock(EventContext.class));
 
 		assertThat(result).isEqualTo(streamInput);
-		verifyNoInteractions(path, element, data, ids);
+		verifyNoInteractions(path, element, data);
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -12,8 +13,13 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems_;
@@ -28,6 +34,7 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.Modifier;
+import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
 import com.sap.cds.services.cds.CqnService;
@@ -77,7 +84,7 @@ class ReadAttachmentsHandlerTest {
 		verify(provider).getBeforeReadDocumentIdEnhancer(fieldNamesArgumentCaptor.capture());
 		verify(modifier).items(any());
 		var fields = fieldNamesArgumentCaptor.getValue();
-		assertThat(fields).hasSize(2).contains("attachments").contains("attachmentTable");
+		assertThat(fields).hasSize(2).contains("attachments").contains("itemAttachments");
 	}
 
 	@Test
@@ -134,9 +141,9 @@ class ReadAttachmentsHandlerTest {
 			item5.setId("item id4");
 			item5.setAttachments(List.of(attachmentWithStreamContentButWithoutDocumentId));
 			var root1 = RootTable.create();
-			root1.setItems(List.of(item2, item1, item4, item5));
+			root1.setItemTable(List.of(item2, item1, item4, item5));
 			var root2 = RootTable.create();
-			root2.setItems(List.of(item3));
+			root2.setItemTable(List.of(item3));
 
 			var select = Select.from(RootTable_.class);
 			mockEventContext(RootTable_.CDS_NAME, select);
@@ -161,6 +168,7 @@ class ReadAttachmentsHandlerTest {
 			var attachment = Attachments.create();
 			attachment.setDocumentId("some ID");
 			attachment.setContent(null);
+			attachment.setStatusCode(StatusCode.CLEAN);
 
 			cut.processAfter(readEventContext, List.of(attachment));
 
@@ -170,6 +178,25 @@ class ReadAttachmentsHandlerTest {
 			assertThat(bytes).isEqualTo(testString.getBytes(StandardCharsets.UTF_8));
 			verify(attachmentService).readAttachment(attachment.getDocumentId());
 		}
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {StatusCode.INFECTED, StatusCode.SCANNING, StatusCode.UNSCANNED, StatusCode.NO_SCANNER})
+	@EmptySource
+	@NullSource
+	void wrongStatusThrowsException(String status) {
+		mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+		var attachment = Attachments.create();
+		attachment.setDocumentId("some ID");
+		attachment.setContent(null);
+		attachment.setStatusCode(status);
+
+		cut.processAfter(readEventContext, List.of(attachment));
+
+		var content = attachment.getContent();
+		assertThat(content).isInstanceOf(LazyProxyInputStream.class);
+		verifyNoInteractions(attachmentService);
+		assertThrows(ServiceException.class, content::readAllBytes);
 	}
 
 	@Test

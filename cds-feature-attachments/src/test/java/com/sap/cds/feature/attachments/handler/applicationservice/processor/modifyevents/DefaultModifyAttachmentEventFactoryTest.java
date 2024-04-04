@@ -48,23 +48,13 @@ class DefaultModifyAttachmentEventFactoryTest {
 	}
 
 	@Test
-	void documentIdNullButtExistingNotNullReturnsUpdate() {
+	void documentIdNullButtExistingNotNullReturnsDelete() {
 		var data = CdsData.create();
 		data.put(Attachments.DOCUMENT_ID, "someValue");
 
 		var event = cut.getEvent(null, null, true, data);
 
 		assertThat(event).isEqualTo(deleteContentEvent);
-	}
-
-	@Test
-	void documentIdNullButtExistingNotNullReturnsDelete() {
-		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
-
-		var event = cut.getEvent(mock(InputStream.class), null, true, data);
-
-		assertThat(event).isEqualTo(updateEvent);
 	}
 
 	@Test
@@ -118,23 +108,20 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@ParameterizedTest
 	@ValueSource(strings = {"some document Id"})
 	@EmptySource
-	void documentIdPresentAndExistingNotNullReturnsDoNothingEvent(String documentId) {
+	void documentIdPresentAndExistingNotNullButDifferentReturnsDeleteEvent(String documentId) {
 		var data = CdsData.create();
 		data.put(Attachments.DOCUMENT_ID, "someValue");
 
 		var event = cut.getEvent(null, documentId, true, data);
 
-		assertThat(event).isEqualTo(doNothingEvent);
+		assertThat(event).isEqualTo(deleteContentEvent);
 	}
 
 	@Test
-	void documentIdPresentAndExistingNotNullButContentNullReturnsDeleteEvent() {
-		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
+	void documentIdPresentAndExistingIdIsNullReturnsNothingToDo() {
+		var event = cut.getEvent(mock(InputStream.class), "test", true, CdsData.create());
 
-		var event = cut.getEvent(null, null, true, data);
-
-		assertThat(event).isEqualTo(deleteContentEvent);
+		assertThat(event).isEqualTo(doNothingEvent);
 	}
 
 	@ParameterizedTest
@@ -155,6 +142,26 @@ class DefaultModifyAttachmentEventFactoryTest {
 		var event = cut.getEvent(null, documentId, false, CdsData.create());
 
 		assertThat(event).isEqualTo(doNothingEvent);
+	}
+
+	@Test
+	void documentIdPresentButNullAndExistingNotNullReturnsUpdateEvent() {
+		var data = CdsData.create();
+		data.put(Attachments.DOCUMENT_ID, "someValue");
+
+		var event = cut.getEvent(mock(InputStream.class), null, true, data);
+
+		assertThat(event).isEqualTo(updateEvent);
+	}
+
+	@Test
+	void updateIfDocumentIdDifferentButContentProvided() {
+		var data = CdsData.create();
+		data.put(Attachments.DOCUMENT_ID, "existing");
+
+		var event = cut.getEvent(mock(InputStream.class), "someValue", true, data);
+
+		assertThat(event).isEqualTo(updateEvent);
 	}
 
 }

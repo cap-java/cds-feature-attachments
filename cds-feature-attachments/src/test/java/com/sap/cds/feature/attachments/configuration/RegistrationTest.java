@@ -13,12 +13,14 @@ import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachme
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.draftservice.DraftAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.services.Service;
 import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.handler.EventHandler;
+import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntime;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
@@ -30,6 +32,7 @@ class RegistrationTest {
 	private ServiceCatalog serviceCatalog;
 	private PersistenceService persistenceService;
 	private AttachmentService attachmentService;
+	private OutboxService outboxService;
 	private ArgumentCaptor<Service> serviceArgumentCaptor;
 	private ArgumentCaptor<EventHandler> handlerArgumentCaptor;
 
@@ -44,6 +47,7 @@ class RegistrationTest {
 		when(cdsRuntime.getServiceCatalog()).thenReturn(serviceCatalog);
 		persistenceService = mock(PersistenceService.class);
 		attachmentService = mock(AttachmentService.class);
+		outboxService = mock(OutboxService.class);
 		serviceArgumentCaptor = ArgumentCaptor.forClass(Service.class);
 		handlerArgumentCaptor = ArgumentCaptor.forClass(EventHandler.class);
 	}
@@ -61,18 +65,21 @@ class RegistrationTest {
 	void handlersAreRegistered() {
 		when(serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME)).thenReturn(persistenceService);
 		when(serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME)).thenReturn(attachmentService);
+		when(serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME)).thenReturn(outboxService);
 
 		cut.eventHandlers(configurer);
 
-		verify(configurer, times(6)).eventHandler(handlerArgumentCaptor.capture());
+		var handlerSize = 7;
+		verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
 		var handlers = handlerArgumentCaptor.getAllValues();
-		assertThat(handlers).hasSize(6);
+		assertThat(handlers).hasSize(handlerSize);
 		isHandlerForClassIncluded(handlers, DefaultAttachmentsServiceHandler.class);
 		isHandlerForClassIncluded(handlers, CreateAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, UpdateAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, DeleteAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, ReadAttachmentsHandler.class);
-		isHandlerForClassIncluded(handlers, DraftAttachmentsHandler.class);
+		isHandlerForClassIncluded(handlers, DraftPatchAttachmentsHandler.class);
+		isHandlerForClassIncluded(handlers, DraftCancelAttachmentsHandler.class);
 	}
 
 	private void isHandlerForClassIncluded(List<EventHandler> handlers, Class<? extends EventHandler> includedClass) {

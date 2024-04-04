@@ -3,15 +3,26 @@ package com.sap.cds.feature.attachments.handler.applicationservice.processor.app
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
+import com.sap.cds.services.ServiceException;
+
 public class LazyProxyInputStream extends InputStream {
 	private final InputStreamSupplier inputStreamSupplier;
+	private final String status;
 	private InputStream delegate;
 
-	public LazyProxyInputStream(InputStreamSupplier inputStreamSupplier) {
+
+	public LazyProxyInputStream(InputStreamSupplier inputStreamSupplier, String status) {
 		this.inputStreamSupplier = inputStreamSupplier;
+		this.status = status;
 	}
 
 	private InputStream getDelegate() throws IOException {
+		if (!StatusCode.CLEAN.equals(status)) {
+			//TODO translation
+			throw new ServiceException("Attachment is not clean");
+		}
+
 		if (delegate == null) {
 			delegate = inputStreamSupplier.get();
 		}

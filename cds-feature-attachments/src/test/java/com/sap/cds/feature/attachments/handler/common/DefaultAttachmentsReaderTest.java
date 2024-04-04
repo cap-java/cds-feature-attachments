@@ -168,48 +168,48 @@ class DefaultAttachmentsReaderTest {
 
 	private String getExpectedSelectStatementWithWhereAndFilter(String id) {
 		var select = """
-				{"SELECT":{"from":{"ref":["unit.test.TestService.RootTable"]},
-				          "columns":[{"ref":["items"],
-				          "expand":[{"ref":["attachments"],
-				          "expand":["*"]}]}],
-				          "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
-				                   "and",{"ref":["ID"]},"=",{"val":"%s"},
-				                   "and",{"ref":["$key"]},"=",{"val":"test"}]}}
+				{"SELECT":{"from":{"ref":[{"id":"unit.test.TestService.RootTable",
+				           "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
+				             "and",{"ref":["ID"]},"=",{"val":"%s"}]}]},
+				           "columns":[{"ref":["items"],
+				            "expand":[{"ref":["attachments"],
+				            "expand":["*"]}]}],
+				           "where":[{"ref":["$key"]},"=",{"val":"test"}]}}
 				""".formatted(id);
 		return removeSpaceInString(select);
 	}
 
 	private String getExpectedSelectStatementForItemsWithWhereAndFilter(String id) {
 		var select = """
-				{"SELECT":{"from":{"ref":["unit.test.TestService.Items"]},
-				          "columns":[{"ref":["attachments"],
-				          "expand":["*"]}],
-				          "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
-				                   "and",{"ref":["ID"]},"=",{"val":"%s"},
-				                   "and",{"ref":["$key"]},"=",{"val":"test"}]}}
+				{"SELECT":{"from":{"ref":[{"id":"unit.test.TestService.Items",
+				           "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
+				             "and",{"ref":["ID"]},"=",{"val":"%s"}]}]},
+				           "columns":[{"ref":["attachments"],
+				           "expand":["*"]}],
+				           "where":[{"ref":["$key"]},"=",{"val":"test"}]}}
 				""".formatted(id);
 		return removeSpaceInString(select);
 	}
 
 	private String getExpectedSelectStatementForAttachmentsWithWhereAndFilter(String id) {
 		var select = """
-				{"SELECT":{"from":{"ref":["unit.test.Attachment"]},
-				          "columns":["*"],
-				          "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
-				                   "and",{"ref":["ID"]},"=",{"val":"%s"},
-				                   "and",{"ref":["$key"]},"=",{"val":"test"}]}}
+				{"SELECT":{"from":{"ref":[{"id":"unit.test.Attachment",
+				           "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
+				             "and",{"ref":["ID"]},"=",{"val":"%s"}]}]},
+				           "columns":["*"],
+				           "where":[{"ref":["$key"]},"=",{"val":"test"}]}}
 				""".formatted(id);
 		return removeSpaceInString(select);
 	}
 
 	private String getExpectedSelectStatementWithFilter(String id) {
 		var select = """
-				{"SELECT":{"from":{"ref":["unit.test.TestService.RootTable"]},
-				          "columns":[{"ref":["items"],
-				          "expand":[{"ref":["attachments"],
-				          "expand":["*"]}]}],
-				          "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
-				                   "and",{"ref":["ID"]},"=",{"val":"%s"}]}}
+				{"SELECT":{"from":{"ref":[{"id":"unit.test.TestService.RootTable",
+				           "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
+				             "and",{"ref":["ID"]},"=",{"val":"%s"}]}]},
+				           "columns":[{"ref":["items"],
+				           "expand":[{"ref":["attachments"],
+				           "expand":["*"]}]}]}}
 				""".formatted(id);
 		return removeSpaceInString(select);
 	}

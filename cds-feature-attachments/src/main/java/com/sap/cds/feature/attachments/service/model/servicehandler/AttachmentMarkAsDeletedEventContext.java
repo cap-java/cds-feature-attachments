@@ -4,17 +4,17 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.EventName;
 
-@EventName(AttachmentService.EVENT_DELETE_ATTACHMENT)
-public interface AttachmentDeleteEventContext extends EventContext {
+@EventName(AttachmentService.EVENT_MARK_AS_DELETED)
+public interface AttachmentMarkAsDeletedEventContext extends EventContext {
 
 	/**
 		* Creates an {@link EventContext} already overlayed with this interface. The event is set to be
-		* {@link AttachmentService#EVENT_DELETE_ATTACHMENT}
+		* {@link AttachmentService#EVENT_MARK_AS_DELETED}
 		*
-		* @return the {@link AttachmentDeleteEventContext}
+		* @return the {@link AttachmentMarkAsDeletedEventContext}
 		*/
-	static AttachmentDeleteEventContext create() {
-		return EventContext.create(AttachmentDeleteEventContext.class, null);
+	static AttachmentMarkAsDeletedEventContext create() {
+		return EventContext.create(AttachmentMarkAsDeletedEventContext.class, null);
 	}
 
 	/**

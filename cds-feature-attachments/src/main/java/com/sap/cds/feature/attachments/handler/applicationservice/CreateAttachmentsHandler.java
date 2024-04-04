@@ -20,7 +20,6 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 //TODO add Java Doc
-//TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
 public class CreateAttachmentsHandler implements EventHandler {
 
@@ -39,7 +38,7 @@ public class CreateAttachmentsHandler implements EventHandler {
 		}
 
 		setKeysInData(context.getTarget(), data);
-		ModifyApplicationHandlerHelper.uploadAttachmentForEntity(context.getTarget(), data, new ArrayList<>(), eventFactory);
+		ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(), eventFactory, context);
 	}
 
 	private void setKeysInData(CdsEntity entity, List<CdsData> data) {

@@ -12,7 +12,6 @@ import com.sap.cds.CdsData;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.StructuredType;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
-import com.sap.cds.ql.cqn.CqnPredicate;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.CqnSelectListItem;
 import com.sap.cds.reflect.CdsEntity;
@@ -31,12 +30,14 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 
 	@Override
 	public List<CdsData> readAttachments(CdsModel model, CdsEntity entity, CqnFilterableStatement statement) {
-		var dataList = new ArrayList<CdsData>();
+		return getData(model, entity, statement);
+	}
 
-		var resultWhere = ApplicationHandlerHelper.getWhere(statement);
+	private ArrayList<CdsData> getData(CdsModel model, CdsEntity entity, CqnFilterableStatement statement) {
+		var dataList = new ArrayList<CdsData>();
 		var pathLists = cascader.findEntityPath(model, entity);
 		pathLists.forEach(path -> {
-			var select = getSelectStatement(path, resultWhere, entity);
+			var select = getSelectStatement(path, entity, statement);
 			select.ifPresent(selectStatement -> {
 				var result = persistence.run(selectStatement);
 				dataList.addAll(result.listOf(CdsData.class));
@@ -47,7 +48,7 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 		return dataList;
 	}
 
-	private Optional<CqnSelect> getSelectStatement(LinkedList<AssociationIdentifier> path, Optional<CqnPredicate> where, CdsEntity entity) {
+	private Optional<CqnSelect> getSelectStatement(LinkedList<AssociationIdentifier> path, CdsEntity entity, CqnFilterableStatement statement) {
 		var listEntry = path.stream().filter(entry -> entry.fullEntityName().equals(entity.getQualifiedName())).findAny();
 		var resultSelect = new AtomicReference<CqnSelect>();
 		listEntry.ifPresent(entry -> {
@@ -63,6 +64,8 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 				}
 
 				if (Objects.isNull(func)) {
+					//TODO use CQL.to
+					//					CQL.to(next.associationName()).
 					func = item -> item.to(next.associationName()).expand();
 				} else {
 					var finalFunc = func;
@@ -74,9 +77,10 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 			if (Objects.isNull(func)) {
 				func = item -> item.to(entity.getQualifiedName())._all();
 			}
-			CqnSelect selectFunc = where.isPresent() ? Select.from(entry.fullEntityName()).where(where.get()).columns(func)
-																												: Select.from(entry.fullEntityName()).columns(func);
-			resultSelect.set(selectFunc);
+			Select<?> select = Select.from(statement.ref()).columns(func);
+			statement.where().ifPresent(select::where);
+
+			resultSelect.set(select);
 		});
 		return Optional.ofNullable(resultSelect.get());
 	}

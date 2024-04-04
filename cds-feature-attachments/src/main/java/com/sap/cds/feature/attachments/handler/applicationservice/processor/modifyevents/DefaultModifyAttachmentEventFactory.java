@@ -42,6 +42,13 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 		if (Objects.nonNull(documentId) && documentId.equals(existingDocumentId) && Objects.nonNull(content)) {
 			event = updateEvent;
 		}
+		if (Objects.nonNull(documentId) && Objects.nonNull(existingDocumentId) && !documentId.equals(existingDocumentId) && Objects.isNull(content)) {
+			event = deleteContentEvent;
+		}
+		if (Objects.nonNull(documentId) && Objects.nonNull(existingDocumentId) && !documentId.equals(existingDocumentId) && Objects.nonNull(content)) {
+			event = updateEvent;
+		}
+
 		return Optional.ofNullable(event);
 	}
 

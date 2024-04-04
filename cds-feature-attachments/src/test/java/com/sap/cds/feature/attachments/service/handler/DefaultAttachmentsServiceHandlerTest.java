@@ -7,12 +7,14 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentDeleteEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentUpdateEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreDeletedEventContext;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -33,35 +35,32 @@ class DefaultAttachmentsServiceHandlerTest {
 		var createContext = AttachmentCreateEventContext.create();
 		var attachmentId = "test ID";
 		createContext.setAttachmentIds(Map.of(Attachments.ID, attachmentId, "OtherId", "OtherID value"));
+		createContext.setData(MediaData.create());
 
 		cut.createAttachment(createContext);
 
 		assertThat(createContext.isCompleted()).isTrue();
 		assertThat(createContext.getDocumentId()).isEqualTo(attachmentId);
 		assertThat(createContext.getIsInternalStored()).isTrue();
-	}
-
-	@Test
-	void updateAttachmentsSetData() {
-		var updateContext = AttachmentUpdateEventContext.create();
-		var documentId = "test document ID";
-		updateContext.setAttachmentIds(Map.of(Attachments.ID, "test ID", "OtherId", "OtherID value"));
-		updateContext.setDocumentId(documentId);
-
-		cut.updateAttachment(updateContext);
-
-		assertThat(updateContext.isCompleted()).isTrue();
-		assertThat(updateContext.getDocumentId()).isEqualTo(documentId);
-		assertThat(updateContext.getIsInternalStored()).isTrue();
+		assertThat(createContext.getData().getStatusCode()).isEqualTo(StatusCode.CLEAN);
 	}
 
 	@Test
 	void deleteAttachmentSetData() {
-		var deleteContext = AttachmentDeleteEventContext.create();
+		var deleteContext = AttachmentMarkAsDeletedEventContext.create();
 
 		cut.deleteAttachment(deleteContext);
 
 		assertThat(deleteContext.isCompleted()).isTrue();
+	}
+
+	@Test
+	void restoreDeleteAttachmentSetData() {
+		var restoreContext = AttachmentRestoreDeletedEventContext.create();
+
+		cut.restoreDeleteAttachment(restoreContext);
+
+		assertThat(restoreContext.isCompleted()).isTrue();
 	}
 
 	@Test
@@ -92,22 +91,22 @@ class DefaultAttachmentsServiceHandlerTest {
 	}
 
 	@Test
-	void updateMethodHasCorrectAnnotation() throws NoSuchMethodException {
-		var updateMethod = cut.getClass().getMethod("updateAttachment", AttachmentUpdateEventContext.class);
+	void restoreMethodHasCorrectAnnotation() throws NoSuchMethodException {
+		var updateMethod = cut.getClass().getMethod("restoreDeleteAttachment", AttachmentRestoreDeletedEventContext.class);
 		var onAnnotation = updateMethod.getAnnotation(On.class);
 		var handlerOrderAnnotation = updateMethod.getAnnotation(HandlerOrder.class);
 
-		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_UPDATE_ATTACHMENT);
+		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_RESTORE_DELETED);
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
 	}
 
 	@Test
 	void deleteMethodHasCorrectAnnotation() throws NoSuchMethodException {
-		var deleteMethod = cut.getClass().getMethod("deleteAttachment", AttachmentDeleteEventContext.class);
+		var deleteMethod = cut.getClass().getMethod("deleteAttachment", AttachmentMarkAsDeletedEventContext.class);
 		var onAnnotation = deleteMethod.getAnnotation(On.class);
 		var handlerOrderAnnotation = deleteMethod.getAnnotation(HandlerOrder.class);
 
-		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_DELETE_ATTACHMENT);
+		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_MARK_AS_DELETED);
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
 	}
 
