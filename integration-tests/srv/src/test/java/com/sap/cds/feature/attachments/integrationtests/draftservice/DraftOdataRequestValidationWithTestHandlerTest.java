@@ -118,6 +118,23 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 		verifyDeleteEventContainsDocumentId(deleteEvents, attachmentEntityDocumentId);
 	}
 
+	@Override
+	protected void verifyTwoCreateAndRevertedDeleteEvents() {
+		awaitNumberOfExpectedEvents(4);
+		var createEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
+		assertThat(createEvents).hasSize(2);
+		assertThat(deleteEvents).hasSize(2);
+		deleteEvents.forEach(event -> {
+			var deleteContext = (AttachmentMarkAsDeletedEventContext) event.context();
+			var createEventFound = createEvents.stream().anyMatch(createEvent -> {
+				var createContext = (AttachmentCreateEventContext) createEvent.context();
+				return createContext.getDocumentId().equals(deleteContext.getDocumentId());
+			});
+			assertThat(createEventFound).isTrue();
+		});
+	}
+
 	private void awaitNumberOfExpectedEvents(int expectedEvents) {
 		Awaitility.await().until(() -> serviceHandler.getEventContext().size() == expectedEvents);
 	}

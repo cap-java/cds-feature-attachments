@@ -74,4 +74,9 @@ class DraftOdataRequestValidationWithoutTestHandlerTest extends DraftOdataReques
 		//	no service handler - nothing to do
 	}
 
+	@Override
+	protected void verifyTwoCreateAndRevertedDeleteEvents() {
+		//	no service handler - nothing to do
+	}
+
 }
