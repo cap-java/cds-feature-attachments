@@ -59,6 +59,7 @@ public class BeforeReadItemsModifier implements Modifier {
 		return newItems;
 	}
 
+	//TODO check: bestehende liste rein geben und erweitern, falls nötig, spart neue Liste zu erzeugen
 	private List<CqnSelectListItem> getNewFieldForMediaAssociation(String association, List<CqnSelectListItem> list) {
 		if (isMediaAssociationAndNeedNewDocumentIdField(association, list)) {
 			return List.of(CQL.get(Attachments.DOCUMENT_ID), CQL.get(Attachments.STATUS_CODE));

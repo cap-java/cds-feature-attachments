@@ -1,7 +1,6 @@
 package com.sap.cds.feature.attachments.integrationtests.nondraftservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
@@ -17,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.AttachmentEntity;
@@ -31,6 +31,7 @@ import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.A
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.AttachmentsEntityBuilder;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.ItemEntityBuilder;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.RootEntityBuilder;
+import com.sap.cds.feature.attachments.integrationtests.testhandler.TestPersistenceHandler;
 import com.sap.cds.feature.attachments.integrationtests.testhandler.TestPluginAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.Select;
@@ -50,6 +51,8 @@ abstract class OdataRequestValidationBase {
 	private PersistenceService persistenceService;
 	@Autowired
 	private TableDataDeleter dataDeleter;
+	@Autowired
+	private TestPersistenceHandler testPersistenceHandler;
 
 	@AfterEach
 	void teardown() {
@@ -57,6 +60,7 @@ abstract class OdataRequestValidationBase {
 		clearServiceHandlerContext();
 		clearServiceHandlerDocuments();
 		requestHelper.resetHelper();
+		testPersistenceHandler.reset();
 	}
 
 	@Test
@@ -393,18 +397,99 @@ abstract class OdataRequestValidationBase {
 	}
 
 	@Test
-	void updateOfContentWorks() {
-		fail("not implemented");
+	void updateContentWorksForUrlsWithNavigation() throws Exception {
+		var serviceRoot = buildServiceRootWithDeepData();
+		postServiceRoot(serviceRoot);
+
+		var selectedRoot = selectStoredRootWithDeepData();
+		var item = getItemWithAttachment(selectedRoot);
+		var itemAttachment = getRandomItemAttachment(item);
+		itemAttachment.setNote("note 1");
+		putContentForAttachmentWithNavigation(selectedRoot, itemAttachment);
+		itemAttachment = selectUpdatedAttachmentWithExpand(selectedRoot, itemAttachment);
+		itemAttachment.setNote("note 2");
+		var content = putContentForAttachmentWithNavigation(selectedRoot, itemAttachment);
+		var attachment = selectUpdatedAttachmentWithExpand(selectedRoot, itemAttachment);
+
+		verifyContentAndDocumentId(attachment, content, itemAttachment);
+		verifySingleCreateAndUpdateEvent(attachment.getDocumentId(), itemAttachment.getDocumentId(), content);
 	}
 
 	@Test
-	void errorInTransactionAfterCreateCallsDelete() {
-		fail("not implemented");
+	void updateContentWorksForUrlsWithoutNavigation() throws Exception {
+		var serviceRoot = buildServiceRootWithDeepData();
+		postServiceRoot(serviceRoot);
+
+		var selectedRoot = selectStoredRootWithDeepData();
+		var item = getItemWithAttachmentEntity(selectedRoot);
+		var itemAttachment = getRandomItemAttachmentEntity(item);
+		itemAttachment.setNote("note 1");
+		putContentForAttachmentWithoutNavigation(itemAttachment);
+		itemAttachment = selectUpdatedAttachment(itemAttachment);
+		itemAttachment.setNote("note 2");
+		var content = putContentForAttachmentWithoutNavigation(itemAttachment);
+		var attachment = selectUpdatedAttachment(itemAttachment);
+
+		verifyContentAndDocumentIdForAttachmentEntity(attachment, content, itemAttachment);
+		verifySingleCreateAndUpdateEvent(attachment.getDocumentId(), itemAttachment.getDocumentId(), content);
 	}
 
 	@Test
-	void errorInTransactionAfterUpdateCallsDelete() {
-		fail("not implemented");
+	void errorInTransactionAfterCreateCallsDelete() throws Exception {
+		var serviceRoot = buildServiceRootWithDeepData();
+		postServiceRoot(serviceRoot);
+
+		var selectedRoot = selectStoredRootWithDeepData();
+		var item = getItemWithAttachment(selectedRoot);
+		var itemAttachment = getRandomItemAttachment(item);
+		testPersistenceHandler.setThrowExceptionOnUpdate(true);
+		putContentForAttachmentWithNavigation(selectedRoot, itemAttachment, status().is5xxServerError());
+		var attachment = selectUpdatedAttachmentWithExpand(selectedRoot, itemAttachment);
+
+		assertThat(attachment.getDocumentId()).isEqualTo(itemAttachment.getDocumentId());
+		assertThat(attachment.getContent()).isEqualTo(itemAttachment.getContent());
+	}
+
+	@Test
+	void updateContentWithErrorsResetsForUrlsWithNavigation() throws Exception {
+		var serviceRoot = buildServiceRootWithDeepData();
+		postServiceRoot(serviceRoot);
+
+		var selectedRoot = selectStoredRootWithDeepData();
+		var item = getItemWithAttachment(selectedRoot);
+		var itemAttachment = getRandomItemAttachment(item);
+		itemAttachment.setNote("note 1");
+		var content = putContentForAttachmentWithNavigation(selectedRoot, itemAttachment);
+		itemAttachment = selectUpdatedAttachmentWithExpand(selectedRoot, itemAttachment);
+		itemAttachment.setNote("note 2");
+		testPersistenceHandler.setThrowExceptionOnUpdate(true);
+		putContentForAttachmentWithNavigation(selectedRoot, itemAttachment, status().is5xxServerError());
+		var attachment = selectUpdatedAttachmentWithExpand(selectedRoot, itemAttachment);
+
+		verifyContentAndDocumentId(attachment, content, itemAttachment);
+		assertThat(attachment.getDocumentId()).isEqualTo(itemAttachment.getDocumentId());
+		verifySingleCreateAndUpdateEvent(attachment.getDocumentId(), itemAttachment.getDocumentId(), content);
+	}
+
+	@Test
+	void updateContentWithErrorResetsForUrlsWithoutNavigation() throws Exception {
+		var serviceRoot = buildServiceRootWithDeepData();
+		postServiceRoot(serviceRoot);
+
+		var selectedRoot = selectStoredRootWithDeepData();
+		var item = getItemWithAttachmentEntity(selectedRoot);
+		var itemAttachment = getRandomItemAttachmentEntity(item);
+		itemAttachment.setNote("note 1");
+		var content = putContentForAttachmentWithoutNavigation(itemAttachment);
+		itemAttachment = selectUpdatedAttachment(itemAttachment);
+		itemAttachment.setNote("note 2");
+		testPersistenceHandler.setThrowExceptionOnUpdate(true);
+		putContentForAttachmentWithoutNavigation(itemAttachment, status().is5xxServerError());
+		var attachment = selectUpdatedAttachment(itemAttachment);
+
+		verifyContentAndDocumentIdForAttachmentEntity(attachment, content, itemAttachment);
+		assertThat(attachment.getDocumentId()).isEqualTo(itemAttachment.getDocumentId());
+		verifySingleCreateAndUpdateEvent(attachment.getDocumentId(), itemAttachment.getDocumentId(), content);
 	}
 
 	private Items selectItem(Items item) {
@@ -482,13 +567,19 @@ abstract class OdataRequestValidationBase {
 	}
 
 	private String putContentForAttachmentWithNavigation(Roots selectedRoot, Attachments itemAttachment) throws Exception {
-		var selectedItem = selectedRoot.getItems().stream().filter(item -> item.getAttachments().contains(itemAttachment))
+		return putContentForAttachmentWithNavigation(selectedRoot, itemAttachment, status().isNoContent());
+	}
+
+	private String putContentForAttachmentWithNavigation(Roots selectedRoot, Attachments itemAttachment, ResultMatcher matcher) throws Exception {
+		var selectedItem = selectedRoot.getItems().stream().filter(item -> item.getAttachments().stream()
+																																																																							.anyMatch(attach -> attach.getId()
+																																																																																													.equals(itemAttachment.getId())))
 																							.findAny().orElseThrow();
 		var url = buildNavigationAttachmentUrl(selectedRoot.getId(), selectedItem.getId(), itemAttachment.getId()) + "/content";
 
-		var testContent = "testContent";
+		var testContent = "testContent" + itemAttachment.getNote();
 		requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-		requestHelper.executePutWithMatcher(url, testContent.getBytes(StandardCharsets.UTF_8), status().isNoContent());
+		requestHelper.executePutWithMatcher(url, testContent.getBytes(StandardCharsets.UTF_8), matcher);
 		return testContent;
 	}
 
@@ -501,10 +592,14 @@ abstract class OdataRequestValidationBase {
 	}
 
 	private String putContentForAttachmentWithoutNavigation(AttachmentEntity itemAttachment) throws Exception {
+		return putContentForAttachmentWithoutNavigation(itemAttachment, status().isNoContent());
+	}
+
+	private String putContentForAttachmentWithoutNavigation(AttachmentEntity itemAttachment, ResultMatcher matcher) throws Exception {
 		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId()) + "/content";
-		var testContent = "testContent";
+		var testContent = "testContent" + itemAttachment.getNote();
 		requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-		requestHelper.executePutWithMatcher(url, testContent.getBytes(StandardCharsets.UTF_8), status().isNoContent());
+		requestHelper.executePutWithMatcher(url, testContent.getBytes(StandardCharsets.UTF_8), matcher);
 		return testContent;
 	}
 
@@ -553,6 +648,8 @@ abstract class OdataRequestValidationBase {
 	protected abstract void clearServiceHandlerDocuments();
 
 	protected abstract void verifySingleCreateEvent(String documentId, String content);
+
+	protected abstract void verifySingleCreateAndUpdateEvent(String resultDocumentId, String toBeDeletedDocumentId, String content);
 
 	protected abstract void verifySingleDeletionEvent(String documentId);
 

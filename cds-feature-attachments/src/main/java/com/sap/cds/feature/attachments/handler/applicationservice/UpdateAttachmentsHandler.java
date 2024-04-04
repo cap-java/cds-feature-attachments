@@ -63,8 +63,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	}
 
 	private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
-		//TODO check only compositions
-		return entity.associations()
+		return entity.compositions()
 											.noneMatch(association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
 	}
 
@@ -89,6 +88,5 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	private boolean isMediaEntity(CdsStructuredType entity) {
 		return entity.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false);
 	}
-
 
 }

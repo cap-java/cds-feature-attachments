@@ -63,6 +63,11 @@ class OdataRequestValidationWithoutTestHandlerTest extends OdataRequestValidatio
 	}
 
 	@Override
+	protected void verifySingleCreateAndUpdateEvent(String resultDocumentId, String toBeDeletedDocumentId, String content) {
+		//no service handler - nothing to do
+	}
+
+	@Override
 	protected void verifySingleDeletionEvent(String documentId) {
 		//no service handler - nothing to do
 	}

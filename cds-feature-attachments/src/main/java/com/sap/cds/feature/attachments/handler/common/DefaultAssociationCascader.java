@@ -25,6 +25,8 @@ public class DefaultAssociationCascader implements AssociationCascader {
 	}
 
 	//TODO build directly expand structure
+	//TODO us Path?
+	//TODO replace LinkedList -> List
 	private List<LinkedList<AssociationIdentifier>> getAttachmentAssociationPath(CdsModel model, CdsEntity entity, String associationName, LinkedList<AssociationIdentifier> firstList, List<String> processedEntities) {
 		var internalResultList = new ArrayList<LinkedList<AssociationIdentifier>>();
 		var currentList = new AtomicReference<LinkedList<AssociationIdentifier>>();

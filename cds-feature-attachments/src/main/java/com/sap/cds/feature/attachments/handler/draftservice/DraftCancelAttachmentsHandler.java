@@ -54,6 +54,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 																																																																																					.type()) && element.getName()
 																																																																																																			.equals(Attachments.DOCUMENT_ID);
 			Validator validator = (path, element, value) -> {
+				//TODO compare with update case
 				if (Boolean.FALSE.equals(path.target().values().get(Drafts.HAS_ACTIVE_ENTITY))) {
 					deleteContentAttachmentEvent.processEvent(path, null, CdsData.create(path.target().values()), context);
 					return;

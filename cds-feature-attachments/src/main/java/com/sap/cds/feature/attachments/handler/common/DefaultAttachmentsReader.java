@@ -64,6 +64,8 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 				}
 
 				if (Objects.isNull(func)) {
+					//TODO use CQL.to
+					//					CQL.to(next.associationName()).
 					func = item -> item.to(next.associationName()).expand();
 				} else {
 					var finalFunc = func;

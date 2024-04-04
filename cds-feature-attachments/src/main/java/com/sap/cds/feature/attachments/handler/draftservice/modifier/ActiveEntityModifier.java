@@ -38,6 +38,7 @@ public class ActiveEntityModifier implements Modifier {
 	@Override
 	public CqnPredicate comparison(Value<?> lhs, Operator op, Value<?> rhs) {
 		Value<?> rhsNew = rhs;
+		//TODO check if rhs is active entity
 		if (lhs.isRef() && Drafts.IS_ACTIVE_ENTITY.equals(lhs.asRef().lastSegment())) {
 			rhsNew = CQL.constant(isActiveEntity);
 		}
