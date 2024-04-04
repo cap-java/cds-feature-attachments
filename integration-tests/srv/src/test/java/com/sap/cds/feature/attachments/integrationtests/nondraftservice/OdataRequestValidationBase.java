@@ -400,12 +400,12 @@ abstract class OdataRequestValidationBase {
 
 	@Test
 	void errorInTransactionAfterCreateCallsDelete() {
-		Assertions.fail("not implemented");
+		fail("not implemented");
 	}
 
 	@Test
 	void errorInTransactionAfterUpdateCallsDelete() {
-		Assertions.fail("not implemented");
+		fail("not implemented");
 	}
 
 	private Items selectItem(Items item) {
