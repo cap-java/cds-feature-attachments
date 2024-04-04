@@ -119,6 +119,7 @@ class DraftPatchAttachmentsHandlerTest {
 		cut.processBeforeDraftPatch(eventContext, List.of(root));
 
 		verify(eventFactory).getEvent(content, attachment.getDocumentId(), true, attachment);
+		verify(event).processEvent(any(), eq(content), eq(attachment), eq(eventContext));
 	}
 
 	@Test
@@ -150,21 +151,6 @@ class DraftPatchAttachmentsHandlerTest {
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 
-	@Test
-	void eventProcessingCalled() {
-		getEntityAndMockContext(RootTable_.CDS_NAME);
-		var attachment = Attachments.create();
-		var root = buildRooWithAttachment(attachment);
-		attachment.setDocumentId(UUID.randomUUID().toString());
-		var content = attachment.getContent();
-		var result = mock(Result.class);
-		when(persistence.run(any(CqnSelect.class))).thenReturn(result);
-		when(result.listOf(CdsData.class)).thenReturn(List.of(attachment));
-
-		cut.processBeforeDraftPatch(eventContext, List.of(root));
-
-		verify(event).processEvent(any(), eq(content), eq(attachment), eq(eventContext));
-	}
 
 	private RootTable buildRooWithAttachment(Attachments attachments) {
 		var items = Items.create();
