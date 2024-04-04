@@ -25,7 +25,6 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.utils.model.CqnUtils;
 
 //TODO add Java Doc
-//TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
 public class UpdateAttachmentsHandler implements EventHandler {
 

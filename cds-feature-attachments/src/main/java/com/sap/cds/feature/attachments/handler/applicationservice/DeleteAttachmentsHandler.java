@@ -15,7 +15,6 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 //TODO add Java Doc
-//TODO exception handling
 @ServiceName(value = "*", type = ApplicationService.class)
 public class DeleteAttachmentsHandler implements EventHandler {
 

@@ -10,7 +10,6 @@ import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.handler.draftservice.modifier.ActiveEntityModifierProvider;
 import com.sap.cds.ql.CQL;
-import com.sap.cds.ql.cqn.CqnAnalyzer;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.DraftCancelEventContext;
 import com.sap.cds.services.draft.DraftService;
@@ -47,9 +46,6 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			var cqnInactiveEntity = CQL.copy(context.getCqn(), activeEntityModifierProvider.getModifier(false, inactiveEntity.getQualifiedName()));
 			var draftAttachments = attachmentsReader.readAttachments(context.getModel(), (CdsEntity) inactiveEntity, cqnInactiveEntity);
 
-			var analyser = CqnAnalyzer.create(context.getModel());
-			var result = analyser.analyze(context.getCqn());
-
 			var cqnActiveEntity = CQL.copy(context.getCqn(), activeEntityModifierProvider.getModifier(true, activeEntity.getQualifiedName()));
 			var activeAttachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), cqnActiveEntity);
 			var condensedActiveData = ApplicationHandlerHelper.condenseData(activeAttachments, context.getTarget());
@@ -71,7 +67,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 					}
 				});
 			};
-			ApplicationHandlerHelper.callValidator(result.targetEntity(), draftAttachments, filter, validator);
+			ApplicationHandlerHelper.callValidator(context.getTarget(), draftAttachments, filter, validator);
 
 		}
 

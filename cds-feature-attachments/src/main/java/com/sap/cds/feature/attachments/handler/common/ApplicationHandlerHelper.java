@@ -28,9 +28,7 @@ public final class ApplicationHandlerHelper {
 
 	public static boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
 		var isIncluded = new AtomicBoolean();
-		//TODO use reuse filter
-		Filter filter = (path, element, type) -> path.target().type()
-																																													.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false) && hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
+		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Validator validator = (path, element, value) -> isIncluded.set(true);
 
 		callValidator(entity, data, filter, validator);

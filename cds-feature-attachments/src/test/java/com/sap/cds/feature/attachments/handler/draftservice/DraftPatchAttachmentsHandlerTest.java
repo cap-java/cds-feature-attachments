@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.draft;
+package com.sap.cds.feature.attachments.handler.draftservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -23,7 +23,6 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
-import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.CqnSelect;
@@ -39,6 +38,7 @@ import com.sap.cds.services.runtime.CdsRuntime;
 class DraftPatchAttachmentsHandlerTest {
 
 	private static CdsRuntime runtime;
+
 	private DraftPatchAttachmentsHandler cut;
 	private EventContext eventContext;
 	private PersistenceService persistence;

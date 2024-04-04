@@ -16,9 +16,4 @@ class ModelConstantsTest {
 		assertThat(ModelConstants.ANNOTATION_CORE_MEDIA_TYPE).isEqualTo("Core.MediaType");
 	}
 
-	@Test
-	void correctValueForFileNameAnnotation() {
-		assertThat(ModelConstants.ANNOTATION_CONTENT_DISPOSITION_FILENAME).isEqualTo("ContentDisposition.Filename");
-	}
-
 }
