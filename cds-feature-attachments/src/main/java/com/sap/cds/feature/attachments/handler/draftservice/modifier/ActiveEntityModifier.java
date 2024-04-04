@@ -11,7 +11,6 @@ import com.sap.cds.ql.cqn.CqnStructuredTypeRef;
 import com.sap.cds.ql.cqn.Modifier;
 import com.sap.cds.services.draft.Drafts;
 
-//TODO Unit Tests
 public class ActiveEntityModifier implements Modifier {
 
 	private final boolean isActiveEntity;
