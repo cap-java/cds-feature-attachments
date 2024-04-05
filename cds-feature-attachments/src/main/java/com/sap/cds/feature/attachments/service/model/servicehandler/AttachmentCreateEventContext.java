@@ -7,6 +7,9 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.EventName;
 
+/**
+	* The {@link AttachmentCreateEventContext} is used to store the context of the create attachment event.
+	*/
 @EventName(AttachmentService.EVENT_CREATE_ATTACHMENT)
 public interface AttachmentCreateEventContext extends EventContext {
 

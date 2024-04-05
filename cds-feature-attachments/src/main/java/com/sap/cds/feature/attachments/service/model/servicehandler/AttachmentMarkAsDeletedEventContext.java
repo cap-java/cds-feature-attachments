@@ -4,6 +4,9 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.EventName;
 
+/**
+	* The {@link AttachmentMarkAsDeletedEventContext} is used to mark an attachment as deleted.
+	*/
 @EventName(AttachmentService.EVENT_MARK_AS_DELETED)
 public interface AttachmentMarkAsDeletedEventContext extends EventContext {
 

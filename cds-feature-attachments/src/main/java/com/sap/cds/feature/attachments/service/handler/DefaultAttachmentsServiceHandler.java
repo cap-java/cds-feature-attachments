@@ -12,6 +12,14 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
+/**
+	* The class {@link DefaultAttachmentsServiceHandler} is an event handler that
+	* is called when an attachment is created, marked as deleted, restored or read.
+	* <p>
+	* As the documents and content is stored in the database with this handler the
+	* handler sets the isInternalStored flag to true in the create-context.
+	* Without this flag the content would be deleted in the database.
+	*/
 @ServiceName(value = "*", type = AttachmentService.class)
 public class DefaultAttachmentsServiceHandler implements EventHandler {
 
@@ -30,21 +38,21 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_MARK_AS_DELETED)
 	@HandlerOrder(DEFAULT_ON)
 	public void deleteAttachment(AttachmentMarkAsDeletedEventContext context) {
-		//nothing to do
+		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
 	}
 
 	@On(event = AttachmentService.EVENT_RESTORE_DELETED)
 	@HandlerOrder(DEFAULT_ON)
 	public void restoreDeleteAttachment(AttachmentRestoreDeletedEventContext context) {
-		//nothing to do
+		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
 	}
 
 	@On(event = AttachmentService.EVENT_READ_ATTACHMENT)
 	@HandlerOrder(DEFAULT_ON)
 	public void readAttachment(AttachmentReadEventContext context) {
-		//nothing to do
+		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
 	}
 

@@ -17,6 +17,13 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
 
+/**
+	* The class {@link DraftPatchAttachmentsHandler} is an event handler that is called
+	* before a draft patch event is executed.
+	* The handler checks the attachments of the draft entity and calls the event factory
+	* and corresponding events.
+	*/
+
 @ServiceName(value = "*", type = DraftService.class)
 public class DraftPatchAttachmentsHandler implements EventHandler {
 

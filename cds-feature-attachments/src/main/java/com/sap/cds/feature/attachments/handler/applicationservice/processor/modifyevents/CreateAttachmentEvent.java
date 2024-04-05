@@ -1,6 +1,9 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
 import java.io.InputStream;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
@@ -12,6 +15,11 @@ import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInp
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 
+/**
+	* The class {@link CreateAttachmentEvent} handles the creation of an attachment.
+	* It calls the {@link AttachmentService} to create the attachment and registers the
+	* transaction listener to be able to revert the creation in case of errors.
+	*/
 public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
 	private final AttachmentService attachmentService;
@@ -28,8 +36,8 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 	public Object processEvent(Path path, Object value, CdsData existingData, EventContext eventContext) {
 		var values = path.target().values();
 		var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
-		var mimeTypeOptional = ModifyAttachmentEventHelper.getFieldValue(MediaData.MIME_TYPE, values, existingData);
-		var fileNameOptional = ModifyAttachmentEventHelper.getFieldValue(MediaData.FILE_NAME, values, existingData);
+		var mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, existingData);
+		var fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, existingData);
 
 		var createEventInput = new CreateAttachmentInput(keys, path.target().entity()
 																																																																				.getQualifiedName(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
@@ -40,6 +48,12 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		path.target().values().put(Attachments.DOCUMENT_ID, result.documentId());
 		path.target().values().put(Attachments.STATUS_CODE, result.attachmentStatus());
 		return result.isInternalStored() ? value : null;
+	}
+
+	private static Optional<String> getFieldValue(String fieldName, Map<String, Object> values, CdsData existingData) {
+		var annotationValue = values.get(fieldName);
+		var value = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(fieldName);
+		return Optional.ofNullable((String) value);
 	}
 
 }

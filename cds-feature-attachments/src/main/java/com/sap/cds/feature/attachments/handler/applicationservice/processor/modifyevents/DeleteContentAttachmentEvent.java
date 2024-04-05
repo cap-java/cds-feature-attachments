@@ -10,6 +10,12 @@ import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.draft.DraftService;
 
+//TODO rename to mark as deleted
+
+/**
+	* The class {@link DeleteContentAttachmentEvent} handles the deletion of an attachment.
+	* It calls the {@link AttachmentService} to mark the attachment as deleted.
+	*/
 public class DeleteContentAttachmentEvent implements ModifyAttachmentEvent {
 
 	private final AttachmentService outboxedAttachmentService;

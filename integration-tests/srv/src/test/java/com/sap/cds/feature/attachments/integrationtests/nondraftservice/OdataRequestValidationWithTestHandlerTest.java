@@ -128,7 +128,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	}
 
 	private void waitTillExpectedHandlerMessageSize(int expectedSize) {
-		Awaitility.await().atMost(100, TimeUnit.SECONDS)
+		Awaitility.await().atMost(30, TimeUnit.SECONDS)
 				.until(() -> serviceHandler.getEventContext().size() == expectedSize);
 	}
 

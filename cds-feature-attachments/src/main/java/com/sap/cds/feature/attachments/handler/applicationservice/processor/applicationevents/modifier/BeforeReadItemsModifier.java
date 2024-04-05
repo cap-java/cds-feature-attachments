@@ -1,7 +1,6 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.modifier;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
@@ -10,6 +9,10 @@ import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnSelectListItem;
 import com.sap.cds.ql.cqn.Modifier;
 
+/**
+	* The class {@link BeforeReadItemsModifier} is a modifier that adds the document id field
+	* and status code to the select items.
+	*/
 public class BeforeReadItemsModifier implements Modifier {
 
 	private static final String ROOT_ASSOCIATION = "";
@@ -30,8 +33,8 @@ public class BeforeReadItemsModifier implements Modifier {
 	}
 
 	private List<CqnSelectListItem> addDocumentIdItem(List<CqnSelectListItem> list) {
-		var fieldsToAdd = getNewFieldForMediaAssociation(ROOT_ASSOCIATION, list);
-		List<CqnSelectListItem> newItems = new ArrayList<>(fieldsToAdd);
+		List<CqnSelectListItem> newItems = new ArrayList<>();
+		enhanceWithNewFieldForMediaAssociation(ROOT_ASSOCIATION, list, newItems);
 
 		List<CqnSelectListItem> expandedItems = list.stream().filter(CqnSelectListItem::isExpand).toList();
 		newItems.addAll(processExpandedEntities(expandedItems));
@@ -44,9 +47,7 @@ public class BeforeReadItemsModifier implements Modifier {
 		expandedItems.forEach(item -> {
 			List<CqnSelectListItem> newItemsFromExpand = new ArrayList<>(item.asExpand().items().stream()
 																																																																		.filter(i -> !i.isExpand()).toList());
-			var fieldsToAdd = getNewFieldForMediaAssociation(item.asExpand().displayName(), newItemsFromExpand);
-			newItemsFromExpand.addAll(fieldsToAdd);
-
+			enhanceWithNewFieldForMediaAssociation(item.asExpand().displayName(), newItemsFromExpand, newItemsFromExpand);
 			List<CqnSelectListItem> expandedSubItems = item.asExpand().items().stream().filter(CqnSelectListItem::isExpand)
 																																																.toList();
 			var result = processExpandedEntities(expandedSubItems);
@@ -59,12 +60,11 @@ public class BeforeReadItemsModifier implements Modifier {
 		return newItems;
 	}
 
-	//TODO check: bestehende liste rein geben und erweitern, falls nötig, spart neue Liste zu erzeugen
-	private List<CqnSelectListItem> getNewFieldForMediaAssociation(String association, List<CqnSelectListItem> list) {
+	private void enhanceWithNewFieldForMediaAssociation(String association, List<CqnSelectListItem> list, List<CqnSelectListItem> listToEnhance) {
 		if (isMediaAssociationAndNeedNewDocumentIdField(association, list)) {
-			return List.of(CQL.get(Attachments.DOCUMENT_ID), CQL.get(Attachments.STATUS_CODE));
+			listToEnhance.add(CQL.get(Attachments.DOCUMENT_ID));
+			listToEnhance.add(CQL.get(Attachments.STATUS_CODE));
 		}
-		return Collections.emptyList();
 	}
 
 	private boolean isMediaAssociationAndNeedNewDocumentIdField(String association, List<CqnSelectListItem> list) {

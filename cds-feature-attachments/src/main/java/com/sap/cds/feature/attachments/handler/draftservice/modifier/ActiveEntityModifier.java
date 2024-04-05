@@ -11,6 +11,11 @@ import com.sap.cds.ql.cqn.CqnStructuredTypeRef;
 import com.sap.cds.ql.cqn.Modifier;
 import com.sap.cds.services.draft.Drafts;
 
+/**
+	* The class {@link ActiveEntityModifier} is used to modify the following values in a given ref: <br>
+	* - {@code isActiveEntity} <br>
+	* - {@code fullEntityName}
+	*/
 public class ActiveEntityModifier implements Modifier {
 
 	private final boolean isActiveEntity;
@@ -38,11 +43,14 @@ public class ActiveEntityModifier implements Modifier {
 	@Override
 	public CqnPredicate comparison(Value<?> lhs, Operator op, Value<?> rhs) {
 		Value<?> rhsNew = rhs;
-		//TODO check if rhs is active entity
+		Value<?> lhsNew = lhs;
 		if (lhs.isRef() && Drafts.IS_ACTIVE_ENTITY.equals(lhs.asRef().lastSegment())) {
 			rhsNew = CQL.constant(isActiveEntity);
 		}
-		return CQL.comparison(lhs, op, rhsNew);
+		if (rhs.isRef() && Drafts.IS_ACTIVE_ENTITY.equals(rhs.asRef().lastSegment())) {
+			lhsNew = CQL.constant(isActiveEntity);
+		}
+		return CQL.comparison(lhsNew, op, rhsNew);
 	}
 
 

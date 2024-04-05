@@ -6,6 +6,9 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.EventName;
 
+/**
+	* The {@link AttachmentRestoreDeletedEventContext} is used to store the context of the restore deleted attachment event.
+	*/
 @EventName(AttachmentService.EVENT_RESTORE_DELETED)
 public interface AttachmentRestoreDeletedEventContext extends EventContext {
 

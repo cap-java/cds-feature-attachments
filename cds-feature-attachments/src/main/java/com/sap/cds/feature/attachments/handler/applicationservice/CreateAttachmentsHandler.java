@@ -19,7 +19,11 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
-//TODO add Java Doc
+/**
+	* The class {@link CreateAttachmentsHandler} is an event handler that is
+	* responsible for creating attachments for entities.
+	* It is called before a create event is executed.
+	*/
 @ServiceName(value = "*", type = ApplicationService.class)
 public class CreateAttachmentsHandler implements EventHandler {
 

@@ -6,6 +6,10 @@ import java.io.InputStream;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.services.ServiceException;
 
+/**
+	* The class {@link LazyProxyInputStream} is a lazy proxy for an {@link InputStream}.
+	* The class is used to create a proxy for an {@link InputStream} that is not yet available.
+	*/
 public class LazyProxyInputStream extends InputStream {
 	private final InputStreamSupplier inputStreamSupplier;
 	private final String status;
