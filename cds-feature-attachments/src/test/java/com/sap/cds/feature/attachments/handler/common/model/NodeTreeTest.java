@@ -107,5 +107,4 @@ class NodeTreeTest {
 		assertThat(cut.children.get(0).children.get(0).children).isEmpty();
 	}
 
-
 }
