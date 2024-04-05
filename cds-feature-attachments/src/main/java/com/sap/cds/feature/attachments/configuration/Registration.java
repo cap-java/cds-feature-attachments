@@ -28,7 +28,11 @@ import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 
-//TODO JavaDoc
+
+/**
+	* The class {@link Registration} is a configuration class that registers the
+	* services and event handlers for the attachments feature.
+	*/
 public class Registration implements CdsRuntimeConfiguration {
 
 	@Override

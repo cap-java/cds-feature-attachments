@@ -30,7 +30,15 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
-//TODO add Java Doc
+/**
+	* The class {@link ReadAttachmentsHandler} is an event handler that is
+	* responsible for reading attachments for entities.
+	* In the before read event, it modifies the CQN to include the document ID and status.
+	* In the after read event, it adds a proxy for the stream of the attachments service to the data.
+	* Only if the data are read the proxy forwards the request to the attachment service to read the attachment.
+	* This is needed to have a filled stream in the data to enable the OData V4 adapter to enrich the data that
+	* a link to the document can be shown on the UI.
+	*/
 @ServiceName(value = "*", type = ApplicationService.class)
 public class ReadAttachmentsHandler implements EventHandler {
 

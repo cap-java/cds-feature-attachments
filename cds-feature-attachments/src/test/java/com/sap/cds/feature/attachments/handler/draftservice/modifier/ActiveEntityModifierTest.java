@@ -69,13 +69,16 @@ class ActiveEntityModifierTest {
 	void onlyRefActiveEntityIsReplaced() {
 		var select = Select.from(RootTable_.class).where(root -> root.IsActiveEntity().eq(true)
 																																																													.and(root.HasActiveEntity().eq(true).and(CQL.constant(true)
-																																																																																																								.eq(root.IsActiveEntity()))));
+																																																																																																								.eq(root.IsActiveEntity())
+																																																																																																								.and(CQL.constant(true)
+																																																																																																															.eq(root.HasActiveEntity())))));
 
 		var result = CQL.copy(select, new ActiveEntityModifier(false, RootTable_.CDS_NAME));
 
 		assertThat(result.toString()).contains("{\"ref\":[\"IsActiveEntity\"]},\"=\",{\"val\":false}");
 		assertThat(result.toString()).contains("{\"ref\":[\"HasActiveEntity\"]},\"=\",{\"val\":true}");
-		assertThat(result.toString()).contains("{\"val\":true},\"=\",{\"ref\":[\"IsActiveEntity\"]}");
+		assertThat(result.toString()).contains("{\"val\":false},\"=\",{\"ref\":[\"IsActiveEntity\"]}");
+		assertThat(result.toString()).contains("{\"val\":true},\"=\",{\"ref\":[\"HasActiveEntity\"]}");
 	}
 
 }
