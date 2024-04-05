@@ -119,6 +119,7 @@ abstract class DraftOdataRequestValidationBase {
 
 		requestHelper.executeDeleteWithMatcher(attachmentDeleteUrl, status().isNoContent());
 		requestHelper.executeDeleteWithMatcher(attachmentEntityDeleteUrl, status().isNoContent());
+		verifyNoAttachmentEventsCalled();
 
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
 
@@ -223,6 +224,7 @@ abstract class DraftOdataRequestValidationBase {
 		var itemAttachmentEntity = selectedRoot.getItems().get(0).getAttachmentEntities().get(0);
 
 		deleteContent(selectedRoot, itemAttachment, itemAttachmentEntity);
+		verifyNoAttachmentEventsCalled();
 
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
 		var selectedRootAfterDelete = selectStoredRootData(selectedRoot);
@@ -317,6 +319,7 @@ abstract class DraftOdataRequestValidationBase {
 
 		var itemUrl = getItemUrl(selectedRoot.getItems().get(0), false);
 		requestHelper.executeDeleteWithMatcher(itemUrl, status().isNoContent());
+		verifyNoAttachmentEventsCalled();
 
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
 		var selectedRootAfterDelete = selectStoredRootData(selectedRoot);

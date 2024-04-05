@@ -13,7 +13,6 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRe
 import com.sap.cds.services.ServiceDelegator;
 
 //TODO add java doc
-//TODO exception handling
 //TODO i18n properties
 public class DefaultAttachmentsService extends ServiceDelegator implements AttachmentService {
 
