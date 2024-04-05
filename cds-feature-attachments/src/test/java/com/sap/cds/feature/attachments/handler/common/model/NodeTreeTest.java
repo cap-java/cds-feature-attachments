@@ -34,11 +34,7 @@ class NodeTreeTest {
 		var cut = new NodeTree(identifier1);
 		cut.addPath(List.of(identifier1, identifier2, identifier3));
 
-		assertThat(cut.children).hasSize(1);
-		assertThat(cut.children.get(0).identifier).isEqualTo(identifier2);
-		assertThat(cut.children.get(0).children).hasSize(1);
-		assertThat(cut.children.get(0).children.get(0).identifier).isEqualTo(identifier3);
-		assertThat(cut.children.get(0).children.get(0).children).isEmpty();
+		verifyTwoNodeHierarchies(cut, identifier2, identifier3);
 	}
 
 	@Test
@@ -51,11 +47,7 @@ class NodeTreeTest {
 		cut.addPath(List.of(identifier1, identifier2, identifier3));
 		cut.addPath(List.of(identifier1, identifier2, identifier3));
 
-		assertThat(cut.children).hasSize(1);
-		assertThat(cut.children.get(0).identifier).isEqualTo(identifier2);
-		assertThat(cut.children.get(0).children).hasSize(1);
-		assertThat(cut.children.get(0).children.get(0).identifier).isEqualTo(identifier3);
-		assertThat(cut.children.get(0).children.get(0).children).isEmpty();
+		verifyTwoNodeHierarchies(cut, identifier2, identifier3);
 	}
 
 	@Test
@@ -106,5 +98,14 @@ class NodeTreeTest {
 
 		assertThat(cut.children).isEmpty();
 	}
+
+	private void verifyTwoNodeHierarchies(NodeTree cut, AssociationIdentifier identifier2, AssociationIdentifier identifier3) {
+		assertThat(cut.children).hasSize(1);
+		assertThat(cut.children.get(0).identifier).isEqualTo(identifier2);
+		assertThat(cut.children.get(0).children).hasSize(1);
+		assertThat(cut.children.get(0).children.get(0).identifier).isEqualTo(identifier3);
+		assertThat(cut.children.get(0).children.get(0).children).isEmpty();
+	}
+
 
 }
