@@ -11,6 +11,11 @@ import com.sap.cds.ql.cqn.CqnStructuredTypeRef;
 import com.sap.cds.ql.cqn.Modifier;
 import com.sap.cds.services.draft.Drafts;
 
+/**
+	* The class {@link ActiveEntityModifier} is used to modify the following values in a given ref: <br>
+	* - {@code isActiveEntity} <br>
+	* - {@code fullEntityName}
+	*/
 public class ActiveEntityModifier implements Modifier {
 
 	private final boolean isActiveEntity;

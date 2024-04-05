@@ -1,5 +1,6 @@
 package com.sap.cds.feature.attachments.handler.draftservice.constants;
 
+
 public final class DraftConstants {
 
 	public static final String SIBLING_ENTITY = "SiblingEntity";

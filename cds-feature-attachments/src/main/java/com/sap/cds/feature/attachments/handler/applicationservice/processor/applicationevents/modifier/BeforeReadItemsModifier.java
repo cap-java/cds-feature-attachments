@@ -9,6 +9,10 @@ import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnSelectListItem;
 import com.sap.cds.ql.cqn.Modifier;
 
+/**
+	* The class {@link BeforeReadItemsModifier} is a modifier that adds the document id field
+	* and status code to the select items.
+	*/
 public class BeforeReadItemsModifier implements Modifier {
 
 	private static final String ROOT_ASSOCIATION = "";

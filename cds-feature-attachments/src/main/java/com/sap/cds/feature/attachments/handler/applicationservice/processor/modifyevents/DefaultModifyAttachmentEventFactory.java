@@ -5,10 +5,11 @@ import java.util.Optional;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.service.AttachmentService;
 
 /**
 	* The class {@link DefaultModifyAttachmentEventFactory} is a factory class
-	* that creates the corresponding event for the attachment.
+	* that creates the corresponding event for the attachment service {@link AttachmentService}.
 	* The class is used to determine the event that should be executed based on the content,
 	* the documentId and the existingData.
 	* The events could be: <br>

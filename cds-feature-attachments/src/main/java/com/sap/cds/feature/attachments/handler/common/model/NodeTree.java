@@ -3,6 +3,9 @@ package com.sap.cds.feature.attachments.handler.common.model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+	* The class {@link NodeTree} is a tree data structure that holds the association identifier and its children.
+	*/
 public class NodeTree {
 
 	final AssociationIdentifier identifier;

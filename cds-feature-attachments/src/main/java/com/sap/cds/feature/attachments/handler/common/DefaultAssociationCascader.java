@@ -16,6 +16,12 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.reflect.CdsStructuredType;
 
+/**
+	* The class {@link DefaultAssociationCascader} is used to find entity paths
+	* to all media resource entities for a given data model.
+	* The path information is returned in a node tree which starts from the given entity.
+	* Only composition associations are considered.
+	*/
 public class DefaultAssociationCascader implements AssociationCascader {
 
 	@Override

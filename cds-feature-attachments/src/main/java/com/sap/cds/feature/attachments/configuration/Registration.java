@@ -12,7 +12,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.UpdateAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.DefaultListenerProvider;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.CreationChangeSetListener;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
@@ -69,8 +69,7 @@ public class Registration implements CdsRuntimeConfiguration {
 	}
 
 	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService, ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
-		var listenerProvider = new DefaultListenerProvider();
-		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, outboxedAttachmentService, listenerProvider);
+		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, outboxedAttachmentService, CreationChangeSetListener::new);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
 		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();

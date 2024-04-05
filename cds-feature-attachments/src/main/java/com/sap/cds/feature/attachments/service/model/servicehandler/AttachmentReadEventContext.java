@@ -5,6 +5,9 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.EventName;
 
+/**
+	* The {@link AttachmentReadEventContext} is used to store the context of the read attachment event.
+	*/
 @EventName(AttachmentService.EVENT_READ_ATTACHMENT)
 public interface AttachmentReadEventContext extends EventContext {
 
