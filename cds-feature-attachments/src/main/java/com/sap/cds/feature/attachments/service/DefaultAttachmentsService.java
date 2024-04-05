@@ -12,8 +12,11 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRe
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreDeletedEventContext;
 import com.sap.cds.services.ServiceDelegator;
 
-//TODO add java doc
-//TODO i18n properties
+/**
+	* Default implementation of the {@link AttachmentService} interface.
+	* The main	purpose of this class is to set data in the corresponding context and
+	* to call the emit method for the attachment service.
+	*/
 public class DefaultAttachmentsService extends ServiceDelegator implements AttachmentService {
 
 	public DefaultAttachmentsService() {

@@ -7,8 +7,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.CdsDataProcessor;
-import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Generator;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.model.LazyProxyInputStream;
@@ -65,7 +63,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processAfter(CdsReadEventContext context, List<CdsData> data) {
 		if (ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
-			Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
+			var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 			Generator generator = (path, element, isNull) -> {
 				if (path.target().values().containsKey(element.getName())) {
 					var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
@@ -77,7 +75,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 				return null;
 			};
 
-			CdsDataProcessor.create().addGenerator(filter, generator).process(data, context.getTarget());
+			ApplicationHandlerHelper.callGenerator(context.getTarget(), data, filter, generator);
 		}
 	}
 

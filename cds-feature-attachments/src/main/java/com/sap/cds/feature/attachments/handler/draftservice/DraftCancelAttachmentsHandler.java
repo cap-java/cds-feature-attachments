@@ -19,7 +19,12 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
-//TODO add Java Doc
+/**
+	* The class {@link DraftCancelAttachmentsHandler} is an event handler that is called
+	* before a draft cancel event is executed.
+	* The handler checks if the attachments of the draft entity are still valid and
+	* deletes the content of the attachments if necessary.
+	*/
 @ServiceName(value = "*", type = DraftService.class)
 public class DraftCancelAttachmentsHandler implements EventHandler {
 
@@ -33,7 +38,6 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 		this.activeEntityModifierProvider = activeEntityModifierProvider;
 	}
 
-	//TODO Unit Tests
 	//TODO refactor
 	@Before(event = DraftService.EVENT_DRAFT_CANCEL)
 	@HandlerOrder(HandlerOrder.LATE)
