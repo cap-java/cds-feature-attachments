@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.model;
+package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream;
 
 import java.io.IOException;
 import java.io.InputStream;
