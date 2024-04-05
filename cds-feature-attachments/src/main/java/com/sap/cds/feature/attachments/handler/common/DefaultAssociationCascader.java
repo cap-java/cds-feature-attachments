@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import com.sap.cds.feature.attachments.handler.common.model.AssociationIdentifier;
+import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElementDefinition;
@@ -17,16 +19,16 @@ import com.sap.cds.reflect.CdsStructuredType;
 public class DefaultAssociationCascader implements AssociationCascader {
 
 	@Override
-	public List<LinkedList<AssociationIdentifier>> findEntityPath(CdsModel model, CdsEntity entity) {
+	public NodeTree findEntityPath(CdsModel model, CdsEntity entity) {
 		var firstList = new LinkedList<AssociationIdentifier>();
 		var internalResultList = getAttachmentAssociationPath(model, entity, "", firstList, new ArrayList<>(List.of(entity.getQualifiedName())));
 
-		return new ArrayList<>(internalResultList);
+		var rootTree = new NodeTree(new AssociationIdentifier("", entity.getQualifiedName()));
+		internalResultList.forEach(rootTree::addPath);
+
+		return rootTree;
 	}
 
-	//TODO build directly expand structure
-	//TODO us Path?
-	//TODO replace LinkedList -> List
 	private List<LinkedList<AssociationIdentifier>> getAttachmentAssociationPath(CdsModel model, CdsEntity entity, String associationName, LinkedList<AssociationIdentifier> firstList, List<String> processedEntities) {
 		var internalResultList = new ArrayList<LinkedList<AssociationIdentifier>>();
 		var currentList = new AtomicReference<LinkedList<AssociationIdentifier>>();
@@ -36,7 +38,7 @@ public class DefaultAssociationCascader implements AssociationCascader {
 		var baseEntity = ApplicationHandlerHelper.getBaseEntity(model, entity);
 		var isMediaEntity = isMediaEntity(baseEntity);
 		if (isMediaEntity) {
-			var identifier = new AssociationIdentifier(associationName, entity.getQualifiedName(), isMediaEntity);
+			var identifier = new AssociationIdentifier(associationName, entity.getQualifiedName());
 			firstList.addLast(identifier);
 		}
 
@@ -65,7 +67,7 @@ public class DefaultAssociationCascader implements AssociationCascader {
 					currentList.get().addAll(firstList);
 					processedEntities = localProcessEntities;
 				} else {
-					firstList.add(new AssociationIdentifier(associationName, entity.getQualifiedName(), false));
+					firstList.add(new AssociationIdentifier(associationName, entity.getQualifiedName()));
 					currentList.get().addAll(firstList);
 					localProcessEntities = new ArrayList<>(processedEntities);
 				}

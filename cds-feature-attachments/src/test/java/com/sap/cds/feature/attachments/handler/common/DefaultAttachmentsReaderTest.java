@@ -18,6 +18,8 @@ import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.common.model.AssociationIdentifier;
+import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Delete;
 import com.sap.cds.ql.cqn.CqnDelete;
@@ -158,11 +160,13 @@ class DefaultAttachmentsReaderTest {
 	private void mockPathListAndEntity(String entityName) {
 		var pathList = new ArrayList<LinkedList<AssociationIdentifier>>();
 		var rootPath = new LinkedList<AssociationIdentifier>();
-		rootPath.add(new AssociationIdentifier("", RootTable_.CDS_NAME, false));
-		rootPath.add(new AssociationIdentifier("items", Items_.CDS_NAME, false));
-		rootPath.add(new AssociationIdentifier("attachments", Attachment_.CDS_NAME, true));
+		rootPath.add(new AssociationIdentifier("", RootTable_.CDS_NAME));
+		rootPath.add(new AssociationIdentifier("items", Items_.CDS_NAME));
+		rootPath.add(new AssociationIdentifier("attachments", Attachment_.CDS_NAME));
 		pathList.add(rootPath);
-		when(cascader.findEntityPath(model, entity)).thenReturn(pathList);
+		var nodeTree = new NodeTree(new AssociationIdentifier("", entityName));
+		pathList.forEach(nodeTree::addPath);
+		when(cascader.findEntityPath(model, entity)).thenReturn(nodeTree);
 		when(entity.getQualifiedName()).thenReturn(entityName);
 	}
 
