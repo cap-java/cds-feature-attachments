@@ -10,6 +10,8 @@ import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.draft.DraftService;
 
+//TODO add javadoc
+//TODO rename to mark as deleted
 public class DeleteContentAttachmentEvent implements ModifyAttachmentEvent {
 
 	private final AttachmentService outboxedAttachmentService;

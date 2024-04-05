@@ -11,11 +11,11 @@ import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attac
 	* that creates the corresponding event for the attachment.
 	* The class is used to determine the event that should be executed based on the content,
 	* the documentId and the existingData.
-	* The events could be: <br/>
-	* - create <br/>
-	* - update <br/>
-	* - deleteContent <br/>
-	* - doNothing <br/>
+	* The events could be: <br>
+	* - create <br>
+	* - update <br>
+	* - deleteContent <br>
+	* - doNothing <br>
 	*/
 public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEventFactory {
 
