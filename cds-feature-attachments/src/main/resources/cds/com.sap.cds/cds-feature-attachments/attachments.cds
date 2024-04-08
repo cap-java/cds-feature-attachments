@@ -24,7 +24,7 @@ aspect MediaData @(_is_media_data) {
     mimeType   : String;
     fileName   : String;
     documentId : String;
-    status     : Status default 'Unscanned';
+    status     : Status;
 }
 
 aspect Attachments : cuid, managed, MediaData {
