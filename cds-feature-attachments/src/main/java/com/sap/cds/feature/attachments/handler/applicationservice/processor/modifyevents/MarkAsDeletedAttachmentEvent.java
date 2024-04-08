@@ -13,19 +13,17 @@ import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.draft.DraftService;
 
-//TODO rename to mark as deleted
-
 /**
-	* The class {@link DeleteContentAttachmentEvent} handles the mark of deletion of an attachment.
+	* The class {@link MarkAsDeletedAttachmentEvent} handles the mark of deletion of an attachment.
 	* It calls the {@link AttachmentService} to mark the attachment as deleted.
 	*/
-public class DeleteContentAttachmentEvent implements ModifyAttachmentEvent {
+public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 
-	private static final Logger logger = LoggerFactory.getLogger(DeleteContentAttachmentEvent.class);
+	private static final Logger logger = LoggerFactory.getLogger(MarkAsDeletedAttachmentEvent.class);
 
 	private final AttachmentService outboxedAttachmentService;
 
-	public DeleteContentAttachmentEvent(AttachmentService outboxedAttachmentService) {
+	public MarkAsDeletedAttachmentEvent(AttachmentService outboxedAttachmentService) {
 		this.outboxedAttachmentService = outboxedAttachmentService;
 	}
 

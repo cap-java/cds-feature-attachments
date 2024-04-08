@@ -16,9 +16,9 @@ import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 
-class DeleteContentAttachmentEventTest {
+class MarkAsDeletedAttachmentEventTest {
 
-	private DeleteContentAttachmentEvent cut;
+	private MarkAsDeletedAttachmentEvent cut;
 	private AttachmentService attachmentService;
 	private Path path;
 	private Map<String, Object> currentData;
@@ -27,7 +27,7 @@ class DeleteContentAttachmentEventTest {
 	@BeforeEach
 	void setup() {
 		attachmentService = mock(AttachmentService.class);
-		cut = new DeleteContentAttachmentEvent(attachmentService);
+		cut = new MarkAsDeletedAttachmentEvent(attachmentService);
 
 		context = mock(EventContext.class);
 		path = mock(Path.class);

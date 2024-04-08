@@ -64,15 +64,11 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
 		logger.debug(marker, "Processing before update event for entity {}", target.getName());
 
-		//TODO not needed if media entity direct changed
 		var select = getSelect(context.getCqn(), context.getTarget());
 		var attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
 		var condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
-		//TODO check if data.size() == attachments.size() is needed
-		if (!isMediaEntity(target) || data.size() == attachments.size()) {
-			ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context);
-		}
+		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context);
 
 		if (!associationsAreUnchanged) {
 			deleteRemovedAttachments(attachments, data, target);

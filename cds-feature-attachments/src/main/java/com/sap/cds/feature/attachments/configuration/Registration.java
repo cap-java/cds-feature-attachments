@@ -10,8 +10,8 @@ import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachment
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.CreateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DefaultModifyAttachmentEventFactory;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DeleteContentAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DoNothingAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.UpdateAttachmentEvent;
@@ -62,7 +62,7 @@ public class Registration implements CdsRuntimeConfiguration {
 																	.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
 		var outboxedAttachmentService = outbox.outboxed(attachmentService);
 
-		var deleteContentEvent = new DeleteContentAttachmentEvent(outboxedAttachmentService);
+		var deleteContentEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
 		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);
 		var attachmentsReader = buildAttachmentsReader(persistenceService);
 

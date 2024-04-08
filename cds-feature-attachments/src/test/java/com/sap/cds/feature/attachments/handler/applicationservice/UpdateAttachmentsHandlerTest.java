@@ -88,38 +88,6 @@ class UpdateAttachmentsHandlerTest {
 	}
 
 	@Test
-	void eventProcessorNotCalledForUpdateIfNoExistingData() {
-		var id = getEntityAndMockContext(Attachment_.CDS_NAME);
-		var testStream = mock(InputStream.class);
-		var attachment = Attachments.create();
-		attachment.setContent(testStream);
-		attachment.setId(id);
-
-		cut.processBefore(updateContext, List.of(attachment));
-
-		verifyNoInteractions(eventFactory);
-		verifyNoInteractions(event);
-	}
-
-	@Test
-	void eventProcessorNotCalledForUpdateIfTooLessExistingData() {
-		var id = getEntityAndMockContext(Attachment_.CDS_NAME);
-		var testStream = mock(InputStream.class);
-		var attachment1 = Attachments.create();
-		attachment1.setContent(testStream);
-		attachment1.setId(id);
-		var attachment2 = Attachments.create();
-		attachment2.setContent(testStream);
-		attachment2.setId(id);
-		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(List.of(attachment2));
-
-		cut.processBefore(updateContext, List.of(attachment1, attachment2));
-
-		verifyNoInteractions(eventFactory);
-		verifyNoInteractions(event);
-	}
-	
-	@Test
 	void eventProcessorCalledForUpdate() {
 		var id = getEntityAndMockContext(Attachment_.CDS_NAME);
 		var testStream = mock(InputStream.class);
