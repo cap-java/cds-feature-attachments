@@ -225,6 +225,7 @@
                 <configuration>
                     <skip>${skipDuringDeploy}</skip>
                     <failOnError>true</failOnError>
+                    <doclint>all,-missing</doclint>
                 </configuration>
                 <executions>
                     <execution>
