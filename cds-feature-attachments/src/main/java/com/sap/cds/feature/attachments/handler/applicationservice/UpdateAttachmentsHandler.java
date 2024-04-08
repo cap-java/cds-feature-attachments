@@ -13,13 +13,11 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyA
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
-import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
@@ -96,10 +94,6 @@ public class UpdateAttachmentsHandler implements EventHandler {
 			}
 		};
 		ApplicationHandlerHelper.callValidator(entity, exitingDataList, filter, validator);
-	}
-
-	private boolean isMediaEntity(CdsStructuredType entity) {
-		return entity.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false);
 	}
 
 }
