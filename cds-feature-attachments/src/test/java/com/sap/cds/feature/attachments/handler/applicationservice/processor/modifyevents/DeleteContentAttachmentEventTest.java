@@ -22,19 +22,21 @@ class DeleteContentAttachmentEventTest {
 	private AttachmentService attachmentService;
 	private Path path;
 	private Map<String, Object> currentData;
+	private EventContext context;
 
 	@BeforeEach
 	void setup() {
 		attachmentService = mock(AttachmentService.class);
 		cut = new DeleteContentAttachmentEvent(attachmentService);
 
+		context = mock(EventContext.class);
 		path = mock(Path.class);
 		var target = mock(ResolvedSegment.class);
 		currentData = new HashMap<>();
 		when(path.target()).thenReturn(target);
-		var entity = mock(CdsEntity.class);
-		when(target.entity()).thenReturn(entity);
-		when(entity.getQualifiedName()).thenReturn("some.qualified.name");
+		var eventTarget = mock(CdsEntity.class);
+		when(context.getTarget()).thenReturn(eventTarget);
+		when(eventTarget.getQualifiedName()).thenReturn("some.qualified.name");
 		when(target.values()).thenReturn(currentData);
 	}
 
@@ -45,7 +47,7 @@ class DeleteContentAttachmentEventTest {
 		var data = Attachments.create();
 		data.setDocumentId(documentId);
 
-		var expectedValue = cut.processEvent(path, value, data, mock(EventContext.class));
+		var expectedValue = cut.processEvent(path, value, data, context);
 
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isEqualTo(documentId);
@@ -58,7 +60,7 @@ class DeleteContentAttachmentEventTest {
 		var value = "test";
 		var data = Attachments.create();
 
-		var expectedValue = cut.processEvent(path, value, data, mock(EventContext.class));
+		var expectedValue = cut.processEvent(path, value, data, context);
 
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isNull();
