@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.reflect.CdsBaseType;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.ApplicationService;
@@ -27,6 +32,9 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 @ServiceName(value = "*", type = ApplicationService.class)
 public class CreateAttachmentsHandler implements EventHandler {
 
+	private static final Logger logger = LoggerFactory.getLogger(CreateAttachmentsHandler.class);
+	private static final Marker marker = LoggingMarker.APPLICATION_CREATE_HANDLER.getMarker();
+
 	private final ModifyAttachmentEventFactory eventFactory;
 	private CdsDataProcessor processor = CdsDataProcessor.create();
 
@@ -41,6 +49,7 @@ public class CreateAttachmentsHandler implements EventHandler {
 			return;
 		}
 
+		logger.debug(marker, "Processing before create event for entity {}", context.getTarget().getName());
 		setKeysInData(context.getTarget(), data);
 		ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(), eventFactory, context);
 	}

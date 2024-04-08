@@ -1,5 +1,8 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
@@ -13,6 +16,8 @@ import com.sap.cds.services.EventContext;
 	*/
 public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
+	private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentEvent.class);
+
 	private final ModifyAttachmentEvent createAttachmentEvent;
 	private final ModifyAttachmentEvent deleteAttachmentEvent;
 
@@ -23,6 +28,10 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
 	@Override
 	public Object processEvent(Path path, Object value, CdsData existingData, EventContext eventContext) {
+		logger.debug("Processing UPDATE event by calling attachment service with create and delete event for entity {}", path.target()
+																																																																																																																					.entity()
+																																																																																																																					.getQualifiedName());
+
 		deleteAttachmentEvent.processEvent(path, value, existingData, eventContext);
 		return createAttachmentEvent.processEvent(path, value, existingData, eventContext);
 	}

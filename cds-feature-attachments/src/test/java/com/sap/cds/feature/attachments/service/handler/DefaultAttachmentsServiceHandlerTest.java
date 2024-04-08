@@ -49,7 +49,7 @@ class DefaultAttachmentsServiceHandlerTest {
 	void deleteAttachmentSetData() {
 		var deleteContext = AttachmentMarkAsDeletedEventContext.create();
 
-		cut.deleteAttachment(deleteContext);
+		cut.markAttachmentAsDeleted(deleteContext);
 
 		assertThat(deleteContext.isCompleted()).isTrue();
 	}
@@ -102,7 +102,7 @@ class DefaultAttachmentsServiceHandlerTest {
 
 	@Test
 	void deleteMethodHasCorrectAnnotation() throws NoSuchMethodException {
-		var deleteMethod = cut.getClass().getMethod("deleteAttachment", AttachmentMarkAsDeletedEventContext.class);
+		var deleteMethod = cut.getClass().getMethod("markAttachmentAsDeleted", AttachmentMarkAsDeletedEventContext.class);
 		var onAnnotation = deleteMethod.getAnnotation(On.class);
 		var handlerOrderAnnotation = deleteMethod.getAnnotation(HandlerOrder.class);
 

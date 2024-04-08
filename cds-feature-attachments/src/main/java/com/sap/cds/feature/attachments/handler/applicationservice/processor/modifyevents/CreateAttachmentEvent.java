@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
@@ -22,6 +25,8 @@ import com.sap.cds.services.EventContext;
 	*/
 public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
+	private static final Logger logger = LoggerFactory.getLogger(CreateAttachmentEvent.class);
+
 	private final AttachmentService attachmentService;
 	private final AttachmentService outboxedAttachmentService;
 	private final ListenerProvider listenerProvider;
@@ -34,6 +39,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
 	@Override
 	public Object processEvent(Path path, Object value, CdsData existingData, EventContext eventContext) {
+		logger.debug("Calling attachment service with create event for entity {}", path.target().entity().getQualifiedName());
 		var values = path.target().values();
 		var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 		var mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, existingData);

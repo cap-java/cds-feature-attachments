@@ -3,6 +3,9 @@ package com.sap.cds.feature.attachments.handler.applicationservice.processor.rea
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.ql.CQL;
@@ -14,6 +17,8 @@ import com.sap.cds.ql.cqn.Modifier;
 	* and status code to the select items.
 	*/
 public class BeforeReadItemsModifier implements Modifier {
+
+	private static final Logger logger = LoggerFactory.getLogger(BeforeReadItemsModifier.class);
 
 	private static final String ROOT_ASSOCIATION = "";
 
@@ -62,6 +67,7 @@ public class BeforeReadItemsModifier implements Modifier {
 
 	private void enhanceWithNewFieldForMediaAssociation(String association, List<CqnSelectListItem> list, List<CqnSelectListItem> listToEnhance) {
 		if (isMediaAssociationAndNeedNewDocumentIdField(association, list)) {
+			logger.debug("Adding document id and status code to select items");
 			listToEnhance.add(CQL.get(Attachments.DOCUMENT_ID));
 			listToEnhance.add(CQL.get(Attachments.STATUS_CODE));
 		}

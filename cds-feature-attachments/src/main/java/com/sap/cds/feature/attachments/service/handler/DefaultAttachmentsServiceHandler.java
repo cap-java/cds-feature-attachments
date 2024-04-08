@@ -1,5 +1,9 @@
 package com.sap.cds.feature.attachments.service.handler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -7,6 +11,7 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreDeletedEventContext;
+import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
@@ -23,11 +28,19 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 @ServiceName(value = "*", type = AttachmentService.class)
 public class DefaultAttachmentsServiceHandler implements EventHandler {
 
+	private static final Logger logger = LoggerFactory.getLogger(DefaultAttachmentsServiceHandler.class);
+	private static final Marker create_marker = LoggingMarker.ATTACHMENT_SERVICE_CREATE_HANDLER.getMarker();
+	private static final Marker delete_marker = LoggingMarker.ATTACHMENT_SERVICE_DELETE_HANDLER.getMarker();
+	private static final Marker restore_delete_marker = LoggingMarker.ATTACHMENT_SERVICE_RESTORE_DELETE_HANDLER.getMarker();
+	private static final Marker read_marker = LoggingMarker.ATTACHMENT_SERVICE_READ_HANDLER.getMarker();
+
 	private static final int DEFAULT_ON = 10 * HandlerOrder.AFTER + HandlerOrder.LATE;
 
 	@On(event = AttachmentService.EVENT_CREATE_ATTACHMENT)
 	@HandlerOrder(DEFAULT_ON)
 	public void createAttachment(AttachmentCreateEventContext context) {
+		logger.info(create_marker, "Default Attachment Service handler called for creating attachment for entity name: {}", context.getAttachmentEntityName());
+
 		//TODO Malware Scan and remove setting status here
 		context.getData().setStatusCode(StatusCode.CLEAN);
 		context.setIsInternalStored(true);
@@ -37,7 +50,9 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 
 	@On(event = AttachmentService.EVENT_MARK_AS_DELETED)
 	@HandlerOrder(DEFAULT_ON)
-	public void deleteAttachment(AttachmentMarkAsDeletedEventContext context) {
+	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
+		logger.info(delete_marker, "marking attachment as deleted with document id: {}", context.getDocumentId());
+
 		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
 	}
@@ -45,6 +60,8 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_RESTORE_DELETED)
 	@HandlerOrder(DEFAULT_ON)
 	public void restoreDeleteAttachment(AttachmentRestoreDeletedEventContext context) {
+		logger.info(restore_delete_marker, "Default Attachment Service handler called for restoring attachment for timestamp: {}", context.getRestoreTimestamp());
+
 		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
 	}
@@ -52,6 +69,8 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_READ_ATTACHMENT)
 	@HandlerOrder(DEFAULT_ON)
 	public void readAttachment(AttachmentReadEventContext context) {
+		logger.info(read_marker, "Default Attachment Service handler called for reading attachment with document id: {}", context.getDocumentId());
+
 		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
 	}

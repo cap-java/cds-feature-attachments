@@ -6,6 +6,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Generator;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
@@ -14,6 +18,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.read
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElementDefinition;
@@ -40,6 +45,9 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 @ServiceName(value = "*", type = ApplicationService.class)
 public class ReadAttachmentsHandler implements EventHandler {
 
+	private static final Logger logger = LoggerFactory.getLogger(ReadAttachmentsHandler.class);
+	private static final Marker marker = LoggingMarker.APPLICATION_READ_HANDLER.getMarker();
+
 	private final AttachmentService attachmentService;
 	private final ItemModifierProvider provider;
 
@@ -51,6 +59,8 @@ public class ReadAttachmentsHandler implements EventHandler {
 	@Before(event = CqnService.EVENT_READ)
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processBefore(CdsReadEventContext context) {
+		logger.debug(marker, "Processing before read event for entity {}", context.getTarget().getName());
+
 		var cdsModel = context.getModel();
 		var fieldNames = getAttachmentAssociations(cdsModel, context.getTarget(), "", new ArrayList<>());
 		if (!fieldNames.isEmpty()) {
@@ -62,21 +72,24 @@ public class ReadAttachmentsHandler implements EventHandler {
 	@After(event = CqnService.EVENT_READ)
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processAfter(CdsReadEventContext context, List<CdsData> data) {
-		if (ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
-			var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
-			Generator generator = (path, element, isNull) -> {
-				if (path.target().values().containsKey(element.getName())) {
-					var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
-					var status = (String) path.target().values().get(Attachments.STATUS_CODE);
-					if (Objects.nonNull(documentId)) {
-						return new LazyProxyInputStream(() -> attachmentService.readAttachment(documentId), status);
-					}
-				}
-				return null;
-			};
-
-			ApplicationHandlerHelper.callGenerator(context.getTarget(), data, filter, generator);
+		if (!ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
+			return;
 		}
+		logger.debug(marker, "Processing after read event for entity {}", context.getTarget().getName());
+
+		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
+		Generator generator = (path, element, isNull) -> {
+			if (path.target().values().containsKey(element.getName())) {
+				var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
+				var status = (String) path.target().values().get(Attachments.STATUS_CODE);
+				if (Objects.nonNull(documentId)) {
+					return new LazyProxyInputStream(() -> attachmentService.readAttachment(documentId), status);
+				}
+			}
+			return null;
+		};
+
+		ApplicationHandlerHelper.callGenerator(context.getTarget(), data, filter, generator);
 	}
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {

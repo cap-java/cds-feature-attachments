@@ -3,6 +3,9 @@ package com.sap.cds.feature.attachments.handler.common;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
 import com.sap.cds.ql.CQL;
@@ -23,6 +26,8 @@ import com.sap.cds.services.persistence.PersistenceService;
 	*/
 public class DefaultAttachmentsReader implements AttachmentsReader {
 
+	private static final Logger logger = LoggerFactory.getLogger(DefaultAttachmentsReader.class);
+
 	private final AssociationCascader cascader;
 	private final PersistenceService persistence;
 
@@ -33,10 +38,8 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 
 	@Override
 	public List<CdsData> readAttachments(CdsModel model, CdsEntity entity, CqnFilterableStatement statement) {
-		return getData(model, entity, statement);
-	}
+		logger.debug("Start reading attachments for entity {}", entity.getQualifiedName());
 
-	private List<CdsData> getData(CdsModel model, CdsEntity entity, CqnFilterableStatement statement) {
 		var nodePath = cascader.findEntityPath(model, entity);
 		var expandList = buildExpandList(nodePath);
 
@@ -46,7 +49,9 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 		statement.where().ifPresent(select::where);
 
 		var result = persistence.run(select);
-		return result.listOf(CdsData.class);
+		var cdsData = result.listOf(CdsData.class);
+		logResultData(entity, cdsData);
+		return cdsData;
 	}
 
 	private List<Expand<?>> buildExpandList(NodeTree root) {
@@ -61,6 +66,13 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 																																										.expand() : CQL.to(node.getIdentifier().associationName())
 																																																								.expand(node.getChildren().stream()
 																																																																		.map(this::buildExpandFromTree).toList());
+	}
+
+	private void logResultData(CdsEntity entity, List<CdsData> cdsData) {
+		logger.debug("Read attachments for entity {}: {}", entity.getQualifiedName(), cdsData);
+		if (logger.isTraceEnabled()) {
+			cdsData.forEach(data -> logger.trace("Read attachment data: {}", data));
+		}
 	}
 
 }

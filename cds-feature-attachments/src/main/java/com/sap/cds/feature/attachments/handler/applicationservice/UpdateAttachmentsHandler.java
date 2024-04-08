@@ -2,6 +2,10 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
@@ -11,6 +15,7 @@ import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.reflect.CdsEntity;
@@ -34,6 +39,9 @@ import com.sap.cds.services.utils.model.CqnUtils;
 @ServiceName(value = "*", type = ApplicationService.class)
 public class UpdateAttachmentsHandler implements EventHandler {
 
+	private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
+	private static final Marker marker = LoggingMarker.APPLICATION_UPDATE_HANDLER.getMarker();
+
 	private final ModifyAttachmentEventFactory eventFactory;
 	private final AttachmentsReader attachmentsReader;
 	private final AttachmentService outboxedAttachmentService;
@@ -53,6 +61,9 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		if (noContentInData && associationsAreUnchanged) {
 			return;
 		}
+
+		logger.debug(marker, "Processing before update event for entity {}", target.getName());
+
 		//TODO not needed if media entity direct changed
 		var select = getSelect(context.getCqn(), context.getTarget());
 		var attachments = attachmentsReader.readAttachments(context.getModel(), target, select);

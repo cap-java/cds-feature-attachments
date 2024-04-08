@@ -2,12 +2,17 @@ package com.sap.cds.feature.attachments.handler.draftservice;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
+import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.Select;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.draft.DraftService;
@@ -27,6 +32,9 @@ import com.sap.cds.services.persistence.PersistenceService;
 @ServiceName(value = "*", type = DraftService.class)
 public class DraftPatchAttachmentsHandler implements EventHandler {
 
+	private static final Logger logger = LoggerFactory.getLogger(DraftPatchAttachmentsHandler.class);
+	private static final Marker marker = LoggingMarker.DRAFT_PATCH_HANDLER.getMarker();
+
 	private final PersistenceService persistence;
 	private final ModifyAttachmentEventFactory eventFactory;
 
@@ -38,6 +46,8 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 	@Before(event = DraftService.EVENT_DRAFT_PATCH)
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBeforeDraftPatch(EventContext context, List<CdsData> data) {
+		logger.debug(marker, "Processing before draft patch event for entity {}", context.getTarget().getName());
+
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
 			var draftElement = path.target().entity().getQualifiedName()

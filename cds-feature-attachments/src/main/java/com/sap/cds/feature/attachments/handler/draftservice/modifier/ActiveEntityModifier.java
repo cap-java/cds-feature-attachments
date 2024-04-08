@@ -1,5 +1,8 @@
 package com.sap.cds.feature.attachments.handler.draftservice.modifier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.RefBuilder;
 import com.sap.cds.ql.RefBuilder.RefSegment;
@@ -18,6 +21,8 @@ import com.sap.cds.services.draft.Drafts;
 	*/
 public class ActiveEntityModifier implements Modifier {
 
+	private static final Logger logger = LoggerFactory.getLogger(ActiveEntityModifier.class);
+
 	private final boolean isActiveEntity;
 	private final String fullEntityName;
 
@@ -30,6 +35,7 @@ public class ActiveEntityModifier implements Modifier {
 	public CqnStructuredTypeRef ref(CqnStructuredTypeRef original) {
 		RefBuilder<StructuredTypeRef> ref = CQL.copy(original);
 		RefSegment rootSegment = ref.rootSegment();
+		logger.debug("Modifying ref {} with isActiveEntity: {} and fullEntityName: {}", rootSegment, isActiveEntity, fullEntityName);
 		rootSegment.id(fullEntityName);
 
 		for (RefSegment segment : ref.segments()) {

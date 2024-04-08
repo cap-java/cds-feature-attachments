@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sap.cds.feature.attachments.handler.common.model.AssociationIdentifier;
 import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
@@ -24,14 +27,18 @@ import com.sap.cds.reflect.CdsStructuredType;
 	*/
 public class DefaultAssociationCascader implements AssociationCascader {
 
+	private static final Logger logger = LoggerFactory.getLogger(DefaultAssociationCascader.class);
+
 	@Override
 	public NodeTree findEntityPath(CdsModel model, CdsEntity entity) {
+		logger.debug("Start finding path to attachments for entity {}", entity.getQualifiedName());
 		var firstList = new LinkedList<AssociationIdentifier>();
 		var internalResultList = getAttachmentAssociationPath(model, entity, "", firstList, new ArrayList<>(List.of(entity.getQualifiedName())));
 
 		var rootTree = new NodeTree(new AssociationIdentifier("", entity.getQualifiedName()));
 		internalResultList.forEach(rootTree::addPath);
 
+		logger.debug("Found path to attachments for entity {}: {}", entity.getQualifiedName(), rootTree);
 		return rootTree;
 	}
 
