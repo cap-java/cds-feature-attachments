@@ -42,6 +42,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		this.outboxedMalwareScanService = outboxedMalwareScanService;
 	}
 
+	//TODO add tests for malware scan
 	@On(event = AttachmentService.EVENT_CREATE_ATTACHMENT)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void createAttachment(AttachmentCreateEventContext context) {
