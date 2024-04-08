@@ -1,5 +1,6 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.CdsDataProcessor.Generator;
+import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
@@ -78,18 +79,21 @@ public class ReadAttachmentsHandler implements EventHandler {
 		logger.debug(marker, "Processing after read event for entity {}", context.getTarget().getName());
 
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
-		Generator generator = (path, element, isNull) -> {
+		Converter converter = (path, element, value) -> {
 			if (path.target().values().containsKey(element.getName())) {
 				var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
 				var status = (String) path.target().values().get(Attachments.STATUS_CODE);
-				if (Objects.nonNull(documentId)) {
+				var content = (InputStream) path.target().values().get(Attachments.CONTENT);
+				if (Objects.nonNull(content)) {
+					return new LazyProxyInputStream(() -> content, status);
+				} else if (Objects.nonNull(documentId)) {
 					return new LazyProxyInputStream(() -> attachmentService.readAttachment(documentId), status);
 				}
 			}
-			return null;
+			return value;
 		};
 
-		ApplicationHandlerHelper.callGenerator(context.getTarget(), data, filter, generator);
+		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, filter, converter);
 	}
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {

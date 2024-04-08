@@ -1,6 +1,7 @@
 package com.sap.cds.feature.attachments.service.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.service.AttachmentMalwareScanService;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
@@ -24,10 +26,12 @@ class DefaultAttachmentsServiceHandlerTest {
 	private static final int EXPECTED_HANDLER_ORDER = 11000;
 
 	private DefaultAttachmentsServiceHandler cut;
+	private AttachmentMalwareScanService outboxedMalwareScanService;
 
 	@BeforeEach
 	void setup() {
-		cut = new DefaultAttachmentsServiceHandler();
+		outboxedMalwareScanService = mock(AttachmentMalwareScanService.class);
+		cut = new DefaultAttachmentsServiceHandler(outboxedMalwareScanService);
 	}
 
 	@Test
