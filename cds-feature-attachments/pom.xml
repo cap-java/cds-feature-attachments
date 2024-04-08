@@ -224,6 +224,7 @@
                 <version>3.6.3</version>
                 <configuration>
                     <skip>${skipDuringDeploy}</skip>
+                    <failOnError>true</failOnError>
                 </configuration>
                 <executions>
                     <execution>
