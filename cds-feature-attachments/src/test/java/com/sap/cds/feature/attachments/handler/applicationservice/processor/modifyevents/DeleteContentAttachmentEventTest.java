@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
+import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 
 class DeleteContentAttachmentEventTest {
@@ -31,6 +32,9 @@ class DeleteContentAttachmentEventTest {
 		var target = mock(ResolvedSegment.class);
 		currentData = new HashMap<>();
 		when(path.target()).thenReturn(target);
+		var entity = mock(CdsEntity.class);
+		when(target.entity()).thenReturn(entity);
+		when(entity.getQualifiedName()).thenReturn("some.qualified.name");
 		when(target.values()).thenReturn(currentData);
 	}
 
