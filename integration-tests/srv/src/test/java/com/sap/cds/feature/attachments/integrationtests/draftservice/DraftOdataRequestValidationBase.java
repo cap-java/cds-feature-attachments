@@ -50,7 +50,7 @@ abstract class DraftOdataRequestValidationBase {
 
 	@AfterEach
 	void teardown() {
-		dataDeleter.deleteData(DraftRoots_.CDS_NAME);
+		dataDeleter.deleteData(DraftRoots_.CDS_NAME, "cds.outbox.Messages");
 		requestHelper.resetHelper();
 		clearServiceHandlerContext();
 		testPersistenceHandler.reset();

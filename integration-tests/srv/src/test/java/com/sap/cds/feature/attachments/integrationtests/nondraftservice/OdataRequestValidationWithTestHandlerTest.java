@@ -29,6 +29,12 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	}
 
 	@Override
+	protected void executeContentRequestAndValidateContent(String url, String content) throws Exception {
+		var response = requestHelper.executeGet(url);
+		assertThat(response.getResponse().getContentAsString()).isEqualTo(content);
+	}
+
+	@Override
 	protected void verifyTwoDeleteEvents(AttachmentEntity itemAttachmentEntityAfterChange, Attachments itemAttachmentAfterChange) {
 		waitTillExpectedHandlerMessageSize(2);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_CREATE_ATTACHMENT);

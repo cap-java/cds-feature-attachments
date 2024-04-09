@@ -1,0 +1,30 @@
+{
+  "VCAP_SERVICES": {
+    "malware-scanner": [
+      {
+        "label": "malware-scanner",
+        "provider": null,
+        "plan": "clamav",
+        "name": "dsr-core-malware-scanner",
+        "tags": [],
+        "instance_guid": "2fbe12be-569d-473e-ab0a-eb2f1d18c7e3",
+        "instance_name": "dsr-core-malware-scanner",
+        "binding_guid": "16ce4d70-1511-45d0-a788-e365b298ca8a",
+        "binding_name": null,
+        "credentials": {
+          "sync_scan_url": "https://malware-scanner.cf.sap.hana.ondemand.com",
+          "async_scan_url": "",
+          "uri": "malware-scanner.cf.sap.hana.ondemand.com",
+          "url": "http://localhost:1111",
+          "username": "test-user",
+          "password": "test-password"
+        },
+        "syslog_drain_url": null,
+        "volume_mounts": []
+      }
+    ]
+  },
+  "VCAP_APPLICATION": {
+    "application_id": "xsapp!t0815"
+  }
+}

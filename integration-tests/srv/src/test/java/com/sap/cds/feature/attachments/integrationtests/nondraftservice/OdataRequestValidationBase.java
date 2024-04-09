@@ -46,7 +46,7 @@ abstract class OdataRequestValidationBase {
 	@Autowired(required = false)
 	protected TestPluginAttachmentsServiceHandler serviceHandler;
 	@Autowired
-	private MockHttpRequestHelper requestHelper;
+	protected MockHttpRequestHelper requestHelper;
 	@Autowired
 	private PersistenceService persistenceService;
 	@Autowired
@@ -162,9 +162,7 @@ abstract class OdataRequestValidationBase {
 		var itemAttachmentAfterChange = getRandomItemAttachment(selectedItemAfterChange);
 
 		var url = buildNavigationAttachmentUrl(selectedRoot.getId(), item.getId(), itemAttachment.getId()) + "/content";
-		var response = requestHelper.executeGet(url);
-
-		assertThat(response.getResponse().getContentAsString()).isEqualTo(content);
+		executeContentRequestAndValidateContent(url, content);
 		verifySingleReadEvent(itemAttachmentAfterChange.getDocumentId());
 	}
 
@@ -295,9 +293,7 @@ abstract class OdataRequestValidationBase {
 		var itemAttachmentAfterChange = getRandomItemAttachmentEntity(selectedItemAfterChange);
 
 		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId()) + "/content";
-		var response = requestHelper.executeGet(url);
-
-		assertThat(response.getResponse().getContentAsString()).isEqualTo(content);
+		executeContentRequestAndValidateContent(url, content);
 		verifySingleReadEvent(itemAttachmentAfterChange.getDocumentId());
 	}
 
@@ -632,6 +628,8 @@ abstract class OdataRequestValidationBase {
 		assertThat(response.getResponse().getContentLength()).isZero();
 		assertThat(response.getResponse().getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
 	}
+
+	protected abstract void executeContentRequestAndValidateContent(String url, String content) throws Exception;
 
 	protected abstract void verifyTwoDeleteEvents(AttachmentEntity itemAttachmentEntityAfterChange, Attachments itemAttachmentAfterChange);
 

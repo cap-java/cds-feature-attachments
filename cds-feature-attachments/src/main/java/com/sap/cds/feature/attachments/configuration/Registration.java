@@ -1,5 +1,8 @@
 package com.sap.cds.feature.attachments.configuration;
 
+import java.time.Duration;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -31,11 +34,14 @@ import com.sap.cds.feature.attachments.service.client.DefaultMalwareScanClient;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentMalwareScanServiceHandler;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
+import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
+import com.sap.cds.services.utils.environment.ServiceBindingUtils;
+import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 
 /**
@@ -69,7 +75,13 @@ public class Registration implements CdsRuntimeConfiguration {
 		var outboxedMalwareScanService = outbox.outboxed(malwareScanService);
 
 		configurer.eventHandler(new DefaultAttachmentsServiceHandler(outboxedMalwareScanService));
-		configurer.eventHandler(new DefaultAttachmentMalwareScanServiceHandler(persistenceService, attachmentService, new DefaultMalwareScanClient()));
+
+		List<ServiceBinding> bindings = configurer.getCdsRuntime().getEnvironment().getServiceBindings()
+																																				.filter(b -> ServiceBindingUtils.matches(b, DefaultMalwareScanClient.NAME_MALWARE_SCANNER))
+																																				.toList();
+		var binding = !bindings.isEmpty() ? bindings.get(0) : null;
+		var connectionPoll = new ConnectionPool(Duration.ofSeconds(60), 2, 20);
+		configurer.eventHandler(new DefaultAttachmentMalwareScanServiceHandler(persistenceService, attachmentService, new DefaultMalwareScanClient(binding, configurer.getCdsRuntime(), connectionPoll)));
 
 		var deleteContentEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
 		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);

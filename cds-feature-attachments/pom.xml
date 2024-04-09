@@ -26,6 +26,10 @@
             <groupId>com.sap.cds</groupId>
             <artifactId>cds-services-utils</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.sap.cds</groupId>
+            <artifactId>cds-integration-cloud-sdk</artifactId>
+        </dependency>
 
         <!-- TESTS -->
         <dependency>
