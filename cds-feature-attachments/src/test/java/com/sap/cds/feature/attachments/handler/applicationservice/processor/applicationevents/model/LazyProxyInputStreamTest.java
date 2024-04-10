@@ -106,7 +106,7 @@ class LazyProxyInputStreamTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {StatusCode.SCANNING, StatusCode.UNSCANNED, StatusCode.NO_SCANNER, StatusCode.INFECTED})
+	@ValueSource(strings = {StatusCode.UNSCANNED, StatusCode.NO_SCANNER, StatusCode.INFECTED})
 	void exceptionIfWrongStatus(String status) {
 		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), status);
 

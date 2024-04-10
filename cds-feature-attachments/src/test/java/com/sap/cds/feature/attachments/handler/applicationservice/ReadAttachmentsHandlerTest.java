@@ -152,7 +152,7 @@ class ReadAttachmentsHandlerTest {
 
 			assertThat(attachmentWithNullValueContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
 			assertThat(attachmentWithoutContentField.getContent()).isNull();
-			assertThat(attachmentWithStreamAsContent.getContent()).isEqualTo(testStream);
+			assertThat(attachmentWithStreamAsContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
 			assertThat(attachmentWithStreamContentButWithoutDocumentId.getContent()).isNull();
 			verifyNoInteractions(attachmentService);
 		}
@@ -181,7 +181,7 @@ class ReadAttachmentsHandlerTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {StatusCode.INFECTED, StatusCode.SCANNING, StatusCode.UNSCANNED, StatusCode.NO_SCANNER})
+	@ValueSource(strings = {StatusCode.INFECTED, StatusCode.UNSCANNED, StatusCode.NO_SCANNER})
 	@EmptySource
 	@NullSource
 	void wrongStatusThrowsException(String status) {

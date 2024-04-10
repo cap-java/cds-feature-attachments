@@ -7,7 +7,6 @@ using {
 
 type StatusCode: String enum {
     Unscanned;
-    Scanning;
     Infected;
     NoScanner;
     Clean;
