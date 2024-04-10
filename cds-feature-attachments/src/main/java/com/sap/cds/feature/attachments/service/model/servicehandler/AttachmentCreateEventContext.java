@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.EventName;
 
@@ -48,19 +49,19 @@ public interface AttachmentCreateEventContext extends EventContext {
 	void setAttachmentIds(Map<String, Object> ids);
 
 	/**
-		* Sets the full qualified name af the attachment entity for the attachment storage
-		* This name can be used to access the data using the persistence service
+		* Sets the attachment entity for the attachment storage
+		* The name of this entity can be used e.g. to access the data using the persistence service
 		*
-		* @param attachmentEntityName The name of the attachment entity which defines the content field
+		* @param attachmentEntity The attachment entity which defines the content field
 		*/
-	void setAttachmentEntityName(String attachmentEntityName);
+	void setAttachmentEntity(CdsEntity attachmentEntity);
 
 	/**
-		* This name can be used to access the data using the persistence service
+		* The attachment entity for the attachment storage
 		*
-		* @return The id of the attachment storage entity or {@code null} if no id was specified
+		* @return The attachment entity which defines the content field
 		*/
-	String getAttachmentEntityName();
+	CdsEntity getAttachmentEntity();
 
 	/**
 		* @return The data of the document

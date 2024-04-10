@@ -51,7 +51,7 @@ public interface AttachmentService extends Service {
 		*
 		* @param input Contains needed data to store the document like
 		*              - attachmentIds - list of keys for attachment entity
-		*              - attachmentEntityName - full qualified name of the entity in which the attachment will be stored
+		*              - attachmentEntity - cds entity in which the attachment will be stored
 		*              - fileName
 		*              - mimeType
 		*              - content (mandatory)

@@ -15,7 +15,6 @@ import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachment
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
-import com.sap.cds.feature.attachments.service.AttachmentMalwareScanService;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.services.Service;
@@ -61,15 +60,13 @@ class RegistrationTest {
 	void serviceIsRegistered() {
 		cut.services(configurer);
 
-		verify(configurer, times(2)).service(serviceArgumentCaptor.capture());
+		verify(configurer).service(serviceArgumentCaptor.capture());
 		var services = serviceArgumentCaptor.getAllValues();
-		assertThat(services).hasSize(2);
+		assertThat(services).hasSize(1);
 
 		var attachmentServiceFound = services.stream().anyMatch(service -> service instanceof AttachmentService);
-		var malwareScanServiceFound = services.stream().anyMatch(service -> service instanceof AttachmentMalwareScanService);
 
 		assertThat(attachmentServiceFound).isTrue();
-		assertThat(malwareScanServiceFound).isTrue();
 	}
 
 	@Test

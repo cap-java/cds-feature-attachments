@@ -49,11 +49,11 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 
 	@Override
 	public AttachmentModificationResult createAttachment(CreateAttachmentInput input) {
-		logger.info(create_marker, "Creating attachment for entity name: {}", input.attachmentEntityName());
+		logger.info(create_marker, "Creating attachment for entity name: {}", input.attachmentEntity().getQualifiedName());
 
 		var createContext = AttachmentCreateEventContext.create();
 		createContext.setAttachmentIds(input.attachmentIds());
-		createContext.setAttachmentEntityName(input.attachmentEntityName());
+		createContext.setAttachmentEntity(input.attachmentEntity());
 		var mediaData = MediaData.create();
 		mediaData.setFileName(input.fileName());
 		mediaData.setMimeType(input.mimeType());

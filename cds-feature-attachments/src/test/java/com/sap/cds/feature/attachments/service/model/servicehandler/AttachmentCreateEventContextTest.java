@@ -1,6 +1,7 @@
 package com.sap.cds.feature.attachments.service.model.servicehandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.reflect.CdsEntity;
 
 class AttachmentCreateEventContextTest {
 
@@ -27,7 +29,8 @@ class AttachmentCreateEventContextTest {
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
 			cut.setDocumentId("some create documentID");
 			cut.setAttachmentIds(keys);
-			cut.setAttachmentEntityName("some create attachment entity name");
+			var entity = mock(CdsEntity.class);
+			cut.setAttachmentEntity(entity);
 			var mediaData = MediaData.create();
 			mediaData.setMimeType("mime type");
 			mediaData.setFileName("file name");
@@ -37,7 +40,7 @@ class AttachmentCreateEventContextTest {
 
 			assertThat(cut.getDocumentId()).isEqualTo("some create documentID");
 			assertThat(cut.getAttachmentIds()).isEqualTo(keys);
-			assertThat(cut.getAttachmentEntityName()).isEqualTo("some create attachment entity name");
+			assertThat(cut.getAttachmentEntity()).isEqualTo(entity);
 			var responseMediaData = cut.getData();
 			assertThat(responseMediaData.getFileName()).isEqualTo("file name");
 			assertThat(responseMediaData.getMimeType()).isEqualTo("mime type");

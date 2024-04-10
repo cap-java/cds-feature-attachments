@@ -6,9 +6,9 @@ import org.slf4j.Marker;
 
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.service.AttachmentMalwareScanService;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.constants.HandlerConstants;
+import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
@@ -36,20 +36,20 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	private static final Marker restore_delete_marker = LoggingMarker.ATTACHMENT_SERVICE_RESTORE_DELETE_HANDLER.getMarker();
 	private static final Marker read_marker = LoggingMarker.ATTACHMENT_SERVICE_READ_HANDLER.getMarker();
 
-	private final AttachmentMalwareScanService outboxedMalwareScanService;
+	private final EndTransactionMalwareScanProvider endTransactionMalwareScanProvider;
 
-	public DefaultAttachmentsServiceHandler(AttachmentMalwareScanService outboxedMalwareScanService) {
-		this.outboxedMalwareScanService = outboxedMalwareScanService;
+	public DefaultAttachmentsServiceHandler(EndTransactionMalwareScanProvider endTransactionMalwareScanProvider) {
+		this.endTransactionMalwareScanProvider = endTransactionMalwareScanProvider;
 	}
 
-	//TODO add tests for malware scan
 	@On(event = AttachmentService.EVENT_CREATE_ATTACHMENT)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void createAttachment(AttachmentCreateEventContext context) {
-		logger.info(create_marker, "Default Attachment Service handler called for creating attachment for entity name: {}", context.getAttachmentEntityName());
-
+		logger.info(create_marker, "Default Attachment Service handler called for creating attachment for entity name: {}", context.getAttachmentEntity()
+																																																																																																																								.getQualifiedName());
 		context.getData().setStatusCode(StatusCode.UNSCANNED);
-		outboxedMalwareScanService.scanAttachment(context.getAttachmentEntityName(), context.getAttachmentIds());
+		context.getChangeSetContext()
+				.register(endTransactionMalwareScanProvider.getChangeSetListener(context.getAttachmentEntity(), context.getAttachmentIds()));
 		context.setIsInternalStored(true);
 		context.setDocumentId((String) context.getAttachmentIds().get(Attachments.ID));
 		context.setCompleted();

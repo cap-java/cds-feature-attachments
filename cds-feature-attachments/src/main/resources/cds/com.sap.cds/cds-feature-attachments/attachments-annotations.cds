@@ -14,7 +14,6 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
         title: '{i18n>mimeType}',
         Core.IsMediaType
     );
-    status @(UI.Hidden: true);
     documentId @(UI.Hidden: true);
 }
 

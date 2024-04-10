@@ -1,7 +1,7 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -19,6 +19,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
+import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems;
@@ -27,14 +28,15 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception.AttachmentStatusException;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.Modifier;
-import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
 import com.sap.cds.services.cds.CqnService;
@@ -52,6 +54,7 @@ class ReadAttachmentsHandlerTest {
 
 	private AttachmentService attachmentService;
 	private ItemModifierProvider provider;
+	private AttachmentStatusValidator attachmentStatusValidator;
 	private CdsReadEventContext readEventContext;
 	private Modifier modifier;
 	private ArgumentCaptor<List<String>> fieldNamesArgumentCaptor;
@@ -65,7 +68,8 @@ class ReadAttachmentsHandlerTest {
 	void setup() {
 		attachmentService = mock(AttachmentService.class);
 		provider = mock(ItemModifierProvider.class);
-		cut = new ReadAttachmentsHandler(attachmentService, provider);
+		attachmentStatusValidator = mock(AttachmentStatusValidator.class);
+		cut = new ReadAttachmentsHandler(attachmentService, provider, attachmentStatusValidator);
 
 		readEventContext = mock(CdsReadEventContext.class);
 		modifier = spy(new Modifier() {
@@ -153,7 +157,7 @@ class ReadAttachmentsHandlerTest {
 			assertThat(attachmentWithNullValueContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
 			assertThat(attachmentWithoutContentField.getContent()).isNull();
 			assertThat(attachmentWithStreamAsContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
-			assertThat(attachmentWithStreamContentButWithoutDocumentId.getContent()).isNull();
+			assertThat(attachmentWithStreamContentButWithoutDocumentId.getContent()).isInstanceOf(LazyProxyInputStream.class);
 			verifyNoInteractions(attachmentService);
 		}
 	}
@@ -181,7 +185,7 @@ class ReadAttachmentsHandlerTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {StatusCode.INFECTED, StatusCode.UNSCANNED, StatusCode.NO_SCANNER})
+	@ValueSource(strings = {StatusCode.INFECTED, StatusCode.UNSCANNED})
 	@EmptySource
 	@NullSource
 	void wrongStatusThrowsException(String status) {
@@ -190,13 +194,30 @@ class ReadAttachmentsHandlerTest {
 		attachment.setDocumentId("some ID");
 		attachment.setContent(null);
 		attachment.setStatusCode(status);
+		doThrow(AttachmentStatusException.class).when(attachmentStatusValidator).verifyStatus(status);
 
-		cut.processAfter(readEventContext, List.of(attachment));
+		List<CdsData> attachments = List.of(attachment);
+		assertThrows(AttachmentStatusException.class, () -> cut.processAfter(readEventContext, attachments));
+	}
 
+	@ParameterizedTest
+	@ValueSource(strings = {StatusCode.INFECTED, StatusCode.UNSCANNED})
+	@EmptySource
+	@NullSource
+	void wrongStatusThrowsExceptionDuringContentRead(String status) {
+		mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+		var attachment = Attachments.create();
+		attachment.setDocumentId("some ID");
+		attachment.setContent(null);
+		attachment.setStatusCode(status);
+
+		assertDoesNotThrow(() -> cut.processAfter(readEventContext, List.of(attachment)));
+
+		doThrow(AttachmentStatusException.class).when(attachmentStatusValidator).verifyStatus(status);
 		var content = attachment.getContent();
 		assertThat(content).isInstanceOf(LazyProxyInputStream.class);
 		verifyNoInteractions(attachmentService);
-		assertThrows(ServiceException.class, content::readAllBytes);
+		assertThrows(AttachmentStatusException.class, content::readAllBytes);
 	}
 
 	@Test

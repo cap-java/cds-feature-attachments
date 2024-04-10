@@ -16,11 +16,14 @@ import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream.InputStreamSupplier;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.CQL;
+import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
@@ -51,10 +54,12 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	private final AttachmentService attachmentService;
 	private final ItemModifierProvider provider;
+	private final AttachmentStatusValidator attachmentStatusValidator;
 
-	public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider) {
+	public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider, AttachmentStatusValidator attachmentStatusValidator) {
 		this.attachmentService = attachmentService;
 		this.provider = provider;
+		this.attachmentStatusValidator = attachmentStatusValidator;
 	}
 
 	@Before(event = CqnService.EVENT_READ)
@@ -84,11 +89,9 @@ public class ReadAttachmentsHandler implements EventHandler {
 				var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
 				var status = (String) path.target().values().get(Attachments.STATUS_CODE);
 				var content = (InputStream) path.target().values().get(Attachments.CONTENT);
-				if (Objects.nonNull(content)) {
-					return new LazyProxyInputStream(() -> content, status);
-				} else if (Objects.nonNull(documentId)) {
-					return new LazyProxyInputStream(() -> attachmentService.readAttachment(documentId), status);
-				}
+				verifyStatus(path, status);
+				InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(documentId);
+				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
 			}
 			return value;
 		};
@@ -120,6 +123,17 @@ public class ReadAttachmentsHandler implements EventHandler {
 			}
 		}
 		return associationNames;
+	}
+
+	private void verifyStatus(Path path, String status) {
+		//TODO Add tests for status handling
+		if (areKeysEmpty(path.target().keys())) {
+			attachmentStatusValidator.verifyStatus(status);
+		}
+	}
+
+	private boolean areKeysEmpty(Map<String, Object> keys) {
+		return keys.values().stream().allMatch(Objects::isNull);
 	}
 
 }
