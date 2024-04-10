@@ -34,6 +34,8 @@ import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactio
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanRunner;
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
+import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
+import com.sap.cds.feature.attachments.service.malware.constants.MalwareScanConstants;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cds.services.handler.EventHandler;
@@ -72,11 +74,12 @@ public class Registration implements CdsRuntimeConfiguration {
 		var outboxedAttachmentService = outbox.outboxed(attachmentService);
 
 		List<ServiceBinding> bindings = configurer.getCdsRuntime().getEnvironment().getServiceBindings()
-																																				.filter(b -> ServiceBindingUtils.matches(b, DefaultMalwareScanClient.NAME_MALWARE_SCANNER))
+																																				.filter(b -> ServiceBindingUtils.matches(b, MalwareScanConstants.MALWARE_SCAN_SERVICE_LABEL))
 																																				.toList();
 		var binding = !bindings.isEmpty() ? bindings.get(0) : null;
 		var connectionPoll = new ConnectionPool(Duration.ofSeconds(60), 2, 20);
-		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService, new DefaultMalwareScanClient(binding, configurer.getCdsRuntime(), connectionPoll));
+		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, configurer.getCdsRuntime(), connectionPoll);
+		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService, new DefaultMalwareScanClient(clientProviderFactory));
 		var malwareScanEndTransactionListener = createEndTransactionMalwareScanListener(malwareScanner);
 		configurer.eventHandler(new DefaultAttachmentsServiceHandler(malwareScanEndTransactionListener));
 
