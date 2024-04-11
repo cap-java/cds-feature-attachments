@@ -69,7 +69,7 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 	}
 
 	private void logResultData(CdsEntity entity, List<CdsData> cdsData) {
-		logger.debug("Read attachments for entity {}: {}", entity.getQualifiedName(), cdsData);
+		logger.debug("Read attachments for entity {}: lines {}", entity.getQualifiedName(), cdsData.size());
 		if (logger.isTraceEnabled()) {
 			cdsData.forEach(data -> logger.trace("Read attachment data: {}", data));
 		}

@@ -35,7 +35,7 @@ public final class ModifyApplicationHandlerHelper {
 	}
 
 	private static CdsData getExistingData(Map<String, Object> keys, List<CdsData> existingDataList) {
-		return existingDataList.stream().filter(existingData -> ApplicationHandlerHelper.isKeyInData(keys, existingData))
+		return existingDataList.stream().filter(existingData -> ApplicationHandlerHelper.areKeysInData(keys, existingData))
 											.findAny().orElse(CdsData.create());
 	}
 

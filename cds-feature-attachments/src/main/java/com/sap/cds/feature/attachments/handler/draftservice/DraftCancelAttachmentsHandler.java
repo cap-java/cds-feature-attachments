@@ -76,7 +76,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			}
 			var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 			var existingEntry = activeCondensedAttachments.stream()
-																									.filter(updatedData -> ApplicationHandlerHelper.isKeyInData(keys, updatedData)).findAny();
+																									.filter(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
 			existingEntry.ifPresent(entry -> {
 				if (!entry.get(Attachments.DOCUMENT_ID).equals(value)) {
 					deleteContentAttachmentEvent.processEvent(null, null, CdsData.create(path.target().values()), context);

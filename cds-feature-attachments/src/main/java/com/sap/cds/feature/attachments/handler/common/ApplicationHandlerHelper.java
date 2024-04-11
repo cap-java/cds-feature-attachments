@@ -11,7 +11,6 @@ import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
-import com.sap.cds.CdsDataProcessor.Generator;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
@@ -44,10 +43,6 @@ public final class ApplicationHandlerHelper {
 		CdsDataProcessor.create().addValidator(filter, validator).process(data, entity);
 	}
 
-	public static void callGenerator(CdsEntity entity, List<CdsData> data, Filter filter, Generator generator) {
-		CdsDataProcessor.create().addGenerator(filter, generator).process(data, entity);
-	}
-
 	public static Filter buildFilterForMediaTypeEntity() {
 		return (path, element, type) -> isMediaEntity(path.target()
 																																																		.type()) && hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
@@ -75,7 +70,7 @@ public final class ApplicationHandlerHelper {
 		return resultList;
 	}
 
-	public static boolean isKeyInData(Map<String, Object> keys, CdsData data) {
+	public static boolean areKeysInData(Map<String, Object> keys, CdsData data) {
 		return keys.entrySet().stream().allMatch(entry -> {
 			var keyInData = data.get(entry.getKey());
 			return Objects.nonNull(keyInData) && keyInData.equals(entry.getValue());

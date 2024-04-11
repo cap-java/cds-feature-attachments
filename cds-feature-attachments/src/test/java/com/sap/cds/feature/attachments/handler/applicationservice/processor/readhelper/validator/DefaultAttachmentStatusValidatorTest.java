@@ -3,27 +3,32 @@ package com.sap.cds.feature.attachments.handler.applicationservice.processor.rea
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.slf4j.LoggerFactory;
 
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception.AttachmentStatusException;
+import com.sap.cds.feature.attachments.helper.LogObserver;
 
 import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
 
 class DefaultAttachmentStatusValidatorTest {
 
 	private DefaultAttachmentStatusValidator cut;
+	private LogObserver observer;
 
 	@BeforeEach
 	void setup() {
 		cut = new DefaultAttachmentStatusValidator();
+		observer = LogObserver.create(cut.getClass().getName());
+	}
+
+	@AfterEach
+	void tearDown() {
+		observer.stop();
 	}
 
 	@ParameterizedTest
@@ -40,14 +45,14 @@ class DefaultAttachmentStatusValidatorTest {
 
 	@Test
 	void noScannerStatusLogsWarning() {
-		var appender = addAndStartLogAppender();
+		observer.start();
 
 		cut.verifyStatus(StatusCode.NO_SCANNER);
 
-		appender.stop();
-		var list = appender.list;
+		observer.stop();
+		var list = observer.getLogEvents();
 		assertThat(list).hasSize(1);
-		appender.list.forEach(event -> {
+		list.forEach(event -> {
 			assertThat(event.getLevel()).isEqualTo(Level.WARN);
 			assertThat(event.getFormattedMessage()).isNotEmpty();
 		});
@@ -56,24 +61,16 @@ class DefaultAttachmentStatusValidatorTest {
 	@ParameterizedTest
 	@ValueSource(strings = {StatusCode.CLEAN, StatusCode.UNSCANNED, StatusCode.INFECTED, "some other status"})
 	void noLogsWritten(String status) {
-		var appender = addAndStartLogAppender();
+		observer.start();
 
 		try {
 			cut.verifyStatus(status);
-		} catch (AttachmentStatusException e) {
+		} catch (AttachmentStatusException ignored) {
 			// ignore
 		}
 
-		appender.stop();
-		assertThat(appender.list).isEmpty();
-	}
-
-	private ListAppender<ILoggingEvent> addAndStartLogAppender() {
-		var logger = (Logger) LoggerFactory.getLogger(cut.getClass().getName());
-		ListAppender<ILoggingEvent> appender = new ListAppender<>();
-		logger.addAppender(appender);
-		appender.start();
-		return appender;
+		observer.stop();
+		assertThat(observer.getLogEvents()).isEmpty();
 	}
 
 }
