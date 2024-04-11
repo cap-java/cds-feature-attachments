@@ -384,5 +384,17 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>artifactory</id>
+            <name>Artifactory_DMZ-snapshots</name>
+            <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
+        </snapshotRepository>
+        <repository>
+            <id>artifactory</id>
+            <name>Artifactory_DMZ</name>
+            <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
+        </repository>
+    </distributionManagement>
 
 </project>
