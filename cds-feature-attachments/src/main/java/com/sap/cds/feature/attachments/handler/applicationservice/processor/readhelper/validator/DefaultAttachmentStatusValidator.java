@@ -10,7 +10,6 @@ public class DefaultAttachmentStatusValidator implements AttachmentStatusValidat
 
 	private static final Logger logger = LoggerFactory.getLogger(DefaultAttachmentStatusValidator.class);
 
-	//TODO unit tests
 	@Override
 	public void verifyStatus(String attachmentStatus) {
 		if (!StatusCode.CLEAN.equals(attachmentStatus) && !StatusCode.NO_SCANNER.equals(attachmentStatus)) {
