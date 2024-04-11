@@ -15,10 +15,12 @@ runs:
         java-version: ${{ inputs.java-version }}
         distribution: 'temurin'
         cache: maven
+
     - name: mavenBuild
       uses: SAP/project-piper-action@master
       with:
         command: mavenBuild
-#    - name: Build with Maven
-#      run: mvn -B -ntp clean verify --file pom.xml
-#      shell: bash
+
+    - name: Run Mutation Testing
+      run: mvn org.pitest:pitest-maven:mutationCoverage
+      shell: bash
