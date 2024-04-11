@@ -85,15 +85,12 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
-			if (path.target().values().containsKey(element.getName())) {
-				var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
-				var status = (String) path.target().values().get(Attachments.STATUS_CODE);
-				var content = (InputStream) path.target().values().get(Attachments.CONTENT);
-				verifyStatus(path, status);
-				InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(documentId);
-				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
-			}
-			return value;
+			var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
+			var status = (String) path.target().values().get(Attachments.STATUS_CODE);
+			var content = (InputStream) path.target().values().get(Attachments.CONTENT);
+			verifyStatus(path, status);
+			InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(documentId);
+			return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
 		};
 
 		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, filter, converter);
@@ -126,7 +123,6 @@ public class ReadAttachmentsHandler implements EventHandler {
 	}
 
 	private void verifyStatus(Path path, String status) {
-		//TODO Add tests for status handling
 		if (areKeysEmpty(path.target().keys())) {
 			attachmentStatusValidator.verifyStatus(status);
 		}

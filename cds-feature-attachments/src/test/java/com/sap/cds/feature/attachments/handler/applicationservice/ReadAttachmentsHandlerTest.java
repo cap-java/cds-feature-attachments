@@ -7,8 +7,10 @@ import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -259,6 +261,20 @@ class ReadAttachmentsHandlerTest {
 
 		assertThat(readBeforeAnnotation.event()).containsOnly(CqnService.EVENT_READ);
 		assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
+	}
+
+	@Test
+	void statusNotVerifiedIfNotOnlyContentIsRequested() {
+		mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+		var attachment = Attachments.create();
+		attachment.setDocumentId("some ID");
+		attachment.setContent(mock(InputStream.class));
+		attachment.setStatusCode(StatusCode.INFECTED);
+		attachment.setId(UUID.randomUUID().toString());
+
+		cut.processAfter(readEventContext, List.of(attachment));
+
+		verifyNoInteractions(attachmentStatusValidator);
 	}
 
 	private void mockEventContext(String entityName, CqnSelect select) {
