@@ -158,7 +158,7 @@ class DefaultAttachmentsServiceHandlerTest {
 		if (Objects.nonNull(context)) {
 			try {
 				context.close();
-			} catch (RuntimeException e) {
+			} catch (RuntimeException ignored) {
 				// ignore
 			}
 		}

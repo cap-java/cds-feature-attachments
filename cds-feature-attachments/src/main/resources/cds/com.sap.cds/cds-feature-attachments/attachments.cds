@@ -6,10 +6,10 @@ using {
 } from '@sap/cds/common';
 
 type StatusCode: String enum {
-    Unscanned;
-    Infected;
-    NoScanner;
-    Clean;
+    UNSCANNED;
+    INFECTED;
+    NO_SCANNER;
+    CLEAN;
 }
 
 entity Statuses @cds.autoexpose @cds.readonly {
