@@ -70,6 +70,27 @@
         <plugins>
 
             <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>1.16.0</version>
+                <!--                <configuration>-->
+                <!--                    <targetClasses>-->
+                <!--                        <param>com.sap.cds.feature.attachments.mutation.*</param>-->
+                <!--                    </targetClasses>-->
+                <!--                    <targetTests>-->
+                <!--                        <param>com.sap.cds.feature.attachments.*</param>-->
+                <!--                    </targetTests>-->
+                <!--                </configuration>-->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>1.2.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>3.3.2</version>
