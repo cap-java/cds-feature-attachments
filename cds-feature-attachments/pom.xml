@@ -73,14 +73,27 @@
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
                 <version>1.16.0</version>
-                <!--                <configuration>-->
-                <!--                    <targetClasses>-->
-                <!--                        <param>com.sap.cds.feature.attachments.mutation.*</param>-->
-                <!--                    </targetClasses>-->
-                <!--                    <targetTests>-->
-                <!--                        <param>com.sap.cds.feature.attachments.*</param>-->
-                <!--                    </targetTests>-->
-                <!--                </configuration>-->
+                <configuration>
+                    <targetClasses>
+                        <param>com.sap.cds.feature.attachments.handler.*</param>
+                        <param>com.sap.cds.feature.attachments.service.*</param>
+                    </targetClasses>
+                    <mutators>
+                        <mutator>CONSTRUCTOR_CALLS</mutator>
+                        <mutator>VOID_METHOD_CALLS</mutator>
+                        <mutator>NON_VOID_METHOD_CALLS</mutator>
+                        <mutator>REMOVE_CONDITIONALS_ORDER_ELSE</mutator>
+                        <mutator>CONDITIONALS_BOUNDARY</mutator>
+                        <mutator>EMPTY_RETURNS</mutator>
+                        <mutator>NEGATE_CONDITIONALS</mutator>
+                        <mutator>REMOVE_CONDITIONALS_EQUAL_IF</mutator>
+                        <mutator>REMOVE_CONDITIONALS_EQUAL_ELSE</mutator>
+                        <mutator>REMOVE_CONDITIONALS_ORDER_IF</mutator>
+                        <mutator>REMOVE_CONDITIONALS_ORDER_ELSE</mutator>
+                    </mutators>
+                    <coverageThreshold>95</coverageThreshold>
+                </configuration>
+
                 <dependencies>
                     <dependency>
                         <groupId>org.pitest</groupId>
