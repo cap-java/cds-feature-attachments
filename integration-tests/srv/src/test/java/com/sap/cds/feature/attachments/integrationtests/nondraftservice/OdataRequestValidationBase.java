@@ -488,13 +488,13 @@ abstract class OdataRequestValidationBase {
 		verifySingleCreateAndUpdateEvent(attachment.getDocumentId(), itemAttachment.getDocumentId(), content);
 	}
 
-	private Items selectItem(Items item) {
+	protected Items selectItem(Items item) {
 		var selectedRootAfterContentCreated = selectStoredRootWithDeepData();
 		return selectedRootAfterContentCreated.getItems().stream().filter(i -> i.getId().equals(item.getId())).findAny()
 											.orElseThrow();
 	}
 
-	private Roots buildServiceRootWithDeepData() {
+	protected Roots buildServiceRootWithDeepData() {
 		return RootEntityBuilder.create().setTitle("some root title")
 											.addAttachments(AttachmentsEntityBuilder.create().setFileName("fileRoot.txt").setMimeType("text/plain"))
 											.addItems(ItemEntityBuilder.create().setTitle("some item 1 title")
@@ -512,12 +512,12 @@ abstract class OdataRequestValidationBase {
 											.build();
 	}
 
-	private void postServiceRoot(Roots serviceRoot) throws Exception {
+	protected void postServiceRoot(Roots serviceRoot) throws Exception {
 		var url = MockHttpRequestHelper.ODATA_BASE_URL + "TestService/Roots";
 		requestHelper.executePostWithMatcher(url, serviceRoot.toJson(), status().isCreated());
 	}
 
-	private Roots selectStoredRootWithDeepData() {
+	protected Roots selectStoredRootWithDeepData() {
 		CqnSelect select = Select.from(Roots_.class)
 																							.columns(StructuredType::_all, root -> root.attachments().expand(), root -> root.items()
 																																																																																																					.expand(StructuredType::_all, item -> item.attachments()
@@ -545,7 +545,7 @@ abstract class OdataRequestValidationBase {
 		assertThat(selectedRoot.getItems().get(1).getAttachments()).hasSize(1);
 	}
 
-	private Attachments getRandomItemAttachment(Items selectedItem) {
+	protected Attachments getRandomItemAttachment(Items selectedItem) {
 		return selectedItem.getAttachments().get(0);
 	}
 
@@ -553,7 +553,7 @@ abstract class OdataRequestValidationBase {
 		return selectedItem.getAttachmentEntities().get(0);
 	}
 
-	private Items getItemWithAttachment(Roots selectedRoot) {
+	protected Items getItemWithAttachment(Roots selectedRoot) {
 		return selectedRoot.getItems().stream().filter(item -> !item.getAttachments().isEmpty()).findAny().orElseThrow();
 	}
 
@@ -562,7 +562,7 @@ abstract class OdataRequestValidationBase {
 											.orElseThrow();
 	}
 
-	private String putContentForAttachmentWithNavigation(Roots selectedRoot, Attachments itemAttachment) throws Exception {
+	protected String putContentForAttachmentWithNavigation(Roots selectedRoot, Attachments itemAttachment) throws Exception {
 		return putContentForAttachmentWithNavigation(selectedRoot, itemAttachment, status().isNoContent());
 	}
 
@@ -579,11 +579,11 @@ abstract class OdataRequestValidationBase {
 		return testContent;
 	}
 
-	private String buildNavigationAttachmentUrl(String rootId, String itemId, String attachmentId) {
+	protected String buildNavigationAttachmentUrl(String rootId, String itemId, String attachmentId) {
 		return "/odata/v4/TestService/Roots(" + rootId + ")/items(" + itemId + ")" + "/attachments(ID=" + attachmentId + ",up__ID=" + itemId + ")";
 	}
 
-	private String buildExpandAttachmentUrl(String rootId, String itemId) {
+	protected String buildExpandAttachmentUrl(String rootId, String itemId) {
 		return "/odata/v4/TestService/Roots(" + rootId + ")/items(" + itemId + ")" + "?$expand=attachments,attachmentEntities";
 	}
 

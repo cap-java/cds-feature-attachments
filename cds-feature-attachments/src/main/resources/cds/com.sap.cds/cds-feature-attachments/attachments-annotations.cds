@@ -15,7 +15,8 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
         Core.IsMediaType
     );
     documentId @(UI.Hidden: true);
-    scannedAt @(UI.Hidden: true);
+    scannedAt @(UI.Hidden: true,
+                readonly);
 }
 
 annotate Attachments with @UI: {

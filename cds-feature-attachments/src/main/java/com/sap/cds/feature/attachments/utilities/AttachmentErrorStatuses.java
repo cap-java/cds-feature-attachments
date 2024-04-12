@@ -5,7 +5,7 @@ import com.sap.cds.services.ErrorStatuses;
 
 public enum AttachmentErrorStatuses implements ErrorStatus {
 
-	NOT_CLEAN("no_clean", "Attachment is not clean", ErrorStatuses.METHOD_NOT_ALLOWED);
+	NOT_CLEAN("not_clean", "Attachment is not clean", ErrorStatuses.METHOD_NOT_ALLOWED);
 
 	private final String code;
 	private final String description;
