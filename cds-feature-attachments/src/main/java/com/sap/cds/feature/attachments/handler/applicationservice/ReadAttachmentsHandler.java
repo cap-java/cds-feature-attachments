@@ -1,5 +1,6 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,15 +12,18 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.CdsDataProcessor.Generator;
+import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream.InputStreamSupplier;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.CQL;
+import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
@@ -50,10 +54,12 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	private final AttachmentService attachmentService;
 	private final ItemModifierProvider provider;
+	private final AttachmentStatusValidator attachmentStatusValidator;
 
-	public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider) {
+	public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider, AttachmentStatusValidator attachmentStatusValidator) {
 		this.attachmentService = attachmentService;
 		this.provider = provider;
+		this.attachmentStatusValidator = attachmentStatusValidator;
 	}
 
 	@Before(event = CqnService.EVENT_READ)
@@ -78,18 +84,20 @@ public class ReadAttachmentsHandler implements EventHandler {
 		logger.debug(marker, "Processing after read event for entity {}", context.getTarget().getName());
 
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
-		Generator generator = (path, element, isNull) -> {
-			if (path.target().values().containsKey(element.getName())) {
-				var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
-				var status = (String) path.target().values().get(Attachments.STATUS_CODE);
-				if (Objects.nonNull(documentId)) {
-					return new LazyProxyInputStream(() -> attachmentService.readAttachment(documentId), status);
-				}
+		Converter converter = (path, element, value) -> {
+			var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
+			var status = (String) path.target().values().get(Attachments.STATUS_CODE);
+			var content = (InputStream) path.target().values().get(Attachments.CONTENT);
+			if (Objects.nonNull(documentId) || Objects.nonNull(content)) {
+				verifyStatus(path, status);
+				InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(documentId);
+				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
+			} else {
+				return value;
 			}
-			return null;
 		};
 
-		ApplicationHandlerHelper.callGenerator(context.getTarget(), data, filter, generator);
+		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, filter, converter);
 	}
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {
@@ -116,6 +124,16 @@ public class ReadAttachmentsHandler implements EventHandler {
 			}
 		}
 		return associationNames;
+	}
+
+	private void verifyStatus(Path path, String status) {
+		if (areKeysEmpty(path.target().keys())) {
+			attachmentStatusValidator.verifyStatus(status);
+		}
+	}
+
+	private boolean areKeysEmpty(Map<String, Object> keys) {
+		return keys.values().stream().allMatch(Objects::isNull);
 	}
 
 }

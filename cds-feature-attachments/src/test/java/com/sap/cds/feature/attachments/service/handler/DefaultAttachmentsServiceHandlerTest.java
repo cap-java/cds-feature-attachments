@@ -1,9 +1,12 @@
 package com.sap.cds.feature.attachments.service.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 import java.util.Map;
+import java.util.Objects;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,23 +14,34 @@ import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Media
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreDeletedEventContext;
+import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.changeset.ChangeSetListener;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.impl.changeset.ChangeSetContextImpl;
 
 class DefaultAttachmentsServiceHandlerTest {
 
 	private static final int EXPECTED_HANDLER_ORDER = 11000;
 
 	private DefaultAttachmentsServiceHandler cut;
+	private EndTransactionMalwareScanProvider malwareScanProvider;
 
 	@BeforeEach
 	void setup() {
-		cut = new DefaultAttachmentsServiceHandler();
+		malwareScanProvider = mock(EndTransactionMalwareScanProvider.class);
+		cut = new DefaultAttachmentsServiceHandler(malwareScanProvider);
+	}
+
+	@AfterEach
+	void tearDown() throws Exception {
+		closeChangeSetContext();
 	}
 
 	@Test
@@ -36,13 +50,15 @@ class DefaultAttachmentsServiceHandlerTest {
 		var attachmentId = "test ID";
 		createContext.setAttachmentIds(Map.of(Attachments.ID, attachmentId, "OtherId", "OtherID value"));
 		createContext.setData(MediaData.create());
+		createContext.setAttachmentEntity(mock(CdsEntity.class));
+		ChangeSetContextImpl.open();
 
 		cut.createAttachment(createContext);
 
 		assertThat(createContext.isCompleted()).isTrue();
 		assertThat(createContext.getDocumentId()).isEqualTo(attachmentId);
 		assertThat(createContext.getIsInternalStored()).isTrue();
-		assertThat(createContext.getData().getStatusCode()).isEqualTo(StatusCode.CLEAN);
+		assertThat(createContext.getData().getStatusCode()).isEqualTo(StatusCode.UNSCANNED);
 	}
 
 	@Test
@@ -119,5 +135,34 @@ class DefaultAttachmentsServiceHandlerTest {
 		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_READ_ATTACHMENT);
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
 	}
+
+	@Test
+	void malwareScannerRegisteredForEndOfTransaction() {
+		var listener = mock(ChangeSetListener.class);
+		var entity = mock(CdsEntity.class);
+		Map<String, Object> keys = Map.of("key", "value");
+		when(malwareScanProvider.getChangeSetListener(entity, keys)).thenReturn(listener);
+		var createContext = AttachmentCreateEventContext.create();
+		createContext.setAttachmentIds(keys);
+		createContext.setData(MediaData.create());
+		createContext.setAttachmentEntity(entity);
+		ChangeSetContextImpl.open();
+
+		cut.createAttachment(createContext);
+
+		verify(malwareScanProvider).getChangeSetListener(entity, keys);
+	}
+
+	private void closeChangeSetContext() throws Exception {
+		var context = ChangeSetContextImpl.getCurrent();
+		if (Objects.nonNull(context)) {
+			try {
+				context.close();
+			} catch (RuntimeException ignored) {
+				// ignore
+			}
+		}
+	}
+
 
 }

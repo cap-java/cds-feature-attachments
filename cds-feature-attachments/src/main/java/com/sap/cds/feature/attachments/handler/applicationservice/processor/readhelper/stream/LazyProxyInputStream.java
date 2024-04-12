@@ -6,31 +6,30 @@ import java.io.InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
-import com.sap.cds.services.ServiceException;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
 
 /**
 	* The class {@link LazyProxyInputStream} is a lazy proxy for an {@link InputStream}.
 	* The class is used to create a proxy for an {@link InputStream} that is not yet available.
+	* Before the {@link InputStream} is accessed, the status of the attachment is validated.
 	*/
 public class LazyProxyInputStream extends InputStream {
 	private static final Logger logger = LoggerFactory.getLogger(LazyProxyInputStream.class);
 
 	private final InputStreamSupplier inputStreamSupplier;
+	private final AttachmentStatusValidator attachmentStatusValidator;
 	private final String status;
 	private InputStream delegate;
 
 
-	public LazyProxyInputStream(InputStreamSupplier inputStreamSupplier, String status) {
+	public LazyProxyInputStream(InputStreamSupplier inputStreamSupplier, AttachmentStatusValidator attachmentStatusValidator, String status) {
 		this.inputStreamSupplier = inputStreamSupplier;
+		this.attachmentStatusValidator = attachmentStatusValidator;
 		this.status = status;
 	}
 
 	private InputStream getDelegate() throws IOException {
-		if (!StatusCode.CLEAN.equals(status)) {
-			//TODO translation
-			throw new ServiceException("Attachment is not clean");
-		}
+		attachmentStatusValidator.verifyStatus(status);
 
 		if (delegate == null) {
 			logger.debug("Creating delegate input stream");

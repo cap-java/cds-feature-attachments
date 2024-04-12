@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -20,6 +21,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.common.model.AssociationIdentifier;
 import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
+import com.sap.cds.feature.attachments.helper.LogObserver;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Delete;
 import com.sap.cds.ql.cqn.CqnDelete;
@@ -27,6 +29,8 @@ import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.persistence.PersistenceService;
+
+import ch.qos.logback.classic.Level;
 
 
 class DefaultAttachmentsReaderTest {
@@ -38,6 +42,7 @@ class DefaultAttachmentsReaderTest {
 	private CdsModel model;
 	private ArgumentCaptor<CqnSelect> selectArgumentCaptor;
 	private Result result;
+	private LogObserver observer;
 
 	@BeforeEach
 	void setup() {
@@ -51,6 +56,12 @@ class DefaultAttachmentsReaderTest {
 		selectArgumentCaptor = ArgumentCaptor.forClass(CqnSelect.class);
 		result = mock(Result.class);
 		when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
+		observer = LogObserver.create(cut.getClass().getName());
+	}
+
+	@AfterEach
+	void teardown() {
+		observer.stop();
 	}
 
 	@Test
@@ -144,6 +155,29 @@ class DefaultAttachmentsReaderTest {
 		verify(persistenceService).run(selectArgumentCaptor.capture());
 		assertThat(selectArgumentCaptor.getValue()).hasToString(getExpectedSelectStatementForAttachmentsWithWhereAndFilter((String) keys.get("ID")));
 		assertThat(resultData).isEqualTo(data);
+	}
+
+	@Test
+	void dataAreLogged() {
+		mockPathListAndEntity(Attachment_.CDS_NAME);
+		var keys = buildDefaultKeyMap();
+		var entityWithKeys = CQL.entity(Attachment_.CDS_NAME).matching(keys);
+		CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
+		var dataEntry = CdsData.create();
+		dataEntry.put("ID", UUID.randomUUID().toString());
+		dataEntry.put("IsActiveEntity", true);
+		var data = List.of(dataEntry);
+		when(result.listOf(CdsData.class)).thenReturn(data);
+		observer.setLevel(Level.TRACE);
+		observer.start();
+
+		cut.readAttachments(model, entity, deleteFromEntity);
+
+		observer.stop();
+		var traceEvents = observer.getLogEvents().stream().filter(event -> event.getLevel().equals(Level.TRACE)).toList();
+		assertThat(traceEvents).hasSize(1);
+		assertThat(traceEvents.get(0).getFormattedMessage()).contains("IsActiveEntity=true")
+				.contains("ID=" + dataEntry.get("ID"));
 	}
 
 	private HashMap<String, Object> buildDefaultKeyMap() {
@@ -242,5 +276,6 @@ class DefaultAttachmentsReaderTest {
 	private String removeSpaceInString(String input) {
 		return input.replace("\n", "").replace("\t", "").replace(" ", "");
 	}
+
 
 }

@@ -19,6 +19,7 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreDeletedEventContext;
+import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.handler.Handler;
 import com.sap.cds.services.impl.ServiceSPI;
 import com.sap.cds.services.runtime.CdsRuntime;
@@ -77,7 +78,7 @@ class DefaultAttachmentsServiceTest {
 		serviceSpi.on(AttachmentService.EVENT_CREATE_ATTACHMENT, "", handler);
 		var stream = mock(InputStream.class);
 		Map<String, Object> ids = Map.of("ID1", "value1", "id2", "Value2");
-		var input = new CreateAttachmentInput(ids, "entityName", "fileName", "mimeType", stream);
+		var input = new CreateAttachmentInput(ids, mock(CdsEntity.class), "fileName", "mimeType", stream);
 
 		var result = cut.createAttachment(input);
 
@@ -85,7 +86,7 @@ class DefaultAttachmentsServiceTest {
 		assertThat(result.documentId()).isEqualTo(documentId);
 		var createContext = contextReference.get();
 		assertThat(createContext.getAttachmentIds()).isEqualTo(input.attachmentIds());
-		assertThat(createContext.getAttachmentEntityName()).isEqualTo(input.attachmentEntityName());
+		assertThat(createContext.getAttachmentEntity()).isEqualTo(input.attachmentEntity());
 		assertThat(createContext.getData().getFileName()).isEqualTo(input.fileName());
 		assertThat(createContext.getData().getMimeType()).isEqualTo(input.mimeType());
 		assertThat(createContext.getData().getContent()).isEqualTo(stream);
@@ -100,7 +101,7 @@ class DefaultAttachmentsServiceTest {
 		}).when(handler).process(any());
 		serviceSpi.on(AttachmentService.EVENT_CREATE_ATTACHMENT, "", handler);
 		Map<String, Object> ids = Map.of("ID1", "value1", "id2", "Value2");
-		var input = new CreateAttachmentInput(ids, "entityName", "fileName", "mimeType", mock(InputStream.class));
+		var input = new CreateAttachmentInput(ids, mock(CdsEntity.class), "fileName", "mimeType", mock(InputStream.class));
 
 		var result = cut.createAttachment(input);
 

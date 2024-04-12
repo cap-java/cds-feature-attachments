@@ -3,9 +3,6 @@ package com.sap.cds.feature.attachments.handler.common.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
 	* The class {@link NodeTree} is a tree data structure that holds the association identifier and its children.
 	*/
@@ -59,11 +56,6 @@ public class NodeTree {
 
 	@Override
 	public String toString() {
-		try {
-			return new ObjectMapper().writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			return "NodeTree{" + "identifier=" + identifier + ", children=" + children + "}";
-		}
+		return "NodeTree{" + "identifier=" + identifier + ", children=" + children + '}';
 	}
-
 }

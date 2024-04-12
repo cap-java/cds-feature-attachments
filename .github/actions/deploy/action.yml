@@ -46,7 +46,7 @@ runs:
         -Durl=${{ inputs.repository-url }}
         -DrepositoryId=artifactory
         -Dmaven.install.skip=true
-        -Dmaven.test.skip
+        -Dmaven.test.skip=true
         -Dmaven.compiler.showCompilationChanges
         -Dhttp.keepAlive=false
         -DskipDuringDeploy=true

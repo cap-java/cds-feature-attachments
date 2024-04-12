@@ -19,6 +19,7 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.services.Service;
 import com.sap.cds.services.ServiceCatalog;
+import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -30,6 +31,7 @@ class RegistrationTest {
 	private Registration cut;
 	private CdsRuntimeConfigurer configurer;
 	private ServiceCatalog serviceCatalog;
+	private CdsEnvironment environment;
 	private PersistenceService persistenceService;
 	private AttachmentService attachmentService;
 	private OutboxService outboxService;
@@ -45,6 +47,8 @@ class RegistrationTest {
 		when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
 		serviceCatalog = mock(ServiceCatalog.class);
 		when(cdsRuntime.getServiceCatalog()).thenReturn(serviceCatalog);
+		environment = mock(CdsEnvironment.class);
+		when(cdsRuntime.getEnvironment()).thenReturn(environment);
 		persistenceService = mock(PersistenceService.class);
 		attachmentService = mock(AttachmentService.class);
 		outboxService = mock(OutboxService.class);
@@ -57,8 +61,12 @@ class RegistrationTest {
 		cut.services(configurer);
 
 		verify(configurer).service(serviceArgumentCaptor.capture());
-		var service = serviceArgumentCaptor.getValue();
-		assertThat(service).isInstanceOf(AttachmentService.class);
+		var services = serviceArgumentCaptor.getAllValues();
+		assertThat(services).hasSize(1);
+
+		var attachmentServiceFound = services.stream().anyMatch(service -> service instanceof AttachmentService);
+
+		assertThat(attachmentServiceFound).isTrue();
 	}
 
 	@Test

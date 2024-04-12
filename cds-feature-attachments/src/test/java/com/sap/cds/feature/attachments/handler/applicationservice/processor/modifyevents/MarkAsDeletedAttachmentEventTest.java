@@ -15,6 +15,7 @@ import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
+import com.sap.cds.services.draft.DraftService;
 
 class MarkAsDeletedAttachmentEventTest {
 
@@ -64,6 +65,22 @@ class MarkAsDeletedAttachmentEventTest {
 
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isNull();
+		verifyNoInteractions(attachmentService);
+		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
+	}
+
+	@Test
+	void documentIsNotExternallyDeletedBecauseItIsDraftChangeEvent() {
+		var value = "test";
+		var documentId = "some id";
+		var data = Attachments.create();
+		data.setDocumentId(documentId);
+		when(context.getEvent()).thenReturn(DraftService.EVENT_DRAFT_PATCH);
+
+		var expectedValue = cut.processEvent(path, value, data, context);
+
+		assertThat(expectedValue).isEqualTo(value);
+		assertThat(data.getDocumentId()).isEqualTo(documentId);
 		verifyNoInteractions(attachmentService);
 		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
 	}

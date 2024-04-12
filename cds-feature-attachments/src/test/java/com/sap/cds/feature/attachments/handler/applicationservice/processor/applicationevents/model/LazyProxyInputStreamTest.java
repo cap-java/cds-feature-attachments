@@ -1,7 +1,7 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -15,9 +15,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception.AttachmentStatusException;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.services.ServiceException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -26,13 +27,15 @@ class LazyProxyInputStreamTest {
 	private LazyProxyInputStream cut;
 	private InputStream inputStream;
 	private AttachmentService attachmentService;
+	private AttachmentStatusValidator attachmentStatusValidator;
 
 	@BeforeEach
 	void setup() {
 		inputStream = mock(InputStream.class);
 		attachmentService = mock(AttachmentService.class);
+		attachmentStatusValidator = mock(AttachmentStatusValidator.class);
 		when(attachmentService.readAttachment(any())).thenReturn(inputStream);
-		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), StatusCode.CLEAN);
+		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), attachmentStatusValidator, StatusCode.CLEAN);
 	}
 
 	@Test
@@ -106,11 +109,21 @@ class LazyProxyInputStreamTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {StatusCode.SCANNING, StatusCode.UNSCANNED, StatusCode.NO_SCANNER, StatusCode.INFECTED})
+	@ValueSource(strings = {StatusCode.UNSCANNED, StatusCode.INFECTED})
 	void exceptionIfWrongStatus(String status) {
-		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), status);
+		doThrow(AttachmentStatusException.class).when(attachmentStatusValidator).verifyStatus(status);
 
-		assertThrows(ServiceException.class, () -> cut.read());
+		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), attachmentStatusValidator, status);
+
+		assertThrows(AttachmentStatusException.class, () -> cut.read());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {StatusCode.CLEAN, StatusCode.NO_SCANNER})
+	void noExceptionIfCorrectStatus(String status) {
+		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), attachmentStatusValidator, status);
+
+		assertDoesNotThrow(() -> cut.read());
 	}
 
 }
