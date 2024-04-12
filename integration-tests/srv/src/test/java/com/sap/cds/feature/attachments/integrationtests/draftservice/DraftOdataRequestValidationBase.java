@@ -100,6 +100,16 @@ abstract class DraftOdataRequestValidationBase {
 		var attachmentEntityUrl = getAttachmentEntityBaseUrl(selectedRoot.getItems().get(0).getAttachmentEntities().get(0)
 																																																									.getId(), false) + "/content";
 
+		Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+			var attachmentResponse = requestHelper.executeGet(attachmentUrl);
+			var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
+
+			return attachmentResponse.getResponse().getContentAsString()
+												.equals(testContentAttachment) && attachmentEntityResponse.getResponse().getContentAsString()
+																																																.equals(testContentAttachmentEntity);
+		});
+		clearServiceHandlerContext();
+
 		var attachmentResponse = requestHelper.executeGet(attachmentUrl);
 		assertThat(attachmentResponse.getResponse().getContentAsString()).isEqualTo(testContentAttachment);
 		var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
