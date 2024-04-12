@@ -18,6 +18,7 @@
         <Or>
             <!-- Allow null objects to import for testing -->
             <Bug pattern="NP_NULL_PARAM_DEREF_ALL_TARGETS_DANGEROUS"/>
+            <Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/>
         </Or>
     </Match>
 </FindBugsFilter>
