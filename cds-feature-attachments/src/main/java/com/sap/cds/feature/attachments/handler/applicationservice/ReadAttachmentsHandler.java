@@ -88,9 +88,13 @@ public class ReadAttachmentsHandler implements EventHandler {
 			var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
 			var status = (String) path.target().values().get(Attachments.STATUS_CODE);
 			var content = (InputStream) path.target().values().get(Attachments.CONTENT);
-			verifyStatus(path, status);
-			InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(documentId);
-			return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
+			if (Objects.nonNull(documentId) || Objects.nonNull(content)) {
+				verifyStatus(path, status);
+				InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(documentId);
+				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
+			} else {
+				return value;
+			}
 		};
 
 		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, filter, converter);

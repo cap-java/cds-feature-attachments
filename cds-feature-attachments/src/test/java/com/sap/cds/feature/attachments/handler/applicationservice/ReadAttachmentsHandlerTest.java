@@ -142,7 +142,7 @@ class ReadAttachmentsHandlerTest {
 			item4.setId("item id4");
 			item4.setAttachments(List.of(attachmentWithStreamAsContent));
 			var attachmentWithStreamContentButWithoutDocumentId = Attachments.create();
-			attachmentWithStreamContentButWithoutDocumentId.setContent(null);
+			attachmentWithStreamContentButWithoutDocumentId.setContent(mock(InputStream.class));
 			var item5 = Items.create();
 			item5.setId("item id4");
 			item5.setAttachments(List.of(attachmentWithStreamContentButWithoutDocumentId));
@@ -275,6 +275,19 @@ class ReadAttachmentsHandlerTest {
 		cut.processAfter(readEventContext, List.of(attachment));
 
 		verifyNoInteractions(attachmentStatusValidator);
+	}
+
+	@Test
+	void emptyDocumentIdAndEmptyContentReturnNullContent() {
+		mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+		var attachment = Attachments.create();
+		attachment.setStatusCode(StatusCode.INFECTED);
+		attachment.setContent(null);
+
+		cut.processAfter(readEventContext, List.of(attachment));
+
+		verifyNoInteractions(attachmentStatusValidator);
+		assertThat(attachment.getContent()).isNull();
 	}
 
 	private void mockEventContext(String entityName, CqnSelect select) {
