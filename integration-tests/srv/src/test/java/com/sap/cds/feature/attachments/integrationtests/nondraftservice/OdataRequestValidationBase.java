@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.AttachmentEntity;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.AttachmentEntity_;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Items;
@@ -486,6 +487,27 @@ abstract class OdataRequestValidationBase {
 		verifyContentAndDocumentIdForAttachmentEntity(attachment, content, itemAttachment);
 		assertThat(attachment.getDocumentId()).isEqualTo(itemAttachment.getDocumentId());
 		verifySingleCreateAndUpdateEvent(attachment.getDocumentId(), itemAttachment.getDocumentId(), content);
+	}
+
+	@Test
+	void statusCannotBeUpdated() throws Exception {
+		var serviceRoot = buildServiceRootWithDeepData();
+		postServiceRoot(serviceRoot);
+
+		var selectedRoot = selectStoredRootWithDeepData();
+		var item = getItemWithAttachmentEntity(selectedRoot);
+		var itemAttachment = getRandomItemAttachmentEntity(item);
+		putContentForAttachmentWithoutNavigation(itemAttachment);
+		itemAttachment.setStatusCode("INFECTED");
+		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId());
+
+		requestHelper.resetHelper();
+		requestHelper.executePatchWithODataResponseAndAssertStatus(url, "{\"status_code\":\"" + StatusCode.INFECTED + "\"}", HttpStatus.OK);
+
+		selectedRoot = selectStoredRootWithDeepData();
+		item = getItemWithAttachmentEntity(selectedRoot);
+		itemAttachment = getRandomItemAttachmentEntity(item);
+		assertThat(itemAttachment.getStatusCode()).isNotNull().isNotEqualTo(StatusCode.INFECTED);
 	}
 
 	protected Items selectItem(Items item) {

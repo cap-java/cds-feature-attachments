@@ -24,8 +24,8 @@ aspect MediaData @(_is_media_data) {
     mimeType   : String;
     fileName   : String;
     documentId : String;
-    status     : Status;
-    scannedAt  : Timestamp;
+    status     : Status @readonly;
+    scannedAt  : Timestamp @readonly;
 }
 
 aspect Attachments : cuid, managed, MediaData {

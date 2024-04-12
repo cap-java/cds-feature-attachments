@@ -15,9 +15,7 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
         Core.IsMediaType
     );
     fileName @(title: '{i18n>fileName}');
-    status_code @(readonly);
     status @(
-        readonly,
         Common.Label: '{@i18n>status}',
         Common.Text: {
             $value: ![statusText],
@@ -27,8 +25,7 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
         sap.value.list: 'fixed-values'
     );
     documentId @(UI.Hidden: true);
-    scannedAt @(UI.Hidden: true,
-                readonly);
+    scannedAt @(UI.Hidden: true);
 }
 
 annotate Attachments with @UI: {
