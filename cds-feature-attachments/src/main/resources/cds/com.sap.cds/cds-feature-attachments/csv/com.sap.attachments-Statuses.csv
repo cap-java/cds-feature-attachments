@@ -1,5 +1,5 @@
 CODE,TEXT
-Unscanned,Not Scanned
-Infected,Infected
-NoScanner,No Scanner Available
-Clean,Clean
+UNSCANNED,Not Scanned
+INFECTED,Infected
+NO_SCANNER,No Scanner Available
+CLEAN,Clean

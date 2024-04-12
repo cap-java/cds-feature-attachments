@@ -15,6 +15,7 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
         Core.IsMediaType
     );
     documentId @(UI.Hidden: true);
+    scannedAt @(UI.Hidden: true);
 }
 
 annotate Attachments with @UI: {
@@ -25,12 +26,30 @@ annotate Attachments with @UI: {
     },
     LineItem  : [
         {Value: content},
-        {Value: status},
+        {Value: status_code},
         {Value: createdAt},
         {Value: createdBy},
         {Value: note}
     ]
 } {
     fileName @(title: '{i18n>fileName}');
-    note     @(title: '{i18n>note}')
+    note     @(title: '{i18n>note}');
+    status @(
+        Common.Label: '{@i18n>status}',
+        Common.Text: {
+            $value: ![statusText],
+            ![@UI.TextArrangement]: #TextOnly
+        },
+        ValueList: {entity:'Statuses'},
+        sap.value.list: 'fixed-values'
+    );
 }
+
+annotate Statuses with{
+    code @(
+        Common.Text: {
+            $value: ![statusText],
+            ![@UI.TextArrangement]: #TextOnly
+        }
+    );
+};
