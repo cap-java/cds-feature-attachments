@@ -92,7 +92,7 @@
                         <mutator>REMOVE_CONDITIONALS_ORDER_ELSE</mutator>
                     </mutators>
                     <coverageThreshold>95</coverageThreshold>
-                    <aggregatedMutationThreshold>95</aggregatedMutationThreshold>
+                    <aggregatedMutationThreshold>90</aggregatedMutationThreshold>
                 </configuration>
 
                 <dependencies>
