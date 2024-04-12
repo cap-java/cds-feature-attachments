@@ -21,6 +21,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.BeforeReadItemsModifier;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.DefaultAttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.CreationChangeSetListener;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
@@ -105,11 +106,16 @@ public class Registration implements CdsRuntimeConfiguration {
 	}
 
 	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService, ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
-		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, outboxedAttachmentService, CreationChangeSetListener::new);
+		var creationChangeSetListener = createCreationFailedListener(outboxedAttachmentService);
+		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
 		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();
 		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent, doNothingAttachmentEvent);
+	}
+
+	private ListenerProvider createCreationFailedListener(AttachmentService outboxedAttachmentService) {
+		return (documentId, cdsRuntime) -> new CreationChangeSetListener(documentId, cdsRuntime, outboxedAttachmentService);
 	}
 
 	protected EventHandler buildCreateHandler(ModifyAttachmentEventFactory factory) {

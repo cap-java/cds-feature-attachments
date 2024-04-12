@@ -39,7 +39,6 @@ class CreateAttachmentEventTest {
 	private CreateAttachmentEvent cut;
 
 	private AttachmentService attachmentService;
-	private AttachmentService outboxedAttachmentService;
 	private ListenerProvider listenerProvider;
 	private Path path;
 	private ResolvedSegment target;
@@ -51,9 +50,8 @@ class CreateAttachmentEventTest {
 	@BeforeEach
 	void setup() {
 		attachmentService = mock(AttachmentService.class);
-		outboxedAttachmentService = mock(AttachmentService.class);
 		listenerProvider = mock(ListenerProvider.class);
-		cut = new CreateAttachmentEvent(attachmentService, outboxedAttachmentService, listenerProvider);
+		cut = new CreateAttachmentEvent(attachmentService, listenerProvider);
 
 		contextArgumentCaptor = ArgumentCaptor.forClass(CreateAttachmentInput.class);
 		path = mock(Path.class);
@@ -128,7 +126,7 @@ class CreateAttachmentEventTest {
 		var runtime = mock(CdsRuntime.class);
 		when(eventContext.getCdsRuntime()).thenReturn(runtime);
 		var listener = mock(ChangeSetListener.class);
-		when(listenerProvider.provideListener(documentId, runtime, outboxedAttachmentService)).thenReturn(listener);
+		when(listenerProvider.provideListener(documentId, runtime)).thenReturn(listener);
 		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, documentId, "test"));
 
 		cut.processEvent(path, null, CdsData.create(), eventContext);
