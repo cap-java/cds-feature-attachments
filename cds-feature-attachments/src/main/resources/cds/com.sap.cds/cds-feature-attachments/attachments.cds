@@ -24,7 +24,7 @@ aspect MediaData @(_is_media_data) {
     mimeType   : String;
     fileName   : String;
     documentId : String;
-    status     : Status @readonly;
+    status     : Status;
     scannedAt  : Timestamp @readonly;
 }
 
