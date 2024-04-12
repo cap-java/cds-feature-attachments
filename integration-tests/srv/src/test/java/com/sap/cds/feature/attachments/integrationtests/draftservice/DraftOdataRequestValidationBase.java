@@ -6,7 +6,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +42,7 @@ abstract class DraftOdataRequestValidationBase {
 	@Autowired(required = false)
 	protected TestPluginAttachmentsServiceHandler serviceHandler;
 	@Autowired
-	private MockHttpRequestHelper requestHelper;
+	protected MockHttpRequestHelper requestHelper;
 	@Autowired
 	private PersistenceService persistenceService;
 	@Autowired
@@ -50,7 +52,7 @@ abstract class DraftOdataRequestValidationBase {
 
 	@AfterEach
 	void teardown() {
-		dataDeleter.deleteData(DraftRoots_.CDS_NAME, "cds.outbox.Messages");
+		dataDeleter.deleteData(DraftRoots_.CDS_NAME, DraftRoots_.CDS_NAME + "_drafts", "cds.outbox.Messages");
 		requestHelper.resetHelper();
 		clearServiceHandlerContext();
 		testPersistenceHandler.reset();
@@ -477,7 +479,7 @@ abstract class DraftOdataRequestValidationBase {
 		verifyNoAttachmentEventsCalled();
 	}
 
-	private DraftRoots deepCreateAndActivate(String testContentAttachment, String testContentAttachmentEntity) throws Exception {
+	protected DraftRoots deepCreateAndActivate(String testContentAttachment, String testContentAttachmentEntity) throws Exception {
 		var responseRoot = createNewDraft();
 		var rootUrl = updateRoot(responseRoot);
 		var responseItem = createItem(rootUrl);
@@ -585,11 +587,11 @@ abstract class DraftOdataRequestValidationBase {
 		return BASE_URL + "Items(ID=" + responseItem.getId() + ",IsActiveEntity=" + isActiveEntity + ")";
 	}
 
-	private String getAttachmentBaseUrl(String itemId, String attachmentId, boolean isActiveEntity) {
+	protected String getAttachmentBaseUrl(String itemId, String attachmentId, boolean isActiveEntity) {
 		return BASE_URL + "Items_attachments(up__ID=" + itemId + ",ID=" + attachmentId + ",IsActiveEntity=" + isActiveEntity + ")";
 	}
 
-	private String getAttachmentEntityBaseUrl(String attachmentId, boolean isActiveEntity) {
+	protected String getAttachmentEntityBaseUrl(String attachmentId, boolean isActiveEntity) {
 		return BASE_URL + "AttachmentEntity(ID=" + attachmentId + ",IsActiveEntity=" + isActiveEntity + ")";
 	}
 
@@ -617,12 +619,23 @@ abstract class DraftOdataRequestValidationBase {
 		return persistenceService.run(select).single(DraftRoots.class);
 	}
 
-	private void readAndValidateActiveContent(DraftRoots selectedRoot, String attachmentContent, String attachmentEntityContent) throws Exception {
+	protected void readAndValidateActiveContent(DraftRoots selectedRoot, String attachmentContent, String attachmentEntityContent) throws Exception {
 		var attachmentUrl = getAttachmentBaseUrl(selectedRoot.getItems().get(0).getId(), selectedRoot.getItems().get(0)
 																																																																																					.getAttachments().get(0)
 																																																																																					.getId(), true) + "/content";
 		var attachmentEntityUrl = getAttachmentEntityBaseUrl(selectedRoot.getItems().get(0).getAttachmentEntities().get(0)
 																																																									.getId(), true) + "/content";
+
+
+		Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+			var attachmentResponse = requestHelper.executeGet(attachmentUrl);
+			var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
+
+			return attachmentResponse.getResponse().getContentAsString()
+												.equals(attachmentContent) && attachmentEntityResponse.getResponse().getContentAsString()
+																																												.equals(attachmentEntityContent);
+		});
+		clearServiceHandlerContext();
 
 		var attachmentResponse = requestHelper.executeGet(attachmentUrl);
 		var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
