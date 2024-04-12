@@ -22,5 +22,5 @@ runs:
         command: mavenBuild
 
     - name: Run Mutation Testing
-      run: mvn org.pitest:pitest-maven:mutationCoverage -f cds-feature-attachments\pom.xml
+      run: mvn org.pitest:pitest-maven:mutationCoverage -f cds-feature-attachments/pom.xml
       shell: bash
