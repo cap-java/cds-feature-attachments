@@ -46,9 +46,9 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		var createEventInput = new CreateAttachmentInput(keys, path.target()
 																																																											.entity(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
 		var result = attachmentService.createAttachment(createEventInput);
-		var listener = listenerProvider.provideListener(result.documentId(), eventContext.getCdsRuntime());
+		var createListener = listenerProvider.provideListener(result.documentId(), eventContext.getCdsRuntime());
 		var context = eventContext.getChangeSetContext();
-		context.register(listener);
+		context.register(createListener);
 		path.target().values().put(Attachments.DOCUMENT_ID, result.documentId());
 		path.target().values().put(Attachments.STATUS_CODE, result.attachmentStatus());
 		return result.isInternalStored() ? value : null;
