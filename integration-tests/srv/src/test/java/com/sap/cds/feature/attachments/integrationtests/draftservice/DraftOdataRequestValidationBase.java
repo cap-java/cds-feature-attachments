@@ -112,7 +112,7 @@ abstract class DraftOdataRequestValidationBase {
 			var attachmentResponseContent = attachmentResponse.getResponse().getContentAsString();
 			var attachmentEntityResponseContent = attachmentEntityResponse.getResponse().getContentAsString();
 
-			logger.info("!!! READ FROM ACTIVE ROOT !!! - Attachment response: {}, Attachment entity response: {}", attachmentResponseContent, attachmentEntityResponseContent);
+			logger.info("!!! READ FROM DRAFT ROOT !!! - Attachment response: {}, Attachment entity response: {}", attachmentResponseContent, attachmentEntityResponseContent);
 
 			return attachmentResponseContent.equals(testContentAttachment) && attachmentEntityResponseContent.equals(testContentAttachmentEntity);
 		});
