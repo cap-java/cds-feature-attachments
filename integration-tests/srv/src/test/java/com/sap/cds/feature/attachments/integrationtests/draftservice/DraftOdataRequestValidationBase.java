@@ -648,11 +648,9 @@ abstract class DraftOdataRequestValidationBase {
 			var attachmentEntityContentAsString = attachmentEntityResponse.getResponse().getContentAsString();
 
 			//TODO remove logger
-			logger.info("!!! CONTENT !!! - attachmentContentAsString: {}, attachmentEntityContentAsString; {} ", attachmentContentAsString, attachmentContentAsString);
+			logger.info("!!! CONTENT !!! - attachmentContentAsString: {}, attachmentEntityContentAsString; {} ", attachmentContentAsString, attachmentEntityContentAsString);
 
-			return attachmentResponse.getResponse().getContentAsString()
-												.equals(attachmentContent) && attachmentEntityResponse.getResponse().getContentAsString()
-																																												.equals(attachmentEntityContent);
+			return attachmentContentAsString.equals(attachmentContent) && attachmentEntityContentAsString.equals(attachmentEntityContent);
 		});
 		clearServiceHandlerContext();
 
