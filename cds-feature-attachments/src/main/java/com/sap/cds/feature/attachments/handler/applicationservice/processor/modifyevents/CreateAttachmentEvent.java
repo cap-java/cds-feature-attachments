@@ -28,12 +28,10 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 	private static final Logger logger = LoggerFactory.getLogger(CreateAttachmentEvent.class);
 
 	private final AttachmentService attachmentService;
-	private final AttachmentService outboxedAttachmentService;
 	private final ListenerProvider listenerProvider;
 
-	public CreateAttachmentEvent(AttachmentService attachmentService, AttachmentService outboxedAttachmentService, ListenerProvider listenerProvider) {
+	public CreateAttachmentEvent(AttachmentService attachmentService, ListenerProvider listenerProvider) {
 		this.attachmentService = attachmentService;
-		this.outboxedAttachmentService = outboxedAttachmentService;
 		this.listenerProvider = listenerProvider;
 	}
 
@@ -48,9 +46,9 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		var createEventInput = new CreateAttachmentInput(keys, path.target()
 																																																											.entity(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
 		var result = attachmentService.createAttachment(createEventInput);
-		var listener = listenerProvider.provideListener(result.documentId(), eventContext.getCdsRuntime(), outboxedAttachmentService);
+		var createListener = listenerProvider.provideListener(result.documentId(), eventContext.getCdsRuntime());
 		var context = eventContext.getChangeSetContext();
-		context.register(listener);
+		context.register(createListener);
 		path.target().values().put(Attachments.DOCUMENT_ID, result.documentId());
 		path.target().values().put(Attachments.STATUS_CODE, result.attachmentStatus());
 		return result.isInternalStored() ? value : null;

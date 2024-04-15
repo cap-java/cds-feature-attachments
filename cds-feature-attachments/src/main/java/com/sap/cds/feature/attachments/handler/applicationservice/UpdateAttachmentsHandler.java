@@ -10,6 +10,7 @@ import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyFieldUpdaterProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -21,10 +22,12 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
+import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.utils.OrderConstants;
 import com.sap.cds.services.utils.model.CqnUtils;
 
 /**
@@ -43,16 +46,37 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	private final ModifyAttachmentEventFactory eventFactory;
 	private final AttachmentsReader attachmentsReader;
 	private final AttachmentService outboxedAttachmentService;
+	private final ReadonlyFieldUpdaterProvider fieldUpdateProvider;
 
-	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader, AttachmentService outboxedAttachmentService) {
+	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader, AttachmentService outboxedAttachmentService, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		this.eventFactory = eventFactory;
 		this.attachmentsReader = attachmentsReader;
 		this.outboxedAttachmentService = outboxedAttachmentService;
+		this.fieldUpdateProvider = fieldUpdateProvider;
+	}
+
+	@Before(event = CqnService.EVENT_UPDATE)
+	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
+	public void processBeforeForDraft(CdsUpdateEventContext context, List<CdsData> data) {
+		if (isDraftService(context)) {
+			doUpdate(context, data, fieldUpdateProvider);
+		}
 	}
 
 	@Before(event = CqnService.EVENT_UPDATE)
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
+		if (isDraftService(context)) {
+			return;
+		}
+		doUpdate(context, data, null);
+	}
+
+	private boolean isDraftService(CdsUpdateEventContext context) {
+		return context.getService() instanceof DraftService;
+	}
+
+	private void doUpdate(CdsUpdateEventContext context, List<CdsData> data, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		var target = context.getTarget();
 		var noContentInData = !ApplicationHandlerHelper.isContentFieldInData(target, data);
 		var associationsAreUnchanged = associationsAreUnchanged(target, data);
@@ -66,7 +90,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		var attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
 		var condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
-		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context);
+		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context, fieldUpdateProvider);
 
 		if (!associationsAreUnchanged) {
 			deleteRemovedAttachments(attachments, data, target);

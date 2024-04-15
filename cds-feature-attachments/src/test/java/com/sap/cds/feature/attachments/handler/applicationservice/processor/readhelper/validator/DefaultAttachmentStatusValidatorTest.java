@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception.AttachmentStatusException;
 import com.sap.cds.feature.attachments.helper.LogObserver;
+import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
 
 import ch.qos.logback.classic.Level;
 
@@ -40,7 +41,16 @@ class DefaultAttachmentStatusValidatorTest {
 	@ParameterizedTest
 	@ValueSource(strings = {StatusCode.INFECTED, StatusCode.UNSCANNED, "some other status"})
 	void exceptionIsThrown(String status) {
-		assertThrows(AttachmentStatusException.class, () -> cut.verifyStatus(status));
+		var exception = assertThrows(AttachmentStatusException.class, () -> cut.verifyStatus(status));
+		if (StatusCode.UNSCANNED.equals(status)) {
+			assertThat(exception.getErrorStatus()).isEqualTo(AttachmentErrorStatuses.NOT_SCANNED);
+			assertThat(exception.getPlainMessage()).isEqualTo(AttachmentErrorStatuses.NOT_SCANNED.getCodeString());
+			assertThat(exception.getLocalizedMessage()).isEqualTo(AttachmentErrorStatuses.NOT_SCANNED.getDescription());
+		} else {
+			assertThat(exception.getErrorStatus()).isEqualTo(AttachmentErrorStatuses.NOT_CLEAN);
+			assertThat(exception.getPlainMessage()).isEqualTo(AttachmentErrorStatuses.NOT_CLEAN.getCodeString());
+			assertThat(exception.getLocalizedMessage()).isEqualTo(AttachmentErrorStatuses.NOT_CLEAN.getDescription());
+		}
 	}
 
 	@Test

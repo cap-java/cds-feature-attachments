@@ -23,9 +23,9 @@ aspect MediaData @(_is_media_data) {
     content    : LargeBinary; // stored only for db-based services
     mimeType   : String;
     fileName   : String;
-    documentId : String;
-    status     : Status;
-    scannedAt  : Timestamp;
+    documentId : String @readonly;
+    status     : Status @readonly;
+    scannedAt  : Timestamp @readonly;
 }
 
 aspect Attachments : cuid, managed, MediaData {

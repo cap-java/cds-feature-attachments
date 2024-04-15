@@ -14,6 +14,7 @@ import org.slf4j.Marker;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream.InputStreamSupplier;
@@ -21,6 +22,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.read
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.Path;
@@ -55,11 +57,13 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private final AttachmentService attachmentService;
 	private final ItemModifierProvider provider;
 	private final AttachmentStatusValidator attachmentStatusValidator;
+	private final AsyncMalwareScanExecutor asyncMalwareScanExecutor;
 
-	public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider, AttachmentStatusValidator attachmentStatusValidator) {
+	public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider, AttachmentStatusValidator attachmentStatusValidator, AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
 		this.attachmentService = attachmentService;
 		this.provider = provider;
 		this.attachmentStatusValidator = attachmentStatusValidator;
+		this.asyncMalwareScanExecutor = asyncMalwareScanExecutor;
 	}
 
 	@Before(event = CqnService.EVENT_READ)
@@ -89,7 +93,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 			var status = (String) path.target().values().get(Attachments.STATUS_CODE);
 			var content = (InputStream) path.target().values().get(Attachments.CONTENT);
 			if (Objects.nonNull(documentId) || Objects.nonNull(content)) {
-				verifyStatus(path, status);
+				verifyStatus(path, status, documentId);
 				InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(documentId);
 				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
 			} else {
@@ -126,8 +130,11 @@ public class ReadAttachmentsHandler implements EventHandler {
 		return associationNames;
 	}
 
-	private void verifyStatus(Path path, String status) {
+	private void verifyStatus(Path path, String status, String documentId) {
 		if (areKeysEmpty(path.target().keys())) {
+			if (StatusCode.UNSCANNED.equals(status)) {
+				asyncMalwareScanExecutor.scanAsync(path.target().entity(), documentId);
+			}
 			attachmentStatusValidator.verifyStatus(status);
 		}
 	}

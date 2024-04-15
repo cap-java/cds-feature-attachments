@@ -41,6 +41,17 @@ public class MockHttpRequestHelper {
 		return mvc.perform(requestBuilder).andDo(requestHandler).andReturn();
 	}
 
+	public String executeGetWithSingleODataResponseAndAssertStatus(String url, HttpStatus status) throws Exception {
+		var result = executeGet(url);
+		assertThat(result.getResponse().getStatus()).isEqualTo(status.value());
+		return result.getResponse().getContentAsString();
+	}
+
+	public <T extends CdsData> T executeGetWithSingleODataResponseAndAssertStatus(String url, Class<T> resultType, HttpStatus status) throws Exception {
+		var resultBody = executeGetWithSingleODataResponseAndAssertStatus(url, status);
+		return Struct.access(mapper.mapResponseToSingleResult(resultBody)).as(resultType);
+	}
+
 	public MvcResult executePost(String url, String body) throws Exception {
 		return mvc.perform(MockMvcRequestBuilders.post(url).contentType(contentType).accept(accept).content(body))
 											.andReturn();
@@ -89,17 +100,6 @@ public class MockHttpRequestHelper {
 
 	public void executePutWithMatcher(String url, byte[] body, ResultMatcher matcher) throws Exception {
 		mvc.perform(MockMvcRequestBuilders.put(url).contentType(contentType).accept(accept).content(body)).andExpect(matcher);
-	}
-
-	public String executeGetWithSingleODataResponseAndAssertStatus(String url, HttpStatus status) throws Exception {
-		var result = executeGet(url);
-		assertThat(result.getResponse().getStatus()).isEqualTo(status.value());
-		return result.getResponse().getContentAsString();
-	}
-
-	public <T extends CdsData> T executeGetWithSingleODataResponseAndAssertStatus(String url, Class<T> resultType, HttpStatus status) throws Exception {
-		var resultBody = executeGetWithSingleODataResponseAndAssertStatus(url, status);
-		return Struct.access(mapper.mapResponseToSingleResult(resultBody)).as(resultType);
 	}
 
 	public void setContentType(MediaType contentType) {

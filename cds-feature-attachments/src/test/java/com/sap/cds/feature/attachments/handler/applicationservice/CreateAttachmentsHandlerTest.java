@@ -9,19 +9,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyFieldUpdaterProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
@@ -30,6 +34,9 @@ import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CqnService;
+import com.sap.cds.services.changeset.ChangeSetContext;
+import com.sap.cds.services.changeset.ChangeSetListener;
+import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -43,6 +50,8 @@ class CreateAttachmentsHandlerTest {
 	private ModifyAttachmentEventFactory eventFactory;
 	private CdsCreateEventContext createContext;
 	private ModifyAttachmentEvent event;
+	private ReadonlyFieldUpdaterProvider fieldUpdateProvider;
+	private ArgumentCaptor<CdsEntity> entityCaptor;
 
 	@BeforeAll
 	static void classSetup() {
@@ -52,10 +61,12 @@ class CreateAttachmentsHandlerTest {
 	@BeforeEach
 	void setup() {
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
-		cut = new CreateAttachmentsHandler(eventFactory);
+		fieldUpdateProvider = mock(ReadonlyFieldUpdaterProvider.class);
+		cut = new CreateAttachmentsHandler(eventFactory, fieldUpdateProvider);
 
 		createContext = mock(CdsCreateEventContext.class);
 		event = mock(ModifyAttachmentEvent.class);
+		entityCaptor = ArgumentCaptor.forClass(CdsEntity.class);
 	}
 
 	@Test
@@ -97,6 +108,70 @@ class CreateAttachmentsHandlerTest {
 			cut.processBefore(createContext, List.of(attachment));
 
 			verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
+			verifyNoInteractions(fieldUpdateProvider);
+		}
+	}
+
+	@Test
+	void eventProcessorNotCalledForCreate() throws IOException {
+		getEntityAndMockContext(Attachment_.CDS_NAME);
+
+		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
+			var attachment = Attachments.create();
+			attachment.setContent(testStream);
+			when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+			when(createContext.getService()).thenReturn(mock(DraftService.class));
+
+			cut.processBefore(createContext, List.of(attachment));
+
+			verifyNoInteractions(eventFactory);
+			verifyNoInteractions(fieldUpdateProvider);
+		}
+	}
+
+	@Test
+	void eventProcessorCalledForCreateForDraft() throws IOException {
+		getEntityAndMockContext(Attachment_.CDS_NAME);
+
+		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
+			var attachment = Attachments.create();
+			attachment.setContent(testStream);
+			when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+			when(createContext.getService()).thenReturn(mock(DraftService.class));
+			var changesetContext = mock(ChangeSetContext.class);
+			when(createContext.getChangeSetContext()).thenReturn(changesetContext);
+			var changesetListener = mock(ChangeSetListener.class);
+			when(fieldUpdateProvider.getReadonlyFieldUpdater(any(), any(), any())).thenReturn(changesetListener);
+
+			cut.processBeforeForDraft(createContext, List.of(attachment));
+
+			verify(changesetContext).register(changesetListener);
+			verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
+			var keyCaptor = ArgumentCaptor.forClass(Map.class);
+			var dataCaptor = ArgumentCaptor.forClass(Map.class);
+			verify(fieldUpdateProvider).getReadonlyFieldUpdater(entityCaptor.capture(), keyCaptor.capture(), dataCaptor.capture());
+			assertThat(entityCaptor.getValue().getQualifiedName()).isEqualTo(Attachment_.CDS_NAME);
+			assertThat(keyCaptor.getValue().get("ID")).isNotNull();
+			assertThat(dataCaptor.getValue()).containsEntry(Attachment.DOCUMENT_ID, null);
+			assertThat(dataCaptor.getValue()).containsEntry(Attachment.STATUS_CODE, null);
+			assertThat(dataCaptor.getValue()).containsEntry(Attachment.SCANNED_AT, null);
+		}
+	}
+
+	@Test
+	void eventProcessorNotCalledForCreateForDraft() throws IOException {
+		getEntityAndMockContext(Attachment_.CDS_NAME);
+
+		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
+			var attachment = Attachments.create();
+			attachment.setContent(testStream);
+			when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+			when(createContext.getService()).thenReturn(mock(ApplicationService.class));
+
+			cut.processBeforeForDraft(createContext, List.of(attachment));
+
+			verifyNoInteractions(eventFactory);
+			verifyNoInteractions(fieldUpdateProvider);
 		}
 	}
 

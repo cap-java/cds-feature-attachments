@@ -1,0 +1,21 @@
+<configuration debug="true" scan="true">
+
+    <!-- log human-readable strings to STDOUT-->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date %-5level [%thread] [%marker]: %msg%nopex [%logger] [%mdc{correlation_id}]%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="${LOG_ROOT_LEVEL:-INFO}">
+        <appender-ref ref="${APPENDER:-STDOUT}"/>
+    </root>
+
+    <!-- Reduce spamming logs during (re)building Spring Boot Context -->
+    <logger name="com.sap.cds.services.impl.runtime.CdsRuntimeImpl" level="${LOG_CDS_RUNTIME_IMPL_LEVEL:-WARN}"/>
+
+    <logger name="com.sap.cds" level="${LOG_CAP_LEVEL:-INFO}"/>
+
+    <logger name="com.sap.cds.feature.attachments" level="${LOG_ATTACHMENT_LEVEL:-DEBUG}"/>
+
+</configuration>

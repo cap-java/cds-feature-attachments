@@ -11,6 +11,8 @@ import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachme
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyFieldUpdater;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyFieldUpdaterProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.CreateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DefaultModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DoNothingAttachmentEvent;
@@ -21,6 +23,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.BeforeReadItemsModifier;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.DefaultAttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.CreationChangeSetListener;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
@@ -32,6 +35,7 @@ import com.sap.cds.feature.attachments.service.DefaultAttachmentsService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanRunner;
+import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
 import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
@@ -87,16 +91,17 @@ public class Registration implements CdsRuntimeConfiguration {
 		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);
 		var attachmentsReader = buildAttachmentsReader(persistenceService);
 
-		configurer.eventHandler(buildCreateHandler(eventFactory));
-		configurer.eventHandler(buildUpdateHandler(eventFactory, attachmentsReader, outboxedAttachmentService));
+		var fieldUpdateProvider = createFieldUpdateProvider(persistenceService);
+		configurer.eventHandler(buildCreateHandler(eventFactory, fieldUpdateProvider));
+		configurer.eventHandler(buildUpdateHandler(eventFactory, attachmentsReader, outboxedAttachmentService, fieldUpdateProvider));
 		configurer.eventHandler(buildDeleteHandler(attachmentsReader, deleteContentEvent));
-		configurer.eventHandler(buildReadHandler(attachmentService));
+		configurer.eventHandler(buildReadHandler(attachmentService, new EndTransactionMalwareScanRunner(null, null, malwareScanner)));
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
 		configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent, ActiveEntityModifier::new));
 	}
 
 	private EndTransactionMalwareScanProvider createEndTransactionMalwareScanListener(DefaultAttachmentMalwareScanner malwareScanner) {
-		return (attachmentEntity, attachmentIds) -> new EndTransactionMalwareScanRunner(attachmentEntity, attachmentIds, malwareScanner);
+		return (attachmentEntity, documentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, documentId, malwareScanner);
 	}
 
 	private AttachmentService buildAttachmentService() {
@@ -104,29 +109,38 @@ public class Registration implements CdsRuntimeConfiguration {
 		return new DefaultAttachmentsService();
 	}
 
+	private ReadonlyFieldUpdaterProvider createFieldUpdateProvider(PersistenceService persistenceService) {
+		return (entity, keys, data) -> new ReadonlyFieldUpdater(entity, keys, data, persistenceService);
+	}
+
 	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService, ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
-		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, outboxedAttachmentService, CreationChangeSetListener::new);
+		var creationChangeSetListener = createCreationFailedListener(outboxedAttachmentService);
+		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
 		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();
 		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent, doNothingAttachmentEvent);
 	}
 
-	protected EventHandler buildCreateHandler(ModifyAttachmentEventFactory factory) {
-		return new CreateAttachmentsHandler(factory);
+	private ListenerProvider createCreationFailedListener(AttachmentService outboxedAttachmentService) {
+		return (documentId, cdsRuntime) -> new CreationChangeSetListener(documentId, cdsRuntime, outboxedAttachmentService);
+	}
+
+	protected EventHandler buildCreateHandler(ModifyAttachmentEventFactory factory, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+		return new CreateAttachmentsHandler(factory, fieldUpdateProvider);
 	}
 
 	protected EventHandler buildDeleteHandler(AttachmentsReader attachmentsReader, ModifyAttachmentEvent deleteContentEvent) {
 		return new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent);
 	}
 
-	protected EventHandler buildReadHandler(AttachmentService attachmentService) {
+	protected EventHandler buildReadHandler(AttachmentService attachmentService, AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
 		var statusValidator = new DefaultAttachmentStatusValidator();
-		return new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new, statusValidator);
+		return new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new, statusValidator, asyncMalwareScanExecutor);
 	}
 
-	protected EventHandler buildUpdateHandler(ModifyAttachmentEventFactory factory, AttachmentsReader attachmentsReader, AttachmentService outboxedAttachmentService) {
-		return new UpdateAttachmentsHandler(factory, attachmentsReader, outboxedAttachmentService);
+	protected EventHandler buildUpdateHandler(ModifyAttachmentEventFactory factory, AttachmentsReader attachmentsReader, AttachmentService outboxedAttachmentService, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+		return new UpdateAttachmentsHandler(factory, attachmentsReader, outboxedAttachmentService, fieldUpdateProvider);
 	}
 
 	protected AttachmentsReader buildAttachmentsReader(PersistenceService persistenceService) {
