@@ -36,7 +36,7 @@ annotate Attachments with @UI: {
     },
     LineItem  : [
         {Value: content},
-        {Value: status_code},
+        {Value: status},
         {Value: createdAt},
         {Value: createdBy},
         {Value: note}
