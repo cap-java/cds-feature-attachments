@@ -133,7 +133,6 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private void verifyStatus(Path path, String status, String documentId) {
 		if (areKeysEmpty(path.target().keys())) {
 			if (StatusCode.UNSCANNED.equals(status)) {
-				//TODO Unit Tests
 				asyncMalwareScanExecutor.scanAsync(path.target().entity(), documentId);
 			}
 			attachmentStatusValidator.verifyStatus(status);

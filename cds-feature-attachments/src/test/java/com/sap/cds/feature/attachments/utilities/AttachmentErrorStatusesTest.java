@@ -16,7 +16,7 @@ class AttachmentErrorStatusesTest {
 	@Test
 	void notScannedCodeHasCorrectProperties() {
 		assertThat(AttachmentErrorStatuses.NOT_SCANNED.getCodeString()).isEqualTo("not_scanned");
-		assertThat(AttachmentErrorStatuses.NOT_SCANNED.getDescription()).isEqualTo("Attachment is not scanned");
+		assertThat(AttachmentErrorStatuses.NOT_SCANNED.getDescription()).isEqualTo("Attachment is not scanned, try again in a few minutes");
 		assertThat(AttachmentErrorStatuses.NOT_SCANNED.getHttpStatus()).isEqualTo(405);
 	}
 
