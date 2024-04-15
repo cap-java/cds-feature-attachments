@@ -7,13 +7,13 @@ import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class AttachmentRestoreDeletedEventContextTest {
+class AttachmentRestoreEventContextTest {
 
-	private AttachmentRestoreDeletedEventContext cut;
+	private AttachmentRestoreEventContext cut;
 
 	@BeforeEach
 	void setup() {
-		cut = AttachmentRestoreDeletedEventContext.create();
+		cut = AttachmentRestoreEventContext.create();
 	}
 
 	@Test

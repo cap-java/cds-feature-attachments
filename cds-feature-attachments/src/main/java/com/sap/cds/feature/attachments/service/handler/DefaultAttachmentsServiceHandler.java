@@ -12,7 +12,7 @@ import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactio
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreDeletedEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -33,7 +33,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	private static final Logger logger = LoggerFactory.getLogger(DefaultAttachmentsServiceHandler.class);
 	private static final Marker create_marker = LoggingMarker.ATTACHMENT_SERVICE_CREATE_HANDLER.getMarker();
 	private static final Marker delete_marker = LoggingMarker.ATTACHMENT_SERVICE_DELETE_HANDLER.getMarker();
-	private static final Marker restore_delete_marker = LoggingMarker.ATTACHMENT_SERVICE_RESTORE_DELETE_HANDLER.getMarker();
+	private static final Marker restore_marker = LoggingMarker.ATTACHMENT_SERVICE_RESTORE_HANDLER.getMarker();
 	private static final Marker read_marker = LoggingMarker.ATTACHMENT_SERVICE_READ_HANDLER.getMarker();
 
 	private final EndTransactionMalwareScanProvider endTransactionMalwareScanProvider;
@@ -65,10 +65,10 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		context.setCompleted();
 	}
 
-	@On(event = AttachmentService.EVENT_RESTORE_DELETED)
+	@On(event = AttachmentService.EVENT_RESTORE)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
-	public void restoreDeleteAttachment(AttachmentRestoreDeletedEventContext context) {
-		logger.info(restore_delete_marker, "Default Attachment Service handler called for restoring attachment for timestamp: {}", context.getRestoreTimestamp());
+	public void restoreAttachment(AttachmentRestoreEventContext context) {
+		logger.info(restore_marker, "Default Attachment Service handler called for restoring attachment for timestamp: {}", context.getRestoreTimestamp());
 
 		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();

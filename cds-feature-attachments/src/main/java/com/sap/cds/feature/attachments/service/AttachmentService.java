@@ -35,7 +35,7 @@ public interface AttachmentService extends Service {
 	/**
 		* This event is emitted when an attachment shall be uploaded
 		*/
-	String EVENT_RESTORE_DELETED = "RESTORE_DELETED_ATTACHMENT";
+	String EVENT_RESTORE = "RESTORE_ATTACHMENT";
 
 	/**
 		* Reads attachment based on the given attachment id
@@ -72,12 +72,12 @@ public interface AttachmentService extends Service {
 	void markAsDeleted(String documentId);
 
 	/**
-		* Marks an attachment as deleted based on the given attachment id
-		* The attachment will not be deleted physically, but marked as deleted
+		* Restores document after the given timestamp
 		*
-		* @param restoreTimestamp The timestamp from which the documents shall be restored, every document which was deleted after or equal this timestamp will be restored
+		* @param restoreTimestamp The timestamp from which the documents shall be restored, every document which was deleted after or equal this timestamp shall be restored
+		*                         created documents after this timestamp needs to be mark as deleted
 		* @throws com.sap.cds.services.ServiceException Exception to be thrown in case of errors during processing
 		*/
-	void restoreDeleted(Instant restoreTimestamp);
+	void restore(Instant restoreTimestamp);
 
 }

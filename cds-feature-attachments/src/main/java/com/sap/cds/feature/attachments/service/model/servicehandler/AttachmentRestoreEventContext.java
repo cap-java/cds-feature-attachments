@@ -7,19 +7,19 @@ import com.sap.cds.services.EventContext;
 import com.sap.cds.services.EventName;
 
 /**
-	* The {@link AttachmentRestoreDeletedEventContext} is used to store the context of the restore deleted attachment event.
+	* The {@link AttachmentRestoreEventContext} is used to store the context of the restore deleted attachment event.
 	*/
-@EventName(AttachmentService.EVENT_RESTORE_DELETED)
-public interface AttachmentRestoreDeletedEventContext extends EventContext {
+@EventName(AttachmentService.EVENT_RESTORE)
+public interface AttachmentRestoreEventContext extends EventContext {
 
 	/**
 		* Creates an {@link EventContext} already overlayed with this interface. The event is set to be
-		* {@link AttachmentService#EVENT_RESTORE_DELETED}
+		* {@link AttachmentService#EVENT_RESTORE}
 		*
-		* @return the {@link AttachmentRestoreDeletedEventContext}
+		* @return the {@link AttachmentRestoreEventContext}
 		*/
-	static AttachmentRestoreDeletedEventContext create() {
-		return EventContext.create(AttachmentRestoreDeletedEventContext.class, null);
+	static AttachmentRestoreEventContext create() {
+		return EventContext.create(AttachmentRestoreEventContext.class, null);
 	}
 
 	/**
