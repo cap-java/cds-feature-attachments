@@ -11,6 +11,8 @@ import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachme
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyFieldUpdater;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyFieldUpdaterProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.CreateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DefaultModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DoNothingAttachmentEvent;
@@ -88,8 +90,9 @@ public class Registration implements CdsRuntimeConfiguration {
 		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);
 		var attachmentsReader = buildAttachmentsReader(persistenceService);
 
-		configurer.eventHandler(buildCreateHandler(eventFactory));
-		configurer.eventHandler(buildUpdateHandler(eventFactory, attachmentsReader, outboxedAttachmentService));
+		var fieldUpdateProvider = createFieldUpdateProvider(persistenceService);
+		configurer.eventHandler(buildCreateHandler(eventFactory, fieldUpdateProvider));
+		configurer.eventHandler(buildUpdateHandler(eventFactory, attachmentsReader, outboxedAttachmentService, fieldUpdateProvider));
 		configurer.eventHandler(buildDeleteHandler(attachmentsReader, deleteContentEvent));
 		configurer.eventHandler(buildReadHandler(attachmentService));
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
@@ -105,6 +108,10 @@ public class Registration implements CdsRuntimeConfiguration {
 		return new DefaultAttachmentsService();
 	}
 
+	private ReadonlyFieldUpdaterProvider createFieldUpdateProvider(PersistenceService persistenceService) {
+		return (entity, keys, data) -> new ReadonlyFieldUpdater(entity, keys, data, persistenceService);
+	}
+
 	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService, ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
 		var creationChangeSetListener = createCreationFailedListener(outboxedAttachmentService);
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
@@ -118,8 +125,8 @@ public class Registration implements CdsRuntimeConfiguration {
 		return (documentId, cdsRuntime) -> new CreationChangeSetListener(documentId, cdsRuntime, outboxedAttachmentService);
 	}
 
-	protected EventHandler buildCreateHandler(ModifyAttachmentEventFactory factory) {
-		return new CreateAttachmentsHandler(factory);
+	protected EventHandler buildCreateHandler(ModifyAttachmentEventFactory factory, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+		return new CreateAttachmentsHandler(factory, fieldUpdateProvider);
 	}
 
 	protected EventHandler buildDeleteHandler(AttachmentsReader attachmentsReader, ModifyAttachmentEvent deleteContentEvent) {
@@ -131,8 +138,8 @@ public class Registration implements CdsRuntimeConfiguration {
 		return new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new, statusValidator);
 	}
 
-	protected EventHandler buildUpdateHandler(ModifyAttachmentEventFactory factory, AttachmentsReader attachmentsReader, AttachmentService outboxedAttachmentService) {
-		return new UpdateAttachmentsHandler(factory, attachmentsReader, outboxedAttachmentService);
+	protected EventHandler buildUpdateHandler(ModifyAttachmentEventFactory factory, AttachmentsReader attachmentsReader, AttachmentService outboxedAttachmentService, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+		return new UpdateAttachmentsHandler(factory, attachmentsReader, outboxedAttachmentService, fieldUpdateProvider);
 	}
 
 	protected AttachmentsReader buildAttachmentsReader(PersistenceService persistenceService) {

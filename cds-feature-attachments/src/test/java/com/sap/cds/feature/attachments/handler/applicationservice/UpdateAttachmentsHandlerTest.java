@@ -22,6 +22,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyFieldUpdaterProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -37,6 +38,9 @@ import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.cds.CqnService;
+import com.sap.cds.services.changeset.ChangeSetContext;
+import com.sap.cds.services.changeset.ChangeSetListener;
+import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -55,6 +59,8 @@ class UpdateAttachmentsHandlerTest {
 	private ModifyAttachmentEvent event;
 	private ArgumentCaptor<CdsData> cdsDataArgumentCaptor;
 	private ArgumentCaptor<CqnSelect> selectCaptor;
+	private ArgumentCaptor<CdsEntity> entityCaptor;
+	private ReadonlyFieldUpdaterProvider fieldUpdateProvider;
 
 	@BeforeAll
 	static void classSetup() {
@@ -66,12 +72,14 @@ class UpdateAttachmentsHandlerTest {
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
 		attachmentsReader = mock(AttachmentsReader.class);
 		attachmentService = mock(AttachmentService.class);
-		cut = new UpdateAttachmentsHandler(eventFactory, attachmentsReader, attachmentService);
+		fieldUpdateProvider = mock(ReadonlyFieldUpdaterProvider.class);
+		cut = new UpdateAttachmentsHandler(eventFactory, attachmentsReader, attachmentService, fieldUpdateProvider);
 
 		event = mock(ModifyAttachmentEvent.class);
 		updateContext = mock(CdsUpdateEventContext.class);
 		cdsDataArgumentCaptor = ArgumentCaptor.forClass(CdsData.class);
 		selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
+		entityCaptor = ArgumentCaptor.forClass(CdsEntity.class);
 		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
 	}
 
@@ -99,6 +107,61 @@ class UpdateAttachmentsHandlerTest {
 		cut.processBefore(updateContext, List.of(attachment));
 
 		verify(eventFactory).getEvent(testStream, null, false, attachment);
+		verifyNoInteractions(fieldUpdateProvider);
+	}
+
+	@Test
+	void eventProcessorNotCalledForUpdate() {
+		when(updateContext.getService()).thenReturn(mock(DraftService.class));
+
+		cut.processBefore(updateContext, Collections.emptyList());
+
+		verifyNoInteractions(eventFactory);
+		verifyNoInteractions(attachmentsReader);
+		verifyNoInteractions(attachmentService);
+		verifyNoInteractions(event);
+		verifyNoInteractions(fieldUpdateProvider);
+	}
+
+	@Test
+	void eventProcessorCalledForUpdateForDraft() {
+		var id = getEntityAndMockContext(Attachment_.CDS_NAME);
+		var testStream = mock(InputStream.class);
+		var attachment = Attachments.create();
+		attachment.setContent(testStream);
+		attachment.setId(id);
+		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(List.of(attachment));
+		when(updateContext.getService()).thenReturn(mock(DraftService.class));
+		var changesetContext = mock(ChangeSetContext.class);
+		when(updateContext.getChangeSetContext()).thenReturn(changesetContext);
+		var changesetListener = mock(ChangeSetListener.class);
+		when(fieldUpdateProvider.getReadonlyFieldUpdater(any(), any(), any())).thenReturn(changesetListener);
+
+		cut.processBeforeForDraft(updateContext, List.of(attachment));
+
+		verify(changesetContext).register(changesetListener);
+		verify(eventFactory).getEvent(testStream, null, false, attachment);
+		var keyCaptor = ArgumentCaptor.forClass(Map.class);
+		var dataCaptor = ArgumentCaptor.forClass(Map.class);
+		verify(fieldUpdateProvider).getReadonlyFieldUpdater(entityCaptor.capture(), keyCaptor.capture(), dataCaptor.capture());
+		assertThat(entityCaptor.getValue().getQualifiedName()).isEqualTo(Attachment_.CDS_NAME);
+		assertThat(keyCaptor.getValue()).containsEntry("ID", id);
+		assertThat(dataCaptor.getValue()).containsEntry(Attachment.DOCUMENT_ID, null);
+		assertThat(dataCaptor.getValue()).containsEntry(Attachment.STATUS_CODE, null);
+		assertThat(dataCaptor.getValue()).containsEntry(Attachment.SCANNED_AT, null);
+	}
+
+	@Test
+	void eventProcessorNotCalledForUpdateForDraft() {
+		when(updateContext.getService()).thenReturn(mock(ApplicationService.class));
+
+		cut.processBeforeForDraft(updateContext, Collections.emptyList());
+
+		verifyNoInteractions(eventFactory);
+		verifyNoInteractions(attachmentsReader);
+		verifyNoInteractions(attachmentService);
+		verifyNoInteractions(event);
+		verifyNoInteractions(fieldUpdateProvider);
 	}
 
 	@Test

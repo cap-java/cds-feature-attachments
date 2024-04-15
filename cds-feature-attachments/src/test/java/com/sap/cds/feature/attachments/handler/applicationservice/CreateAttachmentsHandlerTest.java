@@ -22,6 +22,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyFieldUpdaterProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
@@ -43,6 +44,7 @@ class CreateAttachmentsHandlerTest {
 	private ModifyAttachmentEventFactory eventFactory;
 	private CdsCreateEventContext createContext;
 	private ModifyAttachmentEvent event;
+	private ReadonlyFieldUpdaterProvider fieldUpdateProvider;
 
 	@BeforeAll
 	static void classSetup() {
@@ -52,7 +54,7 @@ class CreateAttachmentsHandlerTest {
 	@BeforeEach
 	void setup() {
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
-		cut = new CreateAttachmentsHandler(eventFactory);
+		cut = new CreateAttachmentsHandler(eventFactory, fieldUpdateProvider);
 
 		createContext = mock(CdsCreateEventContext.class);
 		event = mock(ModifyAttachmentEvent.class);

@@ -104,6 +104,12 @@ abstract class DraftOdataRequestValidationBase {
 			var attachmentResponse = requestHelper.executeGet(attachmentUrl);
 			var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
 
+			//TODO remove
+			System.out.println("!!! RESPONSE !!! attachmentResponse.getResponse().getContentAsString() " + attachmentResponse.getResponse()
+																																																																																																				.getContentAsString());
+			System.out.println("!!! RESPONSE !!! attachmentEntityResponse.getResponse().getContentAsString() " + attachmentEntityResponse.getResponse());
+
+
 			return attachmentResponse.getResponse().getContentAsString()
 												.equals(testContentAttachment) && attachmentEntityResponse.getResponse().getContentAsString()
 																																																.equals(testContentAttachmentEntity);
