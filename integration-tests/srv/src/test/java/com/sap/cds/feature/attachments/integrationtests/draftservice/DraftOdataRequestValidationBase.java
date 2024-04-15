@@ -108,9 +108,13 @@ abstract class DraftOdataRequestValidationBase {
 		Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
 			var attachmentResponse = requestHelper.executeGet(attachmentUrl);
 			var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
-			return attachmentResponse.getResponse().getContentAsString()
-												.equals(testContentAttachment) && attachmentEntityResponse.getResponse().getContentAsString()
-																																																.equals(testContentAttachmentEntity);
+
+			var attachmentResponseContent = attachmentResponse.getResponse().getContentAsString();
+			var attachmentEntityResponseContent = attachmentEntityResponse.getResponse().getContentAsString();
+
+			logger.info("!!! READ FROM ACTIVE ROOT !!! - Attachment response: {}, Attachment entity response: {}", attachmentResponseContent, attachmentEntityResponseContent);
+
+			return attachmentResponseContent.equals(testContentAttachment) && attachmentEntityResponseContent.equals(testContentAttachmentEntity);
 		});
 		clearServiceHandlerContext();
 
