@@ -101,7 +101,7 @@ public class Registration implements CdsRuntimeConfiguration {
 	}
 
 	private EndTransactionMalwareScanProvider createEndTransactionMalwareScanListener(DefaultAttachmentMalwareScanner malwareScanner) {
-		return (attachmentEntity, attachmentIds) -> new EndTransactionMalwareScanRunner(attachmentEntity, attachmentIds, malwareScanner);
+		return (attachmentEntity, documentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, documentId, malwareScanner);
 	}
 
 	private AttachmentService buildAttachmentService() {

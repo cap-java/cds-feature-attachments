@@ -140,17 +140,16 @@ class DefaultAttachmentsServiceHandlerTest {
 	void malwareScannerRegisteredForEndOfTransaction() {
 		var listener = mock(ChangeSetListener.class);
 		var entity = mock(CdsEntity.class);
-		Map<String, Object> keys = Map.of("key", "value");
-		when(malwareScanProvider.getChangeSetListener(entity, keys)).thenReturn(listener);
+		when(malwareScanProvider.getChangeSetListener(entity, "documentId")).thenReturn(listener);
 		var createContext = AttachmentCreateEventContext.create();
-		createContext.setAttachmentIds(keys);
+		createContext.setAttachmentIds(Map.of(Attachments.ID, "documentId"));
 		createContext.setData(MediaData.create());
 		createContext.setAttachmentEntity(entity);
 		ChangeSetContextImpl.open();
 
 		cut.createAttachment(createContext);
 
-		verify(malwareScanProvider).getChangeSetListener(entity, keys);
+		verify(malwareScanProvider).getChangeSetListener(entity, "documentId");
 	}
 
 	private void closeChangeSetContext() throws Exception {

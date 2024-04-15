@@ -93,7 +93,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 			var status = (String) path.target().values().get(Attachments.STATUS_CODE);
 			var content = (InputStream) path.target().values().get(Attachments.CONTENT);
 			if (Objects.nonNull(documentId) || Objects.nonNull(content)) {
-				verifyStatus(path, status);
+				verifyStatus(path, status, documentId);
 				InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(documentId);
 				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
 			} else {
@@ -130,11 +130,11 @@ public class ReadAttachmentsHandler implements EventHandler {
 		return associationNames;
 	}
 
-	private void verifyStatus(Path path, String status) {
+	private void verifyStatus(Path path, String status, String documentId) {
 		if (areKeysEmpty(path.target().keys())) {
 			if (StatusCode.UNSCANNED.equals(status)) {
 				//TODO Unit Tests
-				asyncMalwareScanExecutor.scanAsync(path.target().entity(), path.target().keys());
+				asyncMalwareScanExecutor.scanAsync(path.target().entity(), documentId);
 			}
 			attachmentStatusValidator.verifyStatus(status);
 		}
