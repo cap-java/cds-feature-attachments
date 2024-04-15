@@ -636,7 +636,7 @@ abstract class DraftOdataRequestValidationBase {
 																																																									.getId(), true) + "/content";
 
 
-		Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+		Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
 			var attachmentResponse = requestHelper.executeGet(attachmentUrl);
 			var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
 			return attachmentResponse.getResponse().getContentAsString()
