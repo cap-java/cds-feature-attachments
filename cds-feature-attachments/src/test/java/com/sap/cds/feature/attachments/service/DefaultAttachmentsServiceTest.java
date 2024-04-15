@@ -18,7 +18,7 @@ import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInp
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreDeletedEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.handler.Handler;
 import com.sap.cds.services.impl.ServiceSPI;
@@ -127,19 +127,19 @@ class DefaultAttachmentsServiceTest {
 	}
 
 	@Test
-	void restoreDeletedAttachmentInsertsData() {
-		var contextReference = new AtomicReference<AttachmentRestoreDeletedEventContext>();
+	void restoreAttachmentInsertsData() {
+		var contextReference = new AtomicReference<AttachmentRestoreEventContext>();
 		doAnswer(input -> {
-			var context = (AttachmentRestoreDeletedEventContext) input.getArgument(0);
+			var context = (AttachmentRestoreEventContext) input.getArgument(0);
 			contextReference.set(context);
 			context.setCompleted();
 			return null;
 		}).when(handler).process(any());
-		serviceSpi.on(AttachmentService.EVENT_RESTORE_DELETED, "", handler);
+		serviceSpi.on(AttachmentService.EVENT_RESTORE, "", handler);
 
 		var timestamp = Instant.now();
 
-		cut.restoreDeleted(timestamp);
+		cut.restore(timestamp);
 
 		var deleteEventContext = contextReference.get();
 		assertThat(deleteEventContext.getRestoreTimestamp()).isEqualTo(timestamp);

@@ -13,7 +13,7 @@ import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInp
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreDeletedEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.ServiceDelegator;
 
@@ -27,7 +27,7 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 	private static final Logger logger = LoggerFactory.getLogger(DefaultAttachmentsService.class);
 	private static final Marker create_marker = LoggingMarker.ATTACHMENT_SERVICE_CREATE_METHOD.getMarker();
 	private static final Marker delete_marker = LoggingMarker.ATTACHMENT_SERVICE_DELETE_METHOD.getMarker();
-	private static final Marker restore_delete_marker = LoggingMarker.ATTACHMENT_SERVICE_RESTORE_DELETE_METHOD.getMarker();
+	private static final Marker restore_marker = LoggingMarker.ATTACHMENT_SERVICE_RESTORE_METHOD.getMarker();
 	private static final Marker read_marker = LoggingMarker.ATTACHMENT_SERVICE_READ_METHOD.getMarker();
 
 	public DefaultAttachmentsService() {
@@ -77,9 +77,9 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 	}
 
 	@Override
-	public void restoreDeleted(Instant restoreTimestamp) {
-		logger.info(restore_delete_marker, "Restoring deleted attachment for timestamp: {}", restoreTimestamp);
-		var restoreContext = AttachmentRestoreDeletedEventContext.create();
+	public void restore(Instant restoreTimestamp) {
+		logger.info(restore_marker, "Restoring deleted attachment for timestamp: {}", restoreTimestamp);
+		var restoreContext = AttachmentRestoreEventContext.create();
 		restoreContext.setRestoreTimestamp(restoreTimestamp);
 
 		emit(restoreContext);

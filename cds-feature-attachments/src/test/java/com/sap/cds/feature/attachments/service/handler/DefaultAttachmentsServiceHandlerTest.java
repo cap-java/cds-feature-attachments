@@ -18,7 +18,7 @@ import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactio
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
-import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreDeletedEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.changeset.ChangeSetListener;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -71,10 +71,10 @@ class DefaultAttachmentsServiceHandlerTest {
 	}
 
 	@Test
-	void restoreDeleteAttachmentSetData() {
-		var restoreContext = AttachmentRestoreDeletedEventContext.create();
+	void restoreAttachmentSetData() {
+		var restoreContext = AttachmentRestoreEventContext.create();
 
-		cut.restoreDeleteAttachment(restoreContext);
+		cut.restoreAttachment(restoreContext);
 
 		assertThat(restoreContext.isCompleted()).isTrue();
 	}
@@ -108,11 +108,11 @@ class DefaultAttachmentsServiceHandlerTest {
 
 	@Test
 	void restoreMethodHasCorrectAnnotation() throws NoSuchMethodException {
-		var updateMethod = cut.getClass().getMethod("restoreDeleteAttachment", AttachmentRestoreDeletedEventContext.class);
+		var updateMethod = cut.getClass().getMethod("restoreAttachment", AttachmentRestoreEventContext.class);
 		var onAnnotation = updateMethod.getAnnotation(On.class);
 		var handlerOrderAnnotation = updateMethod.getAnnotation(HandlerOrder.class);
 
-		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_RESTORE_DELETED);
+		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_RESTORE);
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
 	}
 
