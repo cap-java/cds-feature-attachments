@@ -20,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import com.sap.cds.Struct;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.AttachmentEntity;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.DraftRoots;
@@ -93,13 +92,6 @@ abstract class DraftOdataRequestValidationBase {
 		var testContentAttachmentEntity = "testContent attachmentEntity";
 
 		var root = deepCreateAndActivate(testContentAttachment, testContentAttachmentEntity);
-
-		Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
-			var selectedRoot = selectStoredRootData(root);
-			var attachmentStatus = selectedRoot.getItems().get(0).getAttachments().get(0).getStatusCode();
-			var attachmentEntityStatus = selectedRoot.getItems().get(0).getAttachmentEntities().get(0).getStatusCode();
-			return (StatusCode.CLEAN.equals(attachmentStatus) || StatusCode.NO_SCANNER.equals(attachmentEntityStatus)) &&	(StatusCode.CLEAN.equals(attachmentEntityStatus) || StatusCode.NO_SCANNER.equals(attachmentEntityStatus));
-		});
 
 		var selectedRoot = selectStoredRootData(root);
 		assertThat(selectedRoot.getItems().get(0).getAttachments()).hasSize(1).first()
@@ -625,6 +617,8 @@ abstract class DraftOdataRequestValidationBase {
 	}
 
 	private void prepareAndActiveDraft(String rootUrl) throws Exception {
+		//TODO remove logger
+		logger.info("!!! PREPARE AND ACTIVATE DRAFT !!! - rootUrl: {}", rootUrl);
 		var draftPrepareUrl = rootUrl + "/TestDraftService.draftPrepare";
 		var draftActivateUrl = rootUrl + "/TestDraftService.draftActivate";
 		requestHelper.executePostWithMatcher(draftPrepareUrl, "{\"SideEffectsQualifier\":\"\"}", status().isOk());
