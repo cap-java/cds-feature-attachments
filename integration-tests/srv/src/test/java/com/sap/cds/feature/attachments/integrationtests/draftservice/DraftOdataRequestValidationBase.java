@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,6 +41,9 @@ abstract class DraftOdataRequestValidationBase {
 
 	private final static String BASE_URL = MockHttpRequestHelper.ODATA_BASE_URL + "TestDraftService/";
 	private final static String BASE_ROOT_URL = BASE_URL + "DraftRoots";
+
+	private static final Logger logger = LoggerFactory.getLogger(DraftOdataRequestValidationBase.class);
+
 	@Autowired(required = false)
 	protected TestPluginAttachmentsServiceHandler serviceHandler;
 	@Autowired
@@ -639,6 +644,12 @@ abstract class DraftOdataRequestValidationBase {
 		Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
 			var attachmentResponse = requestHelper.executeGet(attachmentUrl);
 			var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
+			var attachmentContentAsString = attachmentResponse.getResponse().getContentAsString();
+			var attachmentEntityContentAsString = attachmentEntityResponse.getResponse().getContentAsString();
+
+			//TODO remove logger
+			logger.info("!!! CONTENT !!! - attachmentContentAsString: {}, attachmentEntityContentAsString; {} ", attachmentContentAsString, attachmentContentAsString);
+
 			return attachmentResponse.getResponse().getContentAsString()
 												.equals(attachmentContent) && attachmentEntityResponse.getResponse().getContentAsString()
 																																												.equals(attachmentEntityContent);
