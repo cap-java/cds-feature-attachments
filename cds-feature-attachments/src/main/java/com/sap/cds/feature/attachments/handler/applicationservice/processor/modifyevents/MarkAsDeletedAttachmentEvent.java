@@ -44,6 +44,8 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 																																																																																																															.values()
 																																																																																																															.containsKey(Attachments.DOCUMENT_ID)) {
 				path.target().values().put(Attachments.DOCUMENT_ID, null);
+				path.target().values().put(Attachments.STATUS_CODE, null);
+				path.target().values().put(Attachments.SCANNED_AT, null);
 			}
 		}
 		return value;
