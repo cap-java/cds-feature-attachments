@@ -35,6 +35,7 @@ import com.sap.cds.feature.attachments.service.DefaultAttachmentsService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanRunner;
+import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
 import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
@@ -94,7 +95,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(buildCreateHandler(eventFactory, fieldUpdateProvider));
 		configurer.eventHandler(buildUpdateHandler(eventFactory, attachmentsReader, outboxedAttachmentService, fieldUpdateProvider));
 		configurer.eventHandler(buildDeleteHandler(attachmentsReader, deleteContentEvent));
-		configurer.eventHandler(buildReadHandler(attachmentService));
+		configurer.eventHandler(buildReadHandler(attachmentService, new EndTransactionMalwareScanRunner(null, null, malwareScanner)));
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
 		configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent, ActiveEntityModifier::new));
 	}
@@ -133,9 +134,9 @@ public class Registration implements CdsRuntimeConfiguration {
 		return new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent);
 	}
 
-	protected EventHandler buildReadHandler(AttachmentService attachmentService) {
+	protected EventHandler buildReadHandler(AttachmentService attachmentService, AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
 		var statusValidator = new DefaultAttachmentStatusValidator();
-		return new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new, statusValidator);
+		return new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new, statusValidator, asyncMalwareScanExecutor);
 	}
 
 	protected EventHandler buildUpdateHandler(ModifyAttachmentEventFactory factory, AttachmentsReader attachmentsReader, AttachmentService outboxedAttachmentService, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {

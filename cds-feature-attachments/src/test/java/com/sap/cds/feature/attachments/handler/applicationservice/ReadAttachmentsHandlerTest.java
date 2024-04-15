@@ -36,6 +36,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.read
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.Modifier;
@@ -60,6 +61,7 @@ class ReadAttachmentsHandlerTest {
 	private CdsReadEventContext readEventContext;
 	private Modifier modifier;
 	private ArgumentCaptor<List<String>> fieldNamesArgumentCaptor;
+	private AsyncMalwareScanExecutor asyncMalwareScanExecutor;
 
 	@BeforeAll
 	static void classSetup() {
@@ -71,7 +73,8 @@ class ReadAttachmentsHandlerTest {
 		attachmentService = mock(AttachmentService.class);
 		provider = mock(ItemModifierProvider.class);
 		attachmentStatusValidator = mock(AttachmentStatusValidator.class);
-		cut = new ReadAttachmentsHandler(attachmentService, provider, attachmentStatusValidator);
+		asyncMalwareScanExecutor = mock(AsyncMalwareScanExecutor.class);
+		cut = new ReadAttachmentsHandler(attachmentService, provider, attachmentStatusValidator, asyncMalwareScanExecutor);
 
 		readEventContext = mock(CdsReadEventContext.class);
 		modifier = spy(new Modifier() {
