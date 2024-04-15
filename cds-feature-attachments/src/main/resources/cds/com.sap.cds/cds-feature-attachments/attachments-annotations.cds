@@ -18,7 +18,7 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
     status @(
         Common.Label: '{@i18n>status}',
         Common.Text: {
-            $value: ![statusText],
+            $value: ![status.text],
             ![@UI.TextArrangement]: #TextOnly
         },
         ValueList: {entity:'Statuses'},
@@ -48,7 +48,7 @@ annotate Attachments with @UI: {
 annotate Statuses with{
     code @(
         Common.Text: {
-            $value: ![statusText],
+            $value: ![text],
             ![@UI.TextArrangement]: #TextOnly
         }
     );
