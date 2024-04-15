@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import com.sap.cds.Struct;
+import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.AttachmentEntity;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.DraftRoots;
@@ -91,7 +92,16 @@ abstract class DraftOdataRequestValidationBase {
 		var testContentAttachment = "testContent attachment";
 		var testContentAttachmentEntity = "testContent attachmentEntity";
 
-		var selectedRoot = deepCreateAndActivate(testContentAttachment, testContentAttachmentEntity);
+		var root = deepCreateAndActivate(testContentAttachment, testContentAttachmentEntity);
+
+		Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+			var selectedRoot = selectStoredRootData(root);
+			var attachmentStatus = selectedRoot.getItems().get(0).getAttachments().get(0).getStatusCode();
+			var attachmentEntityStatus = selectedRoot.getItems().get(0).getAttachmentEntities().get(0).getStatusCode();
+			return (StatusCode.CLEAN.equals(attachmentStatus) || StatusCode.NO_SCANNER.equals(attachmentEntityStatus)) &&	(StatusCode.CLEAN.equals(attachmentEntityStatus) || StatusCode.NO_SCANNER.equals(attachmentEntityStatus));
+		});
+
+		var selectedRoot = selectStoredRootData(root);
 		assertThat(selectedRoot.getItems().get(0).getAttachments()).hasSize(1).first()
 				.satisfies(attachment -> verifyContent(attachment.getContent(), testContentAttachment));
 		assertThat(selectedRoot.getItems().get(0).getAttachmentEntities()).hasSize(1).first()
@@ -112,6 +122,7 @@ abstract class DraftOdataRequestValidationBase {
 			var attachmentResponseContent = attachmentResponse.getResponse().getContentAsString();
 			var attachmentEntityResponseContent = attachmentEntityResponse.getResponse().getContentAsString();
 
+			//TODO remove
 			logger.info("!!! READ FROM DRAFT ROOT !!! - Attachment response: {}, Attachment entity response: {}", attachmentResponseContent, attachmentEntityResponseContent);
 
 			return attachmentResponseContent.equals(testContentAttachment) && attachmentEntityResponseContent.equals(testContentAttachmentEntity);
