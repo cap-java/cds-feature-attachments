@@ -92,8 +92,9 @@ public class ReadAttachmentsHandler implements EventHandler {
 			var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
 			var status = (String) path.target().values().get(Attachments.STATUS_CODE);
 			var content = (InputStream) path.target().values().get(Attachments.CONTENT);
-			if (Objects.nonNull(documentId) || Objects.nonNull(content)) {
-				verifyStatus(path, status, documentId);
+			var contentExists = Objects.nonNull(content);
+			if (Objects.nonNull(documentId) || contentExists) {
+				verifyStatus(path, status, documentId, contentExists);
 				InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(documentId);
 				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
 			} else {
@@ -130,9 +131,9 @@ public class ReadAttachmentsHandler implements EventHandler {
 		return associationNames;
 	}
 
-	private void verifyStatus(Path path, String status, String documentId) {
+	private void verifyStatus(Path path, String status, String documentId, boolean contentExists) {
 		if (areKeysEmpty(path.target().keys())) {
-			if (StatusCode.UNSCANNED.equals(status)) {
+			if (StatusCode.UNSCANNED.equals(status) && contentExists) {
 				asyncMalwareScanExecutor.scanAsync(path.target().entity(), documentId);
 			}
 			attachmentStatusValidator.verifyStatus(status);
