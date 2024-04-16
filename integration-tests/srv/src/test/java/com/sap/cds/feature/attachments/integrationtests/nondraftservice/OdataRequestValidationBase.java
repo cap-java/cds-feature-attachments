@@ -145,6 +145,7 @@ abstract class OdataRequestValidationBase {
 																																								.orElseThrow();
 		assertThat(attachmentWithExpectedContent).containsEntry("content@mediaContentType", "application/octet-stream;charset=UTF-8")
 				.containsEntry(Attachments.FILE_NAME, itemAttachment.getFileName());
+		assertThat(attachmentWithExpectedContent.getStatusCode()).isNotEmpty();
 		verifyDocumentId(attachmentWithExpectedContent, itemAttachment.getId(), itemAttachment.getDocumentId());
 		verifySingleCreateEvent(attachmentWithExpectedContent.getDocumentId(), content);
 	}
