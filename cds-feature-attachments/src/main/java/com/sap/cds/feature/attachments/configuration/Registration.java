@@ -30,6 +30,7 @@ import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.modifier.ActiveEntityModifier;
+import com.sap.cds.feature.attachments.handler.restore.RestoreAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.DefaultAttachmentsService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
@@ -49,7 +50,6 @@ import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 import com.sap.cds.services.utils.environment.ServiceBindingUtils;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
-
 
 /**
 	* The class {@link Registration} is a configuration class that registers the
@@ -98,6 +98,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(buildReadHandler(attachmentService, new EndTransactionMalwareScanRunner(null, null, malwareScanner)));
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
 		configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent, ActiveEntityModifier::new));
+		configurer.eventHandler(new RestoreAttachmentsHandler(attachmentService));
 	}
 
 	private EndTransactionMalwareScanProvider createEndTransactionMalwareScanListener(DefaultAttachmentMalwareScanner malwareScanner) {

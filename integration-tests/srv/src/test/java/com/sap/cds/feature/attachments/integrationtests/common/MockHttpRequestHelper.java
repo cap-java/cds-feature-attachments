@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultHandler;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -33,12 +32,6 @@ public class MockHttpRequestHelper {
 		MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get(url).contentType(contentType)
 																																																			.accept(accept);
 		return mvc.perform(requestBuilder).andReturn();
-	}
-
-	public MvcResult executeGet(String url, ResultHandler requestHandler) throws Exception {
-		MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get(url).contentType(contentType)
-																																																			.accept(accept);
-		return mvc.perform(requestBuilder).andDo(requestHandler).andReturn();
 	}
 
 	public String executeGetWithSingleODataResponseAndAssertStatus(String url, HttpStatus status) throws Exception {
