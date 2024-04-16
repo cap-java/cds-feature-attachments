@@ -22,6 +22,7 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -63,6 +64,13 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 		context.getData().setContent(stream);
 		context.setCompleted();
 		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_READ_ATTACHMENT, context));
+	}
+
+	@On(event = AttachmentService.EVENT_RESTORE)
+	public void restoreAttachment(AttachmentRestoreEventContext context) {
+		logger.info(marker, "RESTORE Attachment called in dummy handler for timestamp {}", context.getRestoreTimestamp());
+		context.setCompleted();
+		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_RESTORE, context));
 	}
 
 	public List<EventContextHolder> getEventContextForEvent(String event) {

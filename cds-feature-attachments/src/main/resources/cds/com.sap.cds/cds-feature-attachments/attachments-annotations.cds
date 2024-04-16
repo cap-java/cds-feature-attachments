@@ -1,6 +1,7 @@
 using {
     com.sap.attachments.MediaData,
-    com.sap.attachments.Attachments
+    com.sap.attachments.Attachments,
+    com.sap.attachments.Statuses
 } from './attachments';
 
 annotate MediaData with @UI.MediaResource: {Stream: content} {

@@ -1,7 +1,7 @@
 namespace test.data.model;
 
 using {cuid} from '@sap/cds/common';
-using {com.sap.attachments.Attachments} from`com.sap.cds/cds-feature-attachments`;
+using {com.sap.attachments.Attachments, com.sap.attachments.RestoreAttachments} from`com.sap.cds/cds-feature-attachments`;
 
 entity AttachmentEntity : Attachments {
     parentKey : UUID;
@@ -30,3 +30,5 @@ entity Events : cuid {
     items  : Composition of many Items
                  on items.parentID = $self.ID;
 }
+
+annotate RestoreAttachments with @(requires: 'authenticated-user');

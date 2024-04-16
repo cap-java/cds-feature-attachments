@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Media
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 
 class TestPluginAttachmentsServiceHandlerTest {
 
@@ -70,6 +72,14 @@ class TestPluginAttachmentsServiceHandlerTest {
 		context.getData().setContent(stream);
 
 		assertDoesNotThrow(() -> cut.createAttachment(context));
+	}
+
+	@Test
+	void dummyTestForRestore() {
+		var context = AttachmentRestoreEventContext.create();
+		context.setRestoreTimestamp(Instant.now());
+
+		assertDoesNotThrow(() -> cut.restoreAttachment(context));
 	}
 
 }
