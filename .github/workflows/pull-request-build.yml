@@ -1,0 +1,39 @@
+name: Pull request Build with Maven
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java-version: [ 17, 21 ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build with Maven
+        uses: ./.github/actions/build
+        with:
+          java-version: ${{ matrix.java-version }}
+#
+#      - name: Initialize CodeQL
+#        uses: github/codeql-action/init@v2
+#        with:
+#          languages: java
+#
+#      - name: Autobuild
+#        uses: github/codeql-action/autobuild@v3
+#
+#      - name: CodeQL Analysis
+#        uses: github/codeql-action/analyze@v2
+#        with:
+#          languages: java
+#          queries: security-and-quality.qls
+#          metadata: true
+#          output: codeql-results
