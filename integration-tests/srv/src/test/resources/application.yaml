@@ -1,3 +1,8 @@
+cds:
+  dataSource:
+    csv:
+      paths: "../db/src/gen/csv"
+
 ---
 spring:
   config:

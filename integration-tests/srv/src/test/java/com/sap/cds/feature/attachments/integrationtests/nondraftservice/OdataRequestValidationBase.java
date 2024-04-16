@@ -26,6 +26,7 @@ import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testserv
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Roots;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Roots_;
+import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Statuses;
 import com.sap.cds.feature.attachments.integrationtests.common.MockHttpRequestHelper;
 import com.sap.cds.feature.attachments.integrationtests.common.TableDataDeleter;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.AttachmentsBuilder;
@@ -145,6 +146,7 @@ abstract class OdataRequestValidationBase {
 																																								.orElseThrow();
 		assertThat(attachmentWithExpectedContent).containsEntry("content@mediaContentType", "application/octet-stream;charset=UTF-8")
 				.containsEntry(Attachments.FILE_NAME, itemAttachment.getFileName());
+		assertThat(attachmentWithExpectedContent.getStatusCode()).isNotEmpty();
 		verifyDocumentId(attachmentWithExpectedContent, itemAttachment.getId(), itemAttachment.getDocumentId());
 		verifySingleCreateEvent(attachmentWithExpectedContent.getDocumentId(), content);
 	}
@@ -278,6 +280,24 @@ abstract class OdataRequestValidationBase {
 				.containsEntry(Attachments.FILE_NAME, itemAttachment.getFileName());
 		verifyDocumentId(responseAttachment, itemAttachment.getId(), itemAttachment.getDocumentId());
 		verifyNoAttachmentEventsCalled();
+	}
+
+	@Test
+	void directReadOfAttachmentsStatusReturnsValues() throws Exception {
+		var serviceRoot = buildServiceRootWithDeepData();
+		postServiceRoot(serviceRoot);
+
+		var selectedRoot = selectStoredRootWithDeepData();
+		var item = getItemWithAttachmentEntity(selectedRoot);
+		var itemAttachment = getRandomItemAttachmentEntity(item);
+		putContentForAttachmentWithoutNavigation(itemAttachment);
+		clearServiceHandlerContext();
+
+		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId()) + "/status";
+		var responseAttachment = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(url, Statuses.class, HttpStatus.OK);
+
+		var statusText = responseAttachment.getText();
+		assertThat(statusText).containsAnyOf("Clean", "Not Scanned", "No Scanner Available");
 	}
 
 	@Test
