@@ -1,9 +1,7 @@
-name: Java Build with Maven
+name: Pull Request Build with Maven
 
 on:
   pull_request:
-    branches: [ "main" ]
-  push:
     branches: [ "main" ]
 
 jobs:
@@ -12,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      matrix: 
-        java-version: [17, 21]
+      matrix:
+        java-version: [ 17, 21 ]
 
     steps:
       - name: Checkout
