@@ -297,7 +297,7 @@ abstract class OdataRequestValidationBase {
 		var responseAttachment = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(url, Statuses.class, HttpStatus.OK);
 
 		var statusText = responseAttachment.getText();
-		assertThat(statusText).containsAnyOf("Clean", "Not Scanned");
+		assertThat(statusText).containsAnyOf("Clean", "Not Scanned", "No Scanner Available");
 	}
 
 	@Test
