@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.restoreattachments.RestoreAttachmentsContext;
@@ -44,6 +45,7 @@ class RestoreServiceTest {
 	}
 
 	@Test
+	@WithMockUser("authenticated")
 	void restoreAttachmentsCalled() throws Exception {
 		var timestamp = Instant.now();
 
