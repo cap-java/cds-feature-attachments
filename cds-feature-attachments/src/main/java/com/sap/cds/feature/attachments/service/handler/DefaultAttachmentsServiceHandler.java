@@ -45,8 +45,8 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_CREATE_ATTACHMENT)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void createAttachment(AttachmentCreateEventContext context) {
-		logger.info(create_marker, "Default Attachment Service handler called for creating attachment for entity name: {}", context.getAttachmentEntity()
-																																																																																																																								.getQualifiedName());
+		logger.info(create_marker, "Default Attachment Service handler called for creating attachment for entity name: {}",
+														context.getAttachmentEntity().getQualifiedName());
 		var documentId = (String) context.getAttachmentIds().get(Attachments.ID);
 		context.getData().setStatusCode(StatusCode.UNSCANNED);
 		var listener = endTransactionMalwareScanProvider.getChangeSetListener(context.getAttachmentEntity(), documentId);
@@ -68,7 +68,8 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_RESTORE)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void restoreAttachment(AttachmentRestoreEventContext context) {
-		logger.info(restore_marker, "Default Attachment Service handler called for restoring attachment for timestamp: {}", context.getRestoreTimestamp());
+		logger.info(restore_marker, "Default Attachment Service handler called for restoring attachment for timestamp: {}",
+														context.getRestoreTimestamp());
 
 		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
@@ -77,7 +78,8 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_READ_ATTACHMENT)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void readAttachment(AttachmentReadEventContext context) {
-		logger.info(read_marker, "Default Attachment Service handler called for reading attachment with document id: {}", context.getDocumentId());
+		logger.info(read_marker, "Default Attachment Service handler called for reading attachment with document id: {}",
+														context.getDocumentId());
 
 		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();

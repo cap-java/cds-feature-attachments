@@ -98,7 +98,8 @@ class DraftCancelAttachmentsHandlerTest {
 
 		deleteArgumentCaptor = ArgumentCaptor.forClass(CqnDelete.class);
 		var siblingTarget = target.getTargetOf(DraftConstants.SIBLING_ENTITY);
-		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq((CdsEntity) siblingTarget), deleteArgumentCaptor.capture());
+		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq((CdsEntity) siblingTarget),
+																																												deleteArgumentCaptor.capture());
 		var siblingDelete = deleteArgumentCaptor.getValue();
 		assertThat(siblingDelete.toJson()).isEqualTo(delete.toJson());
 	}
@@ -178,7 +179,8 @@ class DraftCancelAttachmentsHandlerTest {
 		verifyNoInteractions(deleteContentAttachmentEvent);
 	}
 
-	private Attachment buildAttachmentAndReturnByReader(String documentId, CdsStructuredType target, boolean hasActiveEntity, String id) {
+	private Attachment buildAttachmentAndReturnByReader(String documentId, CdsStructuredType target,
+																																																					boolean hasActiveEntity, String id) {
 		var attachment = Attachment.create();
 		attachment.setId(id);
 		attachment.setDocumentId(documentId);

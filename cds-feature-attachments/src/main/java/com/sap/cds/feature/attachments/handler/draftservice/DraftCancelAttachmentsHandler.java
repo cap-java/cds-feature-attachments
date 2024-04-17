@@ -43,7 +43,9 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	private final ModifyAttachmentEvent deleteContentAttachmentEvent;
 	private final ActiveEntityModifierProvider activeEntityModifierProvider;
 
-	public DraftCancelAttachmentsHandler(AttachmentsReader attachmentsReader, ModifyAttachmentEvent deleteContentAttachmentEvent, ActiveEntityModifierProvider activeEntityModifierProvider) {
+	public DraftCancelAttachmentsHandler(AttachmentsReader attachmentsReader,
+																																						ModifyAttachmentEvent deleteContentAttachmentEvent,
+																																						ActiveEntityModifierProvider activeEntityModifierProvider) {
 		this.attachmentsReader = attachmentsReader;
 		this.deleteContentAttachmentEvent = deleteContentAttachmentEvent;
 		this.activeEntityModifierProvider = activeEntityModifierProvider;
@@ -68,15 +70,16 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 	}
 
-	private Validator buildDeleteContentValidator(DraftCancelEventContext context, List<CdsData> activeCondensedAttachments) {
+	private Validator buildDeleteContentValidator(DraftCancelEventContext context,
+																																															List<CdsData> activeCondensedAttachments) {
 		return (path, element, value) -> {
 			if (Boolean.FALSE.equals(path.target().values().get(Drafts.HAS_ACTIVE_ENTITY))) {
 				deleteContentAttachmentEvent.processEvent(path, null, CdsData.create(path.target().values()), context);
 				return;
 			}
 			var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
-			var existingEntry = activeCondensedAttachments.stream()
-																									.filter(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
+			var existingEntry = activeCondensedAttachments.stream().filter(
+					updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
 			existingEntry.ifPresent(entry -> {
 				if (!entry.get(Attachments.DOCUMENT_ID).equals(value)) {
 					deleteContentAttachmentEvent.processEvent(null, null, CdsData.create(path.target().values()), context);
@@ -101,8 +104,10 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 		return context.getTarget().getQualifiedName().endsWith(DraftConstants.DRAFT_TABLE_POSTFIX);
 	}
 
-	private List<CdsData> readAttachments(DraftCancelEventContext context, CdsStructuredType entity, boolean isActiveEntity) {
-		var cqnInactiveEntity = CQL.copy(context.getCqn(), activeEntityModifierProvider.getModifier(isActiveEntity, entity.getQualifiedName()));
+	private List<CdsData> readAttachments(DraftCancelEventContext context, CdsStructuredType entity,
+																																							boolean isActiveEntity) {
+		var cqnInactiveEntity = CQL.copy(context.getCqn(),
+																																			activeEntityModifierProvider.getModifier(isActiveEntity, entity.getQualifiedName()));
 		return attachmentsReader.readAttachments(context.getModel(), (CdsEntity) entity, cqnInactiveEntity);
 	}
 
@@ -113,7 +118,8 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 	private Filter buildDocumentIdFilter() {
 		return (path, element, type) -> ApplicationHandlerHelper.isMediaEntity(path.target().type()) && element.getName()
-																																																																																																				.equals(Attachments.DOCUMENT_ID);
+																																																																																																				.equals(
+																																																																																																						Attachments.DOCUMENT_ID);
 	}
 
 }

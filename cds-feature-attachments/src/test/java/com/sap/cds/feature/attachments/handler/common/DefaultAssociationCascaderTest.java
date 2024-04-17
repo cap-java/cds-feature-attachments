@@ -46,8 +46,8 @@ class DefaultAssociationCascaderTest {
 		var rootAttachmentNode = rootChildren.get(0);
 		assertThat(rootAttachmentNode.getChildren()).isNotNull().isEmpty();
 		assertThat(rootAttachmentNode.getIdentifier().associationName()).isEqualTo(RootTable.ATTACHMENTS);
-		assertThat(rootAttachmentNode.getIdentifier()
-															.fullEntityName()).isEqualTo("unit.test.TestService.RootTable.attachments");
+		assertThat(rootAttachmentNode.getIdentifier().fullEntityName()).isEqualTo(
+				"unit.test.TestService.RootTable.attachments");
 
 		var itemNode = rootChildren.get(1);
 		assertThat(itemNode.getIdentifier().associationName()).isEqualTo(RootTable.ITEM_TABLE);
@@ -95,7 +95,9 @@ class DefaultAssociationCascaderTest {
 		var databaseRootItemNode = databaseRootNode.getChildren().get(1);
 		assertThat(databaseRootItemNode.getIdentifier().associationName()).isEqualTo("itemTable");
 		assertThat(databaseRootItemNode.getIdentifier().fullEntityName()).isEqualTo("unit.test.Items");
-		verifyItemAttachments(databaseRootItemNode, com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_.CDS_NAME, "unit.test.Items.itemAttachments");
+		verifyItemAttachments(databaseRootItemNode,
+																								com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_.CDS_NAME,
+																								"unit.test.Items.itemAttachments");
 	}
 
 	@Test

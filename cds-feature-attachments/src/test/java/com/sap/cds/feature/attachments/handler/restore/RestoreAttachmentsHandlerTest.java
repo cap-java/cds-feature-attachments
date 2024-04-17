@@ -39,8 +39,8 @@ class RestoreAttachmentsHandlerTest {
 
 	@Test
 	void methodHasCorrectAnnotation() throws NoSuchMethodException {
-		var methodAnnotation = cut.getClass().getMethod("restoreAttachments", RestoreAttachmentsContext.class)
-																											.getAnnotation(On.class);
+		var methodAnnotation = cut.getClass().getMethod("restoreAttachments", RestoreAttachmentsContext.class).getAnnotation(
+				On.class);
 
 		assertThat(methodAnnotation.event()).contains(RestoreAttachmentsContext.CDS_NAME);
 	}

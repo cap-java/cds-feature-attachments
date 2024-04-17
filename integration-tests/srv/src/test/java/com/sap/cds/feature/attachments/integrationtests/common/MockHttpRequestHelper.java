@@ -29,8 +29,8 @@ public class MockHttpRequestHelper {
 	private String accept = MediaType.APPLICATION_JSON.toString();
 
 	public MvcResult executeGet(String url) throws Exception {
-		MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get(url).contentType(contentType)
-																																																			.accept(accept);
+		MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get(url).contentType(contentType).accept(
+				accept);
 		return mvc.perform(requestBuilder).andReturn();
 	}
 
@@ -40,7 +40,8 @@ public class MockHttpRequestHelper {
 		return result.getResponse().getContentAsString();
 	}
 
-	public <T extends CdsData> T executeGetWithSingleODataResponseAndAssertStatus(String url, Class<T> resultType, HttpStatus status) throws Exception {
+	public <T extends CdsData> T executeGetWithSingleODataResponseAndAssertStatus(String url, Class<T> resultType,
+																																																																															HttpStatus status) throws Exception {
 		var resultBody = executeGetWithSingleODataResponseAndAssertStatus(url, status);
 		return Struct.access(mapper.mapResponseToSingleResult(resultBody)).as(resultType);
 	}
@@ -56,8 +57,8 @@ public class MockHttpRequestHelper {
 	}
 
 	public void executePostWithMatcher(String url, String body, ResultMatcher matcher) throws Exception {
-		mvc.perform(MockMvcRequestBuilders.post(url).contentType(contentType).accept(accept).content(body))
-				.andExpect(matcher);
+		mvc.perform(MockMvcRequestBuilders.post(url).contentType(contentType).accept(accept).content(body)).andExpect(
+				matcher);
 	}
 
 	public MvcResult executeDelete(String url) throws Exception {
@@ -76,19 +77,20 @@ public class MockHttpRequestHelper {
 		executePatchWithODataResponseAndAssertStatus(url, body, HttpStatus.OK);
 	}
 
-	public CdsData executePostWithODataResponseAndAssertStatus(String url, String body, HttpStatus status) throws Exception {
+	public CdsData executePostWithODataResponseAndAssertStatus(String url, String body,
+																																																												HttpStatus status) throws Exception {
 		MvcResult result = executePost(url, body);
 		String resultBody = result.getResponse().getContentAsString();
-		assertThat(result.getResponse().getStatus()).as("Unexpected HTTP status, with response body " + resultBody)
-				.isEqualTo(status.value());
+		assertThat(result.getResponse().getStatus()).as("Unexpected HTTP status, with response body " + resultBody).isEqualTo(
+				status.value());
 		return mapper.mapResponseToSingleResult(resultBody);
 	}
 
 	public void executePatchWithODataResponseAndAssertStatus(String url, String body, HttpStatus status) throws Exception {
 		MvcResult result = executePatch(url, body);
 		String resultBody = result.getResponse().getContentAsString();
-		assertThat(result.getResponse().getStatus()).as("Unexpected HTTP status, with response body " + resultBody)
-				.isEqualTo(status.value());
+		assertThat(result.getResponse().getStatus()).as("Unexpected HTTP status, with response body " + resultBody).isEqualTo(
+				status.value());
 	}
 
 	public void executePutWithMatcher(String url, byte[] body, ResultMatcher matcher) throws Exception {

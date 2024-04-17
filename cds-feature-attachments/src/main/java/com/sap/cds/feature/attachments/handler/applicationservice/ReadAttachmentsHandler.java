@@ -59,7 +59,9 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private final AttachmentStatusValidator attachmentStatusValidator;
 	private final AsyncMalwareScanExecutor asyncMalwareScanExecutor;
 
-	public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider, AttachmentStatusValidator attachmentStatusValidator, AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
+	public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider,
+																															AttachmentStatusValidator attachmentStatusValidator,
+																															AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
 		this.attachmentService = attachmentService;
 		this.provider = provider;
 		this.attachmentStatusValidator = attachmentStatusValidator;
@@ -95,7 +97,8 @@ public class ReadAttachmentsHandler implements EventHandler {
 			var contentExists = Objects.nonNull(content);
 			if (Objects.nonNull(documentId) || contentExists) {
 				verifyStatus(path, status, documentId, contentExists);
-				InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(documentId);
+				InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(
+						documentId);
 				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
 			} else {
 				return value;
@@ -105,7 +108,8 @@ public class ReadAttachmentsHandler implements EventHandler {
 		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, filter, converter);
 	}
 
-	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {
+	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName,
+																																																List<String> processedEntities) {
 		var associationNames = new ArrayList<String>();
 		var baseEntity = ApplicationHandlerHelper.getBaseEntity(model, entity);
 		if (ApplicationHandlerHelper.isMediaEntity(baseEntity)) {
@@ -113,18 +117,21 @@ public class ReadAttachmentsHandler implements EventHandler {
 		}
 
 		Map<String, CdsEntity> annotatedEntitiesMap = entity.elements().filter(element -> element.getType().isAssociation())
-																																																		.collect(Collectors.toMap(CdsElementDefinition::getName, element -> element.getType()
-																																																																																																																								.as(CdsAssociationType.class)
-																																																																																																																								.getTarget()));
+																																																		.collect(Collectors.toMap(CdsElementDefinition::getName,
+																																																																												element -> element.getType()
+																																																																																									.as(CdsAssociationType.class)
+																																																																																									.getTarget()));
 
 		if (annotatedEntitiesMap.isEmpty()) {
 			return associationNames;
 		}
 
 		for (var associatedElement : annotatedEntitiesMap.entrySet()) {
-			if (!associationNames.contains(associatedElement.getKey()) && !processedEntities.contains(associatedElement.getKey()) && !DraftConstants.SIBLING_ENTITY.equals(associatedElement.getKey())) {
+			if (!associationNames.contains(associatedElement.getKey()) && !processedEntities.contains(
+					associatedElement.getKey()) && !DraftConstants.SIBLING_ENTITY.equals(associatedElement.getKey())) {
 				processedEntities.add(associatedElement.getKey());
-				var result = getAttachmentAssociations(model, associatedElement.getValue(), associatedElement.getKey(), processedEntities);
+				var result = getAttachmentAssociations(model, associatedElement.getValue(), associatedElement.getKey(),
+																																											processedEntities);
 				associationNames.addAll(result);
 			}
 		}

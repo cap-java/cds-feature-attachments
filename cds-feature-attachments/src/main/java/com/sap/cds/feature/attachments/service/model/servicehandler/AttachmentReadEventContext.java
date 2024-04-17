@@ -23,9 +23,9 @@ public interface AttachmentReadEventContext extends EventContext {
 
 	/**
 		* @return The data of the document. The data contain the following fields:
-		* 			     - content
-		* 			     - mimeType
-		* 			     - fileName
+		* 		- content
+		* 		- mimeType
+		* 		- fileName
 		*/
 	MediaData getData();
 

@@ -54,10 +54,8 @@ class ActiveEntityModifierTest {
 
 	@Test
 	void selectWithFilterReplace() {
-		CqnSelect select = Select.from(TEST_DRAFT_SERVICE_BOOKS, c -> c.filter(e -> e.get(IS_ACTIVE_ENTITY).eq(false))
-																																																																		.to("relatedMovies")
-																																																																		.filter(e -> e.get(IS_ACTIVE_ENTITY).eq(false))
-																																																																		.to("relatedBook"));
+		CqnSelect select = Select.from(TEST_DRAFT_SERVICE_BOOKS, c -> c.filter(e -> e.get(IS_ACTIVE_ENTITY).eq(false)).to(
+				"relatedMovies").filter(e -> e.get(IS_ACTIVE_ENTITY).eq(false)).to("relatedBook"));
 
 		var result = CQL.copy(select, new ActiveEntityModifier(true, TEST_DRAFT_SERVICE_BOOKS));
 
@@ -67,11 +65,10 @@ class ActiveEntityModifierTest {
 
 	@Test
 	void onlyRefActiveEntityIsReplaced() {
-		var select = Select.from(RootTable_.class).where(root -> root.IsActiveEntity().eq(true)
-																																																													.and(root.HasActiveEntity().eq(true).and(CQL.constant(true)
-																																																																																																								.eq(root.IsActiveEntity())
-																																																																																																								.and(CQL.constant(true)
-																																																																																																															.eq(root.HasActiveEntity())))));
+		var select = Select.from(RootTable_.class).where(
+				root -> root.IsActiveEntity().eq(true).and(root.HasActiveEntity().eq(true).and(CQL.constant(true)
+																																																																																					.eq(root.IsActiveEntity()).and(
+								CQL.constant(true).eq(root.HasActiveEntity())))));
 
 		var result = CQL.copy(select, new ActiveEntityModifier(false, RootTable_.CDS_NAME));
 

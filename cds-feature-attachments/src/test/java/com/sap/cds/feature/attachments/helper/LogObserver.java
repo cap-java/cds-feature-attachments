@@ -14,6 +14,11 @@ public class LogObserver {
 	private final ListAppender<ILoggingEvent> appender;
 	private final Logger logger;
 
+	private LogObserver(Logger logger) {
+		this.logger = logger;
+		this.appender = new ListAppender<>();
+	}
+
 	public static LogObserver create(String className) {
 		var logger = (Logger) LoggerFactory.getLogger(className);
 		var observer = new LogObserver(logger);
@@ -36,11 +41,6 @@ public class LogObserver {
 
 	public List<ILoggingEvent> getLogEvents() {
 		return appender.list;
-	}
-
-	private LogObserver(Logger logger) {
-		this.logger = logger;
-		this.appender = new ListAppender<>();
 	}
 
 }

@@ -50,8 +50,8 @@ public class BeforeReadItemsModifier implements Modifier {
 		List<CqnSelectListItem> newItems = new ArrayList<>();
 
 		expandedItems.forEach(item -> {
-			List<CqnSelectListItem> newItemsFromExpand = new ArrayList<>(item.asExpand().items().stream()
-																																																																		.filter(i -> !i.isExpand()).toList());
+			List<CqnSelectListItem> newItemsFromExpand = new ArrayList<>(
+					item.asExpand().items().stream().filter(i -> !i.isExpand()).toList());
 			enhanceWithNewFieldForMediaAssociation(item.asExpand().displayName(), newItemsFromExpand, newItemsFromExpand);
 			List<CqnSelectListItem> expandedSubItems = item.asExpand().items().stream().filter(CqnSelectListItem::isExpand)
 																																																.toList();
@@ -65,7 +65,8 @@ public class BeforeReadItemsModifier implements Modifier {
 		return newItems;
 	}
 
-	private void enhanceWithNewFieldForMediaAssociation(String association, List<CqnSelectListItem> list, List<CqnSelectListItem> listToEnhance) {
+	private void enhanceWithNewFieldForMediaAssociation(String association, List<CqnSelectListItem> list,
+																																																					List<CqnSelectListItem> listToEnhance) {
 		if (isMediaAssociationAndNeedNewDocumentIdField(association, list)) {
 			logger.debug("Adding document id and status code to select items");
 			listToEnhance.add(CQL.get(Attachments.DOCUMENT_ID));
@@ -74,9 +75,9 @@ public class BeforeReadItemsModifier implements Modifier {
 	}
 
 	private boolean isMediaAssociationAndNeedNewDocumentIdField(String association, List<CqnSelectListItem> list) {
-		return mediaAssociations.contains(association) && list.stream()
-																																																						.anyMatch(item -> isItemRefFieldWithName(item, MediaData.CONTENT)) && list.stream()
-																																																																																																																														.noneMatch(item -> isItemRefFieldWithName(item, Attachments.DOCUMENT_ID));
+		return mediaAssociations.contains(association) && list.stream().anyMatch(
+				item -> isItemRefFieldWithName(item, MediaData.CONTENT)) && list.stream().noneMatch(
+				item -> isItemRefFieldWithName(item, Attachments.DOCUMENT_ID));
 	}
 
 	private boolean isItemRefFieldWithName(CqnSelectListItem item, String fieldName) {

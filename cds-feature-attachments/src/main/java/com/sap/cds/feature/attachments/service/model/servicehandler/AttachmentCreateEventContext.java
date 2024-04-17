@@ -49,19 +49,19 @@ public interface AttachmentCreateEventContext extends EventContext {
 	void setAttachmentIds(Map<String, Object> ids);
 
 	/**
+		* The attachment entity for the attachment storage
+		*
+		* @return The attachment entity which defines the content field
+		*/
+	CdsEntity getAttachmentEntity();
+
+	/**
 		* Sets the attachment entity for the attachment storage
 		* The name of this entity can be used e.g. to access the data using the persistence service
 		*
 		* @param attachmentEntity The attachment entity which defines the content field
 		*/
 	void setAttachmentEntity(CdsEntity attachmentEntity);
-
-	/**
-		* The attachment entity for the attachment storage
-		*
-		* @return The attachment entity which defines the content field
-		*/
-	CdsEntity getAttachmentEntity();
 
 	/**
 		* @return The data of the document
@@ -76,17 +76,17 @@ public interface AttachmentCreateEventContext extends EventContext {
 	void setData(MediaData data);
 
 	/**
-		* Sets the flag which show that the document will be internal stored in the database
-		*
-		* @param isInternalStored Flag that the document will be internal stored in the Database
-		*/
-	void setIsInternalStored(Boolean isInternalStored);
-
-	/**
 		* Flag that shows if the document will be internal stored in the database
 		*
 		* @return The flag for internal storage
 		*/
 	Boolean getIsInternalStored();
+
+	/**
+		* Sets the flag which show that the document will be internal stored in the database
+		*
+		* @param isInternalStored Flag that the document will be internal stored in the Database
+		*/
+	void setIsInternalStored(Boolean isInternalStored);
 
 }

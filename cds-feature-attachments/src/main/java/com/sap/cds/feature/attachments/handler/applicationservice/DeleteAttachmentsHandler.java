@@ -33,7 +33,8 @@ public class DeleteAttachmentsHandler implements EventHandler {
 	private final AttachmentsReader attachmentsReader;
 	private final ModifyAttachmentEvent deleteContentAttachmentEvent;
 
-	public DeleteAttachmentsHandler(AttachmentsReader attachmentsReader, ModifyAttachmentEvent deleteContentAttachmentEvent) {
+	public DeleteAttachmentsHandler(AttachmentsReader attachmentsReader,
+																																	ModifyAttachmentEvent deleteContentAttachmentEvent) {
 		this.attachmentsReader = attachmentsReader;
 		this.deleteContentAttachmentEvent = deleteContentAttachmentEvent;
 	}
@@ -45,8 +46,8 @@ public class DeleteAttachmentsHandler implements EventHandler {
 
 		var attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn());
 		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
-		Converter converter = (path, element, value) -> deleteContentAttachmentEvent.processEvent(path, value, CdsData.create(path.target()
-																																																																																																																										.values()), context);
+		Converter converter = (path, element, value) -> deleteContentAttachmentEvent.processEvent(path, value, CdsData.create(
+				path.target().values()), context);
 
 		ApplicationHandlerHelper.callProcessor(context.getTarget(), attachments, filter, converter);
 	}

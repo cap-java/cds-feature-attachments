@@ -35,7 +35,8 @@ public class ActiveEntityModifier implements Modifier {
 	public CqnStructuredTypeRef ref(CqnStructuredTypeRef original) {
 		RefBuilder<StructuredTypeRef> ref = CQL.copy(original);
 		RefSegment rootSegment = ref.rootSegment();
-		logger.debug("Modifying ref {} with isActiveEntity: {} and fullEntityName: {}", rootSegment, isActiveEntity, fullEntityName);
+		logger.debug("Modifying ref {} with isActiveEntity: {} and fullEntityName: {}", rootSegment, isActiveEntity,
+															fullEntityName);
 		rootSegment.id(fullEntityName);
 
 		for (RefSegment segment : ref.segments()) {

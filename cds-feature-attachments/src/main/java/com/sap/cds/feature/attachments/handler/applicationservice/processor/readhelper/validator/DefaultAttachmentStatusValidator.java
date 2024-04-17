@@ -13,7 +13,8 @@ public class DefaultAttachmentStatusValidator implements AttachmentStatusValidat
 	@Override
 	public void verifyStatus(String attachmentStatus) {
 		if (!StatusCode.CLEAN.equals(attachmentStatus) && !StatusCode.NO_SCANNER.equals(attachmentStatus)) {
-			throw StatusCode.UNSCANNED.equals(attachmentStatus) ? AttachmentStatusException.getNotScannedException()	: AttachmentStatusException.getNotCleanException();
+			throw StatusCode.UNSCANNED.equals(
+					attachmentStatus) ? AttachmentStatusException.getNotScannedException() : AttachmentStatusException.getNotCleanException();
 		} else if (StatusCode.NO_SCANNER.equals(attachmentStatus)) {
 			logger.warn("No malware scanned used for scanning attachments. Do NOT use this in production.");
 		}

@@ -16,9 +16,8 @@ public class NodeTree {
 	}
 
 	public void addPath(List<AssociationIdentifier> path) {
-		var currentIdentifierOptional = path.stream()
-																																				.filter(entry -> entry.fullEntityName().equals(identifier.fullEntityName()))
-																																				.findAny();
+		var currentIdentifierOptional = path.stream().filter(
+				entry -> entry.fullEntityName().equals(identifier.fullEntityName())).findAny();
 		if (currentIdentifierOptional.isEmpty()) {
 			return;
 		}
@@ -34,9 +33,8 @@ public class NodeTree {
 	}
 
 	public NodeTree getChildOrNew(AssociationIdentifier identifier) {
-		var childOptional = children.stream()
-																								.filter(child -> child.identifier.fullEntityName().equals(identifier.fullEntityName()))
-																								.findAny();
+		var childOptional = children.stream().filter(
+				child -> child.identifier.fullEntityName().equals(identifier.fullEntityName())).findAny();
 		if (childOptional.isPresent()) {
 			return childOptional.get();
 		} else {

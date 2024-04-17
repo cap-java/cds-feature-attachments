@@ -102,7 +102,8 @@ class UpdateAttachmentsHandlerTest {
 		var attachment = Attachments.create();
 		attachment.setContent(testStream);
 		attachment.setId(id);
-		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(List.of(attachment));
+		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
+				List.of(attachment));
 
 		cut.processBefore(updateContext, List.of(attachment));
 
@@ -130,7 +131,8 @@ class UpdateAttachmentsHandlerTest {
 		var attachment = Attachments.create();
 		attachment.setContent(testStream);
 		attachment.setId(id);
-		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(List.of(attachment));
+		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
+				List.of(attachment));
 		when(updateContext.getService()).thenReturn(mock(DraftService.class));
 		var changesetContext = mock(ChangeSetContext.class);
 		when(updateContext.getChangeSetContext()).thenReturn(changesetContext);
@@ -143,7 +145,8 @@ class UpdateAttachmentsHandlerTest {
 		verify(eventFactory).getEvent(testStream, null, false, attachment);
 		var keyCaptor = ArgumentCaptor.forClass(Map.class);
 		var dataCaptor = ArgumentCaptor.forClass(Map.class);
-		verify(fieldUpdateProvider).getReadonlyFieldUpdater(entityCaptor.capture(), keyCaptor.capture(), dataCaptor.capture());
+		verify(fieldUpdateProvider).getReadonlyFieldUpdater(entityCaptor.capture(), keyCaptor.capture(),
+																																																						dataCaptor.capture());
 		assertThat(entityCaptor.getValue().getQualifiedName()).isEqualTo(Attachment_.CDS_NAME);
 		assertThat(keyCaptor.getValue()).containsEntry("ID", id);
 		assertThat(dataCaptor.getValue()).containsEntry(Attachment.DOCUMENT_ID, null);
@@ -172,7 +175,8 @@ class UpdateAttachmentsHandlerTest {
 		attachment.setContent(null);
 		attachment.setId(id);
 		when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));
-		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(List.of(attachment));
+		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
+				List.of(attachment));
 
 		List<CdsData> input = List.of(attachment);
 		assertThrows(ServiceException.class, () -> cut.processBefore(updateContext, input));
@@ -185,7 +189,8 @@ class UpdateAttachmentsHandlerTest {
 		var root = fillRootData(testStream, id);
 		var model = runtime.getCdsModel();
 		var target = updateContext.getTarget();
-		when(attachmentsReader.readAttachments(eq(model), eq(target), any(CqnFilterableStatement.class))).thenReturn(List.of(root));
+		when(attachmentsReader.readAttachments(eq(model), eq(target), any(CqnFilterableStatement.class))).thenReturn(
+				List.of(root));
 
 		cut.processBefore(updateContext, List.of(root));
 
@@ -198,7 +203,8 @@ class UpdateAttachmentsHandlerTest {
 	@Test
 	void noExistingDataFound() {
 		var id = getEntityAndMockContext(RootTable_.CDS_NAME);
-		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(List.of(CdsData.create()));
+		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
+				List.of(CdsData.create()));
 
 		var testStream = mock(InputStream.class);
 		var root = fillRootData(testStream, id);
@@ -309,9 +315,8 @@ class UpdateAttachmentsHandlerTest {
 		attachment2.setId(UUID.randomUUID().toString());
 		attachment2.put(UP__ID, "test_multiple 2");
 		attachment2.setContent(mock(InputStream.class));
-		CqnUpdate update = Update.entity(Attachment_.class).where(attachment -> attachment.ID().eq(attachment1.getId())
-																																																																												.or(attachment.ID()
-																																																																																		.eq(attachment2.getId())));
+		CqnUpdate update = Update.entity(Attachment_.class).where(
+				attachment -> attachment.ID().eq(attachment1.getId()).or(attachment.ID().eq(attachment2.getId())));
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
 		mockTargetInUpdateContext(serviceEntity, update);
 
@@ -351,7 +356,8 @@ class UpdateAttachmentsHandlerTest {
 		attachment.setDocumentId("document id");
 		var existingRoot = RootTable.create();
 		existingRoot.setAttachments(List.of(attachment));
-		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(List.of(existingRoot));
+		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
+				List.of(existingRoot));
 
 		cut.processBefore(updateContext, List.of(root));
 

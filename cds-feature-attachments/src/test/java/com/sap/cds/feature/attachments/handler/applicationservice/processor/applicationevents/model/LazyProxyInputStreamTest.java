@@ -35,7 +35,8 @@ class LazyProxyInputStreamTest {
 		attachmentService = mock(AttachmentService.class);
 		attachmentStatusValidator = mock(AttachmentStatusValidator.class);
 		when(attachmentService.readAttachment(any())).thenReturn(inputStream);
-		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), attachmentStatusValidator, StatusCode.CLEAN);
+		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), attachmentStatusValidator,
+																																	StatusCode.CLEAN);
 	}
 
 	@Test

@@ -17,8 +17,7 @@ class RegistrationFileTest {
 
 	@Test
 	void registrationFileAvailable() throws IOException {
-		String path =
-				"src/main/resources/META-INF/services/com.sap.cds.services.runtime.CdsRuntimeConfiguration";
+		String path = "src/main/resources/META-INF/services/com.sap.cds.services.runtime.CdsRuntimeConfiguration";
 
 		BufferedReader reader = Files.newBufferedReader(Paths.get(path));
 		List<String> classes = reader.lines().collect(Collectors.toList());

@@ -33,7 +33,8 @@ public class DefaultAssociationCascader implements AssociationCascader {
 	public NodeTree findEntityPath(CdsModel model, CdsEntity entity) {
 		logger.debug("Start finding path to attachments for entity {}", entity.getQualifiedName());
 		var firstList = new LinkedList<AssociationIdentifier>();
-		var internalResultList = getAttachmentAssociationPath(model, entity, "", firstList, new ArrayList<>(List.of(entity.getQualifiedName())));
+		var internalResultList = getAttachmentAssociationPath(model, entity, "", firstList,
+																																																								new ArrayList<>(List.of(entity.getQualifiedName())));
 
 		var rootTree = new NodeTree(new AssociationIdentifier("", entity.getQualifiedName()));
 		internalResultList.forEach(rootTree::addPath);
@@ -42,7 +43,10 @@ public class DefaultAssociationCascader implements AssociationCascader {
 		return rootTree;
 	}
 
-	private List<LinkedList<AssociationIdentifier>> getAttachmentAssociationPath(CdsModel model, CdsEntity entity, String associationName, LinkedList<AssociationIdentifier> firstList, List<String> processedEntities) {
+	private List<LinkedList<AssociationIdentifier>> getAttachmentAssociationPath(CdsModel model, CdsEntity entity,
+																																																																														String associationName,
+																																																																														LinkedList<AssociationIdentifier> firstList,
+																																																																														List<String> processedEntities) {
 		var internalResultList = new ArrayList<LinkedList<AssociationIdentifier>>();
 		var currentList = new AtomicReference<LinkedList<AssociationIdentifier>>();
 		var localProcessEntities = new ArrayList<String>();
@@ -60,13 +64,12 @@ public class DefaultAssociationCascader implements AssociationCascader {
 			return internalResultList;
 		}
 
-		Map<String, CdsEntity> associations = entity.elements()
-																																										.filter(element -> element.getType().isAssociation() && element.getType()
-																																																																																																				.as(CdsAssociationType.class)
-																																																																																																				.isComposition())
-																																										.collect(Collectors.toMap(CdsElementDefinition::getName, element -> element.getType()
-																																																																																																																.as(CdsAssociationType.class)
-																																																																																																																.getTarget()));
+		Map<String, CdsEntity> associations = entity.elements().filter(
+						element -> element.getType().isAssociation() && element.getType().as(CdsAssociationType.class).isComposition())
+																																										.collect(Collectors.toMap(CdsElementDefinition::getName,
+																																																																				element -> element.getType()
+																																																																																	.as(CdsAssociationType.class)
+																																																																																	.getTarget()));
 
 		if (associations.isEmpty()) {
 			return internalResultList;
@@ -86,7 +89,8 @@ public class DefaultAssociationCascader implements AssociationCascader {
 				}
 				processedEntities.add(associatedElement.getValue().getQualifiedName());
 				newListNeeded = true;
-				var result = getAttachmentAssociationPath(model, associatedElement.getValue(), associatedElement.getKey(), currentList.get(), processedEntities);
+				var result = getAttachmentAssociationPath(model, associatedElement.getValue(), associatedElement.getKey(),
+																																														currentList.get(), processedEntities);
 				internalResultList.addAll(result);
 			}
 		}

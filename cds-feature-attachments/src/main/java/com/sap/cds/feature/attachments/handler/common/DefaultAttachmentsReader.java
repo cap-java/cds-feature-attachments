@@ -43,9 +43,8 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 		var nodePath = cascader.findEntityPath(model, entity);
 		var expandList = buildExpandList(nodePath);
 
-		Select<?> select = !expandList.isEmpty() ? Select.from(statement.ref())
-																																															.columns(expandList) : Select.from(statement.ref())
-																																																																								.columns(StructuredType::_all);
+		Select<?> select = !expandList.isEmpty() ? Select.from(statement.ref()).columns(expandList) : Select.from(
+				statement.ref()).columns(StructuredType::_all);
 		statement.where().ifPresent(select::where);
 
 		var result = persistence.run(select);
@@ -62,10 +61,8 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 	}
 
 	private Expand<?> buildExpandFromTree(NodeTree node) {
-		return node.getChildren().isEmpty() ? CQL.to(node.getIdentifier().associationName())
-																																										.expand() : CQL.to(node.getIdentifier().associationName())
-																																																								.expand(node.getChildren().stream()
-																																																																		.map(this::buildExpandFromTree).toList());
+		return node.getChildren().isEmpty() ? CQL.to(node.getIdentifier().associationName()).expand() : CQL.to(
+				node.getIdentifier().associationName()).expand(node.getChildren().stream().map(this::buildExpandFromTree).toList());
 	}
 
 	private void logResultData(CdsEntity entity, List<CdsData> cdsData) {

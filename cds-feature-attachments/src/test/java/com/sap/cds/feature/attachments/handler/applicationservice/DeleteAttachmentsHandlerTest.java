@@ -72,7 +72,8 @@ class DeleteAttachmentsHandlerTest {
 		data.setDocumentId("test");
 		var inputStream = mock(InputStream.class);
 		data.setContent(inputStream);
-		when(attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn())).thenReturn(List.of(data));
+		when(attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn())).thenReturn(
+				List.of(data));
 
 		cut.processBefore(context);
 
@@ -92,7 +93,8 @@ class DeleteAttachmentsHandlerTest {
 		var items = Items.create();
 		root.setItemTable(List.of(items));
 		items.setAttachments(List.of(attachment1, attachment2));
-		when(attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn())).thenReturn(List.of(root));
+		when(attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn())).thenReturn(
+				List.of(root));
 
 		cut.processBefore(context);
 

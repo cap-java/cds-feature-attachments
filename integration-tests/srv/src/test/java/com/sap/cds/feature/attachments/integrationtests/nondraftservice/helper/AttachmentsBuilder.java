@@ -6,12 +6,12 @@ public class AttachmentsBuilder {
 
 	private Attachments attachment;
 
-	public static AttachmentsBuilder create() {
-		return new AttachmentsBuilder();
-	}
-
 	private AttachmentsBuilder() {
 		attachment = Attachments.create();
+	}
+
+	public static AttachmentsBuilder create() {
+		return new AttachmentsBuilder();
 	}
 
 	public AttachmentsBuilder setMimeType(String mimeType) {

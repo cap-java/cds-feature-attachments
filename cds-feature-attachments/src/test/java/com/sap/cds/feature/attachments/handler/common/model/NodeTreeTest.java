@@ -99,7 +99,8 @@ class NodeTreeTest {
 		assertThat(cut.children).isEmpty();
 	}
 
-	private void verifyTwoNodeHierarchies(NodeTree cut, AssociationIdentifier identifier2, AssociationIdentifier identifier3) {
+	private void verifyTwoNodeHierarchies(NodeTree cut, AssociationIdentifier identifier2,
+																																							AssociationIdentifier identifier3) {
 		assertThat(cut.children).hasSize(1);
 		assertThat(cut.children.get(0).identifier).isEqualTo(identifier2);
 		assertThat(cut.children.get(0).children).hasSize(1);

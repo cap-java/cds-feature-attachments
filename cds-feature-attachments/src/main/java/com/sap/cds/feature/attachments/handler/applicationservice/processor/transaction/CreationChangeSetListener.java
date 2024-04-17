@@ -18,7 +18,8 @@ public class CreationChangeSetListener implements ChangeSetListener {
 	private final CdsRuntime cdsRuntime;
 	private final AttachmentService outboxedAttachmentService;
 
-	public CreationChangeSetListener(String documentId, CdsRuntime cdsRuntime, AttachmentService outboxedAttachmentService) {
+	public CreationChangeSetListener(String documentId, CdsRuntime cdsRuntime,
+																																		AttachmentService outboxedAttachmentService) {
 		this.documentId = documentId;
 		this.cdsRuntime = cdsRuntime;
 		this.outboxedAttachmentService = outboxedAttachmentService;
@@ -27,8 +28,8 @@ public class CreationChangeSetListener implements ChangeSetListener {
 	@Override
 	public void afterClose(boolean completed) {
 		if (!completed) {
-			cdsRuntime.requestContext()
-					.run((Consumer<RequestContext>) requestContext -> outboxedAttachmentService.markAsDeleted(documentId));
+			cdsRuntime.requestContext().run(
+					(Consumer<RequestContext>) requestContext -> outboxedAttachmentService.markAsDeleted(documentId));
 		}
 	}
 

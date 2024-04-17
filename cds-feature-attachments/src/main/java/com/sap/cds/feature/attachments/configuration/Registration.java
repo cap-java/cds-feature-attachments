@@ -69,21 +69,21 @@ public class Registration implements CdsRuntimeConfiguration {
 	public void eventHandlers(CdsRuntimeConfigurer configurer) {
 		logger.info(marker, "Registering event handler for attachment service");
 
-		var persistenceService = configurer.getCdsRuntime().getServiceCatalog()
-																													.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
-		var attachmentService = configurer.getCdsRuntime().getServiceCatalog()
-																												.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
-		var outbox = configurer.getCdsRuntime().getServiceCatalog()
-																	.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
+		var persistenceService = configurer.getCdsRuntime().getServiceCatalog().getService(PersistenceService.class,
+																																																																																					PersistenceService.DEFAULT_NAME);
+		var attachmentService = configurer.getCdsRuntime().getServiceCatalog().getService(AttachmentService.class,
+																																																																																				AttachmentService.DEFAULT_NAME);
+		var outbox = configurer.getCdsRuntime().getServiceCatalog().getService(OutboxService.class,
+																																																																									OutboxService.PERSISTENT_UNORDERED_NAME);
 		var outboxedAttachmentService = outbox.outboxed(attachmentService);
 
-		List<ServiceBinding> bindings = configurer.getCdsRuntime().getEnvironment().getServiceBindings()
-																																				.filter(b -> ServiceBindingUtils.matches(b, MalwareScanConstants.MALWARE_SCAN_SERVICE_LABEL))
-																																				.toList();
+		List<ServiceBinding> bindings = configurer.getCdsRuntime().getEnvironment().getServiceBindings().filter(
+				b -> ServiceBindingUtils.matches(b, MalwareScanConstants.MALWARE_SCAN_SERVICE_LABEL)).toList();
 		var binding = !bindings.isEmpty() ? bindings.get(0) : null;
 		var connectionPoll = new ConnectionPool(Duration.ofSeconds(60), 2, 20);
 		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, configurer.getCdsRuntime(), connectionPoll);
-		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService, new DefaultMalwareScanClient(clientProviderFactory));
+		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService,
+																																																											new DefaultMalwareScanClient(clientProviderFactory));
 		var malwareScanEndTransactionListener = createEndTransactionMalwareScanListener(malwareScanner);
 		configurer.eventHandler(new DefaultAttachmentsServiceHandler(malwareScanEndTransactionListener));
 
@@ -93,16 +93,21 @@ public class Registration implements CdsRuntimeConfiguration {
 
 		var fieldUpdateProvider = createFieldUpdateProvider(persistenceService);
 		configurer.eventHandler(buildCreateHandler(eventFactory, fieldUpdateProvider));
-		configurer.eventHandler(buildUpdateHandler(eventFactory, attachmentsReader, outboxedAttachmentService, fieldUpdateProvider));
+		configurer.eventHandler(
+				buildUpdateHandler(eventFactory, attachmentsReader, outboxedAttachmentService, fieldUpdateProvider));
 		configurer.eventHandler(buildDeleteHandler(attachmentsReader, deleteContentEvent));
-		configurer.eventHandler(buildReadHandler(attachmentService, new EndTransactionMalwareScanRunner(null, null, malwareScanner)));
+		configurer.eventHandler(
+				buildReadHandler(attachmentService, new EndTransactionMalwareScanRunner(null, null, malwareScanner)));
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
-		configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent, ActiveEntityModifier::new));
+		configurer.eventHandler(
+				new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent, ActiveEntityModifier::new));
 		configurer.eventHandler(new RestoreAttachmentsHandler(attachmentService));
 	}
 
-	private EndTransactionMalwareScanProvider createEndTransactionMalwareScanListener(DefaultAttachmentMalwareScanner malwareScanner) {
-		return (attachmentEntity, documentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, documentId, malwareScanner);
+	private EndTransactionMalwareScanProvider createEndTransactionMalwareScanListener(
+			DefaultAttachmentMalwareScanner malwareScanner) {
+		return (attachmentEntity, documentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, documentId,
+																																																																															malwareScanner);
 	}
 
 	private AttachmentService buildAttachmentService() {
@@ -114,33 +119,42 @@ public class Registration implements CdsRuntimeConfiguration {
 		return (entity, keys, data) -> new ReadonlyFieldUpdater(entity, keys, data, persistenceService);
 	}
 
-	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService, ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
+	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
+																																																																											ModifyAttachmentEvent deleteContentEvent,
+																																																																											AttachmentService outboxedAttachmentService) {
 		var creationChangeSetListener = createCreationFailedListener(outboxedAttachmentService);
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
 		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();
-		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent, doNothingAttachmentEvent);
+		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent,
+																																																	doNothingAttachmentEvent);
 	}
 
 	private ListenerProvider createCreationFailedListener(AttachmentService outboxedAttachmentService) {
 		return (documentId, cdsRuntime) -> new CreationChangeSetListener(documentId, cdsRuntime, outboxedAttachmentService);
 	}
 
-	protected EventHandler buildCreateHandler(ModifyAttachmentEventFactory factory, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+	protected EventHandler buildCreateHandler(ModifyAttachmentEventFactory factory,
+																																											ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		return new CreateAttachmentsHandler(factory, fieldUpdateProvider);
 	}
 
-	protected EventHandler buildDeleteHandler(AttachmentsReader attachmentsReader, ModifyAttachmentEvent deleteContentEvent) {
+	protected EventHandler buildDeleteHandler(AttachmentsReader attachmentsReader,
+																																											ModifyAttachmentEvent deleteContentEvent) {
 		return new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent);
 	}
 
-	protected EventHandler buildReadHandler(AttachmentService attachmentService, AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
+	protected EventHandler buildReadHandler(AttachmentService attachmentService,
+																																									AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
 		var statusValidator = new DefaultAttachmentStatusValidator();
-		return new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new, statusValidator, asyncMalwareScanExecutor);
+		return new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new, statusValidator,
+																																				asyncMalwareScanExecutor);
 	}
 
-	protected EventHandler buildUpdateHandler(ModifyAttachmentEventFactory factory, AttachmentsReader attachmentsReader, AttachmentService outboxedAttachmentService, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+	protected EventHandler buildUpdateHandler(ModifyAttachmentEventFactory factory, AttachmentsReader attachmentsReader,
+																																											AttachmentService outboxedAttachmentService,
+																																											ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		return new UpdateAttachmentsHandler(factory, attachmentsReader, outboxedAttachmentService, fieldUpdateProvider);
 	}
 

@@ -22,7 +22,8 @@ public class LazyProxyInputStream extends InputStream {
 	private InputStream delegate;
 
 
-	public LazyProxyInputStream(InputStreamSupplier inputStreamSupplier, AttachmentStatusValidator attachmentStatusValidator, String status) {
+	public LazyProxyInputStream(InputStreamSupplier inputStreamSupplier,
+																													AttachmentStatusValidator attachmentStatusValidator, String status) {
 		this.inputStreamSupplier = inputStreamSupplier;
 		this.attachmentStatusValidator = attachmentStatusValidator;
 		this.status = status;

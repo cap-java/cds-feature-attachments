@@ -149,7 +149,8 @@ class CreateAttachmentsHandlerTest {
 			verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
 			var keyCaptor = ArgumentCaptor.forClass(Map.class);
 			var dataCaptor = ArgumentCaptor.forClass(Map.class);
-			verify(fieldUpdateProvider).getReadonlyFieldUpdater(entityCaptor.capture(), keyCaptor.capture(), dataCaptor.capture());
+			verify(fieldUpdateProvider).getReadonlyFieldUpdater(entityCaptor.capture(), keyCaptor.capture(),
+																																																							dataCaptor.capture());
 			assertThat(entityCaptor.getValue().getQualifiedName()).isEqualTo(Attachment_.CDS_NAME);
 			assertThat(keyCaptor.getValue().get("ID")).isNotNull();
 			assertThat(dataCaptor.getValue()).containsEntry(Attachment.DOCUMENT_ID, null);

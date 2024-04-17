@@ -30,19 +30,22 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 	@Override
 	public Object processEvent(Path path, Object value, CdsData existingData, EventContext eventContext) {
 		var qualifiedName = eventContext.getTarget().getQualifiedName();
-		logger.debug("Processing the event for calling attachment service with mark as delete event for entity {}", qualifiedName);
+		logger.debug("Processing the event for calling attachment service with mark as delete event for entity {}",
+															qualifiedName);
 
-		if (ApplicationHandlerHelper.doesDocumentIdExistsBefore(existingData) && !DraftService.EVENT_DRAFT_PATCH.equals(eventContext.getEvent())) {
+		if (ApplicationHandlerHelper.doesDocumentIdExistsBefore(existingData) && !DraftService.EVENT_DRAFT_PATCH.equals(
+				eventContext.getEvent())) {
 			logger.debug("Calling attachment service with mark as delete event for entity {}", qualifiedName);
 			outboxedAttachmentService.markAsDeleted((String) existingData.get(Attachments.DOCUMENT_ID));
 		} else {
-			logger.debug("Do NOT call attachment service with mark as delete event for entity {} as no document id found in existing data and event is DRAFT_PATCH event", qualifiedName);
+			logger.debug(
+					"Do NOT call attachment service with mark as delete event for entity {} as no document id found in existing data and event is DRAFT_PATCH event",
+					qualifiedName);
 		}
 		if (Objects.nonNull(path)) {
 			var newDocumentId = path.target().values().get(Attachments.DOCUMENT_ID);
-			if (Objects.nonNull(newDocumentId) && newDocumentId.equals(existingData.get(Attachments.DOCUMENT_ID)) || !path.target()
-																																																																																																															.values()
-																																																																																																															.containsKey(Attachments.DOCUMENT_ID)) {
+			if (Objects.nonNull(newDocumentId) && newDocumentId.equals(
+					existingData.get(Attachments.DOCUMENT_ID)) || !path.target().values().containsKey(Attachments.DOCUMENT_ID)) {
 				path.target().values().put(Attachments.DOCUMENT_ID, null);
 				path.target().values().put(Attachments.STATUS_CODE, null);
 				path.target().values().put(Attachments.SCANNED_AT, null);

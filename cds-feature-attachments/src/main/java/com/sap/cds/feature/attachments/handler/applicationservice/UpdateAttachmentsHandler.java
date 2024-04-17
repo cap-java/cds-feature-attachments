@@ -48,7 +48,9 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	private final AttachmentService outboxedAttachmentService;
 	private final ReadonlyFieldUpdaterProvider fieldUpdateProvider;
 
-	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader, AttachmentService outboxedAttachmentService, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader,
+																																	AttachmentService outboxedAttachmentService,
+																																	ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		this.eventFactory = eventFactory;
 		this.attachmentsReader = attachmentsReader;
 		this.outboxedAttachmentService = outboxedAttachmentService;
@@ -76,7 +78,8 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		return context.getService() instanceof DraftService;
 	}
 
-	private void doUpdate(CdsUpdateEventContext context, List<CdsData> data, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+	private void doUpdate(CdsUpdateEventContext context, List<CdsData> data,
+																							ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		var target = context.getTarget();
 		var noContentInData = !ApplicationHandlerHelper.isContentFieldInData(target, data);
 		var associationsAreUnchanged = associationsAreUnchanged(target, data);
@@ -90,7 +93,8 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		var attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
 		var condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
-		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context, fieldUpdateProvider);
+		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context,
+																																																													fieldUpdateProvider);
 
 		if (!associationsAreUnchanged) {
 			deleteRemovedAttachments(attachments, data, target);
@@ -98,8 +102,8 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	}
 
 	private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
-		return entity.compositions()
-											.noneMatch(association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
+		return entity.compositions().noneMatch(
+				association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
 	}
 
 	private CqnFilterableStatement getSelect(CqnUpdate update, CdsEntity target) {
@@ -111,8 +115,8 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Validator validator = (path, element, value) -> {
 			var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
-			var entryExists = condensedUpdatedData.stream()
-																							.anyMatch(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
+			var entryExists = condensedUpdatedData.stream().anyMatch(
+					updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
 			if (!entryExists) {
 				outboxedAttachmentService.markAsDeleted((String) path.target().values().get(Attachments.DOCUMENT_ID));
 			}

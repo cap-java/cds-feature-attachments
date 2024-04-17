@@ -19,13 +19,20 @@ public final class ModifyApplicationHandlerHelper {
 	private ModifyApplicationHandlerHelper() {
 	}
 
-	public static void handleAttachmentForEntities(CdsEntity entity, List<CdsData> data, List<CdsData> existingDataList, ModifyAttachmentEventFactory eventFactory, EventContext eventContext, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+	public static void handleAttachmentForEntities(CdsEntity entity, List<CdsData> data, List<CdsData> existingDataList,
+																																																ModifyAttachmentEventFactory eventFactory, EventContext eventContext,
+																																																ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
-		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingDataList, eventFactory, eventContext, path, value, fieldUpdateProvider);
+		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingDataList, eventFactory,
+																																																																												eventContext, path, value,
+																																																																												fieldUpdateProvider);
 		ApplicationHandlerHelper.callProcessor(entity, data, filter, converter);
 	}
 
-	public static Object handleAttachmentForEntity(List<CdsData> existingDataList, ModifyAttachmentEventFactory eventFactory, EventContext eventContext, Path path, Object value, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+	public static Object handleAttachmentForEntity(List<CdsData> existingDataList,
+																																																ModifyAttachmentEventFactory eventFactory, EventContext eventContext,
+																																																Path path, Object value,
+																																																ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 		var existingData = getExistingData(keys, existingDataList);
 		var documentIdExists = path.target().values().containsKey(Attachments.DOCUMENT_ID);
@@ -42,7 +49,8 @@ public final class ModifyApplicationHandlerHelper {
 											.findAny().orElse(CdsData.create());
 	}
 
-	private static void storeReadonlyFields(Path path, Map<String, Object> keys, EventContext context, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+	private static void storeReadonlyFields(Path path, Map<String, Object> keys, EventContext context,
+																																									ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		if (Objects.nonNull(fieldUpdateProvider)) {
 			var documentId = path.target().values().get(Attachments.DOCUMENT_ID);
 			var statusCode = path.target().values().get(Attachments.STATUS_CODE);

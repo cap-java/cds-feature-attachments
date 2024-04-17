@@ -50,13 +50,14 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
-			var draftElement = path.target().entity().getQualifiedName()
-																								.endsWith(DraftConstants.DRAFT_TABLE_POSTFIX) ? path.target().entity() : path.target().entity()
-																																																																																																			.getTargetOf(DraftConstants.SIBLING_ENTITY);
+			var draftElement = path.target().entity().getQualifiedName().endsWith(
+					DraftConstants.DRAFT_TABLE_POSTFIX) ? path.target().entity() : path.target().entity().getTargetOf(
+					DraftConstants.SIBLING_ENTITY);
 			var select = Select.from(draftElement.getQualifiedName()).matching(path.target().keys());
 			var result = persistence.run(select);
 
-			return ModifyApplicationHandlerHelper.handleAttachmentForEntity(result.listOf(CdsData.class), eventFactory, context, path, value, null);
+			return ModifyApplicationHandlerHelper.handleAttachmentForEntity(result.listOf(CdsData.class), eventFactory, context,
+																																																																			path, value, null);
 		};
 
 		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, filter, converter);

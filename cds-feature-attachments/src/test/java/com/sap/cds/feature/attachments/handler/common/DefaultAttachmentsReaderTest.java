@@ -76,7 +76,8 @@ class DefaultAttachmentsReaderTest {
 		var resultData = cut.readAttachments(model, entity, deleteFromEntity);
 
 		verify(persistenceService).run(selectArgumentCaptor.capture());
-		assertThat(selectArgumentCaptor.getValue()).hasToString(getExpectedSelectStatementWithWhereAndFilter((String) keys.get("ID")));
+		assertThat(selectArgumentCaptor.getValue()).hasToString(
+				getExpectedSelectStatementWithWhereAndFilter((String) keys.get("ID")));
 		assertThat(resultData).isEqualTo(data);
 	}
 
@@ -93,7 +94,8 @@ class DefaultAttachmentsReaderTest {
 		var resultData = cut.readAttachments(model, entity, deleteFromEntityWithoutWhere);
 
 		verify(persistenceService).run(selectArgumentCaptor.capture());
-		assertThat(selectArgumentCaptor.getValue()).hasToString(getExpectedSelectStatementWithFilter((String) keys.get("ID")));
+		assertThat(selectArgumentCaptor.getValue()).hasToString(
+				getExpectedSelectStatementWithFilter((String) keys.get("ID")));
 		assertThat(resultData).isEqualTo(data);
 	}
 
@@ -137,7 +139,8 @@ class DefaultAttachmentsReaderTest {
 		var resultData = cut.readAttachments(model, entity, deleteFromEntity);
 
 		verify(persistenceService).run(selectArgumentCaptor.capture());
-		assertThat(selectArgumentCaptor.getValue()).hasToString(getExpectedSelectStatementForItemsWithWhereAndFilter((String) keys.get("ID")));
+		assertThat(selectArgumentCaptor.getValue()).hasToString(
+				getExpectedSelectStatementForItemsWithWhereAndFilter((String) keys.get("ID")));
 		assertThat(resultData).isEqualTo(data);
 	}
 
@@ -153,7 +156,8 @@ class DefaultAttachmentsReaderTest {
 		var resultData = cut.readAttachments(model, entity, deleteFromEntity);
 
 		verify(persistenceService).run(selectArgumentCaptor.capture());
-		assertThat(selectArgumentCaptor.getValue()).hasToString(getExpectedSelectStatementForAttachmentsWithWhereAndFilter((String) keys.get("ID")));
+		assertThat(selectArgumentCaptor.getValue()).hasToString(
+				getExpectedSelectStatementForAttachmentsWithWhereAndFilter((String) keys.get("ID")));
 		assertThat(resultData).isEqualTo(data);
 	}
 
@@ -176,8 +180,8 @@ class DefaultAttachmentsReaderTest {
 		observer.stop();
 		var traceEvents = observer.getLogEvents().stream().filter(event -> event.getLevel().equals(Level.TRACE)).toList();
 		assertThat(traceEvents).hasSize(1);
-		assertThat(traceEvents.get(0).getFormattedMessage()).contains("IsActiveEntity=true")
-				.contains("ID=" + dataEntry.get("ID"));
+		assertThat(traceEvents.get(0).getFormattedMessage()).contains("IsActiveEntity=true").contains(
+				"ID=" + dataEntry.get("ID"));
 	}
 
 	private HashMap<String, Object> buildDefaultKeyMap() {

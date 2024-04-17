@@ -35,6 +35,12 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		this.listenerProvider = listenerProvider;
 	}
 
+	private static Optional<String> getFieldValue(String fieldName, Map<String, Object> values, CdsData existingData) {
+		var annotationValue = values.get(fieldName);
+		var value = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(fieldName);
+		return Optional.ofNullable((String) value);
+	}
+
 	@Override
 	public Object processEvent(Path path, Object value, CdsData existingData, EventContext eventContext) {
 		logger.debug("Calling attachment service with create event for entity {}", path.target().entity().getQualifiedName());
@@ -43,8 +49,8 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		var mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, existingData);
 		var fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, existingData);
 
-		var createEventInput = new CreateAttachmentInput(keys, path.target()
-																																																											.entity(), fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), (InputStream) value);
+		var createEventInput = new CreateAttachmentInput(keys, path.target().entity(), fileNameOptional.orElse(null),
+																																																			mimeTypeOptional.orElse(null), (InputStream) value);
 		var result = attachmentService.createAttachment(createEventInput);
 		var createListener = listenerProvider.provideListener(result.documentId(), eventContext.getCdsRuntime());
 		var context = eventContext.getChangeSetContext();
@@ -52,12 +58,6 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		path.target().values().put(Attachments.DOCUMENT_ID, result.documentId());
 		path.target().values().put(Attachments.STATUS_CODE, result.attachmentStatus());
 		return result.isInternalStored() ? value : null;
-	}
-
-	private static Optional<String> getFieldValue(String fieldName, Map<String, Object> values, CdsData existingData) {
-		var annotationValue = values.get(fieldName);
-		var value = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(fieldName);
-		return Optional.ofNullable((String) value);
 	}
 
 }

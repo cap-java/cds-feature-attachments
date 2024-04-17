@@ -42,7 +42,8 @@ public class CreateAttachmentsHandler implements EventHandler {
 	private final CdsDataProcessor processor = CdsDataProcessor.create();
 	private final ReadonlyFieldUpdaterProvider fieldUpdateProvider;
 
-	public CreateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+	public CreateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory,
+																																	ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		this.eventFactory = eventFactory;
 		this.fieldUpdateProvider = fieldUpdateProvider;
 	}
@@ -68,21 +69,21 @@ public class CreateAttachmentsHandler implements EventHandler {
 		return context.getService() instanceof DraftService;
 	}
 
-	private void doCreate(CdsCreateEventContext context, List<CdsData> data, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+	private void doCreate(CdsCreateEventContext context, List<CdsData> data,
+																							ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		if (!ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
 
 		logger.debug(marker, "Processing before create event for entity {}", context.getTarget().getName());
 		setKeysInData(context.getTarget(), data);
-		ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(), eventFactory, context, fieldUpdateProvider);
+		ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(), eventFactory,
+																																																													context, fieldUpdateProvider);
 	}
 
 	private void setKeysInData(CdsEntity entity, List<CdsData> data) {
-		processor.addGenerator(
-						(path, element, type) -> element.isKey() && element.getType().isSimpleType(CdsBaseType.UUID),
-						(path, element, isNull) -> UUID.randomUUID().toString())
-				.process(data, entity);
+		processor.addGenerator((path, element, type) -> element.isKey() && element.getType().isSimpleType(CdsBaseType.UUID),
+																									(path, element, isNull) -> UUID.randomUUID().toString()).process(data, entity);
 	}
 
 }
