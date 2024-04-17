@@ -14,10 +14,13 @@
             <Class name="~.*\.*Test"/>
             <!-- ~TestBase classes are abstract classes to share functionality between tests -->
             <Class name="~.*\.*TestBase"/>
+            <!-- Test Helper class -->
+            <Class name="com.sap.cds.feature.attachments.integrationtests.common.MalwareScanResultProvider"/>
         </Or>
         <Or>
             <!-- Allow null objects to import for testing -->
             <Bug pattern="NP_NULL_PARAM_DEREF_ALL_TARGETS_DANGEROUS"/>
+            <Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/>
         </Or>
     </Match>
 </FindBugsFilter>
