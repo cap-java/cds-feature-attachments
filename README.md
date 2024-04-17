@@ -13,3 +13,7 @@ Attachment feature for CDS Services Java
 ## Changelog
 
 [Changelog](./doc/CHANGELOG.md)
+
+## Contributing
+
+[Contributing](./doc/CONTRIBUTING.md)
