@@ -14,6 +14,8 @@ Attachment feature for CDS Services Java
 
 - [Contributing](./doc/CONTRIBUTING.md)
 
+- [License](./LICENSE)
+
 ## Usage
 
 The usage of CAP Java plugins is described in
