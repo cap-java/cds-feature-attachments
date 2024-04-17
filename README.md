@@ -88,8 +88,7 @@ The aspect `Attachments` shall be used directly for the composition.
 It is important to use the correct from clause for the `using` statement.
 
 Only if `com.sap.cds/cds-feature-attachments` is used and not concrete files of the feature are specified in the
-from-statement
-also the annotations and other definitions are found and used.
+from-statement also the annotations and other definitions are found and used.
 
 ### Outbox
 
@@ -138,8 +137,8 @@ In case users try to access the content of the attachment the following errors m
 | Attachment is not scanned, try again in a few minutes | `not_scanned`           |
 
 By adding the error message i18n code to the `i18n.properties` file the error message can be overwritten translated.
-See the capire documentation for [i18n](https://cap.cloud.sap/docs/guides/i18n#where-to-place-text-bundles) for more
-information.
+More information can be found in the capire documentation
+for [i18n](https://cap.cloud.sap/docs/guides/i18n#where-to-place-text-bundles).
 
 ### Status Texts
 
