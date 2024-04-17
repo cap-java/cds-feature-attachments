@@ -17,3 +17,6 @@ Attachment feature for CDS Services Java
 ## Contributing
 
 [Contributing](./doc/CONTRIBUTING.md)
+
+## Usage
+
