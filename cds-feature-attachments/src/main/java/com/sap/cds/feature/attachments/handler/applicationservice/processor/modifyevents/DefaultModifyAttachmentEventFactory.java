@@ -26,8 +26,7 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 	private final ModifyAttachmentEvent doNothingEvent;
 
 	public DefaultModifyAttachmentEventFactory(ModifyAttachmentEvent createEvent, ModifyAttachmentEvent updateEvent,
-																																												ModifyAttachmentEvent deleteContentEvent,
-																																												ModifyAttachmentEvent doNothingEvent) {
+			ModifyAttachmentEvent deleteContentEvent, ModifyAttachmentEvent doNothingEvent) {
 		this.createEvent = createEvent;
 		this.updateEvent = updateEvent;
 		this.deleteContentEvent = deleteContentEvent;
@@ -36,16 +35,15 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 
 	@Override
 	public ModifyAttachmentEvent getEvent(Object content, String documentId, boolean documentIdExist,
-																																							CdsData existingData) {
+			CdsData existingData) {
 		var existingDocumentId = existingData.get(Attachments.DOCUMENT_ID);
 		var event = documentIdExist ? handleExistingDocumentId(content, documentId,
-																																																									existingDocumentId) : handleNonExistingDocumentId(content,
-																																																																																																											existingDocumentId);
+				existingDocumentId) : handleNonExistingDocumentId(content, existingDocumentId);
 		return event.orElse(doNothingEvent);
 	}
 
 	private Optional<ModifyAttachmentEvent> handleExistingDocumentId(Object content, String documentId,
-																																																																		Object existingDocumentId) {
+			Object existingDocumentId) {
 		ModifyAttachmentEvent event = null;
 		if (Objects.isNull(documentId) && Objects.isNull(existingDocumentId) && Objects.nonNull(content)) {
 			event = createEvent;

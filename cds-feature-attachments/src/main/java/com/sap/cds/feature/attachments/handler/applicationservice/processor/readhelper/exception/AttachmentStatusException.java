@@ -12,12 +12,12 @@ public class AttachmentStatusException extends ErrorStatusException {
 
 	public static AttachmentStatusException getNotCleanException() {
 		return new AttachmentStatusException(AttachmentErrorStatuses.NOT_CLEAN,
-																																							AttachmentErrorStatuses.NOT_CLEAN.getDescription());
+				AttachmentErrorStatuses.NOT_CLEAN.getDescription());
 	}
 
 	public static AttachmentStatusException getNotScannedException() {
 		return new AttachmentStatusException(AttachmentErrorStatuses.NOT_SCANNED,
-																																							AttachmentErrorStatuses.NOT_SCANNED.getDescription());
+				AttachmentErrorStatuses.NOT_SCANNED.getDescription());
 	}
 
 }

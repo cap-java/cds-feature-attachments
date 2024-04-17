@@ -41,7 +41,7 @@ public class MockHttpRequestHelper {
 	}
 
 	public <T extends CdsData> T executeGetWithSingleODataResponseAndAssertStatus(String url, Class<T> resultType,
-																																																																															HttpStatus status) throws Exception {
+			HttpStatus status) throws Exception {
 		var resultBody = executeGetWithSingleODataResponseAndAssertStatus(url, status);
 		return Struct.access(mapper.mapResponseToSingleResult(resultBody)).as(resultType);
 	}
@@ -78,7 +78,7 @@ public class MockHttpRequestHelper {
 	}
 
 	public CdsData executePostWithODataResponseAndAssertStatus(String url, String body,
-																																																												HttpStatus status) throws Exception {
+			HttpStatus status) throws Exception {
 		MvcResult result = executePost(url, body);
 		String resultBody = result.getResponse().getContentAsString();
 		assertThat(result.getResponse().getStatus()).as("Unexpected HTTP status, with response body " + resultBody).isEqualTo(

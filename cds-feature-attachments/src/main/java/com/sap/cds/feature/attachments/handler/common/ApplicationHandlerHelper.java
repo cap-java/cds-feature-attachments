@@ -45,7 +45,7 @@ public final class ApplicationHandlerHelper {
 
 	public static Filter buildFilterForMediaTypeEntity() {
 		return (path, element, type) -> isMediaEntity(path.target().type()) && hasElementAnnotation(element,
-																																																																																														ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
+				ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
 	}
 
 	public static boolean isMediaEntity(CdsStructuredType baseEntity) {

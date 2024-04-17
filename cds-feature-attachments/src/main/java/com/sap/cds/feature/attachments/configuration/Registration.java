@@ -70,11 +70,11 @@ public class Registration implements CdsRuntimeConfiguration {
 		logger.info(marker, "Registering event handler for attachment service");
 
 		var persistenceService = configurer.getCdsRuntime().getServiceCatalog().getService(PersistenceService.class,
-																																																																																					PersistenceService.DEFAULT_NAME);
+				PersistenceService.DEFAULT_NAME);
 		var attachmentService = configurer.getCdsRuntime().getServiceCatalog().getService(AttachmentService.class,
-																																																																																				AttachmentService.DEFAULT_NAME);
+				AttachmentService.DEFAULT_NAME);
 		var outbox = configurer.getCdsRuntime().getServiceCatalog().getService(OutboxService.class,
-																																																																									OutboxService.PERSISTENT_UNORDERED_NAME);
+				OutboxService.PERSISTENT_UNORDERED_NAME);
 		var outboxedAttachmentService = outbox.outboxed(attachmentService);
 
 		List<ServiceBinding> bindings = configurer.getCdsRuntime().getEnvironment().getServiceBindings().filter(
@@ -83,7 +83,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		var connectionPoll = new ConnectionPool(Duration.ofSeconds(60), 2, 20);
 		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, configurer.getCdsRuntime(), connectionPoll);
 		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService,
-																																																											new DefaultMalwareScanClient(clientProviderFactory));
+				new DefaultMalwareScanClient(clientProviderFactory));
 		var malwareScanEndTransactionListener = createEndTransactionMalwareScanListener(malwareScanner);
 		configurer.eventHandler(new DefaultAttachmentsServiceHandler(malwareScanEndTransactionListener));
 
@@ -107,7 +107,7 @@ public class Registration implements CdsRuntimeConfiguration {
 	private EndTransactionMalwareScanProvider createEndTransactionMalwareScanListener(
 			DefaultAttachmentMalwareScanner malwareScanner) {
 		return (attachmentEntity, documentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, documentId,
-																																																																															malwareScanner);
+				malwareScanner);
 	}
 
 	private AttachmentService buildAttachmentService() {
@@ -120,15 +120,14 @@ public class Registration implements CdsRuntimeConfiguration {
 	}
 
 	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
-																																																																											ModifyAttachmentEvent deleteContentEvent,
-																																																																											AttachmentService outboxedAttachmentService) {
+			ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
 		var creationChangeSetListener = createCreationFailedListener(outboxedAttachmentService);
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
 		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();
 		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent,
-																																																	doNothingAttachmentEvent);
+				doNothingAttachmentEvent);
 	}
 
 	private ListenerProvider createCreationFailedListener(AttachmentService outboxedAttachmentService) {
@@ -136,25 +135,24 @@ public class Registration implements CdsRuntimeConfiguration {
 	}
 
 	protected EventHandler buildCreateHandler(ModifyAttachmentEventFactory factory,
-																																											ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+			ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		return new CreateAttachmentsHandler(factory, fieldUpdateProvider);
 	}
 
 	protected EventHandler buildDeleteHandler(AttachmentsReader attachmentsReader,
-																																											ModifyAttachmentEvent deleteContentEvent) {
+			ModifyAttachmentEvent deleteContentEvent) {
 		return new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent);
 	}
 
 	protected EventHandler buildReadHandler(AttachmentService attachmentService,
-																																									AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
+			AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
 		var statusValidator = new DefaultAttachmentStatusValidator();
 		return new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new, statusValidator,
-																																				asyncMalwareScanExecutor);
+				asyncMalwareScanExecutor);
 	}
 
 	protected EventHandler buildUpdateHandler(ModifyAttachmentEventFactory factory, AttachmentsReader attachmentsReader,
-																																											AttachmentService outboxedAttachmentService,
-																																											ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+			AttachmentService outboxedAttachmentService, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		return new UpdateAttachmentsHandler(factory, attachmentsReader, outboxedAttachmentService, fieldUpdateProvider);
 	}
 

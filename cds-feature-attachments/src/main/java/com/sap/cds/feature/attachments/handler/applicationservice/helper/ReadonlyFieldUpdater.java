@@ -15,7 +15,7 @@ public class ReadonlyFieldUpdater implements ChangeSetListener {
 	private final PersistenceService persistence;
 
 	public ReadonlyFieldUpdater(CdsEntity entity, Map<String, Object> keys, Map<String, Object> readonlyFields,
-																													PersistenceService persistence) {
+			PersistenceService persistence) {
 		this.entity = entity;
 		this.keys = keys;
 		this.readonlyFields = readonlyFields;

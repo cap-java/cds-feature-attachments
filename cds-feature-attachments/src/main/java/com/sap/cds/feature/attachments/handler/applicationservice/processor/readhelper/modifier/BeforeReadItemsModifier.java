@@ -66,7 +66,7 @@ public class BeforeReadItemsModifier implements Modifier {
 	}
 
 	private void enhanceWithNewFieldForMediaAssociation(String association, List<CqnSelectListItem> list,
-																																																					List<CqnSelectListItem> listToEnhance) {
+			List<CqnSelectListItem> listToEnhance) {
 		if (isMediaAssociationAndNeedNewDocumentIdField(association, list)) {
 			logger.debug("Adding document id and status code to select items");
 			listToEnhance.add(CQL.get(Attachments.DOCUMENT_ID));

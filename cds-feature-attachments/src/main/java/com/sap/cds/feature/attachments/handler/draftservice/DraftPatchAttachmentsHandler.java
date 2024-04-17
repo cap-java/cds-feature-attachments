@@ -57,7 +57,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 			var result = persistence.run(select);
 
 			return ModifyApplicationHandlerHelper.handleAttachmentForEntity(result.listOf(CdsData.class), eventFactory, context,
-																																																																			path, value, null);
+					path, value, null);
 		};
 
 		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, filter, converter);

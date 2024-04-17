@@ -107,7 +107,7 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 
 	@Override
 	protected void verifyTwoUpdateEvents(String newAttachmentContent, String attachmentDocumentId,
-																																						String newAttachmentEntityContent, String attachmentEntityDocumentId) {
+			String newAttachmentEntityContent, String attachmentEntityDocumentId) {
 		awaitNumberOfExpectedEvents(4);
 		var createEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
 		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
@@ -145,7 +145,7 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 			var createContext = (AttachmentCreateEventContext) event.context();
 			try {
 				return Arrays.equals(createContext.getData().getContent().readAllBytes(),
-																									newContent.getBytes(StandardCharsets.UTF_8));
+						newContent.getBytes(StandardCharsets.UTF_8));
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -154,12 +154,12 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 	}
 
 	private boolean isAttachmentContentFoundInCreateEvent(List<EventContextHolder> createEvents,
-																																																							String newAttachmentContent) {
+			String newAttachmentContent) {
 		return createEvents.stream().anyMatch(event -> {
 			var createContext = (AttachmentCreateEventContext) event.context();
 			try {
 				return Arrays.equals(createContext.getData().getContent().readAllBytes(),
-																									newAttachmentContent.getBytes(StandardCharsets.UTF_8));
+						newAttachmentContent.getBytes(StandardCharsets.UTF_8));
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}

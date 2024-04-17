@@ -8,6 +8,6 @@ import com.sap.cds.services.changeset.ChangeSetListener;
 public interface ReadonlyFieldUpdaterProvider {
 
 	ChangeSetListener getReadonlyFieldUpdater(CdsEntity entity, Map<String, Object> keys,
-																																											Map<String, Object> readonlyFields);
+			Map<String, Object> readonlyFields);
 
 }

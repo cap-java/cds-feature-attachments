@@ -22,7 +22,7 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 	private final ModifyAttachmentEvent deleteAttachmentEvent;
 
 	public UpdateAttachmentEvent(ModifyAttachmentEvent createAttachmentEvent,
-																														ModifyAttachmentEvent deleteAttachmentEvent) {
+			ModifyAttachmentEvent deleteAttachmentEvent) {
 		this.createAttachmentEvent = createAttachmentEvent;
 		this.deleteAttachmentEvent = deleteAttachmentEvent;
 	}
@@ -30,7 +30,7 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 	@Override
 	public Object processEvent(Path path, Object value, CdsData existingData, EventContext eventContext) {
 		logger.debug("Processing UPDATE event by calling attachment service with create and delete event for entity {}",
-															path.target().entity().getQualifiedName());
+				path.target().entity().getQualifiedName());
 
 		deleteAttachmentEvent.processEvent(path, value, existingData, eventContext);
 		return createAttachmentEvent.processEvent(path, value, existingData, eventContext);

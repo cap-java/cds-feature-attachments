@@ -96,8 +96,8 @@ class DefaultAssociationCascaderTest {
 		assertThat(databaseRootItemNode.getIdentifier().associationName()).isEqualTo("itemTable");
 		assertThat(databaseRootItemNode.getIdentifier().fullEntityName()).isEqualTo("unit.test.Items");
 		verifyItemAttachments(databaseRootItemNode,
-																								com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_.CDS_NAME,
-																								"unit.test.Items.itemAttachments");
+				com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_.CDS_NAME,
+				"unit.test.Items.itemAttachments");
 	}
 
 	@Test

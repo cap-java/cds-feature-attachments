@@ -21,10 +21,8 @@ class BeforeReadItemsModifierTest {
 
 	@Test
 	void expandSelectExtendsDocumentId() {
-		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.itemTable().expand(Items_::ID,
-																																																																																																											item -> item.attachments()
-																																																																																																																					.expand(
-																																																																																																																							Attachment_::content)));
+		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID,
+				root -> root.itemTable().expand(Items_::ID, item -> item.attachments().expand(Attachment_::content)));
 
 		cut = new BeforeReadItemsModifier(List.of("attachments"));
 		runTestForExpand(cut, select, 1);
@@ -32,10 +30,8 @@ class BeforeReadItemsModifierTest {
 
 	@Test
 	void expandSelectNotExtendIfAssociationNotInNameMap() {
-		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.itemTable().expand(Items_::ID,
-																																																																																																											item -> item.attachments()
-																																																																																																																					.expand(
-																																																																																																																							Attachment_::content)));
+		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID,
+				root -> root.itemTable().expand(Items_::ID, item -> item.attachments().expand(Attachment_::content)));
 
 		cut = new BeforeReadItemsModifier(List.of("test"));
 		runTestForExpand(cut, select, 0);
@@ -44,10 +40,7 @@ class BeforeReadItemsModifierTest {
 	@Test
 	void expandSelectDoNotExtendDocumentIdIfAlreadyExist() {
 		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.itemTable().expand(Items_::ID,
-																																																																																																											item -> item.attachments()
-																																																																																																																					.expand(
-																																																																																																																							Attachment_::content,
-																																																																																																																							Attachment_::documentId)));
+				item -> item.attachments().expand(Attachment_::content, Attachment_::documentId)));
 
 		cut = new BeforeReadItemsModifier(List.of("attachments"));
 		runTestForExpand(cut, select, 1);
@@ -55,10 +48,8 @@ class BeforeReadItemsModifierTest {
 
 	@Test
 	void expandSelectDoNotExtendDocumentIdIfNoContentFieldIncluded() {
-		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.itemTable().expand(Items_::ID,
-																																																																																																											item -> item.attachments()
-																																																																																																																					.expand(
-																																																																																																																							Attachment_::ID)));
+		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID,
+				root -> root.itemTable().expand(Items_::ID, item -> item.attachments().expand(Attachment_::ID)));
 
 		cut = new BeforeReadItemsModifier(List.of("attachments"));
 		runTestForExpand(cut, select, 0);
@@ -66,9 +57,8 @@ class BeforeReadItemsModifierTest {
 
 	@Test
 	void expandSelectDoNotExtendDocumentIdIfNoFieldIncluded() {
-		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.itemTable().expand(Items_::ID,
-																																																																																																											item -> item.attachments()
-																																																																																																																					.expand()));
+		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID,
+				root -> root.itemTable().expand(Items_::ID, item -> item.attachments().expand()));
 
 		cut = new BeforeReadItemsModifier(List.of("attachments"));
 		runTestForExpand(cut, select, 0);
@@ -76,9 +66,8 @@ class BeforeReadItemsModifierTest {
 
 	@Test
 	void expandSelectDoNotExtendIfNoFieldInWrongAssociation() {
-		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.itemTable().expand(Items_::ID,
-																																																																																																											item -> item.attachments()
-																																																																																																																					.expand()));
+		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID,
+				root -> root.itemTable().expand(Items_::ID, item -> item.attachments().expand()));
 
 		cut = new BeforeReadItemsModifier(List.of("items"));
 		runTestForExpand(cut, select, 0);

@@ -36,7 +36,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 
 	@Override
 	protected void verifyTwoDeleteEvents(AttachmentEntity itemAttachmentEntityAfterChange,
-																																						Attachments itemAttachmentAfterChange) {
+			Attachments itemAttachmentAfterChange) {
 		waitTillExpectedHandlerMessageSize(2);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_CREATE_ATTACHMENT);
 		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
@@ -67,7 +67,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 
 	@Override
 	protected void verifyContentAndDocumentIdForAttachmentEntity(AttachmentEntity attachment, String content,
-																																																														AttachmentEntity itemAttachment) {
+			AttachmentEntity itemAttachment) {
 		assertThat(attachment.getContent()).isNull();
 		assertThat(attachment.getDocumentId()).isNotEmpty().isNotEqualTo(itemAttachment.getId());
 	}
@@ -96,7 +96,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 
 	@Override
 	protected void verifySingleCreateAndUpdateEvent(String resultDocumentId, String toBeDeletedDocumentId,
-																																																	String content) {
+			String content) {
 		waitTillExpectedHandlerMessageSize(3);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT);
 		var createEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);

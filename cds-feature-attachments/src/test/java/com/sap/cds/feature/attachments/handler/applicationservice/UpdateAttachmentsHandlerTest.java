@@ -146,7 +146,7 @@ class UpdateAttachmentsHandlerTest {
 		var keyCaptor = ArgumentCaptor.forClass(Map.class);
 		var dataCaptor = ArgumentCaptor.forClass(Map.class);
 		verify(fieldUpdateProvider).getReadonlyFieldUpdater(entityCaptor.capture(), keyCaptor.capture(),
-																																																						dataCaptor.capture());
+				dataCaptor.capture());
 		assertThat(entityCaptor.getValue().getQualifiedName()).isEqualTo(Attachment_.CDS_NAME);
 		assertThat(keyCaptor.getValue()).containsEntry("ID", id);
 		assertThat(dataCaptor.getValue()).containsEntry(Attachment.DOCUMENT_ID, null);

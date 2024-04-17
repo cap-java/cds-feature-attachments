@@ -44,8 +44,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	private final ActiveEntityModifierProvider activeEntityModifierProvider;
 
 	public DraftCancelAttachmentsHandler(AttachmentsReader attachmentsReader,
-																																						ModifyAttachmentEvent deleteContentAttachmentEvent,
-																																						ActiveEntityModifierProvider activeEntityModifierProvider) {
+			ModifyAttachmentEvent deleteContentAttachmentEvent, ActiveEntityModifierProvider activeEntityModifierProvider) {
 		this.attachmentsReader = attachmentsReader;
 		this.deleteContentAttachmentEvent = deleteContentAttachmentEvent;
 		this.activeEntityModifierProvider = activeEntityModifierProvider;
@@ -71,7 +70,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	}
 
 	private Validator buildDeleteContentValidator(DraftCancelEventContext context,
-																																															List<CdsData> activeCondensedAttachments) {
+			List<CdsData> activeCondensedAttachments) {
 		return (path, element, value) -> {
 			if (Boolean.FALSE.equals(path.target().values().get(Drafts.HAS_ACTIVE_ENTITY))) {
 				deleteContentAttachmentEvent.processEvent(path, null, CdsData.create(path.target().values()), context);
@@ -105,9 +104,9 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	}
 
 	private List<CdsData> readAttachments(DraftCancelEventContext context, CdsStructuredType entity,
-																																							boolean isActiveEntity) {
+			boolean isActiveEntity) {
 		var cqnInactiveEntity = CQL.copy(context.getCqn(),
-																																			activeEntityModifierProvider.getModifier(isActiveEntity, entity.getQualifiedName()));
+				activeEntityModifierProvider.getModifier(isActiveEntity, entity.getQualifiedName()));
 		return attachmentsReader.readAttachments(context.getModel(), (CdsEntity) entity, cqnInactiveEntity);
 	}
 

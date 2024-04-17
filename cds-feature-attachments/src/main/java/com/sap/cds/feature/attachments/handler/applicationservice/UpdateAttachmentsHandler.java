@@ -49,8 +49,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	private final ReadonlyFieldUpdaterProvider fieldUpdateProvider;
 
 	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader,
-																																	AttachmentService outboxedAttachmentService,
-																																	ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+			AttachmentService outboxedAttachmentService, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		this.eventFactory = eventFactory;
 		this.attachmentsReader = attachmentsReader;
 		this.outboxedAttachmentService = outboxedAttachmentService;
@@ -79,7 +78,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	}
 
 	private void doUpdate(CdsUpdateEventContext context, List<CdsData> data,
-																							ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+			ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
 		var target = context.getTarget();
 		var noContentInData = !ApplicationHandlerHelper.isContentFieldInData(target, data);
 		var associationsAreUnchanged = associationsAreUnchanged(target, data);
@@ -94,7 +93,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
 		var condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
 		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context,
-																																																													fieldUpdateProvider);
+				fieldUpdateProvider);
 
 		if (!associationsAreUnchanged) {
 			deleteRemovedAttachments(attachments, data, target);

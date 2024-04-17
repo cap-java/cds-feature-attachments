@@ -31,7 +31,7 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 	public Object processEvent(Path path, Object value, CdsData existingData, EventContext eventContext) {
 		var qualifiedName = eventContext.getTarget().getQualifiedName();
 		logger.debug("Processing the event for calling attachment service with mark as delete event for entity {}",
-															qualifiedName);
+				qualifiedName);
 
 		if (ApplicationHandlerHelper.doesDocumentIdExistsBefore(existingData) && !DraftService.EVENT_DRAFT_PATCH.equals(
 				eventContext.getEvent())) {

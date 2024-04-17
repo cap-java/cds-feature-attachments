@@ -60,8 +60,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private final AsyncMalwareScanExecutor asyncMalwareScanExecutor;
 
 	public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider,
-																															AttachmentStatusValidator attachmentStatusValidator,
-																															AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
+			AttachmentStatusValidator attachmentStatusValidator, AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
 		this.attachmentService = attachmentService;
 		this.provider = provider;
 		this.attachmentStatusValidator = attachmentStatusValidator;
@@ -109,7 +108,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 	}
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName,
-																																																List<String> processedEntities) {
+			List<String> processedEntities) {
 		var associationNames = new ArrayList<String>();
 		var baseEntity = ApplicationHandlerHelper.getBaseEntity(model, entity);
 		if (ApplicationHandlerHelper.isMediaEntity(baseEntity)) {
@@ -118,9 +117,8 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 		Map<String, CdsEntity> annotatedEntitiesMap = entity.elements().filter(element -> element.getType().isAssociation())
 																																																		.collect(Collectors.toMap(CdsElementDefinition::getName,
-																																																																												element -> element.getType()
-																																																																																									.as(CdsAssociationType.class)
-																																																																																									.getTarget()));
+																																																				element -> element.getType().as(CdsAssociationType.class)
+																																																																	.getTarget()));
 
 		if (annotatedEntitiesMap.isEmpty()) {
 			return associationNames;
@@ -131,7 +129,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 					associatedElement.getKey()) && !DraftConstants.SIBLING_ENTITY.equals(associatedElement.getKey())) {
 				processedEntities.add(associatedElement.getKey());
 				var result = getAttachmentAssociations(model, associatedElement.getValue(), associatedElement.getKey(),
-																																											processedEntities);
+						processedEntities);
 				associationNames.addAll(result);
 			}
 		}
