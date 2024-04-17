@@ -8,6 +8,14 @@
         <version>${revision}</version>
     </parent>
 
+    <licenses>
+        <license>
+            <name>Apache-2.0</name>
+            <url>https://github.com/cap-java/cds-feature-attachments/blob/main/LICENSE</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <artifactId>cds-feature-attachments</artifactId>
     <packaging>jar</packaging>
 
