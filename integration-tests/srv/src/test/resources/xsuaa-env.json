@@ -12,9 +12,9 @@
         "binding_guid": "16ce4d70-1511-45d0-a788-e365b298ca8a",
         "binding_name": null,
         "credentials": {
-          "sync_scan_url": "https://malware-scanner.cf.sap.hana.ondemand.com",
+          "sync_scan_url": "https://test.scanner.com",
           "async_scan_url": "",
-          "uri": "malware-scanner.cf.sap.hana.ondemand.com",
+          "uri": "https://test.scanner.com",
           "url": "http://localhost:1111",
           "username": "test-user",
           "password": "test-password"
