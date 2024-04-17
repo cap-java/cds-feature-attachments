@@ -90,6 +90,29 @@ It is important to use the correct from clause for the `using` statement.
 Only if `com.sap.cds/cds-feature-attachments` is used and not concrete files of the feature are specified in the
 from-statement also the annotations and other definitions are found and used.
 
+#### Model Texts
+
+In the model several fields are annotated with the `@title` annotation.
+The texts of these fields needs to be included in the consumings project UI.
+
+The following table gives an overview of the fields and the i18n codes:
+
+| Field Name | i18n Code             |
+|------------|-----------------------|
+| `content`  | `attachment_content`  |
+| `mimeType` | `attachment_mimeType` |
+| `fileName` | `attachment_fileName` |
+| `status`   | `attachment_status`   |
+| `note`     | `attachment_note`     |
+| `url`      | `attachment_url`      |
+
+In addition to the field names also header information (`@UI.HeaderInfo`) are annotated:
+
+| Header Info      | i18n Code     |  
+|------------------|---------------|
+| `TypeName`       | `attachment`  |
+| `TypeNamePlural` | `attachments` |
+
 ### Outbox
 
 In this plugin the [persistent outbox](https://cap.cloud.sap/docs/java/outbox#persistent) is used to mark attachments as
