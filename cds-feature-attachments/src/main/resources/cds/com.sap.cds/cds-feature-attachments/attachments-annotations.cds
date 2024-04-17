@@ -6,18 +6,18 @@ using {
 
 annotate MediaData with @UI.MediaResource: {Stream: content} {
     content    @(
-        title                      : '{i18n>content}',
+        title                      : '{i18n>attachment_content}',
         Core.MediaType             : mimeType,
         ContentDisposition.Filename: fileName,
         ContentDisposition.Type    : 'inline'
     );
     mimeType   @(
-        title: '{i18n>mimeType}',
+        title: '{i18n>attachment_mimeType}',
         Core.IsMediaType
     );
-    fileName @(title: '{i18n>fileName}');
+    fileName @(title: '{i18n>attachment_fileName}');
     status @(
-        Common.Label: '{@i18n>status}',
+        Common.Label: '{@i18n>attachment_status}',
         Common.Text: {
             $value: ![status.text],
             ![@UI.TextArrangement]: #TextOnly
@@ -32,8 +32,8 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
 annotate Attachments with @UI: {
     HeaderInfo: {
         $Type         : 'UI.HeaderInfoType',
-        TypeName      : '{i18n>Attachment}',
-        TypeNamePlural: '{i18n>Attachments}',
+        TypeName      : '{i18n>attachment}',
+        TypeNamePlural: '{i18n>attachments}',
     },
     LineItem  : [
         {Value: content},
@@ -43,7 +43,8 @@ annotate Attachments with @UI: {
         {Value: note}
     ]
 } {
-    note     @(title: '{i18n>note}');
+    note     @(title: '{i18n>attachment_note}');
+    url     @(title: '{i18n>attachment_url}');
 }
 
 annotate Statuses with{

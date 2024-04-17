@@ -1,7 +1,10 @@
 namespace test.data.model;
 
 using {cuid} from '@sap/cds/common';
-using {com.sap.attachments.Attachments, com.sap.attachments.RestoreAttachments} from`com.sap.cds/cds-feature-attachments`;
+using {
+    com.sap.attachments.Attachments,
+    com.sap.attachments.RestoreAttachments
+} from`com.sap.cds/cds-feature-attachments`;
 
 entity AttachmentEntity : Attachments {
     parentKey : UUID;
