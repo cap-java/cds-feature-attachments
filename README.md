@@ -2,9 +2,10 @@
 
 Attachment feature for CDS Services Java
 
-## Main Build
+## Badge
 
 [![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml)
+[![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
 
 ## Additional Information
 
