@@ -9,6 +9,14 @@
         <version>${revision}</version>
     </parent>
 
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <artifactId>cds-feature-attachments-integration-tests-srv</artifactId>
     <packaging>jar</packaging>
 
