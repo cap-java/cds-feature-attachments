@@ -59,9 +59,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	@Before(event = CqnService.EVENT_UPDATE)
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
 	public void processBeforeForDraft(CdsUpdateEventContext context, List<CdsData> data) {
-		if (storageReader.get()) {
-			ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data);
-		}
+		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
 	}
 
 	@Before(event = CqnService.EVENT_UPDATE)

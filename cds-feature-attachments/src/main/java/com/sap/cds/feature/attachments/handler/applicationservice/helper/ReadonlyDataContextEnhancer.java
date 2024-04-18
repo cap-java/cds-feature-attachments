@@ -13,17 +13,21 @@ public final class ReadonlyDataContextEnhancer {
 
 	private static final String CREATE_READONLY_CONTEXT = "CREATE_READONLY_CONTEXT";
 
-	public static void enhanceReadonlyDataInContext(EventContext context, List<CdsData> data) {
+	public static void enhanceReadonlyDataInContext(EventContext context, List<CdsData> data, boolean isDraft) {
 		var filter = ApplicationHandlerHelper.buildFilterForDocumentId();
 		Validator validator = (path, element, value) -> {
-			var documentId = path.target().values().get(Attachments.DOCUMENT_ID);
-			var statusCode = path.target().values().get(Attachments.STATUS_CODE);
-			var scannedAt = path.target().values().get(Attachments.SCANNED_AT);
-			var cdsData = CdsData.create();
-			cdsData.put(Attachments.DOCUMENT_ID, documentId);
-			cdsData.put(Attachments.STATUS_CODE, statusCode);
-			cdsData.put(Attachments.SCANNED_AT, scannedAt);
-			path.target().values().put(CREATE_READONLY_CONTEXT, cdsData);
+			if (isDraft) {
+				var documentId = path.target().values().get(Attachments.DOCUMENT_ID);
+				var statusCode = path.target().values().get(Attachments.STATUS_CODE);
+				var scannedAt = path.target().values().get(Attachments.SCANNED_AT);
+				var cdsData = CdsData.create();
+				cdsData.put(Attachments.DOCUMENT_ID, documentId);
+				cdsData.put(Attachments.STATUS_CODE, statusCode);
+				cdsData.put(Attachments.SCANNED_AT, scannedAt);
+				path.target().values().put(CREATE_READONLY_CONTEXT, cdsData);
+			} else {
+				path.target().values().remove(CREATE_READONLY_CONTEXT);
+			}
 		};
 
 		ApplicationHandlerHelper.callValidator(context.getTarget(), data, filter, validator);

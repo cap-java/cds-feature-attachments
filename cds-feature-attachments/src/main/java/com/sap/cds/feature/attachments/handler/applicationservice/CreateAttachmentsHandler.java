@@ -50,9 +50,7 @@ public class CreateAttachmentsHandler implements EventHandler {
 	@Before(event = CqnService.EVENT_CREATE)
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
 	public void processBeforeForDraft(CdsCreateEventContext context, List<CdsData> data) {
-		if (storageReader.get()) {
-			ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data);
-		}
+		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
 	}
 
 	@Before(event = CqnService.EVENT_CREATE)
