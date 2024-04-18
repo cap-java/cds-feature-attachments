@@ -5,7 +5,7 @@ public class ThreadLocalDataStorage implements ThreadDataStorageSetter, ThreadDa
 	private static final ThreadLocal<Boolean> threadLocal = new ThreadLocal<>();
 
 	@Override
-	public void set(Boolean value, Runnable runnable) {
+	public void set(boolean value, Runnable runnable) {
 		try {
 			threadLocal.set(value);
 			runnable.run();
