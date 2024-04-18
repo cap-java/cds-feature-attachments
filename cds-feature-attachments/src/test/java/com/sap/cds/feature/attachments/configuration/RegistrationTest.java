@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachme
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.restore.RestoreAttachmentsHandler;
@@ -81,7 +82,7 @@ class RegistrationTest {
 
 		cut.eventHandlers(configurer);
 
-		var handlerSize = 8;
+		var handlerSize = 9;
 		verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
 		var handlers = handlerArgumentCaptor.getAllValues();
 		assertThat(handlers).hasSize(handlerSize);
@@ -92,6 +93,7 @@ class RegistrationTest {
 		isHandlerForClassIncluded(handlers, ReadAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, DraftPatchAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, DraftCancelAttachmentsHandler.class);
+		isHandlerForClassIncluded(handlers, DraftActiveAttachmentsHandler.class);
 		isHandlerForClassIncluded(handlers, RestoreAttachmentsHandler.class);
 	}
 

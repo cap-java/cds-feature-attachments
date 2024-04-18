@@ -11,7 +11,8 @@ import org.slf4j.Marker;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyFieldUpdaterProvider;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
@@ -20,7 +21,6 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CqnService;
-import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -39,38 +39,29 @@ public class CreateAttachmentsHandler implements EventHandler {
 	private static final Marker marker = LoggingMarker.APPLICATION_CREATE_HANDLER.getMarker();
 
 	private final ModifyAttachmentEventFactory eventFactory;
+	private final ThreadDataStorageReader storageReader;
 	private final CdsDataProcessor processor = CdsDataProcessor.create();
-	private final ReadonlyFieldUpdaterProvider fieldUpdateProvider;
 
-	public CreateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory,
-			ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+	public CreateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, ThreadDataStorageReader storageReader) {
 		this.eventFactory = eventFactory;
-		this.fieldUpdateProvider = fieldUpdateProvider;
+		this.storageReader = storageReader;
 	}
 
 	@Before(event = CqnService.EVENT_CREATE)
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
 	public void processBeforeForDraft(CdsCreateEventContext context, List<CdsData> data) {
-		if (isDraftService(context)) {
-			doCreate(context, data, fieldUpdateProvider);
+		if (storageReader.get()) {
+			ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data);
 		}
 	}
 
 	@Before(event = CqnService.EVENT_CREATE)
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsCreateEventContext context, List<CdsData> data) {
-		if (isDraftService(context)) {
-			return;
-		}
-		doCreate(context, data, null);
+		doCreate(context, data);
 	}
 
-	private boolean isDraftService(CdsCreateEventContext context) {
-		return context.getService() instanceof DraftService;
-	}
-
-	private void doCreate(CdsCreateEventContext context, List<CdsData> data,
-			ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
+	private void doCreate(CdsCreateEventContext context, List<CdsData> data) {
 		if (!ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
@@ -78,7 +69,7 @@ public class CreateAttachmentsHandler implements EventHandler {
 		logger.debug(marker, "Processing before create event for entity {}", context.getTarget().getName());
 		setKeysInData(context.getTarget(), data);
 		ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(), eventFactory,
-				context, fieldUpdateProvider);
+				context);
 	}
 
 	private void setKeysInData(CdsEntity entity, List<CdsData> data) {

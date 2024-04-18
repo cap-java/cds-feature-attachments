@@ -8,13 +8,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
@@ -25,7 +24,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyFieldUpdaterProvider;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
@@ -34,9 +33,6 @@ import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CqnService;
-import com.sap.cds.services.changeset.ChangeSetContext;
-import com.sap.cds.services.changeset.ChangeSetListener;
-import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -50,8 +46,7 @@ class CreateAttachmentsHandlerTest {
 	private ModifyAttachmentEventFactory eventFactory;
 	private CdsCreateEventContext createContext;
 	private ModifyAttachmentEvent event;
-	private ReadonlyFieldUpdaterProvider fieldUpdateProvider;
-	private ArgumentCaptor<CdsEntity> entityCaptor;
+	private ThreadDataStorageReader storageReader;
 
 	@BeforeAll
 	static void classSetup() {
@@ -61,12 +56,11 @@ class CreateAttachmentsHandlerTest {
 	@BeforeEach
 	void setup() {
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
-		fieldUpdateProvider = mock(ReadonlyFieldUpdaterProvider.class);
-		cut = new CreateAttachmentsHandler(eventFactory, fieldUpdateProvider);
+		storageReader = mock(ThreadDataStorageReader.class);
+		cut = new CreateAttachmentsHandler(eventFactory, storageReader);
 
 		createContext = mock(CdsCreateEventContext.class);
 		event = mock(ModifyAttachmentEvent.class);
-		entityCaptor = ArgumentCaptor.forClass(CdsEntity.class);
 	}
 
 	@Test
@@ -108,55 +102,43 @@ class CreateAttachmentsHandlerTest {
 			cut.processBefore(createContext, List.of(attachment));
 
 			verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
-			verifyNoInteractions(fieldUpdateProvider);
 		}
 	}
 
 	@Test
-	void eventProcessorNotCalledForCreate() throws IOException {
+	void readonlyDataFilledForDraftActivate() {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 
-		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
-			var attachment = Attachments.create();
-			attachment.setContent(testStream);
-			when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
-			when(createContext.getService()).thenReturn(mock(DraftService.class));
+		var attachment = Attachments.create();
+		attachment.setDocumentId("Document Id");
+		attachment.setStatusCode("Status Code");
+		attachment.setScannedAt(Instant.now());
+		when(storageReader.get()).thenReturn(true);
 
-			cut.processBefore(createContext, List.of(attachment));
+		cut.processBeforeForDraft(createContext, List.of(attachment));
 
-			verifyNoInteractions(eventFactory);
-			verifyNoInteractions(fieldUpdateProvider);
-		}
+		verifyNoInteractions(eventFactory, event);
+		assertThat(attachment.get("CREATE_READONLY_CONTEXT")).isNotNull();
+		var readOnlyData = (CdsData) attachment.get("CREATE_READONLY_CONTEXT");
+		assertThat(readOnlyData).containsEntry(Attachment.DOCUMENT_ID, attachment.getDocumentId());
+		assertThat(readOnlyData).containsEntry(Attachment.STATUS_CODE, attachment.getStatusCode());
+		assertThat(readOnlyData).containsEntry(Attachment.SCANNED_AT, attachment.getScannedAt());
 	}
 
 	@Test
-	void eventProcessorCalledForCreateForDraft() throws IOException {
+	void readonlyDataNotFilledForNonDraftActivate() {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 
-		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
-			var attachment = Attachments.create();
-			attachment.setContent(testStream);
-			when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
-			when(createContext.getService()).thenReturn(mock(DraftService.class));
-			var changesetContext = mock(ChangeSetContext.class);
-			when(createContext.getChangeSetContext()).thenReturn(changesetContext);
-			var changesetListener = mock(ChangeSetListener.class);
-			when(fieldUpdateProvider.getReadonlyFieldUpdater(any(), any(), any())).thenReturn(changesetListener);
+		var attachment = Attachments.create();
+		attachment.setDocumentId("Document Id");
+		attachment.setStatusCode("Status Code");
+		attachment.setScannedAt(Instant.now());
+		when(storageReader.get()).thenReturn(false);
 
-			cut.processBeforeForDraft(createContext, List.of(attachment));
+		cut.processBeforeForDraft(createContext, List.of(attachment));
 
-			verify(changesetContext).register(changesetListener);
-			verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
-			var keyCaptor = ArgumentCaptor.forClass(Map.class);
-			var dataCaptor = ArgumentCaptor.forClass(Map.class);
-			verify(fieldUpdateProvider).getReadonlyFieldUpdater(entityCaptor.capture(), keyCaptor.capture(),
-					dataCaptor.capture());
-			assertThat(entityCaptor.getValue().getQualifiedName()).isEqualTo(Attachment_.CDS_NAME);
-			assertThat(keyCaptor.getValue().get("ID")).isNotNull();
-			assertThat(dataCaptor.getValue()).containsEntry(Attachment.DOCUMENT_ID, null);
-			assertThat(dataCaptor.getValue()).containsEntry(Attachment.STATUS_CODE, null);
-			assertThat(dataCaptor.getValue()).containsEntry(Attachment.SCANNED_AT, null);
-		}
+		verifyNoInteractions(eventFactory, event);
+		assertThat(attachment.get("CREATE_READONLY_CONTEXT")).isNull();
 	}
 
 	@Test
@@ -172,7 +154,6 @@ class CreateAttachmentsHandlerTest {
 			cut.processBeforeForDraft(createContext, List.of(attachment));
 
 			verifyNoInteractions(eventFactory);
-			verifyNoInteractions(fieldUpdateProvider);
 		}
 	}
 
@@ -206,6 +187,31 @@ class CreateAttachmentsHandlerTest {
 
 		assertThat(events.getId1()).isNotEmpty();
 		assertThat(events.getId2()).isNull();
+	}
+
+	@Test
+	void readonlyFieldsAreUsedFromOwnContext() {
+		getEntityAndMockContext(Attachment_.CDS_NAME);
+
+		var readonlyFields = CdsData.create();
+		readonlyFields.put(Attachment.DOCUMENT_ID, "Document Id");
+		readonlyFields.put(Attachment.STATUS_CODE, "Status Code");
+		readonlyFields.put(Attachment.SCANNED_AT, Instant.now());
+		var testStream = mock(InputStream.class);
+		var attachment = Attachments.create();
+		attachment.setContent(testStream);
+		attachment.put("CREATE_READONLY_CONTEXT", readonlyFields);
+
+		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+
+		cut.processBefore(createContext, List.of(attachment));
+
+		verify(eventFactory).getEvent(testStream, (String) readonlyFields.get(Attachment.DOCUMENT_ID), true,
+				CdsData.create());
+		assertThat(attachment.get("CREATE_READONLY_CONTEXT")).isNull();
+		assertThat(attachment.getDocumentId()).isEqualTo(readonlyFields.get(Attachment.DOCUMENT_ID));
+		assertThat(attachment.getStatusCode()).isEqualTo(readonlyFields.get(Attachment.STATUS_CODE));
+		assertThat(attachment.getScannedAt()).isEqualTo(readonlyFields.get(Attachment.SCANNED_AT));
 	}
 
 	@Test
