@@ -25,7 +25,7 @@ runs:
         flags: \
           --version=$PROJECT_VERSION \
           --groups=CDSJAVA-OPEN-SOURCE \
-          --mevenExcludedScopes=test \
+          --mavenExcludedScopes=test \
       env:
         PIPER_token: ${{ inputs.token }}
         DETECT_SERVER_URL: 'https://sap.blackducksoftware.com'
