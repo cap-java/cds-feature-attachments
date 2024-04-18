@@ -14,7 +14,7 @@ public final class ReadonlyDataContextEnhancer {
 	private static final String CREATE_READONLY_CONTEXT = "CREATE_READONLY_CONTEXT";
 
 	public static void enhanceReadonlyDataInContext(EventContext context, List<CdsData> data, boolean isDraft) {
-		var filter = ApplicationHandlerHelper.buildFilterForDocumentId();
+		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Validator validator = (path, element, value) -> {
 			if (isDraft) {
 				var documentId = path.target().values().get(Attachments.DOCUMENT_ID);

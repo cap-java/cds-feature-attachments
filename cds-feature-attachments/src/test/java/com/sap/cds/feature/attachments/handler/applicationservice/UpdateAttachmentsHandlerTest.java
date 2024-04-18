@@ -139,6 +139,7 @@ class UpdateAttachmentsHandlerTest {
 		updateAttachment.setDocumentId("Document Id");
 		updateAttachment.setStatusCode("Status Code");
 		updateAttachment.setScannedAt(Instant.now());
+		updateAttachment.setContent(null);
 		when(storageReader.get()).thenReturn(true);
 
 		cut.processBeforeForDraft(updateContext, List.of(updateAttachment));
@@ -149,6 +150,30 @@ class UpdateAttachmentsHandlerTest {
 		assertThat(readOnlyUpdateData).containsEntry(Attachment.DOCUMENT_ID, updateAttachment.getDocumentId());
 		assertThat(readOnlyUpdateData).containsEntry(Attachment.STATUS_CODE, updateAttachment.getStatusCode());
 		assertThat(readOnlyUpdateData).containsEntry(Attachment.SCANNED_AT, updateAttachment.getScannedAt());
+	}
+
+	@Test
+	void readonlyDataClearedIfNotDraftActivate() {
+		getEntityAndMockContext(Attachment_.CDS_NAME);
+
+		var updateAttachment = Attachments.create();
+		var documentId = "Document Id";
+		updateAttachment.setDocumentId(documentId);
+		updateAttachment.setContent(null);
+		var readonlyData = CdsData.create();
+		readonlyData.put(Attachment.STATUS_CODE, "some wrong status code");
+		readonlyData.put(Attachment.DOCUMENT_ID, "some other document id");
+		readonlyData.put(Attachment.SCANNED_AT, Instant.EPOCH);
+		updateAttachment.put("CREATE_READONLY_CONTEXT", readonlyData);
+		when(storageReader.get()).thenReturn(false);
+
+		cut.processBeforeForDraft(updateContext, List.of(updateAttachment));
+
+		verifyNoInteractions(eventFactory, event);
+		assertThat(updateAttachment.get("CREATE_READONLY_CONTEXT")).isNull();
+		assertThat(updateAttachment).containsEntry(Attachment.DOCUMENT_ID, documentId);
+		assertThat(updateAttachment).doesNotContainKey(Attachment.STATUS_CODE);
+		assertThat(updateAttachment).doesNotContainKey(Attachment.SCANNED_AT);
 	}
 
 	@Test
@@ -170,6 +195,7 @@ class UpdateAttachmentsHandlerTest {
 	@Test
 	void eventProcessorNotCalledForUpdateForDraft() {
 		when(updateContext.getService()).thenReturn(mock(ApplicationService.class));
+		when(updateContext.getTarget()).thenReturn(runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow());
 
 		cut.processBeforeForDraft(updateContext, Collections.emptyList());
 

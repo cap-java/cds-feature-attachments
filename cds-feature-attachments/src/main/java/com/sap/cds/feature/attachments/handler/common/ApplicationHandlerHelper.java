@@ -48,12 +48,6 @@ public final class ApplicationHandlerHelper {
 				ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
 	}
 
-	public static Filter buildFilterForDocumentId() {
-		return (path, element, type) -> isMediaEntity(path.target().type()) && element.getName().equals(
-				Attachments.DOCUMENT_ID);
-	}
-
-
 	public static boolean isMediaEntity(CdsStructuredType baseEntity) {
 		return baseEntity.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false);
 	}

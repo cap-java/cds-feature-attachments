@@ -113,6 +113,7 @@ class CreateAttachmentsHandlerTest {
 		attachment.setDocumentId("Document Id");
 		attachment.setStatusCode("Status Code");
 		attachment.setScannedAt(Instant.now());
+		attachment.setContent(null);
 		when(storageReader.get()).thenReturn(true);
 
 		cut.processBeforeForDraft(createContext, List.of(attachment));
@@ -123,6 +124,30 @@ class CreateAttachmentsHandlerTest {
 		assertThat(readOnlyData).containsEntry(Attachment.DOCUMENT_ID, attachment.getDocumentId());
 		assertThat(readOnlyData).containsEntry(Attachment.STATUS_CODE, attachment.getStatusCode());
 		assertThat(readOnlyData).containsEntry(Attachment.SCANNED_AT, attachment.getScannedAt());
+	}
+
+	@Test
+	void readonlyDataClearedIfNotDraftActivate() {
+		getEntityAndMockContext(Attachment_.CDS_NAME);
+
+		var createAttachment = Attachments.create();
+		var documentId = "Document Id";
+		createAttachment.setDocumentId(documentId);
+		createAttachment.setContent(null);
+		var readonlyData = CdsData.create();
+		readonlyData.put(Attachment.STATUS_CODE, "some wrong status code");
+		readonlyData.put(Attachment.DOCUMENT_ID, "some other document id");
+		readonlyData.put(Attachment.SCANNED_AT, Instant.EPOCH);
+		createAttachment.put("CREATE_READONLY_CONTEXT", readonlyData);
+		when(storageReader.get()).thenReturn(false);
+
+		cut.processBeforeForDraft(createContext, List.of(createAttachment));
+
+		verifyNoInteractions(eventFactory, event);
+		assertThat(createAttachment.get("CREATE_READONLY_CONTEXT")).isNull();
+		assertThat(createAttachment).containsEntry(Attachment.DOCUMENT_ID, documentId);
+		assertThat(createAttachment).doesNotContainKey(Attachment.STATUS_CODE);
+		assertThat(createAttachment).doesNotContainKey(Attachment.SCANNED_AT);
 	}
 
 	@Test
