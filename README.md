@@ -1,6 +1,29 @@
-# cds-feature-attachments
+# Attachments Plugin for SAP Cloud Application Programming Model (CAP)
 
-Attachment feature for CDS Services Java
+The `com.sap.cds:cds-feature-attachments` dependency is
+a [CAP Java plugin](https://cap.cloud.sap/docs/java/building-plugins) that provides out-of-the box asset storage
+and handling by using an aspect Attachments.
+
+## Table of Contents
+
+<!-- TOC -->
+
+* [Main Build](#main-build)
+* [Additional Information](#additional-information)
+* [Support, Feedback, Contributing](#support-feedback-contributing)
+* [Usage](#usage)
+    * [CDS Models](#cds-models)
+        * [Model Texts](#model-texts)
+    * [Outbox](#outbox)
+    * [Malware Scanner](#malware-scanner)
+    * [Error Messages](#error-messages)
+    * [Status Texts](#status-texts)
+    * [Restore Endpoint](#restore-endpoint)
+        * [Motivation](#motivation)
+        * [HTTP Endpoint](#http-endpoint)
+        * [Security](#security)
+
+<!-- TOC -->
 
 ## Badge
 
@@ -16,6 +39,14 @@ Attachment feature for CDS Services Java
 - [Contributing](./doc/CONTRIBUTING.md)
 
 - [License](./LICENSE)
+
+## Support, Feedback, Contributing
+
+This project is open to feature requests/suggestions, bug reports etc.
+via [GitHub issues](https://github.com/cap-java/cds-feature-attachments/issues).
+Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project
+structure, as well as additional contribution information,
+see our [Contribution Guidelines](./doc/CONTRIBUTING.md).
 
 ## Usage
 

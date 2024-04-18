@@ -11,8 +11,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachme
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyFieldUpdater;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyFieldUpdaterProvider;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.CreateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DefaultModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DoNothingAttachmentEvent;
@@ -27,6 +26,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.tran
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.modifier.ActiveEntityModifier;
@@ -90,17 +90,17 @@ public class Registration implements CdsRuntimeConfiguration {
 		var deleteContentEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
 		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);
 		var attachmentsReader = buildAttachmentsReader(persistenceService);
+		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
-		var fieldUpdateProvider = createFieldUpdateProvider(persistenceService);
-		configurer.eventHandler(buildCreateHandler(eventFactory, fieldUpdateProvider));
-		configurer.eventHandler(
-				buildUpdateHandler(eventFactory, attachmentsReader, outboxedAttachmentService, fieldUpdateProvider));
+		configurer.eventHandler(buildCreateHandler(eventFactory, storage));
+		configurer.eventHandler(buildUpdateHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 		configurer.eventHandler(buildDeleteHandler(attachmentsReader, deleteContentEvent));
 		configurer.eventHandler(
 				buildReadHandler(attachmentService, new EndTransactionMalwareScanRunner(null, null, malwareScanner)));
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
 		configurer.eventHandler(
 				new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent, ActiveEntityModifier::new));
+		configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
 		configurer.eventHandler(new RestoreAttachmentsHandler(attachmentService));
 	}
 
@@ -113,10 +113,6 @@ public class Registration implements CdsRuntimeConfiguration {
 	private AttachmentService buildAttachmentService() {
 		logger.info(marker, "Registering attachment service");
 		return new DefaultAttachmentsService();
-	}
-
-	private ReadonlyFieldUpdaterProvider createFieldUpdateProvider(PersistenceService persistenceService) {
-		return (entity, keys, data) -> new ReadonlyFieldUpdater(entity, keys, data, persistenceService);
 	}
 
 	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
@@ -134,9 +130,8 @@ public class Registration implements CdsRuntimeConfiguration {
 		return (documentId, cdsRuntime) -> new CreationChangeSetListener(documentId, cdsRuntime, outboxedAttachmentService);
 	}
 
-	protected EventHandler buildCreateHandler(ModifyAttachmentEventFactory factory,
-			ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
-		return new CreateAttachmentsHandler(factory, fieldUpdateProvider);
+	protected EventHandler buildCreateHandler(ModifyAttachmentEventFactory factory, ThreadLocalDataStorage storage) {
+		return new CreateAttachmentsHandler(factory, storage);
 	}
 
 	protected EventHandler buildDeleteHandler(AttachmentsReader attachmentsReader,
@@ -152,8 +147,8 @@ public class Registration implements CdsRuntimeConfiguration {
 	}
 
 	protected EventHandler buildUpdateHandler(ModifyAttachmentEventFactory factory, AttachmentsReader attachmentsReader,
-			AttachmentService outboxedAttachmentService, ReadonlyFieldUpdaterProvider fieldUpdateProvider) {
-		return new UpdateAttachmentsHandler(factory, attachmentsReader, outboxedAttachmentService, fieldUpdateProvider);
+			AttachmentService outboxedAttachmentService, ThreadLocalDataStorage storage) {
+		return new UpdateAttachmentsHandler(factory, attachmentsReader, outboxedAttachmentService, storage);
 	}
 
 	protected AttachmentsReader buildAttachmentsReader(PersistenceService persistenceService) {
