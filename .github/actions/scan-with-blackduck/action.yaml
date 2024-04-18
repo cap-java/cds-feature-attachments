@@ -15,7 +15,9 @@ runs:
 
     - name: Get Major Version
       id: get-major-version
-      run: echo "MAJOR_VERSION=$(echo mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
+      run: \
+        mvn help:evaluate -Dexpression=revision -q -DforceStdout
+        echo "MAJOR_VERSION=$(echo mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: BlackDuck Scan
@@ -26,6 +28,7 @@ runs:
           --version=$PROJECT_VERSION \
           --groups=CDSJAVA-OPEN-SOURCE \
           --mavenExcludedScopes=test \
+          --blackduck.url=$DETECT_SERVER_URL \
       env:
         PIPER_token: ${{ inputs.token }}
         DETECT_SERVER_URL: 'https://sap.blackducksoftware.com'
