@@ -17,6 +17,7 @@
         </license>
     </licenses>
 
+    <groupId>com.sap.cds.integration-tests</groupId>
     <artifactId>cds-feature-attachments-integration-tests-parent</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>

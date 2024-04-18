@@ -1,0 +1,40 @@
+name: "Scan with BlackDuck"
+description: "Scans the project with BlackDuck"
+
+inputs:
+  token:
+    description: "The token to use for BlackDuck authentication"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Print Action Start
+      run: echo ">>>>> Starting Scan with BlackDuck Action; Not printing inputs as they might contain sensitive information."
+      shell: bash
+
+    - name: Get Major Version
+      id: get-major-version
+      run: echo "MAJOR_VERSION=$(echo mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: BlackDuck Scan
+      uses: SAP/project-piper-action@master
+      with:
+        command: detectExecuteScan
+        flags: \
+          --version=$PROJECT_VERSION \
+          --groups=CDSJAVA-OPEN-SOURCE \
+          --mevenExcludedScopes=test \
+      env:
+        PIPER_token: ${{ inputs.token }}
+        DETECT_SERVER_URL: 'https://sap.blackducksoftware.com'
+        DETECT.EXCLUDED_DIRECTORIES: '**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar'
+        DETECT_MAVEN_EXCLUDED_MODULES: 'com.sap.cds.integration-tests*'
+        DETECT_TIMEOUT: "7200"
+        PROJECT_VERSION: ${{ steps.get-major-version.outputs.MAJOR_VERSION }}
+
+    - name: Print Action End
+      if: always()
+      run: echo "<<<<< Finished Scan with BlackDuck Action"
+      shell: bash
