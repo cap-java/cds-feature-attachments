@@ -1,7 +1,7 @@
 # Attachments Plugin for SAP Cloud Application Programming Model (CAP)
 
 The `com.sap.cds:cds-feature-attachments` dependency is
-a [CAP Java plugin](https://cap.cloud.sap/docs/java/building-plugins) that provides out-of-the box asset storage
+a [CAP Java plugin](https://cap.cloud.sap/docs/java/building-plugins) that provides out-of-the box attachments storage
 and handling by using an aspect Attachments.
 
 ## Table of Contents
