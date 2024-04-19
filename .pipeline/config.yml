@@ -18,7 +18,6 @@ steps:
       - --blackduck.signature.scanner.memory=4096
       - --blackduck.trust.cert=true
       - --detect.included.detector.types=MAVEN
-      - --detect.maven.excluded.modules=com.sap.cds.integration-tests*
       - --detect.excluded.directories='**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar'
       - --detect.timeout=6000
       - --logging.level.com.synopsys.integration=DEBUG
