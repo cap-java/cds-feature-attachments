@@ -2,8 +2,11 @@ name: "Scan with BlackDuck"
 description: "Scans the project with BlackDuck"
 
 inputs:
-  token:
+  blackduck_token:
     description: "The token to use for BlackDuck authentication"
+    required: true
+  github_token:
+    description: "The token to use for GitHub authentication"
     required: true
 
 runs:
@@ -29,8 +32,8 @@ runs:
           --githubApiUrl='https://api.github.com/'
           --githubToken=$GITHUB_token
       env:
-        PIPER_token: ${{ inputs.token }}
-        GITHUB_token: ${{ secrets.GITHUB_TOKEN }}
+        PIPER_token: ${{ inputs.blackduck_token }}
+        GITHUB_token: ${{ inputs.github_token }}
         PROJECT_VERSION: 0.0.8-SNAPSHOT
 
     - name: Print Action End

@@ -32,4 +32,5 @@ jobs:
       - name: "Scan With Black Duck"
         uses: ./.github/actions/scan-with-blackduck
         with:
-          token: ${{ secrets.BLACK_DUCK_TOKEN }}
+          blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
