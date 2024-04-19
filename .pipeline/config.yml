@@ -22,3 +22,4 @@ steps:
       - --detect.excluded.directories='**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar'
       - --detect.maven.excluded.modules=integration-tests,integration-tests/db,integration-tests/srv
       - --detect.maven.build.command='-pl com.sap.cds:cds-feature-attachments'
+      - --detect.blackduck.scan.mode='FULL'
