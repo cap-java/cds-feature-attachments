@@ -32,6 +32,7 @@ runs:
           #          --githubApiUrl='https://api.github.com/'
           --githubToken=$GITHUB_token
           --scanMode=FULL
+          --detect.blackduck.scan.mode='FULL'
       env:
         PIPER_token: ${{ inputs.blackduck_token }}
         GITHUB_token: ${{ inputs.github_token }}
