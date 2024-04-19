@@ -3,3 +3,23 @@ steps:
     verbose: false
     verify: true
     flatten: true
+
+  detectExecuteScan:
+    projectName: 'com.sap.cds.feature.attachments'
+    groups:
+      - 'CDSJAVA-OPEN-SOURCE'
+    serverUrl: 'https://sap.blackducksoftware.com/'
+    mavenExcludedScopes: [ "provided", "test" ]
+    failOn: [ 'BLOCKER', 'CRITICAL', 'MAJOR' ]
+    versioningModel: "major"
+    version: 1
+    detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
+    installArtifacts: true
+    repository: '/cap-java/cds-feature-attachments'
+    verbose: true
+    scanProperties:
+      - --detect.included.detector.types=MAVEN
+      - --detect.excluded.directories='**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar'
+      - --detect.maven.excluded.modules=integration-tests,integration-tests/db,integration-tests/srv
+      - --detect.maven.build.command='-pl com.sap.cds:cds-feature-attachments'
+#      - --detect.blackduck.scan.mode='FULL'

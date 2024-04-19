@@ -1,0 +1,42 @@
+name: "Scan with BlackDuck"
+description: "Scans the project with BlackDuck"
+
+inputs:
+  blackduck_token:
+    description: "The token to use for BlackDuck authentication"
+    required: true
+  github_token:
+    description: "The token to use for GitHub authentication"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Print Action Start
+      run: echo ">>>>> Starting Scan with BlackDuck Action; Not printing inputs as they might contain sensitive information."
+      shell: bash
+
+    - name: Get Major Version
+      id: get-major-version
+      run: |
+        mvn help:evaluate -Dexpression=revision -q -DforceStdout
+        echo "MAJOR_VERSION=$(echo mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: BlackDuck Scan
+      uses: SAP/project-piper-action@master
+      with:
+        command: detectExecuteScan
+        flags: \
+          --version=$PROJECT_VERSION \
+          --githubToken=$GITHUB_token
+      env:
+        PIPER_token: ${{ inputs.blackduck_token }}
+        GITHUB_token: ${{ inputs.github_token }}
+        PROJECT_VERSION: 0.0.8-SNAPSHOT
+        SCAN_MODE: FULL
+
+    - name: Print Action End
+      if: always()
+      run: echo "<<<<< Finished Scan with BlackDuck Action"
+      shell: bash
