@@ -30,7 +30,6 @@ runs:
         flags: \
           --version=$PROJECT_VERSION \
           --githubToken=$GITHUB_token
-          --scanMode=FULL
           --detect.blackduck.scan.mode='FULL'
       env:
         PIPER_token: ${{ inputs.blackduck_token }}
