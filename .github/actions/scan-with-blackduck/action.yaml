@@ -27,8 +27,9 @@ runs:
         flags: \
           --version=$PROJECT_VERSION \
           --groups=CDSJAVA-OPEN-SOURCE \
-          --mevenExcludedScopes=test \
+          --mavenExcludedScopes=test \
           --serverUrl=$DETECT_SERVER_URL \
+          --repository=https://github.com/cap-java/cds-feature-attachments
       env:
         PIPER_token: ${{ inputs.token }}
         DETECT_SERVER_URL: 'https://sap.blackducksoftware.com'
