@@ -12,6 +12,7 @@ steps:
     mavenExcludedScopes: [ "provided", "test" ]
     failOn: [ 'BLOCKER', 'CRITICAL', 'MAJOR' ]
     versioningModel: "major"
+    version: 1
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
     scanProperties:
       - --detect.included.detector.types=MAVEN
