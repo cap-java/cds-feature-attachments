@@ -19,5 +19,5 @@ steps:
       - --detect.included.detector.types=MAVEN
       - --detect.excluded.directories='**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar'
       - --detect.maven.excluded.modules=integration-tests
-      - --detect.maven.build.command=-pl !:integration-tests
+      - --detect.maven.build.command='-pl !:integration-tests'
 #      - --detect.source.path=./cds-feature-attachments
