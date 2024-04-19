@@ -28,7 +28,7 @@ runs:
           --version=$PROJECT_VERSION
       env:
         PIPER_token: ${{ inputs.token }}
-        PROJECT_VERSION: ${{ steps.get-major-version.outputs.MAJOR_VERSION }}
+        PROJECT_VERSION: 0.0.8-SNAPSHOT
 
     - name: Print Action End
       if: always()

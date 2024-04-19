@@ -3,6 +3,7 @@ steps:
     verbose: false
     verify: true
     flatten: true
+
   detectExecuteScan:
     projectName: 'CDS Feature for Attachments'
     groups:
@@ -12,7 +13,6 @@ steps:
     failOn: [ 'BLOCKER', 'CRITICAL', 'MAJOR' ]
     versioningModel: "major-minor"
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
-    #    buildMaven: true
     pomPath: './cds-feature-attachments/pom.xml'
     scanProperties:
       - --blackduck.signature.scanner.memory=4096
