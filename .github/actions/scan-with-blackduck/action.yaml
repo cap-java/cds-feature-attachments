@@ -27,7 +27,7 @@ runs:
         flags: \
           --version=$PROJECT_VERSION \
           --groups=CDSJAVA-OPEN-SOURCE \
-          --mavenExcludedScopes=test \
+          --mevenExcludedScopes=test \
           --serverUrl=$DETECT_SERVER_URL \
       env:
         PIPER_token: ${{ inputs.token }}
