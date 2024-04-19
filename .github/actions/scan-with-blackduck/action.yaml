@@ -27,6 +27,13 @@ runs:
       env:
         PIPER_token: ${{ inputs.token }}
 
+    - name: Upload Scan Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: root-build
+        path: .
+        retention-days: 1
+
     - name: Print Action End
       if: always()
       run: echo "<<<<< Finished Scan with BlackDuck Action"
