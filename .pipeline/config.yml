@@ -16,7 +16,7 @@ steps:
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
     installArtifacts: true
     repository: '/cap-java/cds-feature-attachments'
-    #    verbose: true
+    verbose: true
     scanProperties:
       - --detect.included.detector.types=MAVEN
       - --detect.excluded.directories='**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar'
