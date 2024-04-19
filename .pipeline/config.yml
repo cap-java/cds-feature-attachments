@@ -18,4 +18,4 @@ steps:
     scanProperties:
       - --detect.included.detector.types=MAVEN
       - --detect.excluded.directories='**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar'
-      - --detect.source.path=./cds-feature-attachments
+#      - --detect.source.path=./cds-feature-attachments
