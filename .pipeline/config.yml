@@ -14,9 +14,9 @@ steps:
     versioningModel: "major"
     version: 1
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
-    verbose: true
+    #    verbose: true
     scanProperties:
       - --detect.included.detector.types=MAVEN
       - --detect.excluded.directories='**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar'
       - --detect.maven.excluded.modules=integration-tests,integration-tests/db,integration-tests/srv
-#      - --detect.maven.build.command='-pl .,cds-feature-attachments'
+      - --detect.maven.build.command='-pl .,cds-feature-attachments,!integration-tests'
