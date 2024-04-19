@@ -17,6 +17,7 @@ runs:
       id: get-major-version
       run: |
         mvn help:evaluate -Dexpression=revision -q -DforceStdout
+        mvn -pl .,cds-feature-attachments dependency:tree -T1
         echo "MAJOR_VERSION=$(echo mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
       shell: bash
 
