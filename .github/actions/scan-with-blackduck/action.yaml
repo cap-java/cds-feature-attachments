@@ -28,12 +28,10 @@ runs:
       with:
         command: detectExecuteScan
         flags: \
-          --version=$PROJECT_VERSION \
           --githubToken=$GITHUB_token
       env:
         PIPER_token: ${{ inputs.blackduck_token }}
         GITHUB_token: ${{ inputs.github_token }}
-        PROJECT_VERSION: 0.0.8-SNAPSHOT
         SCAN_MODE: FULL
 
     - name: Print Action End
