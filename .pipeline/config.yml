@@ -14,6 +14,7 @@ steps:
     versioningModel: "major"
     version: 1
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
+    verbose: true
     scanProperties:
       - --detect.included.detector.types=MAVEN
       - --detect.excluded.directories='**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar'
