@@ -11,7 +11,7 @@ steps:
     serverUrl: 'https://sap.blackducksoftware.com/'
     mavenExcludedScopes: [ "provided", "test" ]
     failOn: [ 'BLOCKER', 'CRITICAL', 'MAJOR' ]
-    versioningModel: "major-minor"
+    versioningModel: "major"
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
     scanProperties:
       - --detect.included.detector.types=MAVEN
