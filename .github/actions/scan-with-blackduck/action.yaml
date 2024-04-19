@@ -31,10 +31,12 @@ runs:
           --version=$PROJECT_VERSION \
           #          --githubApiUrl='https://api.github.com/'
           --githubToken=$GITHUB_token
+          --scanMode=FULL
       env:
         PIPER_token: ${{ inputs.blackduck_token }}
         GITHUB_token: ${{ inputs.github_token }}
         PROJECT_VERSION: 0.0.8-SNAPSHOT
+        SCAN_MODE: FULL
 
     - name: Print Action End
       if: always()
