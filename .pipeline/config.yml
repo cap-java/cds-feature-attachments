@@ -14,8 +14,9 @@ steps:
     versioningModel: "major-minor"
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
     #    pomPath: './cds-feature-attachments/pom.xml'
-    scanPaths: [ './cds-feature-attachments' ]
+    #    scanPaths: [ './cds-feature-attachments' ]
     scanProperties:
       - --detect.included.detector.types=MAVEN
       - --detect.excluded.directories='**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar'
+      - --detect.maven.excluded.modules=integration-tests
 #      - --detect.source.path=./cds-feature-attachments
