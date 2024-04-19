@@ -5,7 +5,7 @@ steps:
     flatten: true
 
   detectExecuteScan:
-    projectName: 'CDS Feature for Attachments'
+    projectName: 'com.sap.cds.feature.attachments'
     groups:
       - 'CDSJAVA-OPEN-SOURCE'
     serverUrl: 'https://sap.blackducksoftware.com/'

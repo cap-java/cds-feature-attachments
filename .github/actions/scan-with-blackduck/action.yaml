@@ -24,8 +24,6 @@ runs:
       uses: SAP/project-piper-action@master
       with:
         command: detectExecuteScan
-        flags: \
-          --version=$PROJECT_VERSION
       env:
         PIPER_token: ${{ inputs.token }}
         PROJECT_VERSION: 0.0.8-SNAPSHOT
