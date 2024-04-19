@@ -24,15 +24,14 @@ runs:
       uses: SAP/project-piper-action@master
       with:
         command: detectExecuteScan
+        flags: \
+          --version=$PROJECT_VERSION \
+          --githubApiUrl='https://api.github.com/'
+          --githubToken=$GITHUB_token
       env:
         PIPER_token: ${{ inputs.token }}
-
-    - name: Upload Scan Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: root-build
-        path: .
-        retention-days: 1
+        GITHUB_token: ${{ secrets.GITHUB_TOKEN }}
+        PROJECT_VERSION: 0.0.8-SNAPSHOT
 
     - name: Print Action End
       if: always()
