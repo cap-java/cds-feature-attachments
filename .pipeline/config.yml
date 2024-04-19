@@ -13,7 +13,7 @@ steps:
     failOn: [ 'BLOCKER', 'CRITICAL', 'MAJOR' ]
     versioningModel: "major-minor"
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
-    pomPath: './cds-feature-attachments/pom.xml'
+    #    pomPath: './cds-feature-attachments/pom.xml'
     scanPaths: [ './cds-feature-attachments' ]
     scanProperties:
       - --detect.included.detector.types=MAVEN
