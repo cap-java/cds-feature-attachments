@@ -29,7 +29,6 @@ runs:
         command: detectExecuteScan
         flags: \
           --version=$PROJECT_VERSION \
-          #          --githubApiUrl='https://api.github.com/'
           --githubToken=$GITHUB_token
           --scanMode=FULL
           --detect.blackduck.scan.mode='FULL'
