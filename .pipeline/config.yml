@@ -14,7 +14,8 @@ steps:
     versioningModel: "major"
     version: 1
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
-    repository: 'cap-java/cds-feature-attachments'
+    installArtifacts: true
+    repository: '/cap-java/cds-feature-attachments'
     #    verbose: true
     scanProperties:
       - --detect.included.detector.types=MAVEN
