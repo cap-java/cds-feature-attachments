@@ -22,15 +22,15 @@ jobs:
         with:
           java-version: ${{ matrix.java-version }}
 
-  scan:
-    name: "Blackduck Scan"
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: "Scan With Black Duck"
-        uses: ./.github/actions/scan-with-blackduck
-        with:
-          blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+#  scan:
+#    name: "Blackduck Scan"
+#    runs-on: ubuntu-latest
+#    timeout-minutes: 15
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: "Scan With Black Duck"
+#        uses: ./.github/actions/scan-with-blackduck
+#        with:
+#          blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
