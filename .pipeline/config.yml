@@ -10,9 +10,7 @@ steps:
       - 'CDSJAVA-OPEN-SOURCE'
     serverUrl: 'https://sap.blackducksoftware.com/'
     mavenExcludedScopes: [ "provided", "test" ]
-    #    failOn: [ 'BLOCKER', 'CRITICAL', 'MAJOR' ]
-    #TODO change to failOn: [ 'BLOCKER', 'CRITICAL', 'MAJOR' ] when the project is ready
-    failOn: [ 'NONE' ]
+    failOn: [ 'BLOCKER', 'CRITICAL', 'MAJOR' ]
     versioningModel: "major"
     version: 1
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
