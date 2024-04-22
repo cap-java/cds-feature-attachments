@@ -10,6 +10,7 @@ type StatusCode : String enum {
     INFECTED;
     NO_SCANNER;
     CLEAN;
+    FAILED;
 }
 
 entity Statuses @cds.autoexpose @readonly {
