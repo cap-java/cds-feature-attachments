@@ -22,6 +22,7 @@ jobs:
         with:
           java-version: ${{ matrix.java-version }}
 
+# TODO add scan, also for main branch
 #  scan:
 #    name: "Blackduck Scan"
 #    runs-on: ubuntu-latest
