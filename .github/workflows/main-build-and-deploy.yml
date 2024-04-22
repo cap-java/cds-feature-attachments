@@ -70,6 +70,7 @@ jobs:
           password: ${{ secrets.DEPLOYMENT_PASS }}
           repository-url: ${{ env.DEPLOY_REPOSITORY_ID }}
           pom-file: ${{ env.POM_FILE }}
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Echo Status
         run: echo "The job status is ${{ job.status }}"
