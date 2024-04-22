@@ -145,6 +145,59 @@ In addition to the field names also header information (`@UI.HeaderInfo`) are an
 | `TypeName`       | `attachment`  |
 | `TypeNamePlural` | `attachments` |
 
+### UI
+
+To enhance the UI with the attachments the following annotations are used for the `UI.Facets` annotations
+in your app:
+
+```cds
+    {
+        $Type  : 'UI.ReferenceFacet',
+        ID     : 'AttachmentsFacet',
+        Label  : '{i18n>attachmentsAndLinks}',
+        Target : 'attachments/@UI.LineItem'
+    }
+```
+
+A complete `UI.Facets` annotation could look like:
+
+```cds
+annotate service.Incidents with @(
+    UI.Facets : [
+        {
+            $Type : 'UI.CollectionFacet',
+            Label : '{i18n>Overview}',
+            ID : 'Overview',
+            Facets : [
+                {
+            $Type : 'UI.ReferenceFacet',
+            Label : '{i18n>GeneralInformation}',
+            ID : 'i18nGeneralInformation',
+            Target : '@UI.FieldGroup#i18nGeneralInformation',
+        },
+                {
+                    $Type : 'UI.ReferenceFacet',
+                    Label : '{i18n>Details}',
+                    ID : 'i18nDetails',
+                    Target : '@UI.FieldGroup#i18nDetails',
+                },],
+        },
+        {
+            $Type : 'UI.ReferenceFacet',
+            Label : 'Conversations',
+            ID : 'Conversations',
+            Target : 'conversations/@UI.LineItem#Conversations',
+        },
+        {
+            $Type  : 'UI.ReferenceFacet',
+            ID     : 'AttachmentsFacet',
+            Label  : '{i18n>attachmentsAndLinks}',
+            Target : 'attachments/@UI.LineItem'
+        }
+    ]
+);
+``` 
+
 ### Outbox
 
 In this plugin the [persistent outbox](https://cap.cloud.sap/docs/java/outbox#persistent) is used to mark attachments as
