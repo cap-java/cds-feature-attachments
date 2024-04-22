@@ -12,7 +12,7 @@ type StatusCode : String enum {
     CLEAN;
 }
 
-entity Statuses @cds.autoexpose @cds.readonly {
+entity Statuses @cds.autoexpose @readonly {
     key code : StatusCode;
         text : localized String(255);
 }

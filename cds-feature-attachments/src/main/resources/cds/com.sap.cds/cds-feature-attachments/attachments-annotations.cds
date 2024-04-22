@@ -36,7 +36,11 @@ annotate Attachments with @UI: {
     },
     LineItem  : [
         {Value: content},
-        {Value: status},
+        {
+            $Type : 'UI.DataField',
+            Value : status.text,
+            Label : '{i18n>attachment_status}'
+        },
         {Value: createdAt},
         {Value: createdBy},
         {Value: note}
@@ -45,3 +49,13 @@ annotate Attachments with @UI: {
     note     @(title: '{i18n>attachment_note}');
     url     @(title: '{i18n>attachment_url}');
 }
+
+annotate Statuses with{
+    code @(
+        Common.Text: {
+            $value: ![text],
+            ![@UI.TextArrangement]: #TextOnly
+        }
+    );
+};
+
