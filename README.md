@@ -50,6 +50,15 @@ Contribution and feedback are encouraged and always welcome. For more informatio
 structure, as well as additional contribution information,
 see our [Contribution Guidelines](./doc/CONTRIBUTING.md).
 
+## Minimum Version
+
+The following version are the minimum versions for the usage of the plugin:
+
+| Component | Minimum Version |
+|-----------|-----------------|
+| CAP Java  | 2.8.1           |
+| UI5       | 1.121.0         |
+
 ## Usage
 
 The usage of CAP Java plugins is described in
