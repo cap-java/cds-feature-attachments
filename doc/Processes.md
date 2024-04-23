@@ -91,18 +91,52 @@ will not be persisted
 and so nothing needs to be done here.
 For the new created document the outbox needs to be called the mark the document as deleted.
 
-## Activate Draft
+## Draft
 
-The activate draft can be a mixture of create, update and delete.
-The processes for the events will stay the same, the difference will be, that the
-update handler needs to check if a document needs to be created, updated or deleted.
+Attachments are draft enabled. This means that attachments can be created, updated and deleted in draft mode.
+In the draft mode the attachments are created and also here the attachment service is called for the create event.
+The process for creation is the same as for the [create event](#create).
 
-So the starting point is always the update handler.
+Same is true for the update event. The process for the update event is the same as for the [update event](#update).
 
-## Cancel Draft
+The delete event is not called for draft. The delete event is only called if the draft is activated.
+For this only the document id is deleted in the draft attachment entity.
+If the draft is activated the delete event is called for the document id.
 
+### Activate Draft
+
+During activation of the draft attachment entity is read and for every document id which
+is deleted in the draft entity but available in the active entity the delete event is called.
+
+### Cancel Draft
+
+If a draft is cancelled the created attachments in the draft entity will be deleted.
 The cancel draft is the same as a deep delete.
 The process for deletion of a document is the same as for the deletion, but handled in a discard draft handler.
+
+### Readonly Fields
+
+The following fields are readonly:
+
+- `status`
+- `scannedAt`
+- `documentId`
+
+As in the current implementation of the draft activate in the CAP Java stack all readonly fields are not copied to the
+active entity some special logic needs to be implemented to save the readonly fields.
+
+![Store_readonly_data.png](./img/Store_readonly_data.png)
+
+In the `CreateAttachmentHandler` and in the `UpdateAttachmentHandler` the readonly fields are stored in the data of the
+events
+in the attachment entity under the key `CREATE_READONLY_CONTEXT` but only the process is a draft activate process.
+Otherwise, the key `CREATE_READONLY_CONTEXT` is cleared to avoid that the fields can be set from outside.
+
+The handler are called again after the readonly fields are removed and can use the readonly fields from the
+storage with key `CREATE_READONLY_CONTEXT`. The readonly fields are copied again in the data so that they will be stored
+in the database.
+
+The handler are called twice as the logic shall run in a late point in time to run after validation are executed.
 
 ## Restore Deleted Document
 
@@ -135,10 +169,10 @@ The default value is `UNSCANNED`.
 All possible status values are:
 
 - `UNSCANNED`
-- `SCANNING`
 - `INFECTED`
 - `CLEAN`
 - `NO_SCANNER`
+- `FAILED`
 
 ### Database Storage
 
