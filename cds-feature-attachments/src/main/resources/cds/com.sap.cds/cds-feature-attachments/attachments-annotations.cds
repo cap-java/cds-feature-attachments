@@ -1,6 +1,7 @@
 using {
     com.sap.attachments.MediaData,
-    com.sap.attachments.Attachments
+    com.sap.attachments.Attachments,
+    com.sap.attachments.Statuses
 } from './attachments';
 
 annotate MediaData with @UI.MediaResource: {Stream: content} {
@@ -49,6 +50,19 @@ annotate Attachments with @UI: {
     note     @(title: '{i18n>attachment_note}');
     url     @(title: '{i18n>attachment_url}');
 }
+
+annotate Attachments with @Common: {
+    SideEffects #ContentChanged : {
+         SourceProperties : [
+              content
+         ],
+         TargetProperties : [
+              'status',
+              'status.text',
+              'status.code'
+         ]
+    }
+}{};
 
 annotate Statuses with{
     code @(

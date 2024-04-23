@@ -40,6 +40,8 @@ and handling by using an aspect Attachments.
 
 - [License](./LICENSE)
 
+- [Implementation Details](./doc/Design.md)
+
 ## Support, Feedback, Contributing
 
 This project is open to feature requests/suggestions, bug reports etc.
