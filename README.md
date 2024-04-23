@@ -8,12 +8,14 @@ and handling by using an aspect Attachments.
 
 <!-- TOC -->
 
-* [Main Build](#main-build)
+* [Badge](#badge)
 * [Additional Information](#additional-information)
 * [Support, Feedback, Contributing](#support-feedback-contributing)
+* [Minimum Version](#minimum-version)
 * [Usage](#usage)
     * [CDS Models](#cds-models)
         * [Model Texts](#model-texts)
+    * [UI](#ui)
     * [Outbox](#outbox)
     * [Malware Scanner](#malware-scanner)
     * [Error Messages](#error-messages)
@@ -22,7 +24,6 @@ and handling by using an aspect Attachments.
         * [Motivation](#motivation)
         * [HTTP Endpoint](#http-endpoint)
         * [Security](#security)
-
 <!-- TOC -->
 
 ## Badge
