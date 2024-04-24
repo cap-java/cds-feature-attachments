@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception.AttachmentStatusException;
 import com.sap.cds.feature.attachments.helper.LogObserver;
 import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
@@ -32,10 +32,9 @@ class DefaultAttachmentStatusValidatorTest {
 		observer.stop();
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings = {StatusCode.CLEAN, StatusCode.NO_SCANNER})
-	void noExceptionIsThrown(String status) {
-		assertDoesNotThrow(() -> cut.verifyStatus(status));
+	@Test
+	void noExceptionIsThrown() {
+		assertDoesNotThrow(() -> cut.verifyStatus(StatusCode.CLEAN));
 	}
 
 	@ParameterizedTest
@@ -57,7 +56,7 @@ class DefaultAttachmentStatusValidatorTest {
 	void noScannerStatusLogsWarning() {
 		observer.start();
 
-		cut.verifyStatus(StatusCode.NO_SCANNER);
+		cut.verifyStatus(StatusCode.CLEAN);
 
 		observer.stop();
 		var list = observer.getLogEvents();

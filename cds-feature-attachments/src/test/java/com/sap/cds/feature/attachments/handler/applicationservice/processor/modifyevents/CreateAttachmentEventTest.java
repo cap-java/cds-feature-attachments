@@ -18,8 +18,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
@@ -116,8 +116,8 @@ class CreateAttachmentEventTest {
 
 		cut.processEvent(path, attachment.getContent(), CdsData.create(), eventContext);
 
-		assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
-		assertThat(attachment.getStatusCode()).isEqualTo(attachmentServiceResult.attachmentStatus());
+		assertThat(attachment.getContentId()).isEqualTo(attachmentServiceResult.documentId());
+		assertThat(attachment.getStatus()).isEqualTo(attachmentServiceResult.attachmentStatus());
 	}
 
 	@Test

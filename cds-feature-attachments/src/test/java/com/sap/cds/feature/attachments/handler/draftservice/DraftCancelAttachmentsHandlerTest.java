@@ -183,7 +183,7 @@ class DraftCancelAttachmentsHandlerTest {
 			boolean hasActiveEntity, String id) {
 		var attachment = Attachment.create();
 		attachment.setId(id);
-		attachment.setDocumentId(documentId);
+		attachment.setContentId(documentId);
 		attachment.setHasActiveEntity(hasActiveEntity);
 		attachment.setContent(null);
 		when(attachmentsReader.readAttachments(any(), (CdsEntity) eq(target), any())).thenReturn(List.of(attachment));

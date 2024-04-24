@@ -11,7 +11,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.reflect.CdsEntity;
 
 class AttachmentCreateEventContextTest {

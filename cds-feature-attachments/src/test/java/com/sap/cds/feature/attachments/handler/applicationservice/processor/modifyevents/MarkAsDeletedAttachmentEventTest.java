@@ -9,7 +9,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
@@ -46,15 +46,15 @@ class MarkAsDeletedAttachmentEventTest {
 		var value = "test";
 		var documentId = "some id";
 		var data = Attachments.create();
-		data.setDocumentId(documentId);
+		data.setContentId(documentId);
 
 		var expectedValue = cut.processEvent(path, value, data, context);
 
 		assertThat(expectedValue).isEqualTo(value);
-		assertThat(data.getDocumentId()).isEqualTo(documentId);
+		assertThat(data.getContentId()).isEqualTo(documentId);
 		verify(attachmentService).markAttachmentAsDeleted(documentId);
-		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
-		assertThat(currentData).containsEntry(Attachments.STATUS_CODE, null);
+		assertThat(currentData).containsEntry(Attachments.CONTENT_ID, null);
+		assertThat(currentData).containsEntry(Attachments.STATUS, null);
 		assertThat(currentData).containsEntry(Attachments.SCANNED_AT, null);
 	}
 
@@ -66,9 +66,9 @@ class MarkAsDeletedAttachmentEventTest {
 		var expectedValue = cut.processEvent(path, value, data, context);
 
 		assertThat(expectedValue).isEqualTo(value);
-		assertThat(data.getDocumentId()).isNull();
+		assertThat(data.getContentId()).isNull();
 		verifyNoInteractions(attachmentService);
-		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
+		assertThat(currentData).containsEntry(Attachments.CONTENT_ID, null);
 	}
 
 	@Test
@@ -76,15 +76,15 @@ class MarkAsDeletedAttachmentEventTest {
 		var value = "test";
 		var documentId = "some id";
 		var data = Attachments.create();
-		data.setDocumentId(documentId);
+		data.setContentId(documentId);
 		when(context.getEvent()).thenReturn(DraftService.EVENT_DRAFT_PATCH);
 
 		var expectedValue = cut.processEvent(path, value, data, context);
 
 		assertThat(expectedValue).isEqualTo(value);
-		assertThat(data.getDocumentId()).isEqualTo(documentId);
+		assertThat(data.getContentId()).isEqualTo(documentId);
 		verifyNoInteractions(attachmentService);
-		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
+		assertThat(currentData).containsEntry(Attachments.CONTENT_ID, null);
 	}
 
 }

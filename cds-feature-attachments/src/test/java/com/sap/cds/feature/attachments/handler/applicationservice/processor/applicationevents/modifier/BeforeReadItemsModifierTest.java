@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -40,7 +40,7 @@ class BeforeReadItemsModifierTest {
 	@Test
 	void expandSelectDoNotExtendDocumentIdIfAlreadyExist() {
 		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.itemTable().expand(Items_::ID,
-				item -> item.attachments().expand(Attachment_::content, Attachment_::documentId)));
+				item -> item.attachments().expand(Attachment_::content, Attachment_::contentId)));
 
 		cut = new BeforeReadItemsModifier(List.of("attachments"));
 		runTestForExpand(cut, select, 1);
@@ -96,7 +96,7 @@ class BeforeReadItemsModifierTest {
 
 	@Test
 	void directSelectDoesNotAddAdditionalDocumentId() {
-		CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::content, Attachment_::documentId);
+		CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::content, Attachment_::contentId);
 
 		runTestForDirectSelect(select, 1);
 	}
@@ -108,7 +108,7 @@ class BeforeReadItemsModifierTest {
 		var itemExpandedItem = rootExpandedItem.asExpand().items().stream().filter(CqnSelectListItem::isExpand).findAny()
 																											.orElseThrow();
 		var count = itemExpandedItem.asExpand().items().stream().filter(
-				item -> item.isRef() && item.asRef().displayName().equals(Attachments.DOCUMENT_ID)).count();
+				item -> item.isRef() && item.asRef().displayName().equals(Attachments.CONTENT_ID)).count();
 		assertThat(count).isEqualTo(expectedFieldCount);
 	}
 
@@ -117,7 +117,7 @@ class BeforeReadItemsModifierTest {
 		List<CqnSelectListItem> resultItems = cut.items(select.items());
 
 		var count = resultItems.stream().filter(
-				item -> item.isRef() && item.asRef().displayName().equals(Attachments.DOCUMENT_ID)).count();
+				item -> item.isRef() && item.asRef().displayName().equals(Attachments.CONTENT_ID)).count();
 		assertThat(count).isEqualTo(expectedFieldCount);
 	}
 

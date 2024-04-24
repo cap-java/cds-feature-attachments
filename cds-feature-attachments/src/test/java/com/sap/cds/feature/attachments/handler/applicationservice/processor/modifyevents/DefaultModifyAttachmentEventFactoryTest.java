@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 
 class DefaultModifyAttachmentEventFactoryTest {
 
@@ -50,7 +50,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@Test
 	void documentIdNullButtExistingNotNullReturnsDelete() {
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
+		data.put(Attachments.CONTENT_ID, "someValue");
 
 		var event = cut.getEvent(null, null, true, data);
 
@@ -61,7 +61,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	void documentIdsSameContentFillReturnsUpdate() {
 		var documentId = "test ID";
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, documentId);
+		data.put(Attachments.CONTENT_ID, documentId);
 
 		var event = cut.getEvent(mock(InputStream.class), documentId, true, data);
 
@@ -74,7 +74,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@EmptySource
 	void documentIdNotPresentAndExistingNotNullReturnsUpdateEvent(String documentId) {
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
+		data.put(Attachments.CONTENT_ID, "someValue");
 
 		var event = cut.getEvent(mock(InputStream.class), documentId, false, data);
 
@@ -85,7 +85,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	void documentIdsSameContentNullReturnsNothingToDo() {
 		var documentId = "test ID";
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, documentId);
+		data.put(Attachments.CONTENT_ID, documentId);
 
 		var event = cut.getEvent(null, documentId, true, data);
 
@@ -98,7 +98,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@EmptySource
 	void documentIdNotPresentAndExistingNotNullReturnsDeleteEvent(String documentId) {
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
+		data.put(Attachments.CONTENT_ID, "someValue");
 
 		var event = cut.getEvent(null, documentId, false, data);
 
@@ -110,7 +110,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@EmptySource
 	void documentIdPresentAndExistingNotNullButDifferentReturnsDeleteEvent(String documentId) {
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
+		data.put(Attachments.CONTENT_ID, "someValue");
 
 		var event = cut.getEvent(null, documentId, true, data);
 
@@ -147,7 +147,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@Test
 	void documentIdPresentButNullAndExistingNotNullReturnsUpdateEvent() {
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
+		data.put(Attachments.CONTENT_ID, "someValue");
 
 		var event = cut.getEvent(mock(InputStream.class), null, true, data);
 
@@ -157,7 +157,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@Test
 	void updateIfDocumentIdDifferentButContentProvided() {
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "existing");
+		data.put(Attachments.CONTENT_ID, "existing");
 
 		var event = cut.getEvent(mock(InputStream.class), "someValue", true, data);
 
