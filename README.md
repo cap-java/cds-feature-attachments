@@ -7,7 +7,6 @@ and handling by using an aspect Attachments.
 ## Table of Contents
 
 <!-- TOC -->
-
 * [Badge](#badge)
 * [Additional Information](#additional-information)
 * [Support, Feedback, Contributing](#support-feedback-contributing)
@@ -266,8 +265,18 @@ The status of an attachments, which is the malware scan status is also included 
 It is annotated in a way, that it is included in the UI table to show the attachments.
 The default text of the status is also included in the cds models.
 
-If the resolve goal of the `cds-maven-plugin` is executed the following files should be available in the csv file folder
+If the resolve goal of the `cds-maven-plugin` is executed the following files should be available in the `target/cds`
+file folder
 of the `db` module:
+
+- `com.sap.attachments-Statuses.csv`
+- `com.sap.attachments-Statuses-texts.csv`
+
+After doing the following cds build command the following files should be available in the `db/srv/get/data` folder:
+
+```shell
+cds build --for hana
+```
 
 - `com.sap.attachments-Statuses.csv`
 - `com.sap.attachments-Statuses.hdbtabledata`
