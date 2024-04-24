@@ -118,16 +118,16 @@ class DefaultAttachmentsServiceTest {
 			context.setCompleted();
 			return null;
 		}).when(handler).process(any());
-		serviceSpi.on(AttachmentService.EVENT_MARK_AS_DELETED, "", handler);
+		serviceSpi.on(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED, "", handler);
 
-		cut.markAsDeleted(documentId);
+		cut.markAttachmentAsDeleted(documentId);
 
 		var deleteEventContext = contextReference.get();
 		assertThat(deleteEventContext.getDocumentId()).isEqualTo(documentId);
 	}
 
 	@Test
-	void restoreAttachmentInsertsData() {
+	void restoreAttachmentAttachmentInsertsData() {
 		var contextReference = new AtomicReference<AttachmentRestoreEventContext>();
 		doAnswer(input -> {
 			var context = (AttachmentRestoreEventContext) input.getArgument(0);
@@ -135,11 +135,11 @@ class DefaultAttachmentsServiceTest {
 			context.setCompleted();
 			return null;
 		}).when(handler).process(any());
-		serviceSpi.on(AttachmentService.EVENT_RESTORE, "", handler);
+		serviceSpi.on(AttachmentService.EVENT_RESTORE_ATTACHMENT, "", handler);
 
 		var timestamp = Instant.now();
 
-		cut.restore(timestamp);
+		cut.restoreAttachment(timestamp);
 
 		var deleteEventContext = contextReference.get();
 		assertThat(deleteEventContext.getRestoreTimestamp()).isEqualTo(timestamp);

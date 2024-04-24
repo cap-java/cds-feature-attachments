@@ -9,7 +9,7 @@ import java.util.Map;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.ql.cqn.Path;
@@ -34,8 +34,8 @@ public final class ModifyApplicationHandlerHelper {
 		var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 		ReadonlyDataContextEnhancer.fillReadonlyInContext((CdsData) path.target().values());
 		var existingData = getExistingData(keys, existingDataList);
-		var documentIdExists = path.target().values().containsKey(Attachments.DOCUMENT_ID);
-		var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
+		var documentIdExists = path.target().values().containsKey(Attachments.CONTENT_ID);
+		var documentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 
 		var eventToProcess = eventFactory.getEvent(value, documentId, documentIdExists, existingData);
 		return eventToProcess.processEvent(path, value, existingData, eventContext);

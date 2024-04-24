@@ -56,7 +56,8 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 
 	@Override
 	protected void verifyOnlyTwoCreateEvents(String newAttachmentContent, String newAttachmentEntityContent) {
-		verifyEventContextEmptyForEvent(AttachmentService.EVENT_MARK_AS_DELETED, AttachmentService.EVENT_READ_ATTACHMENT);
+		verifyEventContextEmptyForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED,
+				AttachmentService.EVENT_READ_ATTACHMENT);
 		var createEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
 		assertThat(createEvents).hasSize(2);
 		var attachmentContentFound = isAttachmentContentFoundInCreateEvent(createEvents, newAttachmentContent);
@@ -75,7 +76,7 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 		assertThat(attachmentContentFound).isTrue();
 		var attachmentEntityContentFound = isAttachmentContentFoundInCreateEvent(createEvents, newAttachmentEntityContent);
 		assertThat(attachmentEntityContentFound).isTrue();
-		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		assertThat(deleteEvents).hasSize(2);
 		deleteEvents.forEach(event -> {
 			var deleteContext = (AttachmentMarkAsDeletedEventContext) event.context();
@@ -90,7 +91,8 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 
 	@Override
 	protected void verifyTwoReadEvents() {
-		verifyEventContextEmptyForEvent(AttachmentService.EVENT_MARK_AS_DELETED, AttachmentService.EVENT_CREATE_ATTACHMENT);
+		verifyEventContextEmptyForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED,
+				AttachmentService.EVENT_CREATE_ATTACHMENT);
 		var readEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_READ_ATTACHMENT);
 		assertThat(readEvents).hasSize(2);
 	}
@@ -99,7 +101,7 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 	protected void verifyOnlyTwoDeleteEvents(String attachmentDocumentId, String attachmentEntityDocumentId) {
 		awaitNumberOfExpectedEvents(2);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
-		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		assertThat(deleteEvents).hasSize(2);
 		verifyDeleteEventContainsDocumentId(deleteEvents, attachmentDocumentId);
 		verifyDeleteEventContainsDocumentId(deleteEvents, attachmentEntityDocumentId);
@@ -110,7 +112,7 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 			String newAttachmentEntityContent, String attachmentEntityDocumentId) {
 		awaitNumberOfExpectedEvents(4);
 		var createEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
-		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		assertThat(createEvents).hasSize(2);
 		verifyCreateEventFound(createEvents, newAttachmentContent);
 		verifyCreateEventFound(createEvents, newAttachmentEntityContent);
@@ -123,7 +125,7 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 	protected void verifyTwoCreateAndRevertedDeleteEvents() {
 		awaitNumberOfExpectedEvents(4);
 		var createEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
-		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		assertThat(createEvents).hasSize(2);
 		assertThat(deleteEvents).hasSize(2);
 		deleteEvents.forEach(event -> {

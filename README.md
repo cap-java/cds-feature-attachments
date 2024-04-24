@@ -4,6 +4,8 @@ The `com.sap.cds:cds-feature-attachments` dependency is
 a [CAP Java plugin](https://cap.cloud.sap/docs/java/building-plugins) that provides out-of-the box attachments storage
 and handling by using an aspect Attachments.
 
+[//]: # (TODO: add tenant logic -> tenant in request context)
+
 ## Table of Contents
 
 <!-- TOC -->
@@ -118,7 +120,7 @@ It also includes annotations used by the FIORI UI to handle attachments.
 To use the aspect the following code needs to be added to the entity definition:
 
 ```cds
-using {com.sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
+using {sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
 
 entity Items : cuid {
     ...
@@ -147,7 +149,6 @@ The following table gives an overview of the fields and the i18n codes:
 | `fileName` | `attachment_fileName` |
 | `status`   | `attachment_status`   |
 | `note`     | `attachment_note`     |
-| `url`      | `attachment_url`      |
 
 In addition to the field names also header information (`@UI.HeaderInfo`) are annotated:
 
@@ -259,50 +260,10 @@ By adding the error message i18n code to the `i18n.properties` file the error me
 More information can be found in the capire documentation
 for [i18n](https://cap.cloud.sap/docs/guides/i18n#where-to-place-text-bundles).
 
-### Status Texts
-
-The status of an attachments, which is the malware scan status is also included in the cds models.
-It is annotated in a way, that it is included in the UI table to show the attachments.
-The default text of the status is also included in the cds models.
-
-If the resolve goal of the `cds-maven-plugin` is executed the following files should be available in the `target/cds`
-file folder
-of the `db` module:
-
-- `com.sap.attachments-Statuses.csv`
-- `com.sap.attachments-Statuses-texts.csv`
-
-After doing the following cds build command the following files should be available in the `db/srv/get/data` folder:
-
-```shell
-cds build --for hana
-```
-
-- `com.sap.attachments-Statuses.csv`
-- `com.sap.attachments-Statuses.hdbtabledata`
-- `com.sap.attachments-Statuses-texts.csv`
-- `com.sap.attachments-Statuses_texts.hdbtabledata`
-
-In addition, the following files are included in the table definitions folder:
-
-- `com.sap.attachments.Statuses.hdbtable`
-- `com.sap.attachments.Statuses_texts.hdbtable`
-
-The default texts of the status are:
-
-```csv
-CODE,TEXT
-UNSCANNED,Not Scanned
-INFECTED,Infected
-NO_SCANNER,No Scanner Available
-CLEAN,Clean
-```
-
-If the texts need to be overwritten or translated files for the translated texts can be added like:
-
-- `com.sap.attachments-Statuses-texts_en.csv`
-
 ### Restore Endpoint
+
+The attachment service has an event `RESTORE_ATTACHMENTS`.
+This event can be called with a timestamp to restore external stored attachments.
 
 #### Motivation
 
@@ -327,23 +288,20 @@ of the used storage.
 
 #### HTTP Endpoint
 
-Within the cds model
-a [service](./cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/restore-service.cds) is
-defined with a single action:
+There is no predefined endpoint for the restore action.
+To call the action of the service from outside the application a service could be defined like the following example:
 
 ```cds
-namespace com.sap.attachments;
-
 service RestoreAttachments {
   action restoreAttachments (restoreTimestamp: Timestamp);
 }
 ```
 
-The action `restoreAttachments` gets in a timestamp from which the documents need to be restored.
-The action is called with a POST request to the endpoint:
+The action `restoreAttachments` could get in a timestamp from which the attachments need to be restored.
+The action could be called with a POST request to the endpoint:
 
-- OData v4: `/odata/v4/com.sap.attachments.RestoreAttachments/restoreAttachments`
-- OData v2: `/odata/v2/com.sap.attachments.RestoreAttachments/restoreAttachments`
+- OData v4: `/odata/v4/RestoreAttachments/restoreAttachments`
+- OData v2: `/odata/v2/RestoreAttachments/restoreAttachments`
 
 With the body:
 
@@ -353,14 +311,36 @@ With the body:
 }
 ```
 
+The action needs to be implemented and can call the attachment service as in the following example:
+
+```java
+
+@ServiceName(RestoreAttachments_.CDS_NAME)
+public class RestoreAttachmentsHandler implements EventHandler {
+
+	private final AttachmentService attachmentService;
+
+	public RestoreAttachmentsHandler(AttachmentService attachmentService) {
+		this.attachmentService = attachmentService;
+	}
+
+	@On(event = RestoreAttachmentsContext.CDS_NAME)
+	public void restoreAttachments(RestoreAttachmentsContext context) {
+		attachmentService.restoreAttachment(context.getRestoreTimestamp());
+		context.setCompleted();
+	}
+
+}
+```
+
+In the Spring Boot context the `AttachmentService` can be autowired in the handler.
+
 #### Security
 
-For the restore endpoint no security configuration is delivered as the depends on the using services.
 To secure the endpoint security annotations can be used e.g. like the following example:
 
 ```cds
-using {com.sap.attachments.Attachments,
-       com.sap.attachments.RestoreAttachments} from `com.sap.cds/cds-feature-attachments`;
+using {sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
 
 entity Items : cuid {
     ...
@@ -368,7 +348,7 @@ entity Items : cuid {
     ...
 }
 
-annotate RestoreAttachments with @(requires: 'authenticated-user');
+annotate RestoreAttachments with @(requires: 'internal-user');
 ```
 
 Here the `RestoreAttachments` service is annotated with the `requires` annotation to secure the service.

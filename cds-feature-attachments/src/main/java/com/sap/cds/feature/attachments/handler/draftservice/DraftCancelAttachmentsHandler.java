@@ -12,7 +12,7 @@ import org.slf4j.Marker;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -83,7 +83,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			var existingEntry = activeCondensedAttachments.stream().filter(
 					updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
 			existingEntry.ifPresent(entry -> {
-				if (!entry.get(Attachments.DOCUMENT_ID).equals(value)) {
+				if (!entry.get(Attachments.CONTENT_ID).equals(value)) {
 					deleteContentAttachmentEvent.processEvent(null, null, CdsData.create(path.target().values()), context);
 				}
 			});
@@ -121,7 +121,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	private Filter buildDocumentIdFilter() {
 		return (path, element, type) -> ApplicationHandlerHelper.isMediaEntity(path.target().type()) && element.getName()
 																																																																																																				.equals(
-																																																																																																						Attachments.DOCUMENT_ID);
+																																																																																																						Attachments.CONTENT_ID);
 	}
 
 }

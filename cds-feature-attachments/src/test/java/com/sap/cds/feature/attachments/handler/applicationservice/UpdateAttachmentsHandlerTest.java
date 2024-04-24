@@ -401,7 +401,7 @@ class UpdateAttachmentsHandlerTest {
 
 		verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
 		verifyNoInteractions(eventFactory);
-		verify(attachmentService).markAsDeleted(attachment.getDocumentId());
+		verify(attachmentService).markAttachmentAsDeleted(attachment.getDocumentId());
 	}
 
 	@Test

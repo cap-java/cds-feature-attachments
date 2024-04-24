@@ -1,4 +1,4 @@
-namespace com.sap.attachments;
+namespace sap.attachments;
 
 using {
     cuid,
@@ -6,30 +6,23 @@ using {
 } from '@sap/cds/common';
 
 type StatusCode : String enum {
-    UNSCANNED;
-    INFECTED;
-    NO_SCANNER;
-    CLEAN;
-    FAILED;
+    Unscanned;
+    Scanning;
+    Infected;
+    Clean;
+    Failed;
 }
 
-entity Statuses @cds.autoexpose @readonly {
-    key code : StatusCode;
-        text : localized String(255);
-}
-
-type Status     : Association to Statuses;
-
+//TODO check expression for link based on status
 aspect MediaData @(_is_media_data) {
     content    : LargeBinary; // stored only for db-based services
     mimeType   : String;
     fileName   : String;
-    documentId : String @readonly;
-    status     : Status @readonly;
+    contentId : String @readonly; // id of attachment in external storage, if database storage is used, same as id
+    status     : StatusCode @readonly;
     scannedAt  : Timestamp @readonly;
 }
 
 aspect Attachments : cuid, managed, MediaData {
     note : String;
-    url  : String;
 }

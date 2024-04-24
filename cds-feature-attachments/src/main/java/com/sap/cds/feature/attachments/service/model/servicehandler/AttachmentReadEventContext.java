@@ -3,7 +3,7 @@
 	**************************************************************************/
 package com.sap.cds.feature.attachments.service.model.servicehandler;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.EventName;

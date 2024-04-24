@@ -5,7 +5,7 @@ package com.sap.cds.feature.attachments.service.model.servicehandler;
 
 import java.util.Map;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;

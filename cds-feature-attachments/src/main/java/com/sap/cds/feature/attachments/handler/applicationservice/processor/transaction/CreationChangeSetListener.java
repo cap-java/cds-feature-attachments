@@ -32,7 +32,7 @@ public class CreationChangeSetListener implements ChangeSetListener {
 	public void afterClose(boolean completed) {
 		if (!completed) {
 			cdsRuntime.requestContext().run(
-					(Consumer<RequestContext>) requestContext -> outboxedAttachmentService.markAsDeleted(documentId));
+					(Consumer<RequestContext>) requestContext -> outboxedAttachmentService.markAttachmentAsDeleted(documentId));
 		}
 	}
 

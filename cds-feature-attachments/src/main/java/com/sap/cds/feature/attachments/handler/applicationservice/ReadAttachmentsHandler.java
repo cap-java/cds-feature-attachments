@@ -16,8 +16,8 @@ import org.slf4j.Marker;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream.InputStreamSupplier;
@@ -93,8 +93,8 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
-			var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
-			var status = (String) path.target().values().get(Attachments.STATUS_CODE);
+			var documentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+			var status = (String) path.target().values().get(Attachments.STATUS);
 			var content = (InputStream) path.target().values().get(Attachments.CONTENT);
 			var contentExists = Objects.nonNull(content);
 			if (Objects.nonNull(documentId) || contentExists) {

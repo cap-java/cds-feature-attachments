@@ -12,8 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -58,8 +58,8 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		var createListener = listenerProvider.provideListener(result.documentId(), eventContext.getCdsRuntime());
 		var context = eventContext.getChangeSetContext();
 		context.register(createListener);
-		path.target().values().put(Attachments.DOCUMENT_ID, result.documentId());
-		path.target().values().put(Attachments.STATUS_CODE, result.attachmentStatus());
+		path.target().values().put(Attachments.CONTENT_ID, result.documentId());
+		path.target().values().put(Attachments.STATUS, result.attachmentStatus());
 		return result.isInternalStored() ? value : null;
 	}
 

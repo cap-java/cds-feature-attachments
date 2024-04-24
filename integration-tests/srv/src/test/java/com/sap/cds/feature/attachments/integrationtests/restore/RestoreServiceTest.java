@@ -56,7 +56,7 @@ class RestoreServiceTest {
 		assertThat(contexts).hasSize(1);
 		var event = contexts.get(0).event();
 		var context = (AttachmentRestoreEventContext) contexts.get(0).context();
-		assertThat(event).isEqualTo(AttachmentService.EVENT_RESTORE);
+		assertThat(event).isEqualTo(AttachmentService.EVENT_RESTORE_ATTACHMENT);
 		assertThat(context.getRestoreTimestamp()).isEqualTo(timestamp);
 	}
 

@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.constants.HandlerConstants;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
@@ -51,7 +51,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		logger.info(create_marker, "Default Attachment Service handler called for creating attachment for entity name: {}",
 				context.getAttachmentEntity().getQualifiedName());
 		var documentId = (String) context.getAttachmentIds().get(Attachments.ID);
-		context.getData().setStatusCode(StatusCode.UNSCANNED);
+		context.getData().setStatus(StatusCode.UNSCANNED);
 		var listener = endTransactionMalwareScanProvider.getChangeSetListener(context.getAttachmentEntity(), documentId);
 		context.getChangeSetContext().register(listener);
 		context.setIsInternalStored(true);
@@ -59,7 +59,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		context.setCompleted();
 	}
 
-	@On(event = AttachmentService.EVENT_MARK_AS_DELETED)
+	@On(event = AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
 		logger.info(delete_marker, "marking attachment as deleted with document id: {}", context.getDocumentId());
@@ -68,7 +68,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		context.setCompleted();
 	}
 
-	@On(event = AttachmentService.EVENT_RESTORE)
+	@On(event = AttachmentService.EVENT_RESTORE_ATTACHMENT)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void restoreAttachment(AttachmentRestoreEventContext context) {
 		logger.info(restore_marker, "Default Attachment Service handler called for restoring attachment for timestamp: {}",

@@ -39,7 +39,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 			Attachments itemAttachmentAfterChange) {
 		waitTillExpectedHandlerMessageSize(2);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_CREATE_ATTACHMENT);
-		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		assertThat(deleteEvents).hasSize(2);
 		assertThat(deleteEvents.stream().anyMatch(
 				event -> ((AttachmentMarkAsDeletedEventContext) event.context()).getDocumentId()
@@ -84,7 +84,8 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 
 	@Override
 	protected void verifySingleCreateEvent(String documentId, String content) {
-		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_MARK_AS_DELETED);
+		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT,
+				AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		var createEvent = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
 		assertThat(createEvent).hasSize(1).first().satisfies(event -> {
 			assertThat(event.context()).isInstanceOf(AttachmentCreateEventContext.class);
@@ -103,7 +104,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 		assertThat(createEvents).hasSize(2);
 		verifyCreateEventsContainsDocumentId(toBeDeletedDocumentId, createEvents);
 		verifyCreateEventsContainsDocumentId(resultDocumentId, createEvents);
-		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 
 		var deleteDocumentId = !resultDocumentId.equals(toBeDeletedDocumentId) ? toBeDeletedDocumentId : createEvents.stream()
 																																																																																																					.filter(
@@ -130,7 +131,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	protected void verifySingleDeletionEvent(String documentId) {
 		waitTillExpectedHandlerMessageSize(1);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
-		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		assertThat(deleteEvents).hasSize(1).first().satisfies(event -> {
 			assertThat(event.context()).isInstanceOf(AttachmentMarkAsDeletedEventContext.class);
 			var deleteContext = (AttachmentMarkAsDeletedEventContext) event.context();
@@ -144,7 +145,8 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 
 	@Override
 	protected void verifySingleReadEvent(String documentId) {
-		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_MARK_AS_DELETED);
+		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT,
+				AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		var readContext = serviceHandler.getEventContext();
 		assertThat(readContext).hasSize(1).first().satisfies(event -> {
 			assertThat(event.event()).isEqualTo(AttachmentService.EVENT_READ_ATTACHMENT);

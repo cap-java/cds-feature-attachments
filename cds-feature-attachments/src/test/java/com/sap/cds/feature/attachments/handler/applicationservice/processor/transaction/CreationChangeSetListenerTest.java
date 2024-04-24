@@ -41,7 +41,7 @@ class CreationChangeSetListenerTest {
 		verify(requestContextRunner).run(requestContextCaptor.capture());
 		var requestContext = requestContextCaptor.getValue();
 		requestContext.accept(mock(RequestContext.class));
-		verify(outboxedAttachmentService).markAsDeleted(documentId);
+		verify(outboxedAttachmentService).markAttachmentAsDeleted(documentId);
 	}
 
 	@Test

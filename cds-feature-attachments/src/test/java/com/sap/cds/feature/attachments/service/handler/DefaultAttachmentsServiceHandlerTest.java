@@ -71,7 +71,7 @@ class DefaultAttachmentsServiceHandlerTest {
 	}
 
 	@Test
-	void restoreAttachmentSetData() {
+	void restoreAttachmentAttachmentSetData() {
 		var restoreContext = AttachmentRestoreEventContext.create();
 
 		cut.restoreAttachment(restoreContext);
@@ -107,12 +107,12 @@ class DefaultAttachmentsServiceHandlerTest {
 	}
 
 	@Test
-	void restoreMethodHasCorrectAnnotation() throws NoSuchMethodException {
+	void restoreAttachmentMethodHasCorrectAnnotation() throws NoSuchMethodException {
 		var updateMethod = cut.getClass().getMethod("restoreAttachment", AttachmentRestoreEventContext.class);
 		var onAnnotation = updateMethod.getAnnotation(On.class);
 		var handlerOrderAnnotation = updateMethod.getAnnotation(HandlerOrder.class);
 
-		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_RESTORE);
+		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_RESTORE_ATTACHMENT);
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
 	}
 
@@ -122,7 +122,7 @@ class DefaultAttachmentsServiceHandlerTest {
 		var onAnnotation = deleteMethod.getAnnotation(On.class);
 		var handlerOrderAnnotation = deleteMethod.getAnnotation(HandlerOrder.class);
 
-		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_MARK_AS_DELETED);
+		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
 	}
 

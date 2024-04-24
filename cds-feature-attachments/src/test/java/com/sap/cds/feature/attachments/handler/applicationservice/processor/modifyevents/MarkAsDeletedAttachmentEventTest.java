@@ -52,7 +52,7 @@ class MarkAsDeletedAttachmentEventTest {
 
 		assertThat(expectedValue).isEqualTo(value);
 		assertThat(data.getDocumentId()).isEqualTo(documentId);
-		verify(attachmentService).markAsDeleted(documentId);
+		verify(attachmentService).markAttachmentAsDeleted(documentId);
 		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
 		assertThat(currentData).containsEntry(Attachments.STATUS_CODE, null);
 		assertThat(currentData).containsEntry(Attachments.SCANNED_AT, null);

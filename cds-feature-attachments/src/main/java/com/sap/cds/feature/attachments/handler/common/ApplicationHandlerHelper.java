@@ -15,7 +15,7 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
@@ -60,7 +60,7 @@ public final class ApplicationHandlerHelper {
 	}
 
 	public static boolean doesDocumentIdExistsBefore(Map<?, Object> existingData) {
-		return Objects.nonNull(existingData.get(Attachments.DOCUMENT_ID));
+		return Objects.nonNull(existingData.get(Attachments.CONTENT_ID));
 	}
 
 	public static List<CdsData> condenseData(List<CdsData> data, CdsEntity entity) {

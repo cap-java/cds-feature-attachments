@@ -11,7 +11,7 @@ import org.slf4j.Marker;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Validator;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
@@ -109,7 +109,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 			var entryExists = condensedUpdatedData.stream().anyMatch(
 					updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
 			if (!entryExists) {
-				outboxedAttachmentService.markAsDeleted((String) path.target().values().get(Attachments.DOCUMENT_ID));
+				outboxedAttachmentService.markAttachmentAsDeleted((String) path.target().values().get(Attachments.CONTENT_ID));
 			}
 		};
 		ApplicationHandlerHelper.callValidator(entity, exitingDataList, filter, validator);

@@ -9,8 +9,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnSelectListItem;
 import com.sap.cds.ql.cqn.Modifier;
@@ -72,15 +72,15 @@ public class BeforeReadItemsModifier implements Modifier {
 			List<CqnSelectListItem> listToEnhance) {
 		if (isMediaAssociationAndNeedNewDocumentIdField(association, list)) {
 			logger.debug("Adding document id and status code to select items");
-			listToEnhance.add(CQL.get(Attachments.DOCUMENT_ID));
-			listToEnhance.add(CQL.get(Attachments.STATUS_CODE));
+			listToEnhance.add(CQL.get(Attachments.CONTENT_ID));
+			listToEnhance.add(CQL.get(Attachments.STATUS));
 		}
 	}
 
 	private boolean isMediaAssociationAndNeedNewDocumentIdField(String association, List<CqnSelectListItem> list) {
 		return mediaAssociations.contains(association) && list.stream().anyMatch(
 				item -> isItemRefFieldWithName(item, MediaData.CONTENT)) && list.stream().noneMatch(
-				item -> isItemRefFieldWithName(item, Attachments.DOCUMENT_ID));
+				item -> isItemRefFieldWithName(item, Attachments.CONTENT_ID));
 	}
 
 	private boolean isItemRefFieldWithName(CqnSelectListItem item, String fieldName) {

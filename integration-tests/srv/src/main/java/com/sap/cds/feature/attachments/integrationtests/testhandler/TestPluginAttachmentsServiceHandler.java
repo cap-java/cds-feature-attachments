@@ -49,11 +49,11 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_CREATE_ATTACHMENT, context));
 	}
 
-	@On(event = AttachmentService.EVENT_MARK_AS_DELETED)
+	@On(event = AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED)
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
 		logger.info(marker, "DELETE Attachment called in dummy handler for document id {}", context.getDocumentId());
 		context.setCompleted();
-		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_MARK_AS_DELETED, context));
+		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED, context));
 	}
 
 	@On(event = AttachmentService.EVENT_READ_ATTACHMENT)
@@ -66,11 +66,11 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_READ_ATTACHMENT, context));
 	}
 
-	@On(event = AttachmentService.EVENT_RESTORE)
+	@On(event = AttachmentService.EVENT_RESTORE_ATTACHMENT)
 	public void restoreAttachment(AttachmentRestoreEventContext context) {
 		logger.info(marker, "RESTORE Attachment called in dummy handler for timestamp {}", context.getRestoreTimestamp());
 		context.setCompleted();
-		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_RESTORE, context));
+		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_RESTORE_ATTACHMENT, context));
 	}
 
 	public List<EventContextHolder> getEventContextForEvent(String event) {

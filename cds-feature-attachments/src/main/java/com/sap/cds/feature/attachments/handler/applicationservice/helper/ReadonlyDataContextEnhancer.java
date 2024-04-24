@@ -8,7 +8,7 @@ import java.util.Objects;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Validator;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.services.EventContext;
 
@@ -20,12 +20,12 @@ public final class ReadonlyDataContextEnhancer {
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Validator validator = (path, element, value) -> {
 			if (isDraft) {
-				var documentId = path.target().values().get(Attachments.DOCUMENT_ID);
-				var statusCode = path.target().values().get(Attachments.STATUS_CODE);
+				var documentId = path.target().values().get(Attachments.CONTENT_ID);
+				var statusCode = path.target().values().get(Attachments.STATUS);
 				var scannedAt = path.target().values().get(Attachments.SCANNED_AT);
 				var cdsData = CdsData.create();
-				cdsData.put(Attachments.DOCUMENT_ID, documentId);
-				cdsData.put(Attachments.STATUS_CODE, statusCode);
+				cdsData.put(Attachments.CONTENT_ID, documentId);
+				cdsData.put(Attachments.STATUS, statusCode);
 				cdsData.put(Attachments.SCANNED_AT, scannedAt);
 				path.target().values().put(CREATE_READONLY_CONTEXT, cdsData);
 			} else {
@@ -39,8 +39,8 @@ public final class ReadonlyDataContextEnhancer {
 	public static void fillReadonlyInContext(CdsData data) {
 		var readOnlyData = (CdsData) data.get(CREATE_READONLY_CONTEXT);
 		if (Objects.nonNull(readOnlyData)) {
-			data.put(Attachments.DOCUMENT_ID, readOnlyData.get(Attachments.DOCUMENT_ID));
-			data.put(Attachments.STATUS_CODE, readOnlyData.get(Attachments.STATUS_CODE));
+			data.put(Attachments.CONTENT_ID, readOnlyData.get(Attachments.CONTENT_ID));
+			data.put(Attachments.STATUS, readOnlyData.get(Attachments.STATUS));
 			data.put(Attachments.SCANNED_AT, readOnlyData.get(Attachments.SCANNED_AT));
 			data.remove(CREATE_READONLY_CONTEXT);
 		}

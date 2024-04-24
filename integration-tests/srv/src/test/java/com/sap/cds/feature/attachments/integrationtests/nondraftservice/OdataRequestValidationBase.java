@@ -394,7 +394,7 @@ abstract class OdataRequestValidationBase {
 		assertThat(mvcResult.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
 		if (Objects.nonNull(serviceHandler)) {
 			Awaitility.await().until(() -> serviceHandler.getEventContext().size() == 1);
-			verifyNumberOfEvents(AttachmentService.EVENT_MARK_AS_DELETED, 1);
+			verifyNumberOfEvents(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED, 1);
 			verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
 		}
 	}

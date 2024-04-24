@@ -33,7 +33,6 @@ import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmen
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.modifier.ActiveEntityModifier;
-import com.sap.cds.feature.attachments.handler.restore.RestoreAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.DefaultAttachmentsService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
@@ -104,7 +103,6 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(
 				new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent, ActiveEntityModifier::new));
 		configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
-		configurer.eventHandler(new RestoreAttachmentsHandler(attachmentService));
 	}
 
 	private EndTransactionMalwareScanProvider createEndTransactionMalwareScanListener(

@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -66,11 +66,11 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 		emit(createContext);
 
 		return new AttachmentModificationResult(Boolean.TRUE.equals(createContext.getIsInternalStored()),
-				createContext.getDocumentId(), createContext.getData().getStatusCode());
+				createContext.getDocumentId(), createContext.getData().getStatus());
 	}
 
 	@Override
-	public void markAsDeleted(String documentId) {
+	public void markAttachmentAsDeleted(String documentId) {
 		logger.info(delete_marker, "Marking attachment as deleted for document id: {}", documentId);
 
 		var deleteContext = AttachmentMarkAsDeletedEventContext.create();
@@ -80,7 +80,7 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 	}
 
 	@Override
-	public void restore(Instant restoreTimestamp) {
+	public void restoreAttachment(Instant restoreTimestamp) {
 		logger.info(restore_marker, "Restoring deleted attachment for timestamp: {}", restoreTimestamp);
 		var restoreContext = AttachmentRestoreEventContext.create();
 		restoreContext.setRestoreTimestamp(restoreTimestamp);
