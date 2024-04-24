@@ -18,7 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import com.sap.cds.Struct;
-import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.integration.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.AttachmentEntity;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.DraftRoots;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.DraftRoots_;
@@ -71,11 +71,11 @@ abstract class DraftOdataRequestValidationBase {
 		var selectedAttachment = selectedRoot.getItems().get(0).getAttachments().get(0);
 		var selectedAttachmentEntity = selectedRoot.getItems().get(0).getAttachmentEntities().get(0);
 
-		verifyDocumentId(selectedAttachment.getDocumentId(), selectedAttachment.getId());
+		verifyContentId(selectedAttachment.getContentId(), selectedAttachment.getId());
 		assertThat(selectedAttachment.getFileName()).isEqualTo("itemAttachment.txt");
 		assertThat(selectedAttachment.getMimeType()).contains("text/plain");
 		verifyContent(selectedAttachment.getContent(), testContentAttachment);
-		verifyDocumentId(selectedAttachmentEntity.getDocumentId(), selectedAttachmentEntity.getId());
+		verifyContentId(selectedAttachmentEntity.getContentId(), selectedAttachmentEntity.getId());
 		assertThat(selectedAttachmentEntity.getFileName()).isEqualTo("itemAttachmentEntity.txt");
 		assertThat(selectedAttachmentEntity.getMimeType()).contains("image/jpeg");
 		verifyContent(selectedAttachmentEntity.getContent(), testContentAttachmentEntity);
@@ -141,7 +141,7 @@ abstract class DraftOdataRequestValidationBase {
 		var selectedRootAfterDelete = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterDelete.getItems().get(0).getAttachments()).isEmpty();
 		assertThat(selectedRootAfterDelete.getItems().get(0).getAttachmentEntities()).isEmpty();
-		verifyOnlyTwoDeleteEvents(itemAttachment.getDocumentId(), itemAttachmentEntity.getDocumentId());
+		verifyOnlyTwoDeleteEvents(itemAttachment.getContentId(), itemAttachmentEntity.getContentId());
 	}
 
 	@Test
@@ -248,7 +248,7 @@ abstract class DraftOdataRequestValidationBase {
 		var selectedRootAfterDelete = selectStoredRootData(selectedRoot);
 		verifyContent(selectedRootAfterDelete.getItems().get(0).getAttachments().get(0).getContent(), null);
 		verifyContent(selectedRootAfterDelete.getItems().get(0).getAttachmentEntities().get(0).getContent(), null);
-		verifyOnlyTwoDeleteEvents(itemAttachment.getDocumentId(), itemAttachmentEntity.getDocumentId());
+		verifyOnlyTwoDeleteEvents(itemAttachment.getContentId(), itemAttachmentEntity.getContentId());
 	}
 
 	@Test
@@ -280,8 +280,8 @@ abstract class DraftOdataRequestValidationBase {
 		var itemAttachment = selectedRoot.getItems().get(0).getAttachments().get(0);
 		var itemAttachmentEntity = selectedRoot.getItems().get(0).getAttachmentEntities().get(0);
 
-		var attachmentDocumentId = itemAttachment.getDocumentId();
-		var attachmentEntityDocumentId = itemAttachmentEntity.getDocumentId();
+		var attachmentContentId = itemAttachment.getContentId();
+		var attachmentEntityContentId = itemAttachmentEntity.getContentId();
 
 		var newAttachmentContent = "new content attachment";
 		putNewContentForAttachment(newAttachmentContent, selectedRoot.getItems().get(0).getId(), itemAttachment.getId());
@@ -294,11 +294,11 @@ abstract class DraftOdataRequestValidationBase {
 		verifyContent(selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0).getContent(),
 				newAttachmentEntityContent);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT);
-		verifyTwoUpdateEvents(newAttachmentContent, attachmentDocumentId, newAttachmentEntityContent,
-				attachmentEntityDocumentId);
+		verifyTwoUpdateEvents(newAttachmentContent, attachmentContentId, newAttachmentEntityContent,
+				attachmentEntityContentId);
 		var selectedRootAfterDeletion = selectStoredRootData(selectedRoot);
-		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachments().get(0).getDocumentId()).isNotEmpty();
-		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachmentEntities().get(0).getDocumentId()).isNotEmpty();
+		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachments().get(0).getContentId()).isNotEmpty();
+		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachmentEntities().get(0).getContentId()).isNotEmpty();
 	}
 
 	@Test
@@ -343,8 +343,8 @@ abstract class DraftOdataRequestValidationBase {
 		prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
 		var selectedRootAfterDelete = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterDelete.getItems()).isEmpty();
-		verifyOnlyTwoDeleteEvents(selectedRoot.getItems().get(0).getAttachments().get(0).getDocumentId(),
-				selectedRoot.getItems().get(0).getAttachmentEntities().get(0).getDocumentId());
+		verifyOnlyTwoDeleteEvents(selectedRoot.getItems().get(0).getAttachments().get(0).getContentId(),
+				selectedRoot.getItems().get(0).getAttachmentEntities().get(0).getContentId());
 	}
 
 	@Test
@@ -362,9 +362,9 @@ abstract class DraftOdataRequestValidationBase {
 		var selectedRootAfterDelete = selectStoredRootData(selectedRoot);
 		assertThat(selectedRootAfterDelete.getItems()).isNotEmpty();
 		assertThat(selectedRootAfterDelete.getItems().get(0).getAttachments()).isNotEmpty();
-		assertThat(selectedRootAfterDelete.getItems().get(0).getAttachments().get(0).getDocumentId()).isNotEmpty();
+		assertThat(selectedRootAfterDelete.getItems().get(0).getAttachments().get(0).getContentId()).isNotEmpty();
 		assertThat(selectedRootAfterDelete.getItems().get(0).getAttachmentEntities()).isNotEmpty();
-		assertThat(selectedRootAfterDelete.getItems().get(0).getAttachmentEntities().get(0).getDocumentId()).isNotEmpty();
+		assertThat(selectedRootAfterDelete.getItems().get(0).getAttachmentEntities().get(0).getContentId()).isNotEmpty();
 		verifyNoAttachmentEventsCalled();
 	}
 
@@ -384,10 +384,10 @@ abstract class DraftOdataRequestValidationBase {
 		var result = persistenceService.run(select).listOf(DraftRoots.class);
 		assertThat(result).isEmpty();
 
-		var attachmentDocumentId = selectedRoot.getItems().get(0).getAttachments().get(0).getDocumentId();
-		var attachmentEntityDocumentId = selectedRoot.getItems().get(0).getAttachmentEntities().get(0).getDocumentId();
+		var attachmentContentId = selectedRoot.getItems().get(0).getAttachments().get(0).getContentId();
+		var attachmentEntityContentId = selectedRoot.getItems().get(0).getAttachmentEntities().get(0).getContentId();
 
-		verifyOnlyTwoDeleteEvents(attachmentDocumentId, attachmentEntityDocumentId);
+		verifyOnlyTwoDeleteEvents(attachmentContentId, attachmentEntityContentId);
 	}
 
 	@Test
@@ -719,8 +719,8 @@ abstract class DraftOdataRequestValidationBase {
 				attachmentEntityContent);
 		verifyNoAttachmentEventsCalled();
 		var selectedRootAfterDeletion = selectStoredRootData(selectedRoot);
-		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachments().get(0).getDocumentId()).isNotEmpty();
-		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachmentEntities().get(0).getDocumentId()).isNotEmpty();
+		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachments().get(0).getContentId()).isNotEmpty();
+		assertThat(selectedRootAfterDeletion.getItems().get(0).getAttachmentEntities().get(0).getContentId()).isNotEmpty();
 	}
 
 	private void createNewContentAndValidateEvents(DraftRoots selectedRoot) throws Exception {
@@ -735,7 +735,7 @@ abstract class DraftOdataRequestValidationBase {
 		testPersistenceHandler.reset();
 	}
 
-	protected abstract void verifyDocumentId(String documentId, String attachmentId);
+	protected abstract void verifyContentId(String contentId, String attachmentId);
 
 	protected abstract void verifyContent(InputStream attachment, String testContent) throws IOException;
 
@@ -751,10 +751,10 @@ abstract class DraftOdataRequestValidationBase {
 
 	protected abstract void verifyTwoReadEvents();
 
-	protected abstract void verifyOnlyTwoDeleteEvents(String attachmentDocumentId, String attachmentEntityDocumentId);
+	protected abstract void verifyOnlyTwoDeleteEvents(String attachmentContentId, String attachmentEntityContentId);
 
-	protected abstract void verifyTwoUpdateEvents(String newAttachmentContent, String attachmentDocumentId,
-			String newAttachmentEntityContent, String attachmentEntityDocumentId);
+	protected abstract void verifyTwoUpdateEvents(String newAttachmentContent, String attachmentContentId,
+			String newAttachmentEntityContent, String attachmentEntityContentId);
 
 	protected abstract void verifyTwoCreateAndRevertedDeleteEvents();
 

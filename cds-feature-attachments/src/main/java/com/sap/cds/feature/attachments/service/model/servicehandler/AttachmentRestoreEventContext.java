@@ -26,14 +26,14 @@ public interface AttachmentRestoreEventContext extends EventContext {
 	}
 
 	/**
-		* @return The restore timestamp for the documents to be restored or {@code null} if no timestamp was specified
+		* @return The restore timestamp for the contents to be restored or {@code null} if no timestamp was specified
 		*/
 	Instant getRestoreTimestamp();
 
 	/**
-		* Sets the restore timestamp for the documents to be restored
+		* Sets the restore timestamp for the contents to be restored
 		*
-		* @param restoreTimestamp The timestamp from which the documents shall be restored, every document which was deleted after or equal this timestamp will be restored
+		* @param restoreTimestamp The timestamp from which the contents shall be restored, every content which was deleted after or equal this timestamp will be restored
 		*/
 	void setRestoreTimestamp(Instant restoreTimestamp);
 

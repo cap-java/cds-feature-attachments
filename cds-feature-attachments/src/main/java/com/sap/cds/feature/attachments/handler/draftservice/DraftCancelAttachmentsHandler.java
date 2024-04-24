@@ -65,7 +65,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			var draftAttachments = readAttachments(context, draftEntity, false);
 			var activeCondensedAttachments = getCondensedActiveAttachments(context, activeEntity);
 
-			var filter = buildDocumentIdFilter();
+			var filter = buildContentIdFilter();
 			var validator = buildDeleteContentValidator(context, activeCondensedAttachments);
 			ApplicationHandlerHelper.callValidator(context.getTarget(), draftAttachments, filter, validator);
 		}
@@ -118,7 +118,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 		return ApplicationHandlerHelper.condenseData(attachments, context.getTarget());
 	}
 
-	private Filter buildDocumentIdFilter() {
+	private Filter buildContentIdFilter() {
 		return (path, element, type) -> ApplicationHandlerHelper.isMediaEntity(path.target().type()) && element.getName()
 																																																																																																				.equals(
 																																																																																																						Attachments.CONTENT_ID);

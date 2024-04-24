@@ -34,10 +34,10 @@ public final class ModifyApplicationHandlerHelper {
 		var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 		ReadonlyDataContextEnhancer.fillReadonlyInContext((CdsData) path.target().values());
 		var existingData = getExistingData(keys, existingDataList);
-		var documentIdExists = path.target().values().containsKey(Attachments.CONTENT_ID);
-		var documentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+		var contentIdExists = path.target().values().containsKey(Attachments.CONTENT_ID);
+		var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 
-		var eventToProcess = eventFactory.getEvent(value, documentId, documentIdExists, existingData);
+		var eventToProcess = eventFactory.getEvent(value, contentId, contentIdExists, existingData);
 		return eventToProcess.processEvent(path, value, existingData, eventContext);
 	}
 

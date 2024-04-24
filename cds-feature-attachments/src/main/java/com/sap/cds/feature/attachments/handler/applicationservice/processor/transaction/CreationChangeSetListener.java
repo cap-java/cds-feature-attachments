@@ -17,13 +17,13 @@ import com.sap.cds.services.runtime.CdsRuntime;
 	*/
 public class CreationChangeSetListener implements ChangeSetListener {
 
-	private final String documentId;
+	private final String contentId;
 	private final CdsRuntime cdsRuntime;
 	private final AttachmentService outboxedAttachmentService;
 
-	public CreationChangeSetListener(String documentId, CdsRuntime cdsRuntime,
+	public CreationChangeSetListener(String contentId, CdsRuntime cdsRuntime,
 			AttachmentService outboxedAttachmentService) {
-		this.documentId = documentId;
+		this.contentId = contentId;
 		this.cdsRuntime = cdsRuntime;
 		this.outboxedAttachmentService = outboxedAttachmentService;
 	}
@@ -32,7 +32,7 @@ public class CreationChangeSetListener implements ChangeSetListener {
 	public void afterClose(boolean completed) {
 		if (!completed) {
 			cdsRuntime.requestContext().run(
-					(Consumer<RequestContext>) requestContext -> outboxedAttachmentService.markAttachmentAsDeleted(documentId));
+					(Consumer<RequestContext>) requestContext -> outboxedAttachmentService.markAttachmentAsDeleted(contentId));
 		}
 	}
 

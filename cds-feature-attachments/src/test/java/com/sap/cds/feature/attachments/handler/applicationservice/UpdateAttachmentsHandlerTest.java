@@ -157,8 +157,8 @@ class UpdateAttachmentsHandlerTest {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 
 		var updateAttachment = Attachments.create();
-		var documentId = "Document Id";
-		updateAttachment.setContentId(documentId);
+		var contentId = "Document Id";
+		updateAttachment.setContentId(contentId);
 		updateAttachment.setContent(null);
 		var readonlyData = CdsData.create();
 		readonlyData.put(Attachment.STATUS, "some wrong status code");
@@ -171,7 +171,7 @@ class UpdateAttachmentsHandlerTest {
 
 		verifyNoInteractions(eventFactory, event);
 		assertThat(updateAttachment.get("CREATE_READONLY_CONTEXT")).isNull();
-		assertThat(updateAttachment).containsEntry(Attachment.CONTENT_ID, documentId);
+		assertThat(updateAttachment).containsEntry(Attachment.CONTENT_ID, contentId);
 		assertThat(updateAttachment).doesNotContainKey(Attachment.STATUS);
 		assertThat(updateAttachment).doesNotContainKey(Attachment.SCANNED_AT);
 	}

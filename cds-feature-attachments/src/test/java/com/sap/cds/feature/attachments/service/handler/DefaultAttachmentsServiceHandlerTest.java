@@ -56,7 +56,7 @@ class DefaultAttachmentsServiceHandlerTest {
 		cut.createAttachment(createContext);
 
 		assertThat(createContext.isCompleted()).isTrue();
-		assertThat(createContext.getDocumentId()).isEqualTo(attachmentId);
+		assertThat(createContext.getContentId()).isEqualTo(attachmentId);
 		assertThat(createContext.getIsInternalStored()).isTrue();
 		assertThat(createContext.getData().getStatus()).isEqualTo(StatusCode.UNSCANNED);
 	}
@@ -140,16 +140,16 @@ class DefaultAttachmentsServiceHandlerTest {
 	void malwareScannerRegisteredForEndOfTransaction() {
 		var listener = mock(ChangeSetListener.class);
 		var entity = mock(CdsEntity.class);
-		when(malwareScanProvider.getChangeSetListener(entity, "documentId")).thenReturn(listener);
+		when(malwareScanProvider.getChangeSetListener(entity, "contentId")).thenReturn(listener);
 		var createContext = AttachmentCreateEventContext.create();
-		createContext.setAttachmentIds(Map.of(Attachments.ID, "documentId"));
+		createContext.setAttachmentIds(Map.of(Attachments.ID, "contentId"));
 		createContext.setData(MediaData.create());
 		createContext.setAttachmentEntity(entity);
 		ChangeSetContextImpl.open();
 
 		cut.createAttachment(createContext);
 
-		verify(malwareScanProvider).getChangeSetListener(entity, "documentId");
+		verify(malwareScanProvider).getChangeSetListener(entity, "contentId");
 	}
 
 	private void closeChangeSetContext() throws Exception {

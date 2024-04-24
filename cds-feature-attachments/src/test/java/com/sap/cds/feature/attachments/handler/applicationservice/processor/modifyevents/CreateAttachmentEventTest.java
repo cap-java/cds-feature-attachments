@@ -116,19 +116,19 @@ class CreateAttachmentEventTest {
 
 		cut.processEvent(path, attachment.getContent(), CdsData.create(), eventContext);
 
-		assertThat(attachment.getContentId()).isEqualTo(attachmentServiceResult.documentId());
+		assertThat(attachment.getContentId()).isEqualTo(attachmentServiceResult.contentId());
 		assertThat(attachment.getStatus()).isEqualTo(attachmentServiceResult.attachmentStatus());
 	}
 
 	@Test
 	void changesetIstRegistered() {
-		var documentId = "document id";
+		var contentId = "document id";
 		var runtime = mock(CdsRuntime.class);
 		when(eventContext.getCdsRuntime()).thenReturn(runtime);
 		var listener = mock(ChangeSetListener.class);
-		when(listenerProvider.provideListener(documentId, runtime)).thenReturn(listener);
+		when(listenerProvider.provideListener(contentId, runtime)).thenReturn(listener);
 		when(attachmentService.createAttachment(any())).thenReturn(
-				new AttachmentModificationResult(false, documentId, "test"));
+				new AttachmentModificationResult(false, contentId, "test"));
 
 		cut.processEvent(path, null, CdsData.create(), eventContext);
 

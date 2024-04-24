@@ -20,11 +20,11 @@ public final class ReadonlyDataContextEnhancer {
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Validator validator = (path, element, value) -> {
 			if (isDraft) {
-				var documentId = path.target().values().get(Attachments.CONTENT_ID);
+				var contentId = path.target().values().get(Attachments.CONTENT_ID);
 				var statusCode = path.target().values().get(Attachments.STATUS);
 				var scannedAt = path.target().values().get(Attachments.SCANNED_AT);
 				var cdsData = CdsData.create();
-				cdsData.put(Attachments.CONTENT_ID, documentId);
+				cdsData.put(Attachments.CONTENT_ID, contentId);
 				cdsData.put(Attachments.STATUS, statusCode);
 				cdsData.put(Attachments.SCANNED_AT, scannedAt);
 				path.target().values().put(CREATE_READONLY_CONTEXT, cdsData);

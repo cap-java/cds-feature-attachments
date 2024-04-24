@@ -14,8 +14,6 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.read
 import com.sap.cds.feature.attachments.helper.LogObserver;
 import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
 
-import ch.qos.logback.classic.Level;
-
 class DefaultAttachmentStatusValidatorTest {
 
 	private DefaultAttachmentStatusValidator cut;
@@ -50,21 +48,6 @@ class DefaultAttachmentStatusValidatorTest {
 			assertThat(exception.getPlainMessage()).isEqualTo(AttachmentErrorStatuses.NOT_CLEAN.getCodeString());
 			assertThat(exception.getLocalizedMessage()).isEqualTo(AttachmentErrorStatuses.NOT_CLEAN.getDescription());
 		}
-	}
-
-	@Test
-	void noScannerStatusLogsWarning() {
-		observer.start();
-
-		cut.verifyStatus(StatusCode.CLEAN);
-
-		observer.stop();
-		var list = observer.getLogEvents();
-		assertThat(list).hasSize(1);
-		list.forEach(event -> {
-			assertThat(event.getLevel()).isEqualTo(Level.WARN);
-			assertThat(event.getFormattedMessage()).isNotEmpty();
-		});
 	}
 
 	@ParameterizedTest

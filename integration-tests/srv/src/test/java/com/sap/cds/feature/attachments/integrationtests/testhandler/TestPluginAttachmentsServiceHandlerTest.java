@@ -13,7 +13,7 @@ import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
@@ -31,7 +31,7 @@ class TestPluginAttachmentsServiceHandlerTest {
 	@Test
 	void readIsWorking() {
 		var context = AttachmentReadEventContext.create();
-		context.setDocumentId("test");
+		context.setContentId("test");
 		context.setData(MediaData.create());
 
 		cut.readAttachment(context);
@@ -47,7 +47,7 @@ class TestPluginAttachmentsServiceHandlerTest {
 		cut.createAttachment(createContext);
 
 		var context = AttachmentReadEventContext.create();
-		context.setDocumentId(createContext.getDocumentId());
+		context.setContentId(createContext.getContentId());
 		context.setData(MediaData.create());
 
 		cut.readAttachment(context);
@@ -58,7 +58,7 @@ class TestPluginAttachmentsServiceHandlerTest {
 	@Test
 	void dummyTestForDelete() {
 		var context = AttachmentMarkAsDeletedEventContext.create();
-		context.setDocumentId("test");
+		context.setContentId("test");
 
 		assertDoesNotThrow(() -> cut.markAttachmentAsDeleted(context));
 	}

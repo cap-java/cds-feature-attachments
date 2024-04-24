@@ -36,7 +36,7 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 		logger.debug("Processing the event for calling attachment service with mark as delete event for entity {}",
 				qualifiedName);
 
-		if (ApplicationHandlerHelper.doesDocumentIdExistsBefore(existingData) && !DraftService.EVENT_DRAFT_PATCH.equals(
+		if (ApplicationHandlerHelper.doesContentIdExistsBefore(existingData) && !DraftService.EVENT_DRAFT_PATCH.equals(
 				eventContext.getEvent())) {
 			logger.debug("Calling attachment service with mark as delete event for entity {}", qualifiedName);
 			outboxedAttachmentService.markAttachmentAsDeleted((String) existingData.get(Attachments.CONTENT_ID));
@@ -46,8 +46,8 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 					qualifiedName);
 		}
 		if (Objects.nonNull(path)) {
-			var newDocumentId = path.target().values().get(Attachments.CONTENT_ID);
-			if (Objects.nonNull(newDocumentId) && newDocumentId.equals(
+			var newContentId = path.target().values().get(Attachments.CONTENT_ID);
+			if (Objects.nonNull(newContentId) && newContentId.equals(
 					existingData.get(Attachments.CONTENT_ID)) || !path.target().values().containsKey(Attachments.CONTENT_ID)) {
 				path.target().values().put(Attachments.CONTENT_ID, null);
 				path.target().values().put(Attachments.STATUS, null);

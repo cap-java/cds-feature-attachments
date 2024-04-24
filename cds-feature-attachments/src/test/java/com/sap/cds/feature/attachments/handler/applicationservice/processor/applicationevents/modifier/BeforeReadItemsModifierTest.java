@@ -20,7 +20,7 @@ class BeforeReadItemsModifierTest {
 	private BeforeReadItemsModifier cut;
 
 	@Test
-	void expandSelectExtendsDocumentId() {
+	void expandSelectExtendsContentId() {
 		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID,
 				root -> root.itemTable().expand(Items_::ID, item -> item.attachments().expand(Attachment_::content)));
 
@@ -38,7 +38,7 @@ class BeforeReadItemsModifierTest {
 	}
 
 	@Test
-	void expandSelectDoNotExtendDocumentIdIfAlreadyExist() {
+	void expandSelectDoNotExtendContentIdIfAlreadyExist() {
 		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.itemTable().expand(Items_::ID,
 				item -> item.attachments().expand(Attachment_::content, Attachment_::contentId)));
 
@@ -47,7 +47,7 @@ class BeforeReadItemsModifierTest {
 	}
 
 	@Test
-	void expandSelectDoNotExtendDocumentIdIfNoContentFieldIncluded() {
+	void expandSelectDoNotExtendContentIdIfNoContentFieldIncluded() {
 		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID,
 				root -> root.itemTable().expand(Items_::ID, item -> item.attachments().expand(Attachment_::ID)));
 
@@ -56,7 +56,7 @@ class BeforeReadItemsModifierTest {
 	}
 
 	@Test
-	void expandSelectDoNotExtendDocumentIdIfNoFieldIncluded() {
+	void expandSelectDoNotExtendContentIdIfNoFieldIncluded() {
 		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID,
 				root -> root.itemTable().expand(Items_::ID, item -> item.attachments().expand()));
 
@@ -74,7 +74,7 @@ class BeforeReadItemsModifierTest {
 	}
 
 	@Test
-	void directSelectExtendsDocumentId() {
+	void directSelectExtendsContentId() {
 		CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::ID, Attachment_::content);
 
 		runTestForDirectSelect(select, 1);
@@ -95,7 +95,7 @@ class BeforeReadItemsModifierTest {
 	}
 
 	@Test
-	void directSelectDoesNotAddAdditionalDocumentId() {
+	void directSelectDoesNotAddAdditionalContentId() {
 		CqnSelect select = Select.from(Attachment_.class).columns(Attachment_::content, Attachment_::contentId);
 
 		runTestForDirectSelect(select, 1);

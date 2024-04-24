@@ -50,19 +50,19 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	public void createAttachment(AttachmentCreateEventContext context) {
 		logger.info(create_marker, "Default Attachment Service handler called for creating attachment for entity name: {}",
 				context.getAttachmentEntity().getQualifiedName());
-		var documentId = (String) context.getAttachmentIds().get(Attachments.ID);
+		var contentId = (String) context.getAttachmentIds().get(Attachments.ID);
 		context.getData().setStatus(StatusCode.UNSCANNED);
-		var listener = endTransactionMalwareScanProvider.getChangeSetListener(context.getAttachmentEntity(), documentId);
+		var listener = endTransactionMalwareScanProvider.getChangeSetListener(context.getAttachmentEntity(), contentId);
 		context.getChangeSetContext().register(listener);
 		context.setIsInternalStored(true);
-		context.setDocumentId(documentId);
+		context.setContentId(contentId);
 		context.setCompleted();
 	}
 
 	@On(event = AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
-		logger.info(delete_marker, "marking attachment as deleted with document id: {}", context.getDocumentId());
+		logger.info(delete_marker, "marking attachment as deleted with document id: {}", context.getContentId());
 
 		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
@@ -82,7 +82,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void readAttachment(AttachmentReadEventContext context) {
 		logger.info(read_marker, "Default Attachment Service handler called for reading attachment with document id: {}",
-				context.getDocumentId());
+				context.getContentId());
 
 		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();

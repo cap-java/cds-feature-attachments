@@ -16,7 +16,7 @@ import com.sap.cds.services.runtime.RequestContextRunner;
 class CreationChangeSetListenerTest {
 
 	private CreationChangeSetListener cut;
-	private String documentId;
+	private String contentId;
 	private CdsRuntime cdsRuntime;
 	private AttachmentService outboxedAttachmentService;
 	private RequestContextRunner requestContextRunner;
@@ -24,10 +24,10 @@ class CreationChangeSetListenerTest {
 
 	@BeforeEach
 	void setup() {
-		documentId = "documentId";
+		contentId = "contentId";
 		cdsRuntime = mock(CdsRuntime.class);
 		outboxedAttachmentService = mock(AttachmentService.class);
-		cut = new CreationChangeSetListener(documentId, cdsRuntime, outboxedAttachmentService);
+		cut = new CreationChangeSetListener(contentId, cdsRuntime, outboxedAttachmentService);
 
 		requestContextRunner = mock(RequestContextRunner.class);
 		when(cdsRuntime.requestContext()).thenReturn(requestContextRunner);
@@ -41,7 +41,7 @@ class CreationChangeSetListenerTest {
 		verify(requestContextRunner).run(requestContextCaptor.capture());
 		var requestContext = requestContextCaptor.getValue();
 		requestContext.accept(mock(RequestContext.class));
-		verify(outboxedAttachmentService).markAttachmentAsDeleted(documentId);
+		verify(outboxedAttachmentService).markAttachmentAsDeleted(contentId);
 	}
 
 	@Test

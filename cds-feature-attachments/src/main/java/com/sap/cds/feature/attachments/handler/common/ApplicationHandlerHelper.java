@@ -59,7 +59,7 @@ public final class ApplicationHandlerHelper {
 		return element.findAnnotation(annotation).isPresent();
 	}
 
-	public static boolean doesDocumentIdExistsBefore(Map<?, Object> existingData) {
+	public static boolean doesContentIdExistsBefore(Map<?, Object> existingData) {
 		return Objects.nonNull(existingData.get(Attachments.CONTENT_ID));
 	}
 

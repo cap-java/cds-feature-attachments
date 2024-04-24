@@ -107,7 +107,7 @@ public class Registration implements CdsRuntimeConfiguration {
 
 	private EndTransactionMalwareScanProvider createEndTransactionMalwareScanListener(
 			DefaultAttachmentMalwareScanner malwareScanner) {
-		return (attachmentEntity, documentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, documentId,
+		return (attachmentEntity, contentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, contentId,
 				malwareScanner);
 	}
 
@@ -128,7 +128,7 @@ public class Registration implements CdsRuntimeConfiguration {
 	}
 
 	private ListenerProvider createCreationFailedListener(AttachmentService outboxedAttachmentService) {
-		return (documentId, cdsRuntime) -> new CreationChangeSetListener(documentId, cdsRuntime, outboxedAttachmentService);
+		return (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId, cdsRuntime, outboxedAttachmentService);
 	}
 
 	protected EventHandler buildCreateHandler(ModifyAttachmentEventFactory factory, ThreadLocalDataStorage storage) {

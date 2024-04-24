@@ -24,15 +24,15 @@ public interface AttachmentMarkAsDeletedEventContext extends EventContext {
 	}
 
 	/**
-		* @return The document id for the attachment to be deleted or {@code null} if no id was specified
+		* @return The content id for the attachment to be deleted or {@code null} if no id was specified
 		*/
-	String getDocumentId();
+	String getContentId();
 
 	/**
-		* Sets the attachment id for the attachment to be deleted
+		* Sets the content id for the attachment to be deleted
 		*
-		* @param documentId The document id of the attachment to be deleted
+		* @param contentId The content id of the attachment to be deleted
 		*/
-	void setDocumentId(String documentId);
+	void setContentId(String contentId);
 
 }

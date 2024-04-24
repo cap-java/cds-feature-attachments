@@ -106,7 +106,7 @@ class DraftPatchAttachmentsHandlerTest {
 	}
 
 	@Test
-	void documentIdUsedForEventFactory() {
+	void contentIdUsedForEventFactory() {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
 		var attachment = Attachments.create();
 		var root = buildRooWithAttachment(attachment);
@@ -123,7 +123,7 @@ class DraftPatchAttachmentsHandlerTest {
 	}
 
 	@Test
-	void documentIdIsNotSetForNonMediaEntity() {
+	void contentIdIsNotSetForNonMediaEntity() {
 		getEntityAndMockContext(Events_.CDS_NAME);
 		var events = Events.create();
 		events.setContent("test");

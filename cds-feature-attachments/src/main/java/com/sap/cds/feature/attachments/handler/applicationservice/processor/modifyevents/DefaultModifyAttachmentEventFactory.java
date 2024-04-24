@@ -14,7 +14,7 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 	* The class {@link DefaultModifyAttachmentEventFactory} is a factory class
 	* that creates the corresponding event for the attachment service {@link AttachmentService}.
 	* The class is used to determine the event that should be executed based on the content,
-	* the documentId and the existingData.
+	* the contentId and the existingData.
 	* The events could be: <br>
 	* - create <br>
 	* - update <br>
@@ -37,45 +37,45 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 	}
 
 	@Override
-	public ModifyAttachmentEvent getEvent(Object content, String documentId, boolean documentIdExist,
+	public ModifyAttachmentEvent getEvent(Object content, String contentId, boolean contentIdExist,
 			CdsData existingData) {
-		var existingDocumentId = existingData.get(Attachments.CONTENT_ID);
-		var event = documentIdExist ? handleExistingDocumentId(content, documentId,
-				existingDocumentId) : handleNonExistingDocumentId(content, existingDocumentId);
+		var existingContentId = existingData.get(Attachments.CONTENT_ID);
+		var event = contentIdExist ? handleExistingContentId(content, contentId,
+				existingContentId) : handleNonExistingContentId(content, existingContentId);
 		return event.orElse(doNothingEvent);
 	}
 
-	private Optional<ModifyAttachmentEvent> handleExistingDocumentId(Object content, String documentId,
-			Object existingDocumentId) {
+	private Optional<ModifyAttachmentEvent> handleExistingContentId(Object content, String contentId,
+			Object existingContentId) {
 		ModifyAttachmentEvent event = null;
-		if (Objects.isNull(documentId) && Objects.isNull(existingDocumentId) && Objects.nonNull(content)) {
+		if (Objects.isNull(contentId) && Objects.isNull(existingContentId) && Objects.nonNull(content)) {
 			event = createEvent;
 		}
-		if (Objects.isNull(documentId) && Objects.nonNull(existingDocumentId)) {
+		if (Objects.isNull(contentId) && Objects.nonNull(existingContentId)) {
 			if (Objects.nonNull(content)) {
 				event = updateEvent;
 			} else {
 				event = deleteContentEvent;
 			}
 		}
-		if (Objects.nonNull(documentId) && documentId.equals(existingDocumentId) && Objects.nonNull(content)) {
+		if (Objects.nonNull(contentId) && contentId.equals(existingContentId) && Objects.nonNull(content)) {
 			event = updateEvent;
 		}
-		if (Objects.nonNull(documentId) && Objects.nonNull(existingDocumentId) && !documentId.equals(
-				existingDocumentId) && Objects.isNull(content)) {
+		if (Objects.nonNull(contentId) && Objects.nonNull(existingContentId) && !contentId.equals(
+				existingContentId) && Objects.isNull(content)) {
 			event = deleteContentEvent;
 		}
-		if (Objects.nonNull(documentId) && Objects.nonNull(existingDocumentId) && !documentId.equals(
-				existingDocumentId) && Objects.nonNull(content)) {
+		if (Objects.nonNull(contentId) && Objects.nonNull(existingContentId) && !contentId.equals(
+				existingContentId) && Objects.nonNull(content)) {
 			event = updateEvent;
 		}
 
 		return Optional.ofNullable(event);
 	}
 
-	private Optional<ModifyAttachmentEvent> handleNonExistingDocumentId(Object content, Object existingDocumentId) {
+	private Optional<ModifyAttachmentEvent> handleNonExistingContentId(Object content, Object existingContentId) {
 		ModifyAttachmentEvent event = null;
-		if (Objects.nonNull(existingDocumentId)) {
+		if (Objects.nonNull(existingContentId)) {
 			if (Objects.nonNull(content)) {
 				event = updateEvent;
 			} else {

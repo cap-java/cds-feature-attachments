@@ -16,7 +16,7 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
     );
     fileName @(title: '{i18n>attachment_fileName}');
     status @(title: '{@i18n>attachment_status}');
-    documentId @(UI.Hidden: true);
+    contentId @(UI.Hidden: true);
     scannedAt @(UI.Hidden: true);
 }
 

@@ -16,9 +16,9 @@ class AttachmentMarkAsDeletedEventContextTest {
 
 	@Test
 	void fieldsCanBeSetAndRead() {
-		cut.setDocumentId("document id");
+		cut.setContentId("document id");
 
-		assertThat(cut.getDocumentId()).isEqualTo("document id");
+		assertThat(cut.getContentId()).isEqualTo("document id");
 	}
 
 }

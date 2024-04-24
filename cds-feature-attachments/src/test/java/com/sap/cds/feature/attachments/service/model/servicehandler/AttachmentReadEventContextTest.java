@@ -22,7 +22,7 @@ class AttachmentReadEventContextTest {
 	@Test
 	void fieldsCanBeSetAndRead() throws IOException {
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
-			cut.setDocumentId("some read documentID");
+			cut.setContentId("some read contentID");
 			var mediaData = MediaData.create();
 			mediaData.setMimeType("mime type");
 			mediaData.setFileName("file name");
@@ -30,7 +30,7 @@ class AttachmentReadEventContextTest {
 
 			cut.setData(mediaData);
 
-			assertThat(cut.getDocumentId()).isEqualTo("some read documentID");
+			assertThat(cut.getContentId()).isEqualTo("some read contentID");
 			var responseMediaData = cut.getData();
 			assertThat(responseMediaData.getFileName()).isEqualTo("file name");
 			assertThat(responseMediaData.getMimeType()).isEqualTo("mime type");
