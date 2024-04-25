@@ -177,6 +177,9 @@ entity Statuses @cds.autoexpose @readonly {
 }
 ```
 
+For this entity csv files can be included in the project structure with texts and translations, to show the translated
+texts on the UI.
+
 With this a text can be added in example above like:
 
 ```cds
