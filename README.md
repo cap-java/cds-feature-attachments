@@ -155,6 +155,15 @@ In addition to the field names also header information (`@UI.HeaderInfo`) are an
 | `TypeName`       | `attachment`  |
 | `TypeNamePlural` | `attachments` |
 
+#### Status Texts
+
+For the status of the attachment only the code value is stored at the moment.
+The status codes are:
+
+- `CLEAN`
+- `INFECTED`
+- `NO_SCANNER`
+
 ### UI
 
 To enhance the UI with the attachments the following annotations are used for the `UI.Facets` annotations
@@ -231,16 +240,13 @@ If the default implementation of this service is overwritten, e.g. by using the 
 [SAP Document Management Service](https://help.sap.com/docs/document-management-service), then this overwriting plugin
 is responsible for the malware scan and the plugin documentation needs to be checked for how the malware scan is done.
 
-If the default implementation is used and the malware scanner is not available the attachments are marked as not scanned
+If the default implementation is used and the malware scanner is not available the attachments are marked as clean
 by setting the status of the attachment to:
 
-- `NO_SCANNER`
+- `Clean`
 
-Attachments with this status are accessible like attachments with the status `CLEAN`.
-Only attachments with the following status are not accessible:
-
-- `INFECTED`
-- `UNSCANNED`
+Only attachments with the status `Clean` are accessible.
+Attachments with all other status codes are not accessible.
 
 ### Error Messages
 

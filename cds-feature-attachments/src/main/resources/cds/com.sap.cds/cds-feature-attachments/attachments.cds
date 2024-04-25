@@ -13,7 +13,6 @@ type StatusCode : String enum {
     Failed;
 }
 
-//TODO check expression for link based on status
 aspect MediaData @(_is_media_data) {
     content    : LargeBinary; // stored only for db-based services
     mimeType   : String;
