@@ -1,7 +1,6 @@
 using {
-    com.sap.attachments.MediaData,
-    com.sap.attachments.Attachments,
-    com.sap.attachments.Statuses
+    sap.attachments.MediaData,
+    sap.attachments.Attachments
 } from './attachments';
 
 annotate MediaData with @UI.MediaResource: {Stream: content} {
@@ -16,16 +15,8 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
         Core.IsMediaType
     );
     fileName @(title: '{i18n>attachment_fileName}');
-    status @(
-        Common.Label: '{@i18n>attachment_status}',
-        Common.Text: {
-            $value: ![status.text],
-            ![@UI.TextArrangement]: #TextOnly
-        },
-        ValueList: {entity:'Statuses'},
-        sap.value.list: 'fixed-values'
-    );
-    documentId @(UI.Hidden: true);
+    status @(title: '{@i18n>attachment_status}');
+    contentId @(UI.Hidden: true);
     scannedAt @(UI.Hidden: true);
 }
 
@@ -37,18 +28,13 @@ annotate Attachments with @UI: {
     },
     LineItem  : [
         {Value: content},
-        {
-            $Type : 'UI.DataField',
-            Value : status.text,
-            Label : '{i18n>attachment_status}'
-        },
+        {Value: status},
         {Value: createdAt},
         {Value: createdBy},
         {Value: note}
     ]
 } {
     note     @(title: '{i18n>attachment_note}');
-    url     @(title: '{i18n>attachment_url}');
 }
 
 annotate Attachments with @Common: {
@@ -57,19 +43,7 @@ annotate Attachments with @Common: {
               content
          ],
          TargetProperties : [
-              'status',
-              'status.text',
-              'status.code'
+              'status'
          ]
     }
 }{};
-
-annotate Statuses with{
-    code @(
-        Common.Text: {
-            $value: ![text],
-            ![@UI.TextArrangement]: #TextOnly
-        }
-    );
-};
-

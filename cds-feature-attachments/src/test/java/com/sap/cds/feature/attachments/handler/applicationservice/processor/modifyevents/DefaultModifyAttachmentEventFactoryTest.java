@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 
 class DefaultModifyAttachmentEventFactoryTest {
 
@@ -41,16 +41,16 @@ class DefaultModifyAttachmentEventFactoryTest {
 	}
 
 	@Test
-	void documentIdsNullContentFilledReturnedCreateEvent() {
+	void contentIdsNullContentFilledReturnedCreateEvent() {
 		var event = cut.getEvent(mock(InputStream.class), null, true, CdsData.create());
 
 		assertThat(event).isEqualTo(createEvent);
 	}
 
 	@Test
-	void documentIdNullButtExistingNotNullReturnsDelete() {
+	void contentIdNullButtExistingNotNullReturnsDelete() {
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
+		data.put(Attachments.CONTENT_ID, "someValue");
 
 		var event = cut.getEvent(null, null, true, data);
 
@@ -58,12 +58,12 @@ class DefaultModifyAttachmentEventFactoryTest {
 	}
 
 	@Test
-	void documentIdsSameContentFillReturnsUpdate() {
-		var documentId = "test ID";
+	void contentIdsSameContentFillReturnsUpdate() {
+		var contentId = "test ID";
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, documentId);
+		data.put(Attachments.CONTENT_ID, contentId);
 
-		var event = cut.getEvent(mock(InputStream.class), documentId, true, data);
+		var event = cut.getEvent(mock(InputStream.class), contentId, true, data);
 
 		assertThat(event).isEqualTo(updateEvent);
 	}
@@ -72,22 +72,22 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@ValueSource(strings = {"some document Id"})
 	@NullSource
 	@EmptySource
-	void documentIdNotPresentAndExistingNotNullReturnsUpdateEvent(String documentId) {
+	void contentIdNotPresentAndExistingNotNullReturnsUpdateEvent(String contentId) {
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
+		data.put(Attachments.CONTENT_ID, "someValue");
 
-		var event = cut.getEvent(mock(InputStream.class), documentId, false, data);
+		var event = cut.getEvent(mock(InputStream.class), contentId, false, data);
 
 		assertThat(event).isEqualTo(updateEvent);
 	}
 
 	@Test
-	void documentIdsSameContentNullReturnsNothingToDo() {
-		var documentId = "test ID";
+	void contentIdsSameContentNullReturnsNothingToDo() {
+		var contentId = "test ID";
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, documentId);
+		data.put(Attachments.CONTENT_ID, contentId);
 
-		var event = cut.getEvent(null, documentId, true, data);
+		var event = cut.getEvent(null, contentId, true, data);
 
 		assertThat(event).isEqualTo(doNothingEvent);
 	}
@@ -96,11 +96,11 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@ValueSource(strings = {"some document Id"})
 	@NullSource
 	@EmptySource
-	void documentIdNotPresentAndExistingNotNullReturnsDeleteEvent(String documentId) {
+	void contentIdNotPresentAndExistingNotNullReturnsDeleteEvent(String contentId) {
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
+		data.put(Attachments.CONTENT_ID, "someValue");
 
-		var event = cut.getEvent(null, documentId, false, data);
+		var event = cut.getEvent(null, contentId, false, data);
 
 		assertThat(event).isEqualTo(deleteContentEvent);
 	}
@@ -108,17 +108,17 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@ParameterizedTest
 	@ValueSource(strings = {"some document Id"})
 	@EmptySource
-	void documentIdPresentAndExistingNotNullButDifferentReturnsDeleteEvent(String documentId) {
+	void contentIdPresentAndExistingNotNullButDifferentReturnsDeleteEvent(String contentId) {
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
+		data.put(Attachments.CONTENT_ID, "someValue");
 
-		var event = cut.getEvent(null, documentId, true, data);
+		var event = cut.getEvent(null, contentId, true, data);
 
 		assertThat(event).isEqualTo(deleteContentEvent);
 	}
 
 	@Test
-	void documentIdPresentAndExistingIdIsNullReturnsNothingToDo() {
+	void contentIdPresentAndExistingIdIsNullReturnsNothingToDo() {
 		var event = cut.getEvent(mock(InputStream.class), "test", true, CdsData.create());
 
 		assertThat(event).isEqualTo(doNothingEvent);
@@ -128,8 +128,8 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@ValueSource(strings = {"some document Id"})
 	@NullSource
 	@EmptySource
-	void documentIdNotPresentAndExistingNullReturnsCreateEvent(String documentId) {
-		var event = cut.getEvent(mock(InputStream.class), documentId, false, CdsData.create());
+	void contentIdNotPresentAndExistingNullReturnsCreateEvent(String contentId) {
+		var event = cut.getEvent(mock(InputStream.class), contentId, false, CdsData.create());
 
 		assertThat(event).isEqualTo(createEvent);
 	}
@@ -138,16 +138,16 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@ValueSource(strings = {"some document Id"})
 	@NullSource
 	@EmptySource
-	void documentIdNotPresentAndExistingNullReturnsDoNothingEvent(String documentId) {
-		var event = cut.getEvent(null, documentId, false, CdsData.create());
+	void contentIdNotPresentAndExistingNullReturnsDoNothingEvent(String contentId) {
+		var event = cut.getEvent(null, contentId, false, CdsData.create());
 
 		assertThat(event).isEqualTo(doNothingEvent);
 	}
 
 	@Test
-	void documentIdPresentButNullAndExistingNotNullReturnsUpdateEvent() {
+	void contentIdPresentButNullAndExistingNotNullReturnsUpdateEvent() {
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "someValue");
+		data.put(Attachments.CONTENT_ID, "someValue");
 
 		var event = cut.getEvent(mock(InputStream.class), null, true, data);
 
@@ -155,9 +155,9 @@ class DefaultModifyAttachmentEventFactoryTest {
 	}
 
 	@Test
-	void updateIfDocumentIdDifferentButContentProvided() {
+	void updateIfContentIdDifferentButContentProvided() {
 		var data = CdsData.create();
-		data.put(Attachments.DOCUMENT_ID, "existing");
+		data.put(Attachments.CONTENT_ID, "existing");
 
 		var event = cut.getEvent(mock(InputStream.class), "someValue", true, data);
 

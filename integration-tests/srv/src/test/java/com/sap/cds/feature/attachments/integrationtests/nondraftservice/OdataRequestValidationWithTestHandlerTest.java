@@ -11,7 +11,7 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.integration.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.AttachmentEntity;
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 import com.sap.cds.feature.attachments.integrationtests.testhandler.EventContextHolder;
@@ -39,14 +39,14 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 			Attachments itemAttachmentAfterChange) {
 		waitTillExpectedHandlerMessageSize(2);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_CREATE_ATTACHMENT);
-		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		assertThat(deleteEvents).hasSize(2);
 		assertThat(deleteEvents.stream().anyMatch(
-				event -> ((AttachmentMarkAsDeletedEventContext) event.context()).getDocumentId()
-															.equals(itemAttachmentEntityAfterChange.getDocumentId()))).isTrue();
+				event -> ((AttachmentMarkAsDeletedEventContext) event.context()).getContentId()
+															.equals(itemAttachmentEntityAfterChange.getContentId()))).isTrue();
 		assertThat(deleteEvents.stream().anyMatch(
-				event -> ((AttachmentMarkAsDeletedEventContext) event.context()).getDocumentId()
-															.equals(itemAttachmentAfterChange.getDocumentId()))).isTrue();
+				event -> ((AttachmentMarkAsDeletedEventContext) event.context()).getContentId()
+															.equals(itemAttachmentAfterChange.getContentId()))).isTrue();
 	}
 
 	@Override
@@ -55,21 +55,21 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	}
 
 	@Override
-	protected void verifyDocumentId(Attachments attachmentWithExpectedContent, String attachmentId, String documentId) {
-		assertThat(attachmentWithExpectedContent.getDocumentId()).isNotEmpty().isNotEqualTo(documentId);
+	protected void verifyContentId(Attachments attachmentWithExpectedContent, String attachmentId, String contentId) {
+		assertThat(attachmentWithExpectedContent.getContentId()).isNotEmpty().isNotEqualTo(contentId);
 	}
 
 	@Override
-	protected void verifyContentAndDocumentId(Attachments attachment, String content, Attachments itemAttachment) {
+	protected void verifyContentAndContentId(Attachments attachment, String content, Attachments itemAttachment) {
 		assertThat(attachment.getContent()).isNull();
-		assertThat(attachment.getDocumentId()).isNotEmpty().isNotEqualTo(itemAttachment.getId());
+		assertThat(attachment.getContentId()).isNotEmpty().isNotEqualTo(itemAttachment.getId());
 	}
 
 	@Override
-	protected void verifyContentAndDocumentIdForAttachmentEntity(AttachmentEntity attachment, String content,
+	protected void verifyContentAndContentIdForAttachmentEntity(AttachmentEntity attachment, String content,
 			AttachmentEntity itemAttachment) {
 		assertThat(attachment.getContent()).isNull();
-		assertThat(attachment.getDocumentId()).isNotEmpty().isNotEqualTo(itemAttachment.getId());
+		assertThat(attachment.getContentId()).isNotEmpty().isNotEqualTo(itemAttachment.getId());
 	}
 
 	@Override
@@ -83,58 +83,59 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	}
 
 	@Override
-	protected void verifySingleCreateEvent(String documentId, String content) {
-		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_MARK_AS_DELETED);
+	protected void verifySingleCreateEvent(String contentId, String content) {
+		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT,
+				AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		var createEvent = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
 		assertThat(createEvent).hasSize(1).first().satisfies(event -> {
 			assertThat(event.context()).isInstanceOf(AttachmentCreateEventContext.class);
 			var createContext = (AttachmentCreateEventContext) event.context();
-			assertThat(createContext.getDocumentId()).isEqualTo(documentId);
+			assertThat(createContext.getContentId()).isEqualTo(contentId);
 			assertThat(createContext.getData().getContent().readAllBytes()).isEqualTo(content.getBytes(StandardCharsets.UTF_8));
 		});
 	}
 
 	@Override
-	protected void verifySingleCreateAndUpdateEvent(String resultDocumentId, String toBeDeletedDocumentId,
+	protected void verifySingleCreateAndUpdateEvent(String resultContentId, String toBeDeletedContentId,
 			String content) {
 		waitTillExpectedHandlerMessageSize(3);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT);
 		var createEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
 		assertThat(createEvents).hasSize(2);
-		verifyCreateEventsContainsDocumentId(toBeDeletedDocumentId, createEvents);
-		verifyCreateEventsContainsDocumentId(resultDocumentId, createEvents);
-		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
+		verifyCreateEventsContainsContentId(toBeDeletedContentId, createEvents);
+		verifyCreateEventsContainsContentId(resultContentId, createEvents);
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 
-		var deleteDocumentId = !resultDocumentId.equals(toBeDeletedDocumentId) ? toBeDeletedDocumentId : createEvents.stream()
+		var deleteContentId = !resultContentId.equals(toBeDeletedContentId) ? toBeDeletedContentId : createEvents.stream()
 																																																																																																					.filter(
-																																																																																																							event -> !resultDocumentId.equals(
-																																																																																																									((AttachmentCreateEventContext) event.context()).getDocumentId()))
+																																																																																																							event -> !resultContentId.equals(
+																																																																																																									((AttachmentCreateEventContext) event.context()).getContentId()))
 																																																																																																					.findFirst()
 																																																																																																					.orElseThrow()
 																																																																																																					.context().get(
-						Attachments.DOCUMENT_ID);
+						Attachments.CONTENT_ID);
 
 		assertThat(deleteEvents).hasSize(1).first().satisfies(event -> {
 			assertThat(event.context()).isInstanceOf(AttachmentMarkAsDeletedEventContext.class);
 			var deleteContext = (AttachmentMarkAsDeletedEventContext) event.context();
-			assertThat(deleteContext.getDocumentId()).isEqualTo(deleteDocumentId);
+			assertThat(deleteContext.getContentId()).isEqualTo(deleteContentId);
 		});
 	}
 
-	private void verifyCreateEventsContainsDocumentId(String documentId, List<EventContextHolder> createEvents) {
+	private void verifyCreateEventsContainsContentId(String contentId, List<EventContextHolder> createEvents) {
 		assertThat(createEvents.stream().anyMatch(
-				event -> ((AttachmentCreateEventContext) event.context()).getDocumentId().equals(documentId))).isTrue();
+				event -> ((AttachmentCreateEventContext) event.context()).getContentId().equals(contentId))).isTrue();
 	}
 
 	@Override
-	protected void verifySingleDeletionEvent(String documentId) {
+	protected void verifySingleDeletionEvent(String contentId) {
 		waitTillExpectedHandlerMessageSize(1);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
-		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_AS_DELETED);
+		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		assertThat(deleteEvents).hasSize(1).first().satisfies(event -> {
 			assertThat(event.context()).isInstanceOf(AttachmentMarkAsDeletedEventContext.class);
 			var deleteContext = (AttachmentMarkAsDeletedEventContext) event.context();
-			assertThat(deleteContext.getDocumentId()).isEqualTo(documentId);
+			assertThat(deleteContext.getContentId()).isEqualTo(contentId);
 		});
 	}
 
@@ -143,12 +144,13 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	}
 
 	@Override
-	protected void verifySingleReadEvent(String documentId) {
-		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_MARK_AS_DELETED);
+	protected void verifySingleReadEvent(String contentId) {
+		verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT,
+				AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		var readContext = serviceHandler.getEventContext();
 		assertThat(readContext).hasSize(1).first().satisfies(event -> {
 			assertThat(event.event()).isEqualTo(AttachmentService.EVENT_READ_ATTACHMENT);
-			assertThat(((AttachmentReadEventContext) event.context()).getDocumentId()).isEqualTo(documentId);
+			assertThat(((AttachmentReadEventContext) event.context()).getContentId()).isEqualTo(contentId);
 		});
 	}
 

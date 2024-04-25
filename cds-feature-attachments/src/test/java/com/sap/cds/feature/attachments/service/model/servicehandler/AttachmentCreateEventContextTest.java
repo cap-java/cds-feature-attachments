@@ -11,7 +11,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.reflect.CdsEntity;
 
 class AttachmentCreateEventContextTest {
@@ -27,7 +27,7 @@ class AttachmentCreateEventContextTest {
 	void fieldsCanBeStoredAndRead() throws IOException {
 		Map<String, Object> keys = Map.of("ID1", "some create attachmentID", "ID2", "second id");
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
-			cut.setDocumentId("some create documentID");
+			cut.setContentId("some create contentID");
 			cut.setAttachmentIds(keys);
 			var entity = mock(CdsEntity.class);
 			cut.setAttachmentEntity(entity);
@@ -38,7 +38,7 @@ class AttachmentCreateEventContextTest {
 
 			cut.setData(mediaData);
 
-			assertThat(cut.getDocumentId()).isEqualTo("some create documentID");
+			assertThat(cut.getContentId()).isEqualTo("some create contentID");
 			assertThat(cut.getAttachmentIds()).isEqualTo(keys);
 			assertThat(cut.getAttachmentEntity()).isEqualTo(entity);
 			var responseMediaData = cut.getData();

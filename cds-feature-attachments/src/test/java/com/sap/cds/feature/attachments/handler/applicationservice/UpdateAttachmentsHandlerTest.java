@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
@@ -111,8 +111,8 @@ class UpdateAttachmentsHandlerTest {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 
 		var readonlyUpdateFields = CdsData.create();
-		readonlyUpdateFields.put(Attachment.DOCUMENT_ID, "Document Id");
-		readonlyUpdateFields.put(Attachment.STATUS_CODE, "Status Code");
+		readonlyUpdateFields.put(Attachment.CONTENT_ID, "Document Id");
+		readonlyUpdateFields.put(Attachment.STATUS, "Status Code");
 		readonlyUpdateFields.put(Attachment.SCANNED_AT, Instant.now());
 		var testStream = mock(InputStream.class);
 		var attachment = Attachments.create();
@@ -123,11 +123,11 @@ class UpdateAttachmentsHandlerTest {
 
 		cut.processBefore(updateContext, List.of(attachment));
 
-		verify(eventFactory).getEvent(testStream, (String) readonlyUpdateFields.get(Attachment.DOCUMENT_ID), true,
+		verify(eventFactory).getEvent(testStream, (String) readonlyUpdateFields.get(Attachment.CONTENT_ID), true,
 				CdsData.create());
 		assertThat(attachment.get("CREATE_READONLY_CONTEXT")).isNull();
-		assertThat(attachment.getDocumentId()).isEqualTo(readonlyUpdateFields.get(Attachment.DOCUMENT_ID));
-		assertThat(attachment.getStatusCode()).isEqualTo(readonlyUpdateFields.get(Attachment.STATUS_CODE));
+		assertThat(attachment.getContentId()).isEqualTo(readonlyUpdateFields.get(Attachment.CONTENT_ID));
+		assertThat(attachment.getStatus()).isEqualTo(readonlyUpdateFields.get(Attachment.STATUS));
 		assertThat(attachment.getScannedAt()).isEqualTo(readonlyUpdateFields.get(Attachment.SCANNED_AT));
 	}
 
@@ -136,8 +136,8 @@ class UpdateAttachmentsHandlerTest {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 
 		var updateAttachment = Attachments.create();
-		updateAttachment.setDocumentId("Document Id");
-		updateAttachment.setStatusCode("Status Code");
+		updateAttachment.setContentId("Document Id");
+		updateAttachment.setStatus("Status Code");
 		updateAttachment.setScannedAt(Instant.now());
 		updateAttachment.setContent(null);
 		when(storageReader.get()).thenReturn(true);
@@ -147,8 +147,8 @@ class UpdateAttachmentsHandlerTest {
 		verifyNoInteractions(eventFactory, event);
 		assertThat(updateAttachment.get("CREATE_READONLY_CONTEXT")).isNotNull();
 		var readOnlyUpdateData = (CdsData) updateAttachment.get("CREATE_READONLY_CONTEXT");
-		assertThat(readOnlyUpdateData).containsEntry(Attachment.DOCUMENT_ID, updateAttachment.getDocumentId());
-		assertThat(readOnlyUpdateData).containsEntry(Attachment.STATUS_CODE, updateAttachment.getStatusCode());
+		assertThat(readOnlyUpdateData).containsEntry(Attachment.CONTENT_ID, updateAttachment.getContentId());
+		assertThat(readOnlyUpdateData).containsEntry(Attachment.STATUS, updateAttachment.getStatus());
 		assertThat(readOnlyUpdateData).containsEntry(Attachment.SCANNED_AT, updateAttachment.getScannedAt());
 	}
 
@@ -157,12 +157,12 @@ class UpdateAttachmentsHandlerTest {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 
 		var updateAttachment = Attachments.create();
-		var documentId = "Document Id";
-		updateAttachment.setDocumentId(documentId);
+		var contentId = "Document Id";
+		updateAttachment.setContentId(contentId);
 		updateAttachment.setContent(null);
 		var readonlyData = CdsData.create();
-		readonlyData.put(Attachment.STATUS_CODE, "some wrong status code");
-		readonlyData.put(Attachment.DOCUMENT_ID, "some other document id");
+		readonlyData.put(Attachment.STATUS, "some wrong status code");
+		readonlyData.put(Attachment.CONTENT_ID, "some other document id");
 		readonlyData.put(Attachment.SCANNED_AT, Instant.EPOCH);
 		updateAttachment.put("CREATE_READONLY_CONTEXT", readonlyData);
 		when(storageReader.get()).thenReturn(false);
@@ -171,8 +171,8 @@ class UpdateAttachmentsHandlerTest {
 
 		verifyNoInteractions(eventFactory, event);
 		assertThat(updateAttachment.get("CREATE_READONLY_CONTEXT")).isNull();
-		assertThat(updateAttachment).containsEntry(Attachment.DOCUMENT_ID, documentId);
-		assertThat(updateAttachment).doesNotContainKey(Attachment.STATUS_CODE);
+		assertThat(updateAttachment).containsEntry(Attachment.CONTENT_ID, contentId);
+		assertThat(updateAttachment).doesNotContainKey(Attachment.STATUS);
 		assertThat(updateAttachment).doesNotContainKey(Attachment.SCANNED_AT);
 	}
 
@@ -181,8 +181,8 @@ class UpdateAttachmentsHandlerTest {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 
 		var updateAttachment = Attachments.create();
-		updateAttachment.setDocumentId("Document Id");
-		updateAttachment.setStatusCode("Status Code");
+		updateAttachment.setContentId("Document Id");
+		updateAttachment.setStatus("Status Code");
 		updateAttachment.setScannedAt(Instant.now());
 		when(storageReader.get()).thenReturn(false);
 
@@ -391,7 +391,7 @@ class UpdateAttachmentsHandlerTest {
 		var attachment = Attachments.create();
 		attachment.setId(UUID.randomUUID().toString());
 		attachment.setContent(mock(InputStream.class));
-		attachment.setDocumentId("document id");
+		attachment.setContentId("document id");
 		var existingRoot = RootTable.create();
 		existingRoot.setAttachments(List.of(attachment));
 		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
@@ -401,7 +401,7 @@ class UpdateAttachmentsHandlerTest {
 
 		verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
 		verifyNoInteractions(eventFactory);
-		verify(attachmentService).markAsDeleted(attachment.getDocumentId());
+		verify(attachmentService).markAttachmentAsDeleted(attachment.getContentId());
 	}
 
 	@Test

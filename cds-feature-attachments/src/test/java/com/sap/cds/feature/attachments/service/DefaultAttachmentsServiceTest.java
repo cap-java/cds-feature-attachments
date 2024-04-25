@@ -53,11 +53,11 @@ class DefaultAttachmentsServiceTest {
 			return null;
 		}).when(handler).process(any());
 		serviceSpi.on(AttachmentService.EVENT_READ_ATTACHMENT, "", handler);
-		var documentId = "some id";
+		var contentId = "some id";
 
-		var result = cut.readAttachment(documentId);
+		var result = cut.readAttachment(contentId);
 
-		assertThat(contextReference.get().getDocumentId()).isEqualTo(documentId);
+		assertThat(contextReference.get().getContentId()).isEqualTo(contentId);
 		assertThat(result).isEqualTo(stream);
 	}
 
@@ -66,13 +66,13 @@ class DefaultAttachmentsServiceTest {
 	@NullSource
 	void createAttachmentInsertsData(Boolean isExternalCreated) {
 		var contextReference = new AtomicReference<AttachmentCreateEventContext>();
-		var documentId = "some id";
+		var contentId = "some id";
 		doAnswer(input -> {
 			var context = (AttachmentCreateEventContext) input.getArgument(0);
 			contextReference.set(context);
 			context.setCompleted();
 			context.setIsInternalStored(isExternalCreated);
-			context.setDocumentId(documentId);
+			context.setContentId(contentId);
 			return null;
 		}).when(handler).process(any());
 		serviceSpi.on(AttachmentService.EVENT_CREATE_ATTACHMENT, "", handler);
@@ -83,7 +83,7 @@ class DefaultAttachmentsServiceTest {
 		var result = cut.createAttachment(input);
 
 		assertThat(result.isInternalStored()).isEqualTo(Boolean.TRUE.equals(isExternalCreated));
-		assertThat(result.documentId()).isEqualTo(documentId);
+		assertThat(result.contentId()).isEqualTo(contentId);
 		var createContext = contextReference.get();
 		assertThat(createContext.getAttachmentIds()).isEqualTo(input.attachmentIds());
 		assertThat(createContext.getAttachmentEntity()).isEqualTo(input.attachmentEntity());
@@ -111,23 +111,23 @@ class DefaultAttachmentsServiceTest {
 	@Test
 	void markAsDeleteAttachmentInsertsData() {
 		var contextReference = new AtomicReference<AttachmentMarkAsDeletedEventContext>();
-		var documentId = "some id";
+		var contentId = "some id";
 		doAnswer(input -> {
 			var context = (AttachmentMarkAsDeletedEventContext) input.getArgument(0);
 			contextReference.set(context);
 			context.setCompleted();
 			return null;
 		}).when(handler).process(any());
-		serviceSpi.on(AttachmentService.EVENT_MARK_AS_DELETED, "", handler);
+		serviceSpi.on(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED, "", handler);
 
-		cut.markAsDeleted(documentId);
+		cut.markAttachmentAsDeleted(contentId);
 
 		var deleteEventContext = contextReference.get();
-		assertThat(deleteEventContext.getDocumentId()).isEqualTo(documentId);
+		assertThat(deleteEventContext.getContentId()).isEqualTo(contentId);
 	}
 
 	@Test
-	void restoreAttachmentInsertsData() {
+	void restoreAttachmentAttachmentInsertsData() {
 		var contextReference = new AtomicReference<AttachmentRestoreEventContext>();
 		doAnswer(input -> {
 			var context = (AttachmentRestoreEventContext) input.getArgument(0);
@@ -135,11 +135,11 @@ class DefaultAttachmentsServiceTest {
 			context.setCompleted();
 			return null;
 		}).when(handler).process(any());
-		serviceSpi.on(AttachmentService.EVENT_RESTORE, "", handler);
+		serviceSpi.on(AttachmentService.EVENT_RESTORE_ATTACHMENT, "", handler);
 
 		var timestamp = Instant.now();
 
-		cut.restore(timestamp);
+		cut.restoreAttachment(timestamp);
 
 		var deleteEventContext = contextReference.get();
 		assertThat(deleteEventContext.getRestoreTimestamp()).isEqualTo(timestamp);

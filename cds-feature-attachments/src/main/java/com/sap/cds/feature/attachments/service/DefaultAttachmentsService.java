@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -38,11 +38,11 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 	}
 
 	@Override
-	public InputStream readAttachment(String documentId) {
-		logger.info(read_marker, "Reading attachment with document id: {}", documentId);
+	public InputStream readAttachment(String contentId) {
+		logger.info(read_marker, "Reading attachment with document id: {}", contentId);
 
 		var readContext = AttachmentReadEventContext.create();
-		readContext.setDocumentId(documentId);
+		readContext.setContentId(contentId);
 		readContext.setData(MediaData.create());
 
 		emit(readContext);
@@ -66,21 +66,21 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 		emit(createContext);
 
 		return new AttachmentModificationResult(Boolean.TRUE.equals(createContext.getIsInternalStored()),
-				createContext.getDocumentId(), createContext.getData().getStatusCode());
+				createContext.getContentId(), createContext.getData().getStatus());
 	}
 
 	@Override
-	public void markAsDeleted(String documentId) {
-		logger.info(delete_marker, "Marking attachment as deleted for document id: {}", documentId);
+	public void markAttachmentAsDeleted(String contentId) {
+		logger.info(delete_marker, "Marking attachment as deleted for document id: {}", contentId);
 
 		var deleteContext = AttachmentMarkAsDeletedEventContext.create();
-		deleteContext.setDocumentId(documentId);
+		deleteContext.setContentId(contentId);
 
 		emit(deleteContext);
 	}
 
 	@Override
-	public void restore(Instant restoreTimestamp) {
+	public void restoreAttachment(Instant restoreTimestamp) {
 		logger.info(restore_marker, "Restoring deleted attachment for timestamp: {}", restoreTimestamp);
 		var restoreContext = AttachmentRestoreEventContext.create();
 		restoreContext.setRestoreTimestamp(restoreTimestamp);

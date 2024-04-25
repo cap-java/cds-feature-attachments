@@ -14,7 +14,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.Result;
-import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
@@ -102,15 +102,15 @@ class DraftPatchAttachmentsHandlerTest {
 
 		cut.processBeforeDraftPatch(eventContext, List.of(root));
 
-		verify(eventFactory).getEvent(content, attachment.getDocumentId(), false, attachment);
+		verify(eventFactory).getEvent(content, attachment.getContentId(), false, attachment);
 	}
 
 	@Test
-	void documentIdUsedForEventFactory() {
+	void contentIdUsedForEventFactory() {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
 		var attachment = Attachments.create();
 		var root = buildRooWithAttachment(attachment);
-		attachment.setDocumentId(UUID.randomUUID().toString());
+		attachment.setContentId(UUID.randomUUID().toString());
 		var content = attachment.getContent();
 		var result = mock(Result.class);
 		when(persistence.run(any(CqnSelect.class))).thenReturn(result);
@@ -118,19 +118,19 @@ class DraftPatchAttachmentsHandlerTest {
 
 		cut.processBeforeDraftPatch(eventContext, List.of(root));
 
-		verify(eventFactory).getEvent(content, attachment.getDocumentId(), true, attachment);
+		verify(eventFactory).getEvent(content, attachment.getContentId(), true, attachment);
 		verify(event).processEvent(any(), eq(content), eq(attachment), eq(eventContext));
 	}
 
 	@Test
-	void documentIdIsNotSetForNonMediaEntity() {
+	void contentIdIsNotSetForNonMediaEntity() {
 		getEntityAndMockContext(Events_.CDS_NAME);
 		var events = Events.create();
 		events.setContent("test");
 
 		cut.processBeforeDraftPatch(eventContext, List.of(events));
 
-		assertThat(events).doesNotContainKey(Attachments.DOCUMENT_ID);
+		assertThat(events).doesNotContainKey(Attachments.CONTENT_ID);
 	}
 
 	@Test

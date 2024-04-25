@@ -12,6 +12,6 @@ import com.sap.cds.services.runtime.CdsRuntime;
 	*/
 public interface ListenerProvider {
 
-	ChangeSetListener provideListener(String documentId, CdsRuntime cdsRuntime);
+	ChangeSetListener provideListener(String contentId, CdsRuntime cdsRuntime);
 
 }

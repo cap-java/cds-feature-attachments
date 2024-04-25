@@ -10,9 +10,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -56,9 +56,9 @@ class DefaultAttachmentsServiceHandlerTest {
 		cut.createAttachment(createContext);
 
 		assertThat(createContext.isCompleted()).isTrue();
-		assertThat(createContext.getDocumentId()).isEqualTo(attachmentId);
+		assertThat(createContext.getContentId()).isEqualTo(attachmentId);
 		assertThat(createContext.getIsInternalStored()).isTrue();
-		assertThat(createContext.getData().getStatusCode()).isEqualTo(StatusCode.UNSCANNED);
+		assertThat(createContext.getData().getStatus()).isEqualTo(StatusCode.UNSCANNED);
 	}
 
 	@Test
@@ -71,7 +71,7 @@ class DefaultAttachmentsServiceHandlerTest {
 	}
 
 	@Test
-	void restoreAttachmentSetData() {
+	void restoreAttachmentAttachmentSetData() {
 		var restoreContext = AttachmentRestoreEventContext.create();
 
 		cut.restoreAttachment(restoreContext);
@@ -107,12 +107,12 @@ class DefaultAttachmentsServiceHandlerTest {
 	}
 
 	@Test
-	void restoreMethodHasCorrectAnnotation() throws NoSuchMethodException {
+	void restoreAttachmentMethodHasCorrectAnnotation() throws NoSuchMethodException {
 		var updateMethod = cut.getClass().getMethod("restoreAttachment", AttachmentRestoreEventContext.class);
 		var onAnnotation = updateMethod.getAnnotation(On.class);
 		var handlerOrderAnnotation = updateMethod.getAnnotation(HandlerOrder.class);
 
-		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_RESTORE);
+		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_RESTORE_ATTACHMENT);
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
 	}
 
@@ -122,7 +122,7 @@ class DefaultAttachmentsServiceHandlerTest {
 		var onAnnotation = deleteMethod.getAnnotation(On.class);
 		var handlerOrderAnnotation = deleteMethod.getAnnotation(HandlerOrder.class);
 
-		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_MARK_AS_DELETED);
+		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
 	}
 
@@ -140,16 +140,16 @@ class DefaultAttachmentsServiceHandlerTest {
 	void malwareScannerRegisteredForEndOfTransaction() {
 		var listener = mock(ChangeSetListener.class);
 		var entity = mock(CdsEntity.class);
-		when(malwareScanProvider.getChangeSetListener(entity, "documentId")).thenReturn(listener);
+		when(malwareScanProvider.getChangeSetListener(entity, "contentId")).thenReturn(listener);
 		var createContext = AttachmentCreateEventContext.create();
-		createContext.setAttachmentIds(Map.of(Attachments.ID, "documentId"));
+		createContext.setAttachmentIds(Map.of(Attachments.ID, "contentId"));
 		createContext.setData(MediaData.create());
 		createContext.setAttachmentEntity(entity);
 		ChangeSetContextImpl.open();
 
 		cut.createAttachment(createContext);
 
-		verify(malwareScanProvider).getChangeSetListener(entity, "documentId");
+		verify(malwareScanProvider).getChangeSetListener(entity, "contentId");
 	}
 
 	private void closeChangeSetContext() throws Exception {

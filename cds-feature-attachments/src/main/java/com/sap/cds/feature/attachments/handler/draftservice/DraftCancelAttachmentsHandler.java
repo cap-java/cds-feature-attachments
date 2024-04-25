@@ -12,7 +12,7 @@ import org.slf4j.Marker;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -65,7 +65,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			var draftAttachments = readAttachments(context, draftEntity, false);
 			var activeCondensedAttachments = getCondensedActiveAttachments(context, activeEntity);
 
-			var filter = buildDocumentIdFilter();
+			var filter = buildContentIdFilter();
 			var validator = buildDeleteContentValidator(context, activeCondensedAttachments);
 			ApplicationHandlerHelper.callValidator(context.getTarget(), draftAttachments, filter, validator);
 		}
@@ -83,7 +83,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			var existingEntry = activeCondensedAttachments.stream().filter(
 					updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
 			existingEntry.ifPresent(entry -> {
-				if (!entry.get(Attachments.DOCUMENT_ID).equals(value)) {
+				if (!entry.get(Attachments.CONTENT_ID).equals(value)) {
 					deleteContentAttachmentEvent.processEvent(null, null, CdsData.create(path.target().values()), context);
 				}
 			});
@@ -118,10 +118,10 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 		return ApplicationHandlerHelper.condenseData(attachments, context.getTarget());
 	}
 
-	private Filter buildDocumentIdFilter() {
+	private Filter buildContentIdFilter() {
 		return (path, element, type) -> ApplicationHandlerHelper.isMediaEntity(path.target().type()) && element.getName()
 																																																																																																				.equals(
-																																																																																																						Attachments.DOCUMENT_ID);
+																																																																																																						Attachments.CONTENT_ID);
 	}
 
 }

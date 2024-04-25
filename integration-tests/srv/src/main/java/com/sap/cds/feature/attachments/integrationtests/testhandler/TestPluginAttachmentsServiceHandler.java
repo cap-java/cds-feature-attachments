@@ -16,7 +16,7 @@ import org.slf4j.MarkerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -41,36 +41,36 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_CREATE_ATTACHMENT)
 	public void createAttachment(AttachmentCreateEventContext context) throws IOException {
 		logger.info(marker, "CREATE Attachment called in dummy handler");
-		var documentId = UUID.randomUUID().toString();
-		documents.put(documentId, context.getData().getContent().readAllBytes());
-		context.setDocumentId(documentId);
-		context.getData().setStatusCode(StatusCode.CLEAN);
+		var contentId = UUID.randomUUID().toString();
+		documents.put(contentId, context.getData().getContent().readAllBytes());
+		context.setContentId(contentId);
+		context.getData().setStatus(StatusCode.CLEAN);
 		context.setCompleted();
 		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_CREATE_ATTACHMENT, context));
 	}
 
-	@On(event = AttachmentService.EVENT_MARK_AS_DELETED)
+	@On(event = AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED)
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
-		logger.info(marker, "DELETE Attachment called in dummy handler for document id {}", context.getDocumentId());
+		logger.info(marker, "DELETE Attachment called in dummy handler for document id {}", context.getContentId());
 		context.setCompleted();
-		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_MARK_AS_DELETED, context));
+		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED, context));
 	}
 
 	@On(event = AttachmentService.EVENT_READ_ATTACHMENT)
 	public void readAttachment(AttachmentReadEventContext context) {
-		logger.info(marker, "READ Attachment called in dummy handler for document id {}", context.getDocumentId());
-		var document = documents.get(context.getDocumentId());
-		var stream = Objects.nonNull(document) ? new ByteArrayInputStream(document) : null;
+		logger.info(marker, "READ Attachment called in dummy handler for content id {}", context.getContentId());
+		var content = documents.get(context.getContentId());
+		var stream = Objects.nonNull(content) ? new ByteArrayInputStream(content) : null;
 		context.getData().setContent(stream);
 		context.setCompleted();
 		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_READ_ATTACHMENT, context));
 	}
 
-	@On(event = AttachmentService.EVENT_RESTORE)
+	@On(event = AttachmentService.EVENT_RESTORE_ATTACHMENT)
 	public void restoreAttachment(AttachmentRestoreEventContext context) {
 		logger.info(marker, "RESTORE Attachment called in dummy handler for timestamp {}", context.getRestoreTimestamp());
 		context.setCompleted();
-		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_RESTORE, context));
+		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_RESTORE_ATTACHMENT, context));
 	}
 
 	public List<EventContextHolder> getEventContextForEvent(String event) {
@@ -78,7 +78,7 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 		if (event.equals(AttachmentService.EVENT_CREATE_ATTACHMENT) && !context.isEmpty()) {
 			context.forEach(c -> {
 				var createContext = (AttachmentCreateEventContext) c.context();
-				createContext.getData().setContent(new ByteArrayInputStream(documents.get(createContext.getDocumentId())));
+				createContext.getData().setContent(new ByteArrayInputStream(documents.get(createContext.getContentId())));
 			});
 		}
 		return context;

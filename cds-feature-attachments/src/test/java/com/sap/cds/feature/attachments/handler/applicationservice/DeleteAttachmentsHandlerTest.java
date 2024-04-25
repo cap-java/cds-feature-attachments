@@ -69,7 +69,7 @@ class DeleteAttachmentsHandlerTest {
 		when(context.getModel()).thenReturn(runtime.getCdsModel());
 		var data = Attachment.create();
 		data.setId("test");
-		data.setDocumentId("test");
+		data.setContentId("test");
 		var inputStream = mock(InputStream.class);
 		data.setContent(inputStream);
 		when(attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn())).thenReturn(
@@ -126,7 +126,7 @@ class DeleteAttachmentsHandlerTest {
 	private Attachment buildAttachment(String id, InputStream inputStream) {
 		var attachment = Attachment.create();
 		attachment.setId(id);
-		attachment.setDocumentId("doc_" + id);
+		attachment.setContentId("doc_" + id);
 		attachment.setContent(inputStream);
 		return attachment;
 	}

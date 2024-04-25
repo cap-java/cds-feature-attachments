@@ -8,10 +8,10 @@ import java.util.List;
 import com.sap.cds.ql.cqn.Modifier;
 
 /**
-	* The interface {@link ItemModifierProvider} provides a method to get the before read document id enhancer.
+	* The interface {@link ItemModifierProvider} provides a method to get the before read content id enhancer.
 	*/
 public interface ItemModifierProvider {
 
-	Modifier getBeforeReadDocumentIdEnhancer(List<String> mediaAssociations);
+	Modifier getBeforeReadContentIdEnhancer(List<String> mediaAssociations);
 
 }

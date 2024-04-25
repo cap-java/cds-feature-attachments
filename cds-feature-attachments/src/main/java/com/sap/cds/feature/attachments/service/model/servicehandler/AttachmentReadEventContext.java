@@ -3,7 +3,7 @@
 	**************************************************************************/
 package com.sap.cds.feature.attachments.service.model.servicehandler;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.EventName;
@@ -25,7 +25,7 @@ public interface AttachmentReadEventContext extends EventContext {
 	}
 
 	/**
-		* @return The data of the document. The data contain the following fields:
+		* @return The data of the content. The data contain the following fields:
 		* 		- content
 		* 		- mimeType
 		* 		- fileName
@@ -35,20 +35,20 @@ public interface AttachmentReadEventContext extends EventContext {
 	/**
 		* Sets the data of the attachment to be read
 		*
-		* @param data The data of the document
+		* @param data The data of the content
 		*/
 	void setData(MediaData data);
 
 	/**
-		* @return The ID of the document or {@code null} if no id was specified
+		* @return The ID of the content or {@code null} if no id was specified
 		*/
-	String getDocumentId();
+	String getContentId();
 
 	/**
-		* Sets the document id for the attachment to be read
+		* Sets the content id for the attachment to be read
 		*
-		* @param documentId The ID of the document
+		* @param contentId The ID of the content
 		*/
-	void setDocumentId(String documentId);
+	void setContentId(String contentId);
 
 }

@@ -170,20 +170,20 @@ class DraftCancelAttachmentsHandlerTest {
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 		var siblingTarget = eventContext.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
 		var id = UUID.randomUUID().toString();
-		var documentId = UUID.randomUUID().toString();
-		buildAttachmentAndReturnByReader(documentId, siblingTarget, true, id);
-		buildAttachmentAndReturnByReader(documentId, eventContext.getTarget(), false, id);
+		var contentId = UUID.randomUUID().toString();
+		buildAttachmentAndReturnByReader(contentId, siblingTarget, true, id);
+		buildAttachmentAndReturnByReader(contentId, eventContext.getTarget(), false, id);
 
 		cut.processBeforeDraftCancel(eventContext);
 
 		verifyNoInteractions(deleteContentAttachmentEvent);
 	}
 
-	private Attachment buildAttachmentAndReturnByReader(String documentId, CdsStructuredType target,
+	private Attachment buildAttachmentAndReturnByReader(String contentId, CdsStructuredType target,
 			boolean hasActiveEntity, String id) {
 		var attachment = Attachment.create();
 		attachment.setId(id);
-		attachment.setDocumentId(documentId);
+		attachment.setContentId(contentId);
 		attachment.setHasActiveEntity(hasActiveEntity);
 		attachment.setContent(null);
 		when(attachmentsReader.readAttachments(any(), (CdsEntity) eq(target), any())).thenReturn(List.of(attachment));

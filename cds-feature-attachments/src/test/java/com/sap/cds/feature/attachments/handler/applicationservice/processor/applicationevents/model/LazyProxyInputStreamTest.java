@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception.AttachmentStatusException;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
@@ -119,10 +119,10 @@ class LazyProxyInputStreamTest {
 		assertThrows(AttachmentStatusException.class, () -> cut.read());
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings = {StatusCode.CLEAN, StatusCode.NO_SCANNER})
-	void noExceptionIfCorrectStatus(String status) {
-		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), attachmentStatusValidator, status);
+	@Test
+	void noExceptionIfCorrectStatus() {
+		cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), attachmentStatusValidator,
+				StatusCode.CLEAN);
 
 		assertDoesNotThrow(() -> cut.read());
 	}

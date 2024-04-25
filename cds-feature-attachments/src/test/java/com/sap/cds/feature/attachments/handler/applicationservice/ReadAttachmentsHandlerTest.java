@@ -22,8 +22,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
@@ -79,7 +79,7 @@ class ReadAttachmentsHandlerTest {
 		readEventContext = mock(CdsReadEventContext.class);
 		modifier = spy(new Modifier() {
 		});
-		when(provider.getBeforeReadDocumentIdEnhancer(any())).thenReturn(modifier);
+		when(provider.getBeforeReadContentIdEnhancer(any())).thenReturn(modifier);
 		fieldNamesArgumentCaptor = ArgumentCaptor.forClass(List.class);
 	}
 
@@ -90,7 +90,7 @@ class ReadAttachmentsHandlerTest {
 
 		cut.processBefore(readEventContext);
 
-		verify(provider).getBeforeReadDocumentIdEnhancer(fieldNamesArgumentCaptor.capture());
+		verify(provider).getBeforeReadContentIdEnhancer(fieldNamesArgumentCaptor.capture());
 		verify(modifier).items(any());
 		var fields = fieldNamesArgumentCaptor.getValue();
 		assertThat(fields).hasSize(2).contains("attachments").contains("itemAttachments");
@@ -103,7 +103,7 @@ class ReadAttachmentsHandlerTest {
 
 		cut.processBefore(readEventContext);
 
-		verify(provider).getBeforeReadDocumentIdEnhancer(fieldNamesArgumentCaptor.capture());
+		verify(provider).getBeforeReadContentIdEnhancer(fieldNamesArgumentCaptor.capture());
 		verify(modifier).items(any());
 		var fields = fieldNamesArgumentCaptor.getValue();
 		assertThat(fields).hasSize(1).contains("");
@@ -126,29 +126,29 @@ class ReadAttachmentsHandlerTest {
 		try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
 
 			var attachmentWithNullValueContent = Attachments.create();
-			attachmentWithNullValueContent.setDocumentId("some ID");
+			attachmentWithNullValueContent.setContentId("some ID");
 			attachmentWithNullValueContent.setContent(null);
 			var item1 = Items.create();
 			item1.setId("item id1");
 			item1.setAttachments(List.of(attachmentWithNullValueContent));
 			var attachmentWithoutContentField = Attachments.create();
-			attachmentWithoutContentField.setDocumentId("some ID");
+			attachmentWithoutContentField.setContentId("some ID");
 			var item2 = Items.create();
 			item2.setId("item id2");
 			item2.setAttachments(List.of(attachmentWithoutContentField));
 			var item3 = Items.create();
 			item3.setId("item id3");
 			var attachmentWithStreamAsContent = Attachments.create();
-			attachmentWithStreamAsContent.setDocumentId("some ID");
+			attachmentWithStreamAsContent.setContentId("some ID");
 			attachmentWithStreamAsContent.setContent(testStream);
 			var item4 = Items.create();
 			item4.setId("item id4");
 			item4.setAttachments(List.of(attachmentWithStreamAsContent));
-			var attachmentWithStreamContentButWithoutDocumentId = Attachments.create();
-			attachmentWithStreamContentButWithoutDocumentId.setContent(mock(InputStream.class));
+			var attachmentWithStreamContentButWithoutContentId = Attachments.create();
+			attachmentWithStreamContentButWithoutContentId.setContent(mock(InputStream.class));
 			var item5 = Items.create();
 			item5.setId("item id4");
-			item5.setAttachments(List.of(attachmentWithStreamContentButWithoutDocumentId));
+			item5.setAttachments(List.of(attachmentWithStreamContentButWithoutContentId));
 			var root1 = RootTable.create();
 			root1.setItemTable(List.of(item2, item1, item4, item5));
 			var root2 = RootTable.create();
@@ -162,7 +162,7 @@ class ReadAttachmentsHandlerTest {
 			assertThat(attachmentWithNullValueContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
 			assertThat(attachmentWithoutContentField.getContent()).isNull();
 			assertThat(attachmentWithStreamAsContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
-			assertThat(attachmentWithStreamContentButWithoutDocumentId.getContent()).isInstanceOf(LazyProxyInputStream.class);
+			assertThat(attachmentWithStreamContentButWithoutContentId.getContent()).isInstanceOf(LazyProxyInputStream.class);
 			verifyNoInteractions(attachmentService);
 		}
 	}
@@ -175,9 +175,9 @@ class ReadAttachmentsHandlerTest {
 		try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
 			when(attachmentService.readAttachment(any())).thenReturn(testStream);
 			var attachment = Attachments.create();
-			attachment.setDocumentId("some ID");
+			attachment.setContentId("some ID");
 			attachment.setContent(null);
-			attachment.setStatusCode(StatusCode.CLEAN);
+			attachment.setStatus(StatusCode.CLEAN);
 
 			cut.processAfter(readEventContext, List.of(attachment));
 
@@ -185,7 +185,7 @@ class ReadAttachmentsHandlerTest {
 			verifyNoInteractions(attachmentService);
 			byte[] bytes = attachment.getContent().readAllBytes();
 			assertThat(bytes).isEqualTo(testString.getBytes(StandardCharsets.UTF_8));
-			verify(attachmentService).readAttachment(attachment.getDocumentId());
+			verify(attachmentService).readAttachment(attachment.getContentId());
 		}
 	}
 
@@ -196,9 +196,9 @@ class ReadAttachmentsHandlerTest {
 	void wrongStatusThrowsException(String status) {
 		mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
 		var attachment = Attachments.create();
-		attachment.setDocumentId("some ID");
+		attachment.setContentId("some ID");
 		attachment.setContent(null);
-		attachment.setStatusCode(status);
+		attachment.setStatus(status);
 		doThrow(AttachmentStatusException.class).when(attachmentStatusValidator).verifyStatus(status);
 
 		List<CdsData> attachments = List.of(attachment);
@@ -212,9 +212,9 @@ class ReadAttachmentsHandlerTest {
 	void wrongStatusThrowsExceptionDuringContentRead(String status) {
 		mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
 		var attachment = Attachments.create();
-		attachment.setDocumentId("some ID");
+		attachment.setContentId("some ID");
 		attachment.setContent(null);
-		attachment.setStatusCode(status);
+		attachment.setStatus(status);
 
 		assertDoesNotThrow(() -> cut.processAfter(readEventContext, List.of(attachment)));
 
@@ -229,22 +229,22 @@ class ReadAttachmentsHandlerTest {
 	void scannerCalledForUnscannedAttachments() {
 		mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
 		var attachment = Attachments.create();
-		attachment.setDocumentId("some ID");
+		attachment.setContentId("some ID");
 		attachment.setContent(mock(InputStream.class));
-		attachment.setStatusCode(StatusCode.UNSCANNED);
+		attachment.setStatus(StatusCode.UNSCANNED);
 
 		cut.processAfter(readEventContext, List.of(attachment));
 
-		verify(asyncMalwareScanExecutor).scanAsync(readEventContext.getTarget(), attachment.getDocumentId());
+		verify(asyncMalwareScanExecutor).scanAsync(readEventContext.getTarget(), attachment.getContentId());
 	}
 
 	@Test
 	void scannerNotCalledForUnscannedAttachmentsIfNoContentProvided() {
 		mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
 		var attachment = Attachments.create();
-		attachment.setDocumentId("some ID");
+		attachment.setContentId("some ID");
 		attachment.setContent(null);
-		attachment.setStatusCode(StatusCode.UNSCANNED);
+		attachment.setStatus(StatusCode.UNSCANNED);
 
 		cut.processAfter(readEventContext, List.of(attachment));
 
@@ -256,9 +256,9 @@ class ReadAttachmentsHandlerTest {
 	void scannerNotCalledForInfectedAttachments() {
 		mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
 		var attachment = Attachments.create();
-		attachment.setDocumentId("some ID");
+		attachment.setContentId("some ID");
 		attachment.setContent(null);
-		attachment.setStatusCode(StatusCode.INFECTED);
+		attachment.setStatus(StatusCode.INFECTED);
 
 		cut.processAfter(readEventContext, List.of(attachment));
 
@@ -310,9 +310,9 @@ class ReadAttachmentsHandlerTest {
 	void statusNotVerifiedIfNotOnlyContentIsRequested() {
 		mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
 		var attachment = Attachments.create();
-		attachment.setDocumentId("some ID");
+		attachment.setContentId("some ID");
 		attachment.setContent(mock(InputStream.class));
-		attachment.setStatusCode(StatusCode.INFECTED);
+		attachment.setStatus(StatusCode.INFECTED);
 		attachment.setId(UUID.randomUUID().toString());
 
 		cut.processAfter(readEventContext, List.of(attachment));
@@ -321,10 +321,10 @@ class ReadAttachmentsHandlerTest {
 	}
 
 	@Test
-	void emptyDocumentIdAndEmptyContentReturnNullContent() {
+	void emptyContentIdAndEmptyContentReturnNullContent() {
 		mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
 		var attachment = Attachments.create();
-		attachment.setStatusCode(StatusCode.INFECTED);
+		attachment.setStatus(StatusCode.INFECTED);
 		attachment.setContent(null);
 
 		cut.processAfter(readEventContext, List.of(attachment));

@@ -18,8 +18,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
@@ -116,19 +116,19 @@ class CreateAttachmentEventTest {
 
 		cut.processEvent(path, attachment.getContent(), CdsData.create(), eventContext);
 
-		assertThat(attachment.getDocumentId()).isEqualTo(attachmentServiceResult.documentId());
-		assertThat(attachment.getStatusCode()).isEqualTo(attachmentServiceResult.attachmentStatus());
+		assertThat(attachment.getContentId()).isEqualTo(attachmentServiceResult.contentId());
+		assertThat(attachment.getStatus()).isEqualTo(attachmentServiceResult.attachmentStatus());
 	}
 
 	@Test
 	void changesetIstRegistered() {
-		var documentId = "document id";
+		var contentId = "document id";
 		var runtime = mock(CdsRuntime.class);
 		when(eventContext.getCdsRuntime()).thenReturn(runtime);
 		var listener = mock(ChangeSetListener.class);
-		when(listenerProvider.provideListener(documentId, runtime)).thenReturn(listener);
+		when(listenerProvider.provideListener(contentId, runtime)).thenReturn(listener);
 		when(attachmentService.createAttachment(any())).thenReturn(
-				new AttachmentModificationResult(false, documentId, "test"));
+				new AttachmentModificationResult(false, contentId, "test"));
 
 		cut.processEvent(path, null, CdsData.create(), eventContext);
 

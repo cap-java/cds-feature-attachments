@@ -18,15 +18,14 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 
-import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.generated.integration.test.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.integration.test.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.AttachmentEntity;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.AttachmentEntity_;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Items;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Roots;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Roots_;
-import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Statuses;
 import com.sap.cds.feature.attachments.integrationtests.common.MockHttpRequestHelper;
 import com.sap.cds.feature.attachments.integrationtests.common.TableDataDeleter;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.AttachmentsBuilder;
@@ -86,8 +85,8 @@ abstract class OdataRequestValidationBase {
 		var content = putContentForAttachmentWithNavigation(selectedRoot, itemAttachment);
 		var attachment = selectUpdatedAttachmentWithExpand(selectedRoot, itemAttachment);
 
-		verifyContentAndDocumentId(attachment, content, itemAttachment);
-		verifySingleCreateEvent(attachment.getDocumentId(), content);
+		verifyContentAndContentId(attachment, content, itemAttachment);
+		verifySingleCreateEvent(attachment.getContentId(), content);
 	}
 
 	@Test
@@ -102,8 +101,8 @@ abstract class OdataRequestValidationBase {
 		var content = putContentForAttachmentWithoutNavigation(itemAttachment);
 		var attachment = selectUpdatedAttachment(itemAttachment);
 
-		verifyContentAndDocumentIdForAttachmentEntity(attachment, content, itemAttachment);
-		verifySingleCreateEvent(attachment.getDocumentId(), content);
+		verifyContentAndContentIdForAttachmentEntity(attachment, content, itemAttachment);
+		verifySingleCreateEvent(attachment.getContentId(), content);
 	}
 
 	@Test
@@ -121,7 +120,7 @@ abstract class OdataRequestValidationBase {
 		assertThat(responseItem.getAttachments()).allSatisfy(attachment -> {
 			assertThat(attachment.getContent()).isNull();
 			assertThat(attachment.get("content@mediaContentType")).isNull();
-			assertThat(attachment.getDocumentId()).isNull();
+			assertThat(attachment.getContentId()).isNull();
 		});
 		verifyNoAttachmentEventsCalled();
 	}
@@ -145,9 +144,9 @@ abstract class OdataRequestValidationBase {
 				attach -> attach.getId().equals(itemAttachment.getId())).findAny().orElseThrow();
 		assertThat(attachmentWithExpectedContent).containsEntry("content@mediaContentType",
 				"application/octet-stream;charset=UTF-8").containsEntry(Attachments.FILE_NAME, itemAttachment.getFileName());
-		assertThat(attachmentWithExpectedContent.getStatusCode()).isNotEmpty();
-		verifyDocumentId(attachmentWithExpectedContent, itemAttachment.getId(), itemAttachment.getDocumentId());
-		verifySingleCreateEvent(attachmentWithExpectedContent.getDocumentId(), content);
+		assertThat(attachmentWithExpectedContent.getStatus()).isNotEmpty();
+		verifyContentId(attachmentWithExpectedContent, itemAttachment.getId(), itemAttachment.getContentId());
+		verifySingleCreateEvent(attachmentWithExpectedContent.getContentId(), content);
 	}
 
 	@Test
@@ -165,7 +164,7 @@ abstract class OdataRequestValidationBase {
 
 		var url = buildNavigationAttachmentUrl(selectedRoot.getId(), item.getId(), itemAttachment.getId()) + "/content";
 		executeContentRequestAndValidateContent(url, content);
-		verifySingleReadEvent(itemAttachmentAfterChange.getDocumentId());
+		verifySingleReadEvent(itemAttachmentAfterChange.getContentId());
 	}
 
 	@Test
@@ -183,7 +182,7 @@ abstract class OdataRequestValidationBase {
 
 		executeDeleteAndCheckNoDataCanBeRead(
 				buildNavigationAttachmentUrl(selectedRoot.getId(), item.getId(), itemAttachment.getId()),
-				itemAttachmentAfterChange.getDocumentId());
+				itemAttachmentAfterChange.getContentId());
 
 		var expandUrl = buildExpandAttachmentUrl(selectedRoot.getId(), item.getId());
 		var responseItem = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(expandUrl, Items.class,
@@ -193,7 +192,7 @@ abstract class OdataRequestValidationBase {
 		assertThat(responseItem.getAttachments()).allSatisfy(attachment -> {
 			assertThat(attachment.getContent()).isNull();
 			assertThat(attachment.get("content@mediaContentType")).isNull();
-			assertThat(attachment.getDocumentId()).isNull();
+			assertThat(attachment.getContentId()).isNull();
 		});
 		verifyNoAttachmentEventsCalled();
 	}
@@ -221,9 +220,9 @@ abstract class OdataRequestValidationBase {
 		assertThat(responseItem.getAttachments()).first().satisfies(attachment -> {
 			assertThat(attachment.getContent()).isNull();
 			assertThat(attachment.get("content@mediaContentType")).isNull();
-			assertThat(attachment.getDocumentId()).isNull();
+			assertThat(attachment.getContentId()).isNull();
 		});
-		verifySingleDeletionEvent(itemAttachmentAfterChange.getDocumentId());
+		verifySingleDeletionEvent(itemAttachmentAfterChange.getContentId());
 	}
 
 	@Test
@@ -244,7 +243,7 @@ abstract class OdataRequestValidationBase {
 		var result = requestHelper.executeDelete(url);
 
 		assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-		verifySingleDeletionEvent(itemAttachmentAfterChange.getDocumentId());
+		verifySingleDeletionEvent(itemAttachmentAfterChange.getContentId());
 	}
 
 	@Test
@@ -261,7 +260,7 @@ abstract class OdataRequestValidationBase {
 				HttpStatus.OK);
 
 		assertThat(responseAttachment.get("content@mediaContentType")).isNull();
-		assertThat(responseAttachment.getDocumentId()).isNull();
+		assertThat(responseAttachment.getContentId()).isNull();
 		assertThat(responseAttachment.getFileName()).isEqualTo(itemAttachment.getFileName());
 		verifyNoAttachmentEventsCalled();
 	}
@@ -283,27 +282,8 @@ abstract class OdataRequestValidationBase {
 
 		assertThat(responseAttachment).containsEntry("content@mediaContentType", "application/octet-stream;charset=UTF-8")
 				.containsEntry(Attachments.FILE_NAME, itemAttachment.getFileName());
-		verifyDocumentId(responseAttachment, itemAttachment.getId(), itemAttachment.getDocumentId());
+		verifyContentId(responseAttachment, itemAttachment.getId(), itemAttachment.getContentId());
 		verifyNoAttachmentEventsCalled();
-	}
-
-	@Test
-	void directReadOfAttachmentsStatusReturnsValues() throws Exception {
-		var serviceRoot = buildServiceRootWithDeepData();
-		postServiceRoot(serviceRoot);
-
-		var selectedRoot = selectStoredRootWithDeepData();
-		var item = getItemWithAttachmentEntity(selectedRoot);
-		var itemAttachment = getRandomItemAttachmentEntity(item);
-		putContentForAttachmentWithoutNavigation(itemAttachment);
-		clearServiceHandlerContext();
-
-		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId()) + "/status";
-		var responseAttachment = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(url, Statuses.class,
-				HttpStatus.OK);
-
-		var statusText = responseAttachment.getText();
-		assertThat(statusText).containsAnyOf("Clean", "Not Scanned", "No Scanner Available");
 	}
 
 	@Test
@@ -321,7 +301,7 @@ abstract class OdataRequestValidationBase {
 
 		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId()) + "/content";
 		executeContentRequestAndValidateContent(url, content);
-		verifySingleReadEvent(itemAttachmentAfterChange.getDocumentId());
+		verifySingleReadEvent(itemAttachmentAfterChange.getContentId());
 	}
 
 	@Test
@@ -338,7 +318,7 @@ abstract class OdataRequestValidationBase {
 		var itemAttachmentAfterChange = getRandomItemAttachmentEntity(selectedItemAfterChange);
 
 		executeDeleteAndCheckNoDataCanBeRead(buildDirectAttachmentEntityUrl(itemAttachment.getId()),
-				itemAttachmentAfterChange.getDocumentId());
+				itemAttachmentAfterChange.getContentId());
 
 		var expandUrl = buildExpandAttachmentUrl(selectedRoot.getId(), item.getId());
 		var responseItem = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(expandUrl, Items.class,
@@ -348,7 +328,7 @@ abstract class OdataRequestValidationBase {
 		assertThat(responseItem.getAttachmentEntities()).allSatisfy(attachment -> {
 			assertThat(attachment.getContent()).isNull();
 			assertThat(attachment.get("content@mediaContentType")).isNull();
-			assertThat(attachment.getDocumentId()).isNull();
+			assertThat(attachment.getContentId()).isNull();
 		});
 		verifyNoAttachmentEventsCalled();
 	}
@@ -373,7 +353,7 @@ abstract class OdataRequestValidationBase {
 				HttpStatus.OK);
 
 		assertThat(responseItem.getAttachmentEntities()).isEmpty();
-		verifySingleDeletionEvent(itemAttachmentAfterChange.getDocumentId());
+		verifySingleDeletionEvent(itemAttachmentAfterChange.getContentId());
 	}
 
 	@Test
@@ -394,7 +374,7 @@ abstract class OdataRequestValidationBase {
 		assertThat(mvcResult.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
 		if (Objects.nonNull(serviceHandler)) {
 			Awaitility.await().until(() -> serviceHandler.getEventContext().size() == 1);
-			verifyNumberOfEvents(AttachmentService.EVENT_MARK_AS_DELETED, 1);
+			verifyNumberOfEvents(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED, 1);
 			verifyEventContextEmptyForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
 		}
 	}
@@ -437,8 +417,8 @@ abstract class OdataRequestValidationBase {
 		var content = putContentForAttachmentWithNavigation(selectedRoot, itemAttachment);
 		var attachment = selectUpdatedAttachmentWithExpand(selectedRoot, itemAttachment);
 
-		verifyContentAndDocumentId(attachment, content, itemAttachment);
-		verifySingleCreateAndUpdateEvent(attachment.getDocumentId(), itemAttachment.getDocumentId(), content);
+		verifyContentAndContentId(attachment, content, itemAttachment);
+		verifySingleCreateAndUpdateEvent(attachment.getContentId(), itemAttachment.getContentId(), content);
 	}
 
 	@Test
@@ -456,8 +436,8 @@ abstract class OdataRequestValidationBase {
 		var content = putContentForAttachmentWithoutNavigation(itemAttachment);
 		var attachment = selectUpdatedAttachment(itemAttachment);
 
-		verifyContentAndDocumentIdForAttachmentEntity(attachment, content, itemAttachment);
-		verifySingleCreateAndUpdateEvent(attachment.getDocumentId(), itemAttachment.getDocumentId(), content);
+		verifyContentAndContentIdForAttachmentEntity(attachment, content, itemAttachment);
+		verifySingleCreateAndUpdateEvent(attachment.getContentId(), itemAttachment.getContentId(), content);
 	}
 
 	@Test
@@ -472,7 +452,7 @@ abstract class OdataRequestValidationBase {
 		putContentForAttachmentWithNavigation(selectedRoot, itemAttachment, status().is5xxServerError());
 		var attachment = selectUpdatedAttachmentWithExpand(selectedRoot, itemAttachment);
 
-		assertThat(attachment.getDocumentId()).isEqualTo(itemAttachment.getDocumentId());
+		assertThat(attachment.getContentId()).isEqualTo(itemAttachment.getContentId());
 		assertThat(attachment.getContent()).isEqualTo(itemAttachment.getContent());
 	}
 
@@ -492,9 +472,9 @@ abstract class OdataRequestValidationBase {
 		putContentForAttachmentWithNavigation(selectedRoot, itemAttachment, status().is5xxServerError());
 		var attachment = selectUpdatedAttachmentWithExpand(selectedRoot, itemAttachment);
 
-		verifyContentAndDocumentId(attachment, content, itemAttachment);
-		assertThat(attachment.getDocumentId()).isEqualTo(itemAttachment.getDocumentId());
-		verifySingleCreateAndUpdateEvent(attachment.getDocumentId(), itemAttachment.getDocumentId(), content);
+		verifyContentAndContentId(attachment, content, itemAttachment);
+		assertThat(attachment.getContentId()).isEqualTo(itemAttachment.getContentId());
+		verifySingleCreateAndUpdateEvent(attachment.getContentId(), itemAttachment.getContentId(), content);
 	}
 
 	@Test
@@ -513,9 +493,9 @@ abstract class OdataRequestValidationBase {
 		putContentForAttachmentWithoutNavigation(itemAttachment, status().is5xxServerError());
 		var attachment = selectUpdatedAttachment(itemAttachment);
 
-		verifyContentAndDocumentIdForAttachmentEntity(attachment, content, itemAttachment);
-		assertThat(attachment.getDocumentId()).isEqualTo(itemAttachment.getDocumentId());
-		verifySingleCreateAndUpdateEvent(attachment.getDocumentId(), itemAttachment.getDocumentId(), content);
+		verifyContentAndContentIdForAttachmentEntity(attachment, content, itemAttachment);
+		assertThat(attachment.getContentId()).isEqualTo(itemAttachment.getContentId());
+		verifySingleCreateAndUpdateEvent(attachment.getContentId(), itemAttachment.getContentId(), content);
 	}
 
 	@Test
@@ -527,17 +507,17 @@ abstract class OdataRequestValidationBase {
 		var item = getItemWithAttachmentEntity(selectedRoot);
 		var itemAttachment = getRandomItemAttachmentEntity(item);
 		putContentForAttachmentWithoutNavigation(itemAttachment);
-		itemAttachment.setStatusCode("INFECTED");
+		itemAttachment.setStatus("INFECTED");
 		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId());
 
 		requestHelper.resetHelper();
-		requestHelper.executePatchWithODataResponseAndAssertStatus(url, "{\"status_code\":\"" + StatusCode.INFECTED + "\"}",
+		requestHelper.executePatchWithODataResponseAndAssertStatus(url, "{\"status\":\"" + StatusCode.INFECTED + "\"}",
 				HttpStatus.OK);
 
 		selectedRoot = selectStoredRootWithDeepData();
 		item = getItemWithAttachmentEntity(selectedRoot);
 		itemAttachment = getRandomItemAttachmentEntity(item);
-		assertThat(itemAttachment.getStatusCode()).isNotNull().isNotEqualTo(StatusCode.INFECTED);
+		assertThat(itemAttachment.getStatus()).isNotNull().isNotEqualTo(StatusCode.INFECTED);
 	}
 
 	protected Items selectItem(Items item) {
@@ -664,10 +644,10 @@ abstract class OdataRequestValidationBase {
 		return result.single(AttachmentEntity.class);
 	}
 
-	private void executeDeleteAndCheckNoDataCanBeRead(String baseUrl, String documentId) throws Exception {
+	private void executeDeleteAndCheckNoDataCanBeRead(String baseUrl, String contentId) throws Exception {
 		var url = baseUrl + "/content";
 		requestHelper.executeDelete(url);
-		verifySingleDeletionEvent(documentId);
+		verifySingleDeletionEvent(contentId);
 		clearServiceHandlerContext();
 		var response = requestHelper.executeGet(url);
 
@@ -682,27 +662,27 @@ abstract class OdataRequestValidationBase {
 
 	protected abstract void verifyNumberOfEvents(String event, int number);
 
-	protected abstract void verifyDocumentId(Attachments attachmentWithExpectedContent, String attachmentId,
-			String documentId);
+	protected abstract void verifyContentId(Attachments attachmentWithExpectedContent, String attachmentId,
+			String contentId);
 
-	protected abstract void verifyContentAndDocumentId(Attachments attachment, String testContent,
+	protected abstract void verifyContentAndContentId(Attachments attachment, String testContent,
 			Attachments itemAttachment) throws IOException;
 
-	protected abstract void verifyContentAndDocumentIdForAttachmentEntity(AttachmentEntity attachment, String testContent,
+	protected abstract void verifyContentAndContentIdForAttachmentEntity(AttachmentEntity attachment, String testContent,
 			AttachmentEntity itemAttachment) throws IOException;
 
 	protected abstract void clearServiceHandlerContext();
 
 	protected abstract void clearServiceHandlerDocuments();
 
-	protected abstract void verifySingleCreateEvent(String documentId, String content);
+	protected abstract void verifySingleCreateEvent(String contentId, String content);
 
-	protected abstract void verifySingleCreateAndUpdateEvent(String resultDocumentId, String toBeDeletedDocumentId,
+	protected abstract void verifySingleCreateAndUpdateEvent(String resultContentId, String toBeDeletedContentId,
 			String content);
 
-	protected abstract void verifySingleDeletionEvent(String documentId);
+	protected abstract void verifySingleDeletionEvent(String contentId);
 
-	protected abstract void verifySingleReadEvent(String documentId);
+	protected abstract void verifySingleReadEvent(String contentId);
 
 	protected abstract void verifyNoAttachmentEventsCalled();
 

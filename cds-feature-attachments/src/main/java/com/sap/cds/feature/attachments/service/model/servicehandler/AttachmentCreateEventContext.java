@@ -5,7 +5,7 @@ package com.sap.cds.feature.attachments.service.model.servicehandler;
 
 import java.util.Map;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
@@ -30,14 +30,14 @@ public interface AttachmentCreateEventContext extends EventContext {
 	/**
 		* @return The id of the attachment storage entity or {@code null} if no id was specified
 		*/
-	String getDocumentId();
+	String getContentId();
 
 	/**
-		* Sets the id af the document for the attachment storage
+		* Sets the id af the content for the attachment storage
 		*
-		* @param documentId The key of the document
+		* @param contentId The key of the content
 		*/
-	void setDocumentId(String documentId);
+	void setContentId(String contentId);
 
 	/**
 		* @return The ids of the attachment storage entity or {@code Collections.emptyMap} if no id was specified
@@ -67,28 +67,28 @@ public interface AttachmentCreateEventContext extends EventContext {
 	void setAttachmentEntity(CdsEntity attachmentEntity);
 
 	/**
-		* @return The data of the document
+		* @return The data of the content
 		*/
 	MediaData getData();
 
 	/**
 		* Sets the data of the attachment to be read
 		*
-		* @param data The data of the document
+		* @param data The data of the content
 		*/
 	void setData(MediaData data);
 
 	/**
-		* Flag that shows if the document will be internal stored in the database
+		* Flag that shows if the content will be internal stored in the database
 		*
 		* @return The flag for internal storage
 		*/
 	Boolean getIsInternalStored();
 
 	/**
-		* Sets the flag which show that the document will be internal stored in the database
+		* Sets the flag which show that the content will be internal stored in the database
 		*
-		* @param isInternalStored Flag that the document will be internal stored in the Database
+		* @param isInternalStored Flag that the content will be internal stored in the Database
 		*/
 	void setIsInternalStored(Boolean isInternalStored);
 

@@ -9,7 +9,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.generated.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
@@ -44,17 +44,17 @@ class MarkAsDeletedAttachmentEventTest {
 	@Test
 	void documentIsExternallyDeleted() {
 		var value = "test";
-		var documentId = "some id";
+		var contentId = "some id";
 		var data = Attachments.create();
-		data.setDocumentId(documentId);
+		data.setContentId(contentId);
 
 		var expectedValue = cut.processEvent(path, value, data, context);
 
 		assertThat(expectedValue).isEqualTo(value);
-		assertThat(data.getDocumentId()).isEqualTo(documentId);
-		verify(attachmentService).markAsDeleted(documentId);
-		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
-		assertThat(currentData).containsEntry(Attachments.STATUS_CODE, null);
+		assertThat(data.getContentId()).isEqualTo(contentId);
+		verify(attachmentService).markAttachmentAsDeleted(contentId);
+		assertThat(currentData).containsEntry(Attachments.CONTENT_ID, null);
+		assertThat(currentData).containsEntry(Attachments.STATUS, null);
 		assertThat(currentData).containsEntry(Attachments.SCANNED_AT, null);
 	}
 
@@ -66,25 +66,25 @@ class MarkAsDeletedAttachmentEventTest {
 		var expectedValue = cut.processEvent(path, value, data, context);
 
 		assertThat(expectedValue).isEqualTo(value);
-		assertThat(data.getDocumentId()).isNull();
+		assertThat(data.getContentId()).isNull();
 		verifyNoInteractions(attachmentService);
-		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
+		assertThat(currentData).containsEntry(Attachments.CONTENT_ID, null);
 	}
 
 	@Test
 	void documentIsNotExternallyDeletedBecauseItIsDraftChangeEvent() {
 		var value = "test";
-		var documentId = "some id";
+		var contentId = "some id";
 		var data = Attachments.create();
-		data.setDocumentId(documentId);
+		data.setContentId(contentId);
 		when(context.getEvent()).thenReturn(DraftService.EVENT_DRAFT_PATCH);
 
 		var expectedValue = cut.processEvent(path, value, data, context);
 
 		assertThat(expectedValue).isEqualTo(value);
-		assertThat(data.getDocumentId()).isEqualTo(documentId);
+		assertThat(data.getContentId()).isEqualTo(contentId);
 		verifyNoInteractions(attachmentService);
-		assertThat(currentData).containsEntry(Attachments.DOCUMENT_ID, null);
+		assertThat(currentData).containsEntry(Attachments.CONTENT_ID, null);
 	}
 
 }

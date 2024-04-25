@@ -16,8 +16,8 @@ import org.slf4j.Marker;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream.InputStreamSupplier;
@@ -45,11 +45,11 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 /**
 	* The class {@link ReadAttachmentsHandler} is an event handler that is
 	* responsible for reading attachments for entities.
-	* In the before read event, it modifies the CQN to include the document ID and status.
+	* In the before read event, it modifies the CQN to include the content ID and status.
 	* In the after read event, it adds a proxy for the stream of the attachments service to the data.
 	* Only if the data are read the proxy forwards the request to the attachment service to read the attachment.
 	* This is needed to have a filled stream in the data to enable the OData V4 adapter to enrich the data that
-	* a link to the document can be shown on the UI.
+	* a link to the content can be shown on the UI.
 	*/
 @ServiceName(value = "*", type = ApplicationService.class)
 public class ReadAttachmentsHandler implements EventHandler {
@@ -78,7 +78,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 		var cdsModel = context.getModel();
 		var fieldNames = getAttachmentAssociations(cdsModel, context.getTarget(), "", new ArrayList<>());
 		if (!fieldNames.isEmpty()) {
-			var resultCqn = CQL.copy(context.getCqn(), provider.getBeforeReadDocumentIdEnhancer(fieldNames));
+			var resultCqn = CQL.copy(context.getCqn(), provider.getBeforeReadContentIdEnhancer(fieldNames));
 			context.setCqn(resultCqn);
 		}
 	}
@@ -93,14 +93,14 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
-			var documentId = (String) path.target().values().get(Attachments.DOCUMENT_ID);
-			var status = (String) path.target().values().get(Attachments.STATUS_CODE);
+			var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+			var status = (String) path.target().values().get(Attachments.STATUS);
 			var content = (InputStream) path.target().values().get(Attachments.CONTENT);
 			var contentExists = Objects.nonNull(content);
-			if (Objects.nonNull(documentId) || contentExists) {
-				verifyStatus(path, status, documentId, contentExists);
+			if (Objects.nonNull(contentId) || contentExists) {
+				verifyStatus(path, status, contentId, contentExists);
 				InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(
-						documentId);
+						contentId);
 				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
 			} else {
 				return value;
@@ -139,10 +139,10 @@ public class ReadAttachmentsHandler implements EventHandler {
 		return associationNames;
 	}
 
-	private void verifyStatus(Path path, String status, String documentId, boolean contentExists) {
+	private void verifyStatus(Path path, String status, String contentId, boolean contentExists) {
 		if (areKeysEmpty(path.target().keys())) {
 			if (StatusCode.UNSCANNED.equals(status) && contentExists) {
-				asyncMalwareScanExecutor.scanAsync(path.target().entity(), documentId);
+				asyncMalwareScanExecutor.scanAsync(path.target().entity(), contentId);
 			}
 			attachmentStatusValidator.verifyStatus(status);
 		}

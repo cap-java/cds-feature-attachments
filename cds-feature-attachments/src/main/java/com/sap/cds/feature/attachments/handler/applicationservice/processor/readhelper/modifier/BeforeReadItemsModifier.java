@@ -9,14 +9,14 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnSelectListItem;
 import com.sap.cds.ql.cqn.Modifier;
 
 /**
-	* The class {@link BeforeReadItemsModifier} is a modifier that adds the document id field
+	* The class {@link BeforeReadItemsModifier} is a modifier that adds the content id field
 	* and status code to the select items.
 	*/
 public class BeforeReadItemsModifier implements Modifier {
@@ -34,13 +34,13 @@ public class BeforeReadItemsModifier implements Modifier {
 	@Override
 	public List<CqnSelectListItem> items(List<CqnSelectListItem> items) {
 		List<CqnSelectListItem> newItems = new ArrayList<>(items.stream().filter(item -> !item.isExpand()).toList());
-		var result = addDocumentIdItem(items);
+		var result = addContentIdItem(items);
 		newItems.addAll(result);
 
 		return newItems;
 	}
 
-	private List<CqnSelectListItem> addDocumentIdItem(List<CqnSelectListItem> list) {
+	private List<CqnSelectListItem> addContentIdItem(List<CqnSelectListItem> list) {
 		List<CqnSelectListItem> newItems = new ArrayList<>();
 		enhanceWithNewFieldForMediaAssociation(ROOT_ASSOCIATION, list, newItems);
 
@@ -70,17 +70,17 @@ public class BeforeReadItemsModifier implements Modifier {
 
 	private void enhanceWithNewFieldForMediaAssociation(String association, List<CqnSelectListItem> list,
 			List<CqnSelectListItem> listToEnhance) {
-		if (isMediaAssociationAndNeedNewDocumentIdField(association, list)) {
+		if (isMediaAssociationAndNeedNewContentIdField(association, list)) {
 			logger.debug("Adding document id and status code to select items");
-			listToEnhance.add(CQL.get(Attachments.DOCUMENT_ID));
-			listToEnhance.add(CQL.get(Attachments.STATUS_CODE));
+			listToEnhance.add(CQL.get(Attachments.CONTENT_ID));
+			listToEnhance.add(CQL.get(Attachments.STATUS));
 		}
 	}
 
-	private boolean isMediaAssociationAndNeedNewDocumentIdField(String association, List<CqnSelectListItem> list) {
+	private boolean isMediaAssociationAndNeedNewContentIdField(String association, List<CqnSelectListItem> list) {
 		return mediaAssociations.contains(association) && list.stream().anyMatch(
 				item -> isItemRefFieldWithName(item, MediaData.CONTENT)) && list.stream().noneMatch(
-				item -> isItemRefFieldWithName(item, Attachments.DOCUMENT_ID));
+				item -> isItemRefFieldWithName(item, Attachments.CONTENT_ID));
 	}
 
 	private boolean isItemRefFieldWithName(CqnSelectListItem item, String fieldName) {

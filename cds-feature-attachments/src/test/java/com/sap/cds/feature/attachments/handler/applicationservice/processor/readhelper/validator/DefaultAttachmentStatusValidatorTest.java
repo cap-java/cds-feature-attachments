@@ -9,12 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.sap.cds.feature.attachments.generated.cds4j.com.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception.AttachmentStatusException;
 import com.sap.cds.feature.attachments.helper.LogObserver;
 import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
-
-import ch.qos.logback.classic.Level;
 
 class DefaultAttachmentStatusValidatorTest {
 
@@ -32,10 +30,9 @@ class DefaultAttachmentStatusValidatorTest {
 		observer.stop();
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings = {StatusCode.CLEAN, StatusCode.NO_SCANNER})
-	void noExceptionIsThrown(String status) {
-		assertDoesNotThrow(() -> cut.verifyStatus(status));
+	@Test
+	void noExceptionIsThrown() {
+		assertDoesNotThrow(() -> cut.verifyStatus(StatusCode.CLEAN));
 	}
 
 	@ParameterizedTest
@@ -51,21 +48,6 @@ class DefaultAttachmentStatusValidatorTest {
 			assertThat(exception.getPlainMessage()).isEqualTo(AttachmentErrorStatuses.NOT_CLEAN.getCodeString());
 			assertThat(exception.getLocalizedMessage()).isEqualTo(AttachmentErrorStatuses.NOT_CLEAN.getDescription());
 		}
-	}
-
-	@Test
-	void noScannerStatusLogsWarning() {
-		observer.start();
-
-		cut.verifyStatus(StatusCode.NO_SCANNER);
-
-		observer.stop();
-		var list = observer.getLogEvents();
-		assertThat(list).hasSize(1);
-		list.forEach(event -> {
-			assertThat(event.getLevel()).isEqualTo(Level.WARN);
-			assertThat(event.getFormattedMessage()).isNotEmpty();
-		});
 	}
 
 	@ParameterizedTest

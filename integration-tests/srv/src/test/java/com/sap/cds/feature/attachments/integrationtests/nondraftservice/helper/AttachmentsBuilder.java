@@ -1,6 +1,6 @@
 package com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper;
 
-import com.sap.cds.feature.attachments.generated.integration.test.cds4j.com.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.integration.test.cds4j.sap.attachments.Attachments;
 
 public class AttachmentsBuilder {
 
