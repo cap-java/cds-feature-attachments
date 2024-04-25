@@ -158,11 +158,45 @@ In addition to the field names also header information (`@UI.HeaderInfo`) are an
 #### Status Texts
 
 For the status of the attachment only the code value is stored at the moment.
-The status codes are:
+The [status codes](./cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds)
+are:
 
-- `CLEAN`
-- `INFECTED`
-- `NO_SCANNER`
+- `Unscanned`
+- `Scanning`
+- `Clean`
+- `Infected`
+- `Failed`
+
+If a text for the status needs to be displayed on the UI the model needs to be enhanced with the texts.
+For this a new Statuses entity needs to be created like the following example:
+
+```cds
+entity Statuses @cds.autoexpose @readonly {
+    key code : StatusCode;
+        text : localized String(255);
+}
+```
+
+With this a text can be added in example above like:
+
+```cds
+extend Attachments with {
+    statusText : Association to Statuses on statusText.code = $self.status;
+}
+```
+
+With this an annotation can be added to the attachments entity to have the status text displayed in the UI:
+
+```cds
+status @(
+    Common.Text: {
+        $value: ![statusText.text],
+        ![@UI.TextArrangement]: #TextOnly
+    },
+    ValueList: {entity:'Statuses'},
+    sap.value.list: 'fixed-values'
+);
+```
 
 ### UI
 
