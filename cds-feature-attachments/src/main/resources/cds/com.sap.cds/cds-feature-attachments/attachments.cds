@@ -8,21 +8,22 @@ using {
 type StatusCode : String enum {
     Unscanned;
     Scanning;
-    Infected;
     Clean;
+    Infected;
     Failed;
 }
 
-//TODO check expression for link based on status
-aspect MediaData @(_is_media_data) {
-    content    : LargeBinary; // stored only for db-based services
-    mimeType   : String;
-    fileName   : String;
-    contentId : String @readonly; // id of attachment in external storage, if database storage is used, same as id
-    status     : StatusCode @readonly;
-    scannedAt  : Timestamp @readonly;
+aspect MediaData           @(_is_media_data) {
+    content   : LargeBinary; // stored only for db-based services
+    mimeType  : String;
+    fileName  : String;
+    contentId : String     @readonly; // id of attachment in external storage, if database storage is used, same as id
+    status    : StatusCode @readonly;
+    scannedAt : Timestamp  @readonly;
 }
 
 aspect Attachments : cuid, managed, MediaData {
     note : String;
 }
+
+

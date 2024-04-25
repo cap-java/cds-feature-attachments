@@ -100,4 +100,6 @@ This token is used in the workflow to update the version in the `pom.xml` files.
 
 ## Integration Tests
 
+## Mutation Tests
+
 

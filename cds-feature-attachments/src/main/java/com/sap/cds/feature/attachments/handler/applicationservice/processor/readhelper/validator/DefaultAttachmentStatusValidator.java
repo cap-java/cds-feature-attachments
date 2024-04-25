@@ -11,7 +11,7 @@ public class DefaultAttachmentStatusValidator implements AttachmentStatusValidat
 	@Override
 	public void verifyStatus(String attachmentStatus) {
 		if (!StatusCode.CLEAN.equals(attachmentStatus)) {
-			throw StatusCode.UNSCANNED.equals(
+			throw StatusCode.UNSCANNED.equals(attachmentStatus) || StatusCode.SCANNING.equals(
 					attachmentStatus) ? AttachmentStatusException.getNotScannedException() : AttachmentStatusException.getNotCleanException();
 		}
 	}

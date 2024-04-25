@@ -36,10 +36,10 @@ class DefaultAttachmentStatusValidatorTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {StatusCode.INFECTED, StatusCode.UNSCANNED, "some other status"})
+	@ValueSource(strings = {StatusCode.INFECTED, StatusCode.UNSCANNED, StatusCode.SCANNING, "some other status"})
 	void exceptionIsThrown(String status) {
 		var exception = assertThrows(AttachmentStatusException.class, () -> cut.verifyStatus(status));
-		if (StatusCode.UNSCANNED.equals(status)) {
+		if (StatusCode.UNSCANNED.equals(status) || StatusCode.SCANNING.equals(status)) {
 			assertThat(exception.getErrorStatus()).isEqualTo(AttachmentErrorStatuses.NOT_SCANNED);
 			assertThat(exception.getPlainMessage()).isEqualTo(AttachmentErrorStatuses.NOT_SCANNED.getCodeString());
 			assertThat(exception.getLocalizedMessage()).isEqualTo(AttachmentErrorStatuses.NOT_SCANNED.getDescription());

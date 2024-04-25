@@ -155,6 +155,49 @@ In addition to the field names also header information (`@UI.HeaderInfo`) are an
 | `TypeName`       | `attachment`  |
 | `TypeNamePlural` | `attachments` |
 
+#### Status Texts
+
+For the status of the attachment only the code value is stored at the moment.
+The [status codes](./cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds)
+are:
+
+- `Unscanned`
+- `Scanning`
+- `Clean`
+- `Infected`
+- `Failed`
+
+If a text for the status needs to be displayed on the UI the model needs to be enhanced with the texts.
+For this a new Statuses entity needs to be created like the following example:
+
+```cds
+entity Statuses @cds.autoexpose @readonly {
+    key code : StatusCode;
+        text : localized String(255);
+}
+```
+
+With this a text can be added in example above like:
+
+```cds
+extend Attachments with {
+    statusText : Association to Statuses on statusText.code = $self.status;
+}
+```
+
+With this an annotation can be added to the attachments entity to have the status text displayed in the UI:
+
+```cds
+status @(
+    Common.Text: {
+        $value: ![statusText.text],
+        ![@UI.TextArrangement]: #TextOnly
+    },
+    ValueList: {entity:'Statuses'},
+    sap.value.list: 'fixed-values'
+);
+```
+
 ### UI
 
 To enhance the UI with the attachments the following annotations are used for the `UI.Facets` annotations
@@ -231,16 +274,13 @@ If the default implementation of this service is overwritten, e.g. by using the 
 [SAP Document Management Service](https://help.sap.com/docs/document-management-service), then this overwriting plugin
 is responsible for the malware scan and the plugin documentation needs to be checked for how the malware scan is done.
 
-If the default implementation is used and the malware scanner is not available the attachments are marked as not scanned
+If the default implementation is used and the malware scanner is not available the attachments are marked as clean
 by setting the status of the attachment to:
 
-- `NO_SCANNER`
+- `Clean`
 
-Attachments with this status are accessible like attachments with the status `CLEAN`.
-Only attachments with the following status are not accessible:
-
-- `INFECTED`
-- `UNSCANNED`
+Only attachments with the status `Clean` are accessible.
+Attachments with all other status codes are not accessible.
 
 ### Error Messages
 
