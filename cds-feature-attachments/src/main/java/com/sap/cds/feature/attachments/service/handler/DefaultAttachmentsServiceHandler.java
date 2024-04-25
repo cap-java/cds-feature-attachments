@@ -51,7 +51,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		logger.info(create_marker, "Default Attachment Service handler called for creating attachment for entity name: {}",
 				context.getAttachmentEntity().getQualifiedName());
 		var contentId = (String) context.getAttachmentIds().get(Attachments.ID);
-		context.getData().setStatus(StatusCode.UNSCANNED);
+		context.getData().setStatus(StatusCode.SCANNING);
 		var listener = endTransactionMalwareScanProvider.getChangeSetListener(context.getAttachmentEntity(), contentId);
 		context.getChangeSetContext().register(listener);
 		context.setIsInternalStored(true);

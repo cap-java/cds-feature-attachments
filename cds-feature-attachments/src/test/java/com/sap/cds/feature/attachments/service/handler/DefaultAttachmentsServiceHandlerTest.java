@@ -58,7 +58,7 @@ class DefaultAttachmentsServiceHandlerTest {
 		assertThat(createContext.isCompleted()).isTrue();
 		assertThat(createContext.getContentId()).isEqualTo(attachmentId);
 		assertThat(createContext.getIsInternalStored()).isTrue();
-		assertThat(createContext.getData().getStatus()).isEqualTo(StatusCode.UNSCANNED);
+		assertThat(createContext.getData().getStatus()).isEqualTo(StatusCode.SCANNING);
 	}
 
 	@Test
