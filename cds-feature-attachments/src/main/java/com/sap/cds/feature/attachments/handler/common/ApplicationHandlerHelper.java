@@ -31,7 +31,7 @@ public final class ApplicationHandlerHelper {
 
 	public static boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
 		var isIncluded = new AtomicBoolean();
-		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
+		var filter = buildFilterForMediaTypeEntity();
 		Validator validator = (path, element, value) -> isIncluded.set(true);
 
 		callValidator(entity, data, filter, validator);
@@ -66,10 +66,10 @@ public final class ApplicationHandlerHelper {
 	public static List<CdsData> condenseData(List<CdsData> data, CdsEntity entity) {
 		var resultList = new ArrayList<CdsData>();
 
-		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
+		Filter filter = buildFilterForMediaTypeEntity();
 		Validator validator = (path, element, value) -> resultList.add(CdsData.create(path.target().values()));
 
-		ApplicationHandlerHelper.callValidator(entity, data, filter, validator);
+		callValidator(entity, data, filter, validator);
 		return resultList;
 	}
 
