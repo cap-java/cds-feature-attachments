@@ -3,33 +3,72 @@
         "kind": 2,
         "language": "shell",
         "value": "cds init demoapp --add java,tiny-sample",
-        "outputs": [
-            {
-                "mime": "text/plain",
-                "value": "Creating new CAP project in .\\demoapp\n\nAdding feature 'java'...\nUsing Maven archetype version 2.8.1\n[\u001b[1;34mINFO\u001b[m] Scanning for projects...\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------< \u001b[0;36morg.apache.maven:standalone-pom\u001b[0;1m >-------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1mBuilding Maven Stub Project (No POM) 1\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1m--------------------------------[ pom ]---------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \u001b[1m>>> \u001b[0;32marchetype:3.2.1:generate\u001b[m \u001b[1m(default-cli)\u001b[0;1m > \u001b[0;1mgenerate-sources\u001b[m @ \u001b[36mstandalone-pom\u001b[0;1m >>>\u001b[m\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \u001b[1m<<< \u001b[0;32marchetype:3.2.1:generate\u001b[m \u001b[1m(default-cli)\u001b[0;1m < \u001b[0;1mgenerate-sources\u001b[m @ \u001b[36mstandalone-pom\u001b[0;1m <<<\u001b[m\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \u001b[1m--- \u001b[0;32marchetype:3.2.1:generate\u001b[m \u001b[1m(default-cli)\u001b[m @ \u001b[36mstandalone-pom\u001b[0;1m ---\u001b[m\n[\u001b[1;34mINFO\u001b[m] Generating project in Batch mode\n[\u001b[1;34mINFO\u001b[m] Archetype repository not defined. Using the one from [com.sap.cds:cds-services-archetype:2.8.1] found in catalog remote\n[\u001b[1;34mINFO\u001b[m] ----------------------------------------------------------------------------\n[\u001b[1;34mINFO\u001b[m] Using following parameters for creating project from Archetype: cds-services-archetype:2.8.1\n[\u001b[1;34mINFO\u001b[m] ----------------------------------------------------------------------------\n[\u001b[1;34mINFO\u001b[m] Parameter: groupId, Value: customer\n[\u001b[1;34mINFO\u001b[m] Parameter: artifactId, Value: demoapp\n[\u001b[1;34mINFO\u001b[m] Parameter: version, Value: 1.0.0-SNAPSHOT\n[\u001b[1;34mINFO\u001b[m] Parameter: package, Value: customer.demoapp\n[\u001b[1;34mINFO\u001b[m] Parameter: packageInPathFormat, Value: customer/demoapp\n[\u001b[1;34mINFO\u001b[m] Parameter: inMemoryDatabase, Value: h2\n[\u001b[1;34mINFO\u001b[m] Parameter: package, Value: customer.demoapp\n[\u001b[1;34mINFO\u001b[m] Parameter: includeIntegrationTest, Value: false\n[\u001b[1;34mINFO\u001b[m] Parameter: groupId, Value: customer\n[\u001b[1;34mINFO\u001b[m] Parameter: jdkVersion, Value: 17\n[\u001b[1;34mINFO\u001b[m] Parameter: nodeUrl, Value: https://nodejs.org/dist/\n[\u001b[1;34mINFO\u001b[m] Parameter: artifactId, Value: demoapp\n[\u001b[1;34mINFO\u001b[m] Parameter: includeModel, Value: false\n[\u001b[1;34mINFO\u001b[m] Parameter: targetPlatform, Value: local\n[\u001b[1;34mINFO\u001b[m] Parameter: version, Value: 1.0.0-SNAPSHOT\n[\u001b[1;34mINFO\u001b[m] Parameter: odataVersion, Value: v4\n[\u001b[1;34mINFO\u001b[m] Parent element not overwritten in C:\\Users\\D043928\\AppData\\Local\\Temp\\demoapp_NFJgBo\\demoapp\\srv\\pom.xml\n[\u001b[1;34mINFO\u001b[m] Executing META-INF/archetype-post-generate.groovy post-generation script\n[INFO] Scanning for projects...\n[INFO] ------------------------------------------------------------------------\n[INFO] Reactor Build Order:\n[INFO] \n[INFO] demoapp parent                                                     [pom]\n[INFO] demoapp                                                            [jar]\n[INFO] \n[INFO] ----------------------< customer:demoapp-parent >-----------------------\n[INFO] Building demoapp parent 1.0.0-SNAPSHOT                             [1/2]\n[INFO]   from pom.xml\n[INFO] --------------------------------[ pom ]---------------------------------\n[INFO] \n[INFO] --- cds:2.8.1:add (default-cli) @ demoapp-parent ---\n[INFO] AddMojo: Using module srv: groupId=customer, artifactId=demoapp, version=1.0.0-SNAPSHOT\n[INFO] AddMojo: Added dependency `com.h2database:h2` to 'C:\\Users\\D043928\\AppData\\Local\\Temp\\demoapp_NFJgBo\\demoapp\\srv\\pom.xml'.\n[INFO] AddMojo: Added CDS command 'deploy --to h2 --dry > \"${project.basedir}/src/main/resources/schema-h2.sql\"' to cds-maven-plugin configuration in C:\\Users\\D043928\\AppData\\Local\\Temp\\demoapp_NFJgBo\\demoapp\\srv\\pom.xml.\n[INFO] AddMojo: Added profile 'default' to 'C:\\Users\\D043928\\AppData\\Local\\Temp\\demoapp_NFJgBo\\demoapp\\srv\\src\\main\\resources\\application.yaml'.\n[INFO] ------------------------------------------------------------------------\n[INFO] Reactor Summary for demoapp parent 1.0.0-SNAPSHOT:\n[INFO] \n[INFO] demoapp parent ..................................... SUCCESS [  0.748 s]\n[INFO] demoapp ............................................ SKIPPED\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  1.115 s\n[INFO] Finished at: 2024-04-26T10:24:40+02:00\n[INFO] ------------------------------------------------------------------------\n[\u001b[1;34mINFO\u001b[m] Project created from Archetype in dir: C:\\Users\\D043928\\AppData\\Local\\Temp\\demoapp_NFJgBo\\demoapp\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1;32mBUILD SUCCESS\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] Total time:  5.636 s\n[\u001b[1;34mINFO\u001b[m] Finished at: 2024-04-26T10:24:40+02:00\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\nAdding feature 'tiny-sample'...\n[\u001b[1;34mINFO\u001b[m] Scanning for projects...\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1mReactor Build Order:\u001b[m\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] demoapp parent                                                     [pom]\n[\u001b[1;34mINFO\u001b[m] demoapp                                                            [jar]\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \u001b[1m----------------------< \u001b[0;36mcustomer:demoapp-parent\u001b[0;1m >-----------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1mBuilding demoapp parent 1.0.0-SNAPSHOT                             [1/2]\u001b[m\n[\u001b[1;34mINFO\u001b[m]   from pom.xml\n[\u001b[1;34mINFO\u001b[m] \u001b[1m--------------------------------[ pom ]---------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \u001b[1m--- \u001b[0;32mcds:2.8.1:addSample\u001b[m \u001b[1m(default-cli)\u001b[m @ \u001b[36mdemoapp-parent\u001b[0;1m ---\u001b[m\n[\u001b[1;34mINFO\u001b[m] AddSampleMojo: Using module srv: groupId=customer, artifactId=demoapp, version=1.0.0-SNAPSHOT\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1mReactor Summary for demoapp parent 1.0.0-SNAPSHOT:\u001b[m\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] demoapp parent ..................................... \u001b[1;32mSUCCESS\u001b[m [  0.721 s]\n[\u001b[1;34mINFO\u001b[m] demoapp ............................................ \u001b[1;33mSKIPPED\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1;32mBUILD SUCCESS\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] Total time:  1.179 s\n[\u001b[1;34mINFO\u001b[m] Finished at: 2024-04-26T10:24:44+02:00\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] Scanning for projects...\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1mReactor Build Order:\u001b[m\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] demoapp parent                                                     [pom]\n[\u001b[1;34mINFO\u001b[m] demoapp                                                            [jar]\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \u001b[1m----------------------< \u001b[0;36mcustomer:demoapp-parent\u001b[0;1m >-----------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1mBuilding demoapp parent 1.0.0-SNAPSHOT                             [1/2]\u001b[m\n[\u001b[1;34mINFO\u001b[m]   from pom.xml\n[\u001b[1;34mINFO\u001b[m] \u001b[1m--------------------------------[ pom ]---------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \u001b[1m--- \u001b[0;32mcds:2.8.1:addIntegrationTest\u001b[m \u001b[1m(default-cli)\u001b[m @ \u001b[36mdemoapp-parent\u001b[0;1m ---\u001b[m\n[\u001b[1;34mINFO\u001b[m] AddIntegrationTestMojo: Using module srv: groupId=customer, artifactId=demoapp, version=1.0.0-SNAPSHOT\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1mReactor Summary for demoapp parent 1.0.0-SNAPSHOT:\u001b[m\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] demoapp parent ..................................... \u001b[1;32mSUCCESS\u001b[m [  1.637 s]\n[\u001b[1;34mINFO\u001b[m] demoapp ............................................ \u001b[1;33mSKIPPED\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1;32mBUILD SUCCESS\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] Total time:  2.007 s\n[\u001b[1;34mINFO\u001b[m] Finished at: 2024-04-26T10:24:47+02:00\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n\nSuccessfully created project. Continue with 'cd demoapp'.\nLearn about next steps at https://cap.cloud.sap\n\n"
-            }
-        ]
+        "outputs": []
     },
     {
         "kind": 2,
         "language": "shell",
         "value": "cd demoapp",
-        "outputs": [
-            {
-                "mime": "text/plain",
-                "value": "\n"
-            }
-        ]
+        "outputs": []
     },
     {
         "kind": 2,
         "language": "shell",
-        "value": "%%writefile \"db/pom.xml\"\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n\txsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n\t<modelVersion>4.0.0</modelVersion>\n\t<parent>\n\t\t<artifactId>demoapp-parent</artifactId>\n\t\t<groupId>customer</groupId>\n\t\t<version>${revision}</version>\n\t</parent>\n\n\t<artifactId>db</artifactId>\n\n\t<!-- CAP Attachment-->\n\t<build>\n\t\t<plugins>\n\t\t\t<plugin>\n\t\t\t\t<groupId>com.sap.cds</groupId>\n\t\t\t\t<artifactId>cds-maven-plugin</artifactId>\n\t\t\t\t<version>${cds.services.version}</version>\n\t\t\t\t<executions>\n\t\t\t\t\t<execution>\n\t\t\t\t\t\t<id>cds.clean</id>\n\t\t\t\t\t\t<goals>\n\t\t\t\t\t\t\t<goal>clean</goal>\n\t\t\t\t\t\t</goals>\n\t\t\t\t\t</execution>\n\t\t\t\t\t<execution>\n\t\t\t\t\t\t<id>cds.resolve</id>\n\t\t\t\t\t\t<goals>\n\t\t\t\t\t\t\t<goal>resolve</goal>\n\t\t\t\t\t\t</goals>\n\t\t\t\t\t</execution>\n\t\t\t\t</executions>\n\t\t\t</plugin>\n\t\t</plugins>\n\t</build>\n\n</project>",
-        "outputs": [
-            {
-                "mime": "text/html",
-                "value": "Wrote cell content to file <a href=\"demoapp\\db\\pom.xml\">demoapp\\db\\pom.xml</a>.\n"
-            }
-        ]
+        "value": "%%writefile \"attachment-extension.cds\"\nusing {my.bookshop.Books} from './data-model';\nusing {sap.attachments.Attachments} from`com.sap.cds/cds-feature-attachments`;\n\nextend entity Books with {\n    attachments : Composition of many Attachments;\n}\n",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "%%writefile \"db/pom.xml\"\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n\txsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n\t<modelVersion>4.0.0</modelVersion>\n\t<parent>\n\t\t<artifactId>demoapp-parent</artifactId>\n\t\t<groupId>customer</groupId>\n\t\t<version>${revision}</version>\n\t</parent>\n\n\t<artifactId>db</artifactId>\n\n    <!-- CAP Attachment-->\n    <dependencies>\n        <dependency>\n            <groupId>com.sap.cds</groupId>\n            <artifactId>cds-feature-attachments</artifactId>\n            <version>1.0.0</version>\n        </dependency>\n    </dependencies>\n\t\n\t<build>\n\t\t<plugins>\n\t\t\t<plugin>\n\t\t\t\t<groupId>com.sap.cds</groupId>\n\t\t\t\t<artifactId>cds-maven-plugin</artifactId>\n\t\t\t\t<version>${cds.services.version}</version>\n\t\t\t\t<executions>\n\t\t\t\t\t<execution>\n\t\t\t\t\t\t<id>cds.clean</id>\n\t\t\t\t\t\t<goals>\n\t\t\t\t\t\t\t<goal>clean</goal>\n\t\t\t\t\t\t</goals>\n\t\t\t\t\t</execution>\n\t\t\t\t\t<execution>\n\t\t\t\t\t\t<id>cds.resolve</id>\n\t\t\t\t\t\t<goals>\n\t\t\t\t\t\t\t<goal>resolve</goal>\n\t\t\t\t\t\t</goals>\n\t\t\t\t\t</execution>\n\t\t\t\t</executions>\n\t\t\t</plugin>\n\t\t</plugins>\n\t</build>\n\n</project>",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "cd db\nmvn clean compile",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "cd ..",
+        "outputs": []
+    },
+    {
+        "kind": 1,
+        "language": "markdown",
+        "value": "## Enhance Service\n\nRemove the `@readonly` from the service and add the annotation for the draft enablement.",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "java",
+        "value": "Path path = Paths.get(\"srv/cat-service.cds\");\nStream<String> lines = Files.lines(path);\nList<String> replaced = lines.map(line -> line.replaceAll(\"@readonly\", \"\")).collect(Collectors.toList());\nFiles.write(path, replaced);\nlines.close();",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "%%writefile \"srv/cat-service-annotation.cds\"\nusing { CatalogService } from './cat-service';\n\nannotate CatalogService with @odata.draft.enabled;\n",
+        "outputs": []
+    },
+    {
+        "kind": 1,
+        "language": "markdown",
+        "value": "## Add UI \n\nAdd app module to the app to test the attachments in the Books entity.",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "%%writefile \"srv/src/main/resources/application.properties\"\nspring.web.resources.static-locations=file:../app\nspring.jmx.enabled=true",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "%%writefile \"app/fiori.html\"\n<!DOCTYPE html>\n<html>\n<head>\n\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n    <meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>Bookshop</title>\n\n    <script>\n        window[\"sap-ushell-config\"] = {\n            defaultRenderer: \"fiori2\",\n            applications: {}\n        };\n    </script>\n\n    <script id=\"sap-ushell-bootstrap\" src=\"https://sapui5.hana.ondemand.com/test-resources/sap/ushell/bootstrap/sandbox.js\"></script>\n    <script id=\"sap-ui-bootstrap\" src=\"https://sapui5.hana.ondemand.com/resources/sap-ui-core.js\"\n            data-sap-ui-libs=\"sap.m, sap.ushell, sap.collaboration, sap.ui.layout\"\n            data-sap-ui-compatVersion=\"edge\"\n            data-sap-ui-async=\"true\"\n            data-sap-ui-preload=\"async\"\n            data-sap-ui-theme=\"sap_horizon\"\n            data-sap-ui-frameOptions=\"allow\"\n    ></script>\n    <script>\n        sap.ui.getCore().attachInit(()=> sap.ushell.Container.createRenderer().placeAt(\"content\"))\n    </script>\n\n</head>\n<body class=\"sapUiBody\" id=\"content\"></body>\n</html>\n",
+        "outputs": []
     }
 ]
