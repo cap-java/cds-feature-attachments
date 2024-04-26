@@ -34,7 +34,7 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 	private static final Marker read_marker = LoggingMarker.ATTACHMENT_SERVICE_READ_METHOD.getMarker();
 
 	public DefaultAttachmentsService() {
-		super(AttachmentService.DEFAULT_NAME);
+		super(DEFAULT_NAME);
 	}
 
 	@Override
