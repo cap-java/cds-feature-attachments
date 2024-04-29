@@ -1,5 +1,17 @@
 [
     {
+        "kind": 1,
+        "language": "markdown",
+        "value": "# CDS Feature Attachments CAP Notebook\n\nThis CAP notebook creates a CAP Java demoapp with sample data and enhances the app with the CAP feature for attachments.\nAll needed enhancements are done. \nFor more information check the project [README](../README.md). ",
+        "outputs": []
+    },
+    {
+        "kind": 1,
+        "language": "markdown",
+        "value": "## Add the App with Sample Data\n`cds init` is used to create a basic CAP Java app and after that the cds maven plugin is used to add the sample data.",
+        "outputs": []
+    },
+    {
         "kind": 2,
         "language": "shell",
         "value": "cds init demoapp --add java\n",
@@ -15,6 +27,12 @@
         "kind": 2,
         "language": "shell",
         "value": "mvn com.sap.cds:cds-maven-plugin:2.9.0:add -Dfeature=SAMPLE",
+        "outputs": []
+    },
+    {
+        "kind": 1,
+        "language": "markdown",
+        "value": "## Add Enhancements for the Datamodel\nThe `books` entity will be enhanced with the `attachments` composition.\n\nTo be able to use the `cds-feature-attachments` datamodel a `pom.xml` needs to be added with the maven dependency for the feature.\nThe version for the dependency is taken from the file `version.txt`. \nThis file will be updated if a new version is created in the repository.\n\nOnce the `pom.xml` is available and the version is set a `mvn clean verify` is executed.\nWith the the `resolve` goal of the `cds-maven-plugin` is executed which copies the `cds`-files from the feature in the `target` folder of the `db` module.\n\nOnce available in the `target` folder it will be found and can be used in the data models.",
         "outputs": []
     },
     {
@@ -48,6 +66,12 @@
         "outputs": []
     },
     {
+        "kind": 1,
+        "language": "markdown",
+        "value": "## Service Changes\n\nThe service module `srv` of the demo project needs to be updated with the maven dependency for `cds-feature-attachments`.\nThis dependency has included the logic to correctly handle attachments and call the `AtacchmentService`.\n\nAlso here, the version is taken from the `version.txt` which is updated in case a new version in the repository is created.",
+        "outputs": []
+    },
+    {
         "kind": 2,
         "language": "shell",
         "value": "cd ../srv",
@@ -62,19 +86,13 @@
     {
         "kind": 2,
         "language": "shell",
-        "value": "mvn clean compile",
-        "outputs": []
-    },
-    {
-        "kind": 2,
-        "language": "shell",
         "value": "cd ..",
         "outputs": []
     },
     {
         "kind": 1,
         "language": "markdown",
-        "value": "## Enhance Service\n\nMake the static UI resources available and add attachments facet",
+        "value": "## UI Enahncements\n\n1. A property is added to the Java service make the static resources availabe.",
         "outputs": []
     },
     {
@@ -84,9 +102,51 @@
         "outputs": []
     },
     {
+        "kind": 1,
+        "language": "markdown",
+        "value": "2. A UI facet is added for the attachments in the `AdminService`. Because the facet is only added in this service, only this services shows the attachments on the UI.",
+        "outputs": []
+    },
+    {
         "kind": 2,
         "language": "java",
         "value": "String filePath = \"app/admin-books/fiori-service.cds\";\n\ntry {\n    String cds = Files.readString(Path.of(filePath));\n    String searchString = \"Target:\\\\s*'@UI\\\\.FieldGroup#Details'\\\\s*},\";\n    Pattern pattern = Pattern.compile(searchString);\n    Matcher matcher = pattern.matcher(cds);\n\n    if (matcher.find()) {\n        System.out.println(\"String found at position: \" + matcher.start());\n    } else {\n        System.out.println(\"String not found\");\n    }\n\n    String newFacet = \"\\n    {\\n      $Type : 'UI.ReferenceFacet',\\n      ID     : 'AttachmentsFacet',\\n      Label : '{i18n>attachments}',\\n      Target: 'attachments/@UI.LineItem'\\n    },\";\n    int insertPos = matcher.end();\n    cds = cds.substring(0, insertPos) + newFacet + cds.substring(insertPos);\n\n    Files.writeString(Path.of(filePath), cds);\n\n} catch (IOException e) {\n    e.printStackTrace();\n}",
+        "outputs": []
+    },
+    {
+        "kind": 1,
+        "language": "markdown",
+        "value": "3. i18n property file is enhanced with the texts for the attachments to show correct texts on the UI.",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "cd app/_i18n",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "java",
+        "value": "String filePath = \"i18n.properties\";\n\nList<String> properties  = new ArrayList<>();\nproperties.add(\"\\n\");\nproperties.add(\"#Attachment properties\\n\");\nproperties.add(\"attachment_content = Content\\n\");\nproperties.add(\"attachment_mimeType = Mime Type\\n\");\nproperties.add(\"attachment_fileName = File Name\\n\");\nproperties.add(\"attachment_status = Status\\n\");\nproperties.add(\"attachment_note = Notes\\n\");\nproperties.add(\"attachment = Attachment\\n\");\nproperties.add(\"attachments = Attachments\");\n\nfor (String property: properties){\n    try {\n        Files.write(Paths.get(filePath), property.getBytes(), StandardOpenOption.APPEND);\n    } catch (IOException e) {\n        e.printStackTrace();\n    }\n}\n",
+        "outputs": []
+    },
+    {
+        "kind": 1,
+        "language": "markdown",
+        "value": "## Build the Service\n\nRun `mvn clean compile` on the service to compile the models with all changes.",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "cd ../../srv\nmvn clean compile",
+        "outputs": []
+    },
+    {
+        "kind": 1,
+        "language": "markdown",
+        "value": "## Start the Service\n\nThe service can now be started with the following command in the `srv`module:\n\n```\nmvn spring-boot:run\n```\n\nAfter the service is startet the UI can be opened with:\n\n[http://localhost:8080](http://localhost:8080)\n\nUsing the tile `Manage Books` the attachments can be used in the detail area of the books.\n\nUsing the tile `Browse Books` no attachments are shown.",
         "outputs": []
     }
 ]
