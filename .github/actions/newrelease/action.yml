@@ -19,6 +19,7 @@ runs:
     - name: Update version
       run: |
         VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+        echo $VERSION >> cap-notebook/version.txt
         mvn --no-transfer-progress versions:set-property -Dproperty=revision -DnewVersion=$VERSION
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
