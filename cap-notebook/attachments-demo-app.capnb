@@ -20,13 +20,25 @@
     {
         "kind": 2,
         "language": "shell",
-        "value": "%%writefile \"db/pom.xml\"\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n\txsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n\t<modelVersion>4.0.0</modelVersion>\n\t<parent>\n\t\t<artifactId>demoapp-parent</artifactId>\n\t\t<groupId>customer</groupId>\n\t\t<version>${revision}</version>\n\t</parent>\n\n\t<artifactId>db</artifactId>\n\n    <!-- CAP Attachment-->\n    <dependencies>\n        <dependency>\n            <groupId>com.sap.cds</groupId>\n            <artifactId>cds-feature-attachments</artifactId>\n            <version>1.0.0</version>\n        </dependency>\n    </dependencies>\n\t\n\t<build>\n\t\t<plugins>\n\t\t\t<plugin>\n\t\t\t\t<groupId>com.sap.cds</groupId>\n\t\t\t\t<artifactId>cds-maven-plugin</artifactId>\n\t\t\t\t<version>${cds.services.version}</version>\n\t\t\t\t<executions>\n\t\t\t\t\t<execution>\n\t\t\t\t\t\t<id>cds.clean</id>\n\t\t\t\t\t\t<goals>\n\t\t\t\t\t\t\t<goal>clean</goal>\n\t\t\t\t\t\t</goals>\n\t\t\t\t\t</execution>\n\t\t\t\t\t<execution>\n\t\t\t\t\t\t<id>cds.resolve</id>\n\t\t\t\t\t\t<goals>\n\t\t\t\t\t\t\t<goal>resolve</goal>\n\t\t\t\t\t\t</goals>\n\t\t\t\t\t</execution>\n\t\t\t\t</executions>\n\t\t\t</plugin>\n\t\t</plugins>\n\t</build>\n\n</project>",
+        "value": "%%writefile \"db/pom.xml\"\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n\txsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n\t<modelVersion>4.0.0</modelVersion>\n\t<parent>\n\t\t<artifactId>demoapp-parent</artifactId>\n\t\t<groupId>customer</groupId>\n\t\t<version>${revision}</version>\n\t</parent>\n\n\t<artifactId>db</artifactId>\n\n    <!-- CAP Attachment-->\n    <dependencies>\n        <dependency>\n            <groupId>com.sap.cds</groupId>\n            <artifactId>cds-feature-attachments</artifactId>\n            <version>attachment_version</version>\n        </dependency>\n    </dependencies>\n\t\n\t<build>\n\t\t<plugins>\n\t\t\t<plugin>\n\t\t\t\t<groupId>com.sap.cds</groupId>\n\t\t\t\t<artifactId>cds-maven-plugin</artifactId>\n\t\t\t\t<version>${cds.services.version}</version>\n\t\t\t\t<executions>\n\t\t\t\t\t<execution>\n\t\t\t\t\t\t<id>cds.clean</id>\n\t\t\t\t\t\t<goals>\n\t\t\t\t\t\t\t<goal>clean</goal>\n\t\t\t\t\t\t</goals>\n\t\t\t\t\t</execution>\n\t\t\t\t\t<execution>\n\t\t\t\t\t\t<id>cds.resolve</id>\n\t\t\t\t\t\t<goals>\n\t\t\t\t\t\t\t<goal>resolve</goal>\n\t\t\t\t\t\t</goals>\n\t\t\t\t\t</execution>\n\t\t\t\t</executions>\n\t\t\t</plugin>\n\t\t</plugins>\n\t</build>\n\n</project>",
         "outputs": []
     },
     {
         "kind": 2,
         "language": "shell",
-        "value": "cd db\nmvn clean compile",
+        "value": "cd db",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "java",
+        "value": "Path versionPath = Paths.get(\"../../version.txt\");\nString version;\nif (Files.exists(versionPath)){\n    version = Files.readString(versionPath);\n    System.out.println(\"Using version from 'version.txt': \" + version);\n}else{\n    version = \"1.0.0\";\n    System.out.println(\"Using hard coded version: \" + version);\n}\nPath pomPath = Paths.get(\"pom.xml\");\nStream<String> lines = Files.lines(pomPath);\nList<String> replaced = lines.map(line -> line.replaceAll(\"attachment_version\", version)).collect(Collectors.toList());\nFiles.write(pomPath, replaced);\nlines.close();",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "mvn clean compile",
         "outputs": []
     },
     {
