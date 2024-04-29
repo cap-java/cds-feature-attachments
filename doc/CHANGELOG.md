@@ -6,7 +6,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.0.0 - tbd
+## Version 1.0.1 - 2024-04-29
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Fixed a bug in the annotation for the status field in the MediaData entity which causes that no text was shown in the
+  UI
+
+## Version 1.0.0 - 2024-04-26
 
 ### Added
 

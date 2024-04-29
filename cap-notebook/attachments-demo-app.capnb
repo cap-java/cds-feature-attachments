@@ -2,38 +2,112 @@
     {
         "kind": 2,
         "language": "shell",
-        "value": "cds init demoapp --add java,tiny-sample",
-        "outputs": []
+        "value": "cds init demoapp --add java\n",
+        "outputs": [
+            {
+                "mime": "text/plain",
+                "value": "Creating new CAP project in .\\demoapp\n\nAdding feature 'java'...\nUsing Maven archetype version 2.8.1\n[\u001b[1;34mINFO\u001b[m] Scanning for projects...\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------< \u001b[0;36morg.apache.maven:standalone-pom\u001b[0;1m >-------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1mBuilding Maven Stub Project (No POM) 1\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1m--------------------------------[ pom ]---------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \u001b[1m>>> \u001b[0;32marchetype:3.2.1:generate\u001b[m \u001b[1m(default-cli)\u001b[0;1m > \u001b[0;1mgenerate-sources\u001b[m @ \u001b[36mstandalone-pom\u001b[0;1m >>>\u001b[m\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \u001b[1m<<< \u001b[0;32marchetype:3.2.1:generate\u001b[m \u001b[1m(default-cli)\u001b[0;1m < \u001b[0;1mgenerate-sources\u001b[m @ \u001b[36mstandalone-pom\u001b[0;1m <<<\u001b[m\n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \n[\u001b[1;34mINFO\u001b[m] \u001b[1m--- \u001b[0;32marchetype:3.2.1:generate\u001b[m \u001b[1m(default-cli)\u001b[m @ \u001b[36mstandalone-pom\u001b[0;1m ---\u001b[m\n[\u001b[1;34mINFO\u001b[m] Generating project in Batch mode\n[\u001b[1;34mINFO\u001b[m] Archetype repository not defined. Using the one from [com.sap.cds:cds-services-archetype:2.8.1] found in catalog remote\n[\u001b[1;34mINFO\u001b[m] ----------------------------------------------------------------------------\n[\u001b[1;34mINFO\u001b[m] Using following parameters for creating project from Archetype: cds-services-archetype:2.8.1\n[\u001b[1;34mINFO\u001b[m] ----------------------------------------------------------------------------\n[\u001b[1;34mINFO\u001b[m] Parameter: groupId, Value: customer\n[\u001b[1;34mINFO\u001b[m] Parameter: artifactId, Value: demoapp\n[\u001b[1;34mINFO\u001b[m] Parameter: version, Value: 1.0.0-SNAPSHOT\n[\u001b[1;34mINFO\u001b[m] Parameter: package, Value: customer.demoapp\n[\u001b[1;34mINFO\u001b[m] Parameter: packageInPathFormat, Value: customer/demoapp\n[\u001b[1;34mINFO\u001b[m] Parameter: inMemoryDatabase, Value: h2\n[\u001b[1;34mINFO\u001b[m] Parameter: package, Value: customer.demoapp\n[\u001b[1;34mINFO\u001b[m] Parameter: includeIntegrationTest, Value: false\n[\u001b[1;34mINFO\u001b[m] Parameter: groupId, Value: customer\n[\u001b[1;34mINFO\u001b[m] Parameter: jdkVersion, Value: 17\n[\u001b[1;34mINFO\u001b[m] Parameter: nodeUrl, Value: https://nodejs.org/dist/\n[\u001b[1;34mINFO\u001b[m] Parameter: artifactId, Value: demoapp\n[\u001b[1;34mINFO\u001b[m] Parameter: includeModel, Value: false\n[\u001b[1;34mINFO\u001b[m] Parameter: targetPlatform, Value: local\n[\u001b[1;34mINFO\u001b[m] Parameter: version, Value: 1.0.0-SNAPSHOT\n[\u001b[1;34mINFO\u001b[m] Parameter: odataVersion, Value: v4\n[\u001b[1;34mINFO\u001b[m] Parent element not overwritten in C:\\Users\\D043928\\AppData\\Local\\Temp\\demoapp_A6YeFy\\demoapp\\srv\\pom.xml\n[\u001b[1;34mINFO\u001b[m] Executing META-INF/archetype-post-generate.groovy post-generation script\n[INFO] Scanning for projects...\n[INFO] ------------------------------------------------------------------------\n[INFO] Reactor Build Order:\n[INFO] \n[INFO] demoapp parent                                                     [pom]\n[INFO] demoapp                                                            [jar]\n[INFO] \n[INFO] ----------------------< customer:demoapp-parent >-----------------------\n[INFO] Building demoapp parent 1.0.0-SNAPSHOT                             [1/2]\n[INFO]   from pom.xml\n[INFO] --------------------------------[ pom ]---------------------------------\n[INFO] \n[INFO] --- cds:2.8.1:add (default-cli) @ demoapp-parent ---\n[INFO] AddMojo: Using module srv: groupId=customer, artifactId=demoapp, version=1.0.0-SNAPSHOT\n[INFO] AddMojo: Added dependency `com.h2database:h2` to 'C:\\Users\\D043928\\AppData\\Local\\Temp\\demoapp_A6YeFy\\demoapp\\srv\\pom.xml'.\n[INFO] AddMojo: Added CDS command 'deploy --to h2 --dry > \"${project.basedir}/src/main/resources/schema-h2.sql\"' to cds-maven-plugin configuration in C:\\Users\\D043928\\AppData\\Local\\Temp\\demoapp_A6YeFy\\demoapp\\srv\\pom.xml.\n[INFO] AddMojo: Added profile 'default' to 'C:\\Users\\D043928\\AppData\\Local\\Temp\\demoapp_A6YeFy\\demoapp\\srv\\src\\main\\resources\\application.yaml'.\n[INFO] ------------------------------------------------------------------------\n[INFO] Reactor Summary for demoapp parent 1.0.0-SNAPSHOT:\n[INFO] \n[INFO] demoapp parent ..................................... SUCCESS [  0.837 s]\n[INFO] demoapp ............................................ SKIPPED\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  1.225 s\n[INFO] Finished at: 2024-04-29T14:50:23+02:00\n[INFO] ------------------------------------------------------------------------\n[\u001b[1;34mINFO\u001b[m] Project created from Archetype in dir: C:\\Users\\D043928\\AppData\\Local\\Temp\\demoapp_A6YeFy\\demoapp\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1;32mBUILD SUCCESS\u001b[m\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n[\u001b[1;34mINFO\u001b[m] Total time:  6.880 s\n[\u001b[1;34mINFO\u001b[m] Finished at: 2024-04-29T14:50:23+02:00\n[\u001b[1;34mINFO\u001b[m] \u001b[1m------------------------------------------------------------------------\u001b[m\n\nSuccessfully created project. Continue with 'cd demoapp'.\nLearn about next steps at https://cap.cloud.sap\n\n"
+            }
+        ]
     },
     {
         "kind": 2,
         "language": "shell",
         "value": "cd demoapp",
-        "outputs": []
+        "outputs": [
+            {
+                "mime": "text/plain",
+                "value": "\n"
+            }
+        ]
     },
     {
         "kind": 2,
         "language": "shell",
-        "value": "%%writefile \"attachment-extension.cds\"\nusing {my.bookshop.Books} from './data-model';\nusing {sap.attachments.Attachments} from`com.sap.cds/cds-feature-attachments`;\n\nextend entity Books with {\n    attachments : Composition of many Attachments;\n}\n",
-        "outputs": []
+        "value": "mvn com.sap.cds:cds-maven-plugin:2.9.0:add -Dfeature=SAMPLE",
+        "outputs": [
+            {
+                "mime": "text/plain",
+                "value": "[INFO] Scanning for projects...\n[INFO] ------------------------------------------------------------------------\n[INFO] Reactor Build Order:\n[INFO] \n[INFO] demoapp parent                                                     [pom]\n[INFO] demoapp                                                            [jar]\n[INFO] \n[INFO] ----------------------< customer:demoapp-parent >-----------------------\n[INFO] Building demoapp parent 1.0.0-SNAPSHOT                             [1/2]\n[INFO]   from pom.xml\n[INFO] --------------------------------[ pom ]---------------------------------\n[INFO] \n[INFO] --- cds:2.9.0:add (default-cli) @ demoapp-parent ---\n[INFO] AddMojo: Using module srv: groupId=customer, artifactId=demoapp, version=1.0.0-SNAPSHOT\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\_i18n\\i18n.properties\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\_i18n\\i18n_de.properties\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\admin-books\\fiori-service.cds\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\admin-books\\webapp\\Component.js\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\admin-books\\webapp\\i18n\\i18n.properties\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\admin-books\\webapp\\i18n\\i18n_de.properties\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\admin-books\\webapp\\manifest.json\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\appconfig\\fioriSandboxConfig.json\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\browse\\fiori-service.cds\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\browse\\webapp\\Component.js\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\browse\\webapp\\i18n\\i18n.properties\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\browse\\webapp\\i18n\\i18n_de.properties\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\browse\\webapp\\manifest.json\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\common.cds\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\index.html\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\app\\services.cds\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\db\\data\\sap.capire.bookshop-Authors.csv\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\db\\data\\sap.capire.bookshop-Books.csv\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\db\\data\\sap.capire.bookshop-Books_texts.csv\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\db\\data\\sap.capire.bookshop-Genres.csv\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\db\\schema.cds\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\srv\\admin-service.cds\n[INFO] AddMojo: Writing file c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\srv\\cat-service.cds\n[INFO] AddMojo: Added dependency `org.springframework.boot:spring-boot-starter-security` to 'C:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\srv\\pom.xml'.\nStandard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts\n[WARNING] AddMojo: Profile 'default' exists and has been updated.\n[INFO] ------------------------------------------------------------------------\n[INFO] Reactor Summary for demoapp parent 1.0.0-SNAPSHOT:\n[INFO] \n[INFO] demoapp parent ..................................... SUCCESS [  1.151 s]\n[INFO] demoapp ............................................ SKIPPED\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  1.607 s\n[INFO] Finished at: 2024-04-29T14:50:28+02:00\n[INFO] ------------------------------------------------------------------------\n\n"
+            }
+        ]
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "%%writefile \"db/attachment-extension.cds\"\nusing {sap.capire.bookshop.Books} from './schema';\nusing {sap.attachments.Attachments} from`com.sap.cds/cds-feature-attachments`;\n\nextend entity Books with {\n    attachments : Composition of many Attachments;\n}\n",
+        "outputs": [
+            {
+                "mime": "text/html",
+                "value": "Wrote cell content to file <a href=\"demoapp\\db\\attachment-extension.cds\">demoapp\\db\\attachment-extension.cds</a>.\n"
+            }
+        ]
     },
     {
         "kind": 2,
         "language": "shell",
         "value": "%%writefile \"db/pom.xml\"\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n\txsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">\n\t<modelVersion>4.0.0</modelVersion>\n\t<parent>\n\t\t<artifactId>demoapp-parent</artifactId>\n\t\t<groupId>customer</groupId>\n\t\t<version>${revision}</version>\n\t</parent>\n\n\t<artifactId>db</artifactId>\n\n    <!-- CAP Attachment-->\n    <dependencies>\n        <dependency>\n            <groupId>com.sap.cds</groupId>\n            <artifactId>cds-feature-attachments</artifactId>\n            <version>attachment_version</version>\n        </dependency>\n    </dependencies>\n\t\n\t<build>\n\t\t<plugins>\n\t\t\t<plugin>\n\t\t\t\t<groupId>com.sap.cds</groupId>\n\t\t\t\t<artifactId>cds-maven-plugin</artifactId>\n\t\t\t\t<version>${cds.services.version}</version>\n\t\t\t\t<executions>\n\t\t\t\t\t<execution>\n\t\t\t\t\t\t<id>cds.clean</id>\n\t\t\t\t\t\t<goals>\n\t\t\t\t\t\t\t<goal>clean</goal>\n\t\t\t\t\t\t</goals>\n\t\t\t\t\t</execution>\n\t\t\t\t\t<execution>\n\t\t\t\t\t\t<id>cds.resolve</id>\n\t\t\t\t\t\t<goals>\n\t\t\t\t\t\t\t<goal>resolve</goal>\n\t\t\t\t\t\t</goals>\n\t\t\t\t\t</execution>\n\t\t\t\t</executions>\n\t\t\t</plugin>\n\t\t</plugins>\n\t</build>\n\n</project>",
-        "outputs": []
+        "outputs": [
+            {
+                "mime": "text/html",
+                "value": "Wrote cell content to file <a href=\"demoapp\\db\\pom.xml\">demoapp\\db\\pom.xml</a>.\n"
+            }
+        ]
     },
     {
         "kind": 2,
         "language": "shell",
         "value": "cd db",
-        "outputs": []
+        "outputs": [
+            {
+                "mime": "text/plain",
+                "value": "\n"
+            }
+        ]
     },
     {
         "kind": 2,
         "language": "java",
         "value": "Path versionPath = Paths.get(\"../../version.txt\");\nString version;\nif (Files.exists(versionPath)){\n    version = Files.readString(versionPath);\n    System.out.println(\"Using version from 'version.txt': \" + version);\n}else{\n    version = \"1.0.0\";\n    System.out.println(\"Using hard coded version: \" + version);\n}\nPath pomPath = Paths.get(\"pom.xml\");\nStream<String> lines = Files.lines(pomPath);\nList<String> replaced = lines.map(line -> line.replaceAll(\"attachment_version\", version)).collect(Collectors.toList());\nFiles.write(pomPath, replaced);\nlines.close();",
-        "outputs": []
+        "outputs": [
+            {
+                "mime": "text/plain",
+                "value": "Using version from 'version.txt': 1.0.0\n\n"
+            }
+        ]
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "mvn clean compile",
+        "outputs": [
+            {
+                "mime": "text/plain",
+                "value": "[INFO] Scanning for projects...\n[INFO] \n[INFO] ----------------------------< customer:db >-----------------------------\n[INFO] Building db 1.0.0-SNAPSHOT\n[INFO]   from pom.xml\n[INFO] --------------------------------[ jar ]---------------------------------\n[INFO] \n[INFO] --- clean:3.2.0:clean (default-clean) @ db ---\n[INFO] \n[INFO] --- flatten:1.6.0:clean (flatten.clean) @ db ---\n[INFO] \n[INFO] --- cds:2.8.1:clean (cds.clean) @ db ---\n[INFO] \n[INFO] --- enforcer:3.4.1:enforce (Project Structure Checks) @ db ---\n[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireMavenVersion passed\n[INFO] Rule 1: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed\n[INFO] Rule 2: org.apache.maven.enforcer.rules.ReactorModuleConvergence passed\n[INFO] \n[INFO] --- cds:2.8.1:resolve (cds.resolve) @ db ---\n[INFO] CdsResolveMojo: Extracting models from com.sap.cds:cds-feature-attachments:1.0.0 (C:\\Users\\D043928\\.m2\\repository\\com\\sap\\cds\\cds-feature-attachments\\1.0.0\\cds-feature-attachments-1.0.0.jar)\n[INFO] \n[INFO] --- resources:3.3.1:resources (default-resources) @ db ---\n[INFO] skip non existing resourceDirectory c:\\Users\\D043928\\git\\cds-feature-attachments\\cap-notebook\\demoapp\\db\\src\\main\\resources\n[INFO] \n[INFO] --- flatten:1.6.0:flatten (flatten) @ db ---\n[INFO] Generating flattened POM of project customer:db:jar:1.0.0-SNAPSHOT...\n[INFO] \n[INFO] --- compiler:3.12.1:compile (default-compile) @ db ---\n[INFO] No sources to compile\n[INFO] ------------------------------------------------------------------------\n[INFO] BUILD SUCCESS\n[INFO] ------------------------------------------------------------------------\n[INFO] Total time:  5.392 s\n[INFO] Finished at: 2024-04-29T14:50:38+02:00\n[INFO] ------------------------------------------------------------------------\n\n"
+            }
+        ]
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "cd ../srv",
+        "outputs": [
+            {
+                "mime": "text/plain",
+                "value": "\n"
+            }
+        ]
+    },
+    {
+        "kind": 2,
+        "language": "java",
+        "value": "\nPath versionPath = Paths.get(\"../../version.txt\");\nString version;\nif (Files.exists(versionPath)){\n    version = Files.readString(versionPath);\n    System.out.println(\"Using version from 'version.txt': \" + version);\n}else{\n    version = \"1.0.0\";\n    System.out.println(\"Using hard coded version: \" + version);\n}\n\nString filePath = \"pom.xml\";\ntry {\n    String pom = Files.readString(Path.of(filePath));\n    String searchString = \"<dependencies>\";\n    Pattern pattern = Pattern.compile(searchString);\n    Matcher matcher = pattern.matcher(pom);\n\n    if (matcher.find()) {\n        System.out.println(\"String found at position: \" + matcher.start());\n    } else {\n        System.out.println(\"String not found\");\n    }\n\n    String newFacet = \"\\n\\n         <dependency>\\n          <groupId>com.sap.cds</groupId>\\n           <artifactId>cds-feature-attachments</artifactId>\\n          <version>\" + version + \"</version>\\n        </dependency>\\n\\n\";\n    int insertPos = matcher.end();\n    pom = pom.substring(0, insertPos) + newFacet + pom.substring(insertPos);\n\n    Files.writeString(Path.of(filePath), pom);\n\n} catch (IOException e) {\n    e.printStackTrace();\n}",
+        "outputs": [
+            {
+                "mime": "text/plain",
+                "value": "Using version from 'version.txt': 1.0.0\nString found at position: 555\n\n"
+            }
+        ]
     },
     {
         "kind": 2,
@@ -45,42 +119,39 @@
         "kind": 2,
         "language": "shell",
         "value": "cd ..",
-        "outputs": []
+        "outputs": [
+            {
+                "mime": "text/plain",
+                "value": "\n"
+            }
+        ]
     },
     {
         "kind": 1,
         "language": "markdown",
-        "value": "## Enhance Service\n\nRemove the `@readonly` from the service and add the annotation for the draft enablement.",
-        "outputs": []
-    },
-    {
-        "kind": 2,
-        "language": "java",
-        "value": "Path path = Paths.get(\"srv/cat-service.cds\");\nStream<String> lines = Files.lines(path);\nList<String> replaced = lines.map(line -> line.replaceAll(\"@readonly\", \"\")).collect(Collectors.toList());\nFiles.write(path, replaced);\nlines.close();",
-        "outputs": []
-    },
-    {
-        "kind": 2,
-        "language": "shell",
-        "value": "%%writefile \"srv/cat-service-annotation.cds\"\nusing { CatalogService } from './cat-service';\n\nannotate CatalogService with @odata.draft.enabled;\n",
-        "outputs": []
-    },
-    {
-        "kind": 1,
-        "language": "markdown",
-        "value": "## Add UI \n\nAdd app module to the app to test the attachments in the Books entity.",
+        "value": "## Enhance Service\n\nMake the static UI resources available and add attachments facet",
         "outputs": []
     },
     {
         "kind": 2,
         "language": "shell",
         "value": "%%writefile \"srv/src/main/resources/application.properties\"\nspring.web.resources.static-locations=file:../app\nspring.jmx.enabled=true",
-        "outputs": []
+        "outputs": [
+            {
+                "mime": "text/html",
+                "value": "Wrote cell content to file <a href=\"demoapp\\srv\\src\\main\\resources\\application.properties\">demoapp\\srv\\src\\main\\resources\\application.properties</a>.\n"
+            }
+        ]
     },
     {
         "kind": 2,
-        "language": "shell",
-        "value": "%%writefile \"app/fiori.html\"\n<!DOCTYPE html>\n<html>\n<head>\n\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n    <meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>Bookshop</title>\n\n    <script>\n        window[\"sap-ushell-config\"] = {\n            defaultRenderer: \"fiori2\",\n            applications: {}\n        };\n    </script>\n\n    <script id=\"sap-ushell-bootstrap\" src=\"https://sapui5.hana.ondemand.com/test-resources/sap/ushell/bootstrap/sandbox.js\"></script>\n    <script id=\"sap-ui-bootstrap\" src=\"https://sapui5.hana.ondemand.com/resources/sap-ui-core.js\"\n            data-sap-ui-libs=\"sap.m, sap.ushell, sap.collaboration, sap.ui.layout\"\n            data-sap-ui-compatVersion=\"edge\"\n            data-sap-ui-async=\"true\"\n            data-sap-ui-preload=\"async\"\n            data-sap-ui-theme=\"sap_horizon\"\n            data-sap-ui-frameOptions=\"allow\"\n    ></script>\n    <script>\n        sap.ui.getCore().attachInit(()=> sap.ushell.Container.createRenderer().placeAt(\"content\"))\n    </script>\n\n</head>\n<body class=\"sapUiBody\" id=\"content\"></body>\n</html>\n",
-        "outputs": []
+        "language": "java",
+        "value": "String filePath = \"app/admin-books/fiori-service.cds\";\n\ntry {\n    String cds = Files.readString(Path.of(filePath));\n    String searchString = \"Target:\\\\s*'@UI\\\\.FieldGroup#Details'\\\\s*},\";\n    Pattern pattern = Pattern.compile(searchString);\n    Matcher matcher = pattern.matcher(cds);\n\n    if (matcher.find()) {\n        System.out.println(\"String found at position: \" + matcher.start());\n    } else {\n        System.out.println(\"String not found\");\n    }\n\n    String newFacet = \"\\n    {\\n      $Type : 'UI.ReferenceFacet',\\n      ID     : 'AttachmentsFacet',\\n      Label : '{i18n>attachments}',\\n      Target: 'attachments/@UI.LineItem'\\n    },\";\n    int insertPos = matcher.end();\n    cds = cds.substring(0, insertPos) + newFacet + cds.substring(insertPos);\n\n    Files.writeString(Path.of(filePath), cds);\n\n} catch (IOException e) {\n    e.printStackTrace();\n}",
+        "outputs": [
+            {
+                "mime": "text/plain",
+                "value": "String found at position: 546\n\n"
+            }
+        ]
     }
 ]
