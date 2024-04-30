@@ -121,11 +121,6 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 		});
 	}
 
-	private void verifyCreateEventsContainsContentId(String contentId, List<EventContextHolder> createEvents) {
-		assertThat(createEvents.stream().anyMatch(
-				event -> ((AttachmentCreateEventContext) event.context()).getContentId().equals(contentId))).isTrue();
-	}
-
 	@Override
 	protected void verifySingleDeletionEvent(String contentId) {
 		waitTillExpectedHandlerMessageSize(1);
@@ -135,20 +130,6 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 			assertThat(event.context()).isInstanceOf(AttachmentMarkAsDeletedEventContext.class);
 			var deleteContext = (AttachmentMarkAsDeletedEventContext) event.context();
 			assertThat(deleteContext.getContentId()).isEqualTo(contentId);
-		});
-	}
-
-	private void waitTillExpectedHandlerMessageSize(int expectedSize) {
-		Awaitility.await().atMost(30, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
-			var eventCalls = serviceHandler.getEventContext().size();
-			logger.info("Waiting for expected size '{}' in handler context, but was {}", eventCalls, expectedSize);
-			var numberMatch = eventCalls == expectedSize;
-			if (!numberMatch) {
-				serviceHandler.getEventContext().forEach(event -> {
-					logger.info("Event: {}", event);
-				});
-			}
-			return numberMatch;
 		});
 	}
 
@@ -172,6 +153,25 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	protected void verifyEventContextEmptyForEvent(String... events) {
 		Arrays.stream(events).forEach(event -> {
 			assertThat(serviceHandler.getEventContextForEvent(event)).isEmpty();
+		});
+	}
+
+	private void verifyCreateEventsContainsContentId(String contentId, List<EventContextHolder> createEvents) {
+		assertThat(createEvents.stream().anyMatch(
+				event -> ((AttachmentCreateEventContext) event.context()).getContentId().equals(contentId))).isTrue();
+	}
+
+	private void waitTillExpectedHandlerMessageSize(int expectedSize) {
+		Awaitility.await().atMost(30, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
+			var eventCalls = serviceHandler.getEventContext().size();
+			logger.info("Waiting for expected size '{}' in handler context, but was {}", eventCalls, expectedSize);
+			var numberMatch = eventCalls == expectedSize;
+			if (!numberMatch) {
+				serviceHandler.getEventContext().forEach(event -> {
+					logger.info("Event: {}", event);
+				});
+			}
+			return numberMatch;
 		});
 	}
 
