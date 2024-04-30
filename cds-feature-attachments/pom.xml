@@ -16,6 +16,11 @@
         </license>
     </licenses>
 
+    <organization>
+        <name>SAP SE</name>
+        <url>https://www.sap.com</url>
+    </organization>
+
     <artifactId>cds-feature-attachments</artifactId>
     <packaging>jar</packaging>
 

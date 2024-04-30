@@ -10,6 +10,11 @@
         </license>
     </licenses>
 
+    <organization>
+        <name>SAP SE</name>
+        <url>https://www.sap.com</url>
+    </organization>
+
     <properties>
         <revision>1.0.1</revision>
         <java.version>17</java.version>
