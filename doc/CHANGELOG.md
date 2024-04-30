@@ -6,6 +6,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Version 1.0.2 - tbd
+
+### Added
+
+### Changed
+
+- CAP Java version was updated to 2.9.0
+
+### Fixed
+
 ## Version 1.0.1 - 2024-04-29
 
 ### Added
