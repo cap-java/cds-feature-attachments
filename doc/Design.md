@@ -369,8 +369,17 @@ draft or no draft
 
 ### Texts
 
-## Integration Tests
+Texts are not delivered with the feature but can be added.
+For more information see the following sections in the README.md file:
 
-## Mutation Tests
+- [Model Texts](../README.md#model-texts)
+- [Status Texts](../README.md#status-texts)
+- [Error Messages](../README.md#error-messages)
+
+## Tests
+
+### Integration Tests
+
+### Mutation Tests
 
 
