@@ -10,6 +10,8 @@ import java.util.Objects;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -43,6 +45,8 @@ import com.sap.cds.services.persistence.PersistenceService;
 @SpringBootTest
 @AutoConfigureMockMvc
 abstract class OdataRequestValidationBase {
+
+	protected static final Logger logger = LoggerFactory.getLogger(OdataRequestValidationBase.class);
 
 	@Autowired(required = false)
 	protected TestPluginAttachmentsServiceHandler serviceHandler;

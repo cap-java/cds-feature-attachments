@@ -96,8 +96,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	}
 
 	@Override
-	protected void verifySingleCreateAndUpdateEvent(String resultContentId, String toBeDeletedContentId,
-			String content) {
+	protected void verifySingleCreateAndUpdateEvent(String resultContentId, String toBeDeletedContentId, String content) {
 		waitTillExpectedHandlerMessageSize(3);
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT);
 		var createEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
@@ -107,12 +106,12 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 
 		var deleteContentId = !resultContentId.equals(toBeDeletedContentId) ? toBeDeletedContentId : createEvents.stream()
-																																																																																																					.filter(
-																																																																																																							event -> !resultContentId.equals(
-																																																																																																									((AttachmentCreateEventContext) event.context()).getContentId()))
-																																																																																																					.findFirst()
-																																																																																																					.orElseThrow()
-																																																																																																					.context().get(
+																																																																																																	.filter(
+																																																																																																			event -> !resultContentId.equals(
+																																																																																																					((AttachmentCreateEventContext) event.context()).getContentId()))
+																																																																																																	.findFirst()
+																																																																																																	.orElseThrow()
+																																																																																																	.context().get(
 						Attachments.CONTENT_ID);
 
 		assertThat(deleteEvents).hasSize(1).first().satisfies(event -> {
@@ -140,8 +139,17 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	}
 
 	private void waitTillExpectedHandlerMessageSize(int expectedSize) {
-		Awaitility.await().atMost(30, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(
-				() -> serviceHandler.getEventContext().size() == expectedSize);
+		Awaitility.await().atMost(30, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
+			var eventCalls = serviceHandler.getEventContext().size();
+			logger.info("Waiting for expected size '{}' in handler context, but was {}", eventCalls, expectedSize);
+			var numberMatch = eventCalls == expectedSize;
+			if (!numberMatch) {
+				serviceHandler.getEventContext().forEach(event -> {
+					logger.info("Event: {}", event);
+				});
+			}
+			return numberMatch;
+		});
 	}
 
 	@Override
