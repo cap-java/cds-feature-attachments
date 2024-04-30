@@ -11,14 +11,15 @@ and handling by using an aspect Attachments.
 * [Additional Information](#additional-information)
 * [Support, Feedback, Contributing](#support-feedback-contributing)
 * [Minimum Version](#minimum-version)
+* [Artifactory](#artifactory)
 * [Usage](#usage)
     * [CDS Models](#cds-models)
         * [Model Texts](#model-texts)
+        * [Status Texts](#status-texts)
     * [UI](#ui)
     * [Outbox](#outbox)
     * [Malware Scanner](#malware-scanner)
     * [Error Messages](#error-messages)
-    * [Status Texts](#status-texts)
     * [Restore Endpoint](#restore-endpoint)
         * [Motivation](#motivation)
         * [HTTP Endpoint](#http-endpoint)
@@ -58,6 +59,17 @@ The following version are the minimum versions for the usage of the plugin:
 |-----------|-----------------|
 | CAP Java  | 2.8.1           |
 | UI5       | 1.121.0         |
+
+## Artifactory
+
+At the moment the dependency is not available in the public maven repository.
+But it is planned to be available in the public maven repository.
+
+Until then the dependency it only available SAP internally in the following SAP Artifactory:
+https://int.repositories.cloud.sap/ui/repos/tree/General/proxy-cap-java
+
+If you have access to this repository and want to use the plugin you need to add this repository to the
+maven `settings.xml`.
 
 ## Usage
 
