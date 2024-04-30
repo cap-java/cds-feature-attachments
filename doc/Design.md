@@ -212,16 +212,160 @@ The factory returns an implementation of the `ModifyAttachmentEvent` interface.
 
 The `ModifyAttachmentEvent` interface has the following implementations:
 
-#### Draft Activate
+| Implementation                 | Description                                                                                                                                                                                                      |
+|--------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `CreateAttachmentEvent`        | Calls the `CREATE`event of the `AttachmentService`                                                                                                                                                               |
+| `DoNothingAttachmentEvent`     | Is use if the attachment entity is included in the request but nothing needs to be done in the `AttachmentService` e.g. a field is updates which is not the `content`- or `contentId` - field                    |
+| `MarkAsDeletedAttachmentEvent` | Calls the `MARK_AS_DELETED` event of the `AttachmentService`, but not in case the event is a `DRAFT_PATCH`event from the `DraftService`, in this case the mark as deleted is triggered if the draft is activated |
+| `UpdateAttachmentEvent`        | Calls first the `MarkAsDeletedAttachmentEvent` and after that the `CreateAttachmentEvent`                                                                                                                        |
+
+#### Draft Activate and Deep Updates
+
+The activation of a draft is handled as a deep update in the `ApplicationService` handler.
+This means that such kind of updated could also be a delete-event or create-event.
+
+In addition, it could also be a delete-event even if no attachment entity is included in the request.
+If the attachment entity is not updated directly but an association to an entity which can include an attachment entity
+is deleted
+the delete-event needs to be called for the attachment entity.
+
+Example Entity Hierarchy:
+
+```
+root 
+  - item
+      - attachment
+```
+
+If in this example an item is deleted which included an attachment entity the delete-event needs to be called for the
+attachment entity.
+To be able to do this the handler calls `DefaultAttachmentsReader` to read existing attachments from the database.
+The reader is only called if an association is included in the request.
+
+The reader uses the `DefaultAssociationCascader`to determine the associations which need to be read for the attachment
+entity included
+in the entity hierarchy.
+With the information of the cascader the reader creates a select statement to read all attachment entity which belong to
+the
+data in the request.
+
+After the data are read the update-handler compares the data with the data in the request and calls the delete-event for
+all
+attachments which are not included in the request.
+
+#### Delete
+
+For delete-events the does not call the `AttachmentService` directly but an outboxed version of the `AttachmentService`
+is used and called.
+With this the calls to the `AttachmentService` are stored in the database and only called after the transaction is
+committed.
+So, if the transaction had errors and needs to be rolled back the delete-event is not called and so no delete needs to
+be rolled back.
+
+More information about the outbox can be found in
+the [CAP Java documentation](https://cap.cloud.sap/docs/java/outbox#outboxing-cap-service-events).
+See also the [process overview](./Processes.md#delete) of the delete-event.
+
+#### Draft Keys
+
+In some requests e.g. the activation of a draft the kye table of thi entity contains the key `IsActiveEntity`.
+Unfortunately, this field has the value `false` which is wrong in the context of the draft activation and also for
+reading
+existing data from the database.
+
+Because of this, this field is removed before requests to the database are executed.
+
+#### Sibling Entity (Draft or Active)
+
+In the draft handler we need to read the active entities to determine the events.
+Because in the draft handler the draft entities are used the active entities need to be read.
+
+To get the active entity from the draft entity the following coding is used:
+
+```java
+context.getTarget().
+
+getTargetOf("SiblingEntity");
+```
+
+With this the active entity can be determined from the draft entity.
+To check if an entity is a draft entity the following coding is used:
+
+```java
+context.getTarget().
+
+getQualifiedName().
+
+endsWith("_drafts");
+```
+
+The constants for `SiblingEntity` and `_drafts` are defined in the `DraftConstants` class.
 
 #### Readonly Fields
 
+Some fields are defined as readonly fields in the CDS model because they are calculated or filled in the backend but
+with
+a reference to a potential external system.
+The following fields are readonly fields:
+
+- `contentId`
+- `status`
+- `scannedAt`
+
+Other fields which are readonly like `createdAt` can be set once a draft entity is activated.
+But the fields `contentId`, `status` and `scannedAt` are readonly fields which are not allowed to be updated during the
+activation of a draft entity.
+
+Because readonly fields are deleted from the event context during the draft activate, the fields need to be stored and
+added to event context again after they are deleted, but only in case of the draft activate.
+
+To be able to identify the draft activate process a handler for draft activate is implemented:
+
+- `DraftActiveAttachmentsHandler`
+
+This handler overwrites the `on` event of the draft activate and set a flag in the `ThreadDataStorageSetter` to identify
+the draft activate process.
+
+After that the origin handler is called.
+
+In the `ApplicationService` handler for create or update this information is used to store the readonly fields
+in a new field which is not readonly and not deleted:
+
+- `DRAFT_READONLY_CONTEXT`
+
+This is done before the readonly fields are deleted by using a method annotated with:
+
+```java
+@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
+```
+
+The new field is added directly in the data for the attachment entity.
+In case the process is no activate draft process the field is cleared to make sure that the field is not filled from
+outside.
+
+The method in the `ApplicationService` handler to process the data run at a later point in time to make sure
+that validations done for th data are executed.
+Because of this the method is annotated with:
+
+```java
+@HandlerOrder(HandlerOrder.LATE)
+```
+
+During the processing of the attachment entity the readonly fields are restored from the field `DRAFT_READONLY_CONTEXT`.
+
 ### Service
+
+#### Default Implementation
+
+##### Internal Stored
 
 #### Multi-Tenancy
 
 #### Malware Scan
 
+##### Store Scan Result
+
+draft or no draft
 
 ### Texts
 

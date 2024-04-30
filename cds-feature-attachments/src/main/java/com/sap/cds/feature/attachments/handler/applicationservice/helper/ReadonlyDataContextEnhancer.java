@@ -14,7 +14,7 @@ import com.sap.cds.services.EventContext;
 
 public final class ReadonlyDataContextEnhancer {
 
-	private static final String CREATE_READONLY_CONTEXT = "CREATE_READONLY_CONTEXT";
+	private static final String DRAFT_READONLY_CONTEXT = "DRAFT_READONLY_CONTEXT";
 
 	public static void enhanceReadonlyDataInContext(EventContext context, List<CdsData> data, boolean isDraft) {
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
@@ -27,9 +27,9 @@ public final class ReadonlyDataContextEnhancer {
 				cdsData.put(Attachments.CONTENT_ID, contentId);
 				cdsData.put(Attachments.STATUS, statusCode);
 				cdsData.put(Attachments.SCANNED_AT, scannedAt);
-				path.target().values().put(CREATE_READONLY_CONTEXT, cdsData);
+				path.target().values().put(DRAFT_READONLY_CONTEXT, cdsData);
 			} else {
-				path.target().values().remove(CREATE_READONLY_CONTEXT);
+				path.target().values().remove(DRAFT_READONLY_CONTEXT);
 			}
 		};
 
@@ -37,12 +37,12 @@ public final class ReadonlyDataContextEnhancer {
 	}
 
 	public static void fillReadonlyInContext(CdsData data) {
-		var readOnlyData = (CdsData) data.get(CREATE_READONLY_CONTEXT);
+		var readOnlyData = (CdsData) data.get(DRAFT_READONLY_CONTEXT);
 		if (Objects.nonNull(readOnlyData)) {
 			data.put(Attachments.CONTENT_ID, readOnlyData.get(Attachments.CONTENT_ID));
 			data.put(Attachments.STATUS, readOnlyData.get(Attachments.STATUS));
 			data.put(Attachments.SCANNED_AT, readOnlyData.get(Attachments.SCANNED_AT));
-			data.remove(CREATE_READONLY_CONTEXT);
+			data.remove(DRAFT_READONLY_CONTEXT);
 		}
 	}
 

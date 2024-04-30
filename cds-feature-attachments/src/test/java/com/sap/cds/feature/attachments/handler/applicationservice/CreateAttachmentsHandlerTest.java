@@ -40,6 +40,7 @@ import com.sap.cds.services.runtime.CdsRuntime;
 
 class CreateAttachmentsHandlerTest {
 
+	private static final String DRAFT_READONLY_CONTEXT = "DRAFT_READONLY_CONTEXT";
 	private static CdsRuntime runtime;
 
 	private CreateAttachmentsHandler cut;
@@ -119,8 +120,8 @@ class CreateAttachmentsHandlerTest {
 		cut.processBeforeForDraft(createContext, List.of(attachment));
 
 		verifyNoInteractions(eventFactory, event);
-		assertThat(attachment.get("CREATE_READONLY_CONTEXT")).isNotNull();
-		var readOnlyData = (CdsData) attachment.get("CREATE_READONLY_CONTEXT");
+		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNotNull();
+		var readOnlyData = (CdsData) attachment.get(DRAFT_READONLY_CONTEXT);
 		assertThat(readOnlyData).containsEntry(Attachment.CONTENT_ID, attachment.getContentId());
 		assertThat(readOnlyData).containsEntry(Attachment.STATUS, attachment.getStatus());
 		assertThat(readOnlyData).containsEntry(Attachment.SCANNED_AT, attachment.getScannedAt());
@@ -138,13 +139,13 @@ class CreateAttachmentsHandlerTest {
 		readonlyData.put(Attachment.STATUS, "some wrong status code");
 		readonlyData.put(Attachment.CONTENT_ID, "some other document id");
 		readonlyData.put(Attachment.SCANNED_AT, Instant.EPOCH);
-		createAttachment.put("CREATE_READONLY_CONTEXT", readonlyData);
+		createAttachment.put(DRAFT_READONLY_CONTEXT, readonlyData);
 		when(storageReader.get()).thenReturn(false);
 
 		cut.processBeforeForDraft(createContext, List.of(createAttachment));
 
 		verifyNoInteractions(eventFactory, event);
-		assertThat(createAttachment.get("CREATE_READONLY_CONTEXT")).isNull();
+		assertThat(createAttachment.get(DRAFT_READONLY_CONTEXT)).isNull();
 		assertThat(createAttachment).containsEntry(Attachment.CONTENT_ID, contentId);
 		assertThat(createAttachment).doesNotContainKey(Attachment.STATUS);
 		assertThat(createAttachment).doesNotContainKey(Attachment.SCANNED_AT);
@@ -163,7 +164,7 @@ class CreateAttachmentsHandlerTest {
 		cut.processBeforeForDraft(createContext, List.of(attachment));
 
 		verifyNoInteractions(eventFactory, event);
-		assertThat(attachment.get("CREATE_READONLY_CONTEXT")).isNull();
+		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
 	}
 
 	@Test
@@ -225,7 +226,7 @@ class CreateAttachmentsHandlerTest {
 		var testStream = mock(InputStream.class);
 		var attachment = Attachments.create();
 		attachment.setContent(testStream);
-		attachment.put("CREATE_READONLY_CONTEXT", readonlyFields);
+		attachment.put("DRAFT_READONLY_CONTEXT", readonlyFields);
 
 		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
 
@@ -233,7 +234,7 @@ class CreateAttachmentsHandlerTest {
 
 		verify(eventFactory).getEvent(testStream, (String) readonlyFields.get(Attachment.CONTENT_ID), true,
 				CdsData.create());
-		assertThat(attachment.get("CREATE_READONLY_CONTEXT")).isNull();
+		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
 		assertThat(attachment.getContentId()).isEqualTo(readonlyFields.get(Attachment.CONTENT_ID));
 		assertThat(attachment.getStatus()).isEqualTo(readonlyFields.get(Attachment.STATUS));
 		assertThat(attachment.getScannedAt()).isEqualTo(readonlyFields.get(Attachment.SCANNED_AT));
