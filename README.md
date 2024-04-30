@@ -297,6 +297,11 @@ by setting the status of the attachment to:
 Only attachments with the status `Clean` are accessible.
 Attachments with all other status codes are not accessible.
 
+If the malware scanner is available but during the request to the scanner an error occurs the status of the attachment
+is set to:
+
+- `Failed`
+
 ### Error Messages
 
 If attachments are uploaded but not scanned by a malware scanner (if a scanner is available) or are marked as infected
