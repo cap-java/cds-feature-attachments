@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,9 +39,9 @@ import com.sap.cds.services.persistence.PersistenceService;
 @AutoConfigureMockMvc
 abstract class DraftOdataRequestValidationBase {
 
+	protected static final Logger logger = LoggerFactory.getLogger(DraftOdataRequestValidationBase.class);
 	private final static String BASE_URL = MockHttpRequestHelper.ODATA_BASE_URL + "TestDraftService/";
 	private final static String BASE_ROOT_URL = BASE_URL + "DraftRoots";
-
 	@Autowired(required = false)
 	protected TestPluginAttachmentsServiceHandler serviceHandler;
 	@Autowired
@@ -103,13 +105,19 @@ abstract class DraftOdataRequestValidationBase {
 		var attachmentEntityUrl = getAttachmentEntityBaseUrl(selectedRoot.getItems().get(0).getAttachmentEntities().get(0)
 																																																									.getId(), false) + "/content";
 
-		Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+		Awaitility.await().atMost(30, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
 			var attachmentResponse = requestHelper.executeGet(attachmentUrl);
 			var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
 			var attachmentResponseContent = attachmentResponse.getResponse().getContentAsString();
 			var attachmentEntityResponseContent = attachmentEntityResponse.getResponse().getContentAsString();
-			return attachmentResponseContent.equals(testContentAttachment) && attachmentEntityResponseContent.equals(
+			var result = attachmentResponseContent.equals(testContentAttachment) && attachmentEntityResponseContent.equals(
 					testContentAttachmentEntity);
+			if (!result) {
+				logger.info(
+						"Attachment response content: {}, Attachment Test Content: {}, Attachment Entity response content: {}, Attachment Entity Test Content: {}",
+						attachmentResponseContent, testContentAttachment, attachmentEntityResponseContent, testContentAttachmentEntity);
+			}
+			return result;
 		});
 		clearServiceHandlerContext();
 
