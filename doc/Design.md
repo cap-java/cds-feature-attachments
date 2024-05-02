@@ -1,5 +1,56 @@
 # Implementation Details
 
+## Table of Contents
+
+<!-- TOC -->
+
+* [Folder Structure](#folder-structure)
+* [GitHub Actions](#github-actions)
+    * [Pull Requests Build](#pull-requests-build)
+        * [Trigger](#trigger)
+    * [Main Build](#main-build)
+        * [Trigger](#trigger-1)
+    * [Error Handling](#error-handling)
+    * [Build and Deploy](#build-and-deploy)
+        * [Trigger](#trigger-2)
+        * [Repository for Deploy](#repository-for-deploy)
+        * [Update Version](#update-version)
+            * [Token for Version Update](#token-for-version-update)
+    * [BlackDuck](#blackduck)
+    * [Secrets](#secrets)
+* [Feature](#feature)
+    * [CDS Model](#cds-model)
+        * [Usage of the CDS Model](#usage-of-the-cds-model)
+    * [Configuration](#configuration)
+    * [Handler](#handler)
+        * [Events](#events)
+        * [Draft Activate and Deep Updates](#draft-activate-and-deep-updates)
+        * [Content for new Draft](#content-for-new-draft)
+        * [Delete](#delete)
+        * [Draft Keys](#draft-keys)
+        * [Sibling Entity (Draft or Active)](#sibling-entity-draft-or-active)
+        * [Readonly Fields](#readonly-fields)
+    * [Service](#service)
+        * [Service Interface](#service-interface)
+        * [Multi-Tenancy](#multi-tenancy)
+        * [Default Implementation](#default-implementation)
+            * [Internal Stored](#internal-stored)
+            * [Content ID](#content-id)
+        * [Malware Scan](#malware-scan)
+            * [Implementation](#implementation)
+                * [Read Data](#read-data)
+                * [Scan Content](#scan-content)
+                * [Store Scan Result](#store-scan-result)
+                * [Read Attachment calls Malware Scan](#read-attachment-calls-malware-scan)
+            * [Status](#status)
+    * [Texts](#texts)
+* [Tests](#tests)
+    * [Unit Tests](#unit-tests)
+        * [Mutation Tests](#mutation-tests)
+    * [Integration Tests](#integration-tests)
+
+<!-- TOC -->
+
 ## Folder Structure
 
 The following tables shows the folder structure of the project.
