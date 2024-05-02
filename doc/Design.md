@@ -182,6 +182,9 @@ It uses the `CdsRuntimeConfiguration` interface and overwrite the `services` and
 In the `services` method the `AttachmentService` is registered and in the `eventHandlers` method the `DraftService`
 and `ApplicationService` handlers are registered.
 
+The class `Registration` which implements this configuration is referenced in the `META-INF/services` folder
+in file `com.sap.cds.services.runtime.CdsRuntimeConfiguration` to make it visible for the CAP Java runtime.
+
 ### Handler
 
 The following packages are the main packages for the handler implementation in package `handler`:
@@ -355,18 +358,75 @@ During the processing of the attachment entity the readonly fields are restored 
 
 ### Service
 
+Within this plugin a new technical service `AttachmentService` is implemented in package `service`.
+The service is called from the handler of the `DraftService` and `ApplicationService` to store, delete, restore and
+retrieve attachments.
+
+The following table gives an overview of the events and methods of the `AttachmentService`:
+
+| Event                        | Method in `AttachmentService` | Description                                     |
+|------------------------------|-------------------------------|-------------------------------------------------|
+| `CREATE_ATTACHMENT`          | `createAttachment`            | Create a new attachment with the given content. |
+| `MARK_ATTACHMENT_AS_DELETED` | `markAttachmentAsDeleted`     | Called to mark an attachment as deleted.        |
+| `RESTORE_ATTACHMENT`         | `restoreAttachment`           | Called to restored attachments.                 |
+| `READ_ATTACHMENT`            | `readAttachment`              | Read the content of a attachment.               |
+
+#### Service Interface
+
+The interface for the service is `AttachmentService`.
+The service is registered in the CAP Java framework, so the interface can be used in the Spring Boot context to autowire
+the implementation of the service.
+
 #### Default Implementation
+
+In the `service.handler` package the default handler implementation of the `AttachmentService` is implemented.
+The class `DefaultAttachmentService` is registered for the events of the `AttachmentService` and implements the
+`@On` handler for the service.
+
+Because the default implementation of the service stores the attachments in the database the `DefaultAttachmentService`
+do nothing with the content of the attachment.
+
+The handler which call the `AttachmentService` is responsible to store the content of the attachment in the database for
+the default
+implementation.
+This is needed because the create-event is called during the `@Before` phase of the `DraftService`
+and `ApplicationService`.
+In this phase the attachment entity is not available in the database and so the content of the attachment can't be
+stored
+in the `AtachmentService` create-event default implementation.
+
+For the create-event a listener is registered for the end of the transaction to scan the content
+of the attachment for malware.
 
 ##### Internal Stored
 
-#### Multi-Tenancy
+Because the handler of the `DraftService` and `ApplicationService` need to know if the content of the attachment needs
+to
+be stored in the database or the storage is handled by the `AttachmentService` the create-event of
+the `AttachmentService`
+contains this information.
+The event returns the following boolean value if the content of the attachment is stored in the database or not:
+
+- `isInternalStored`
+
+The default implementation sets this flag to `true`.
+If there will be other implementations of the `AttachmentService` which store the content of the attachment in an
+external
+storage the flag must not be set.
 
 #### Malware Scan
+
+During the processing of the default implementation of the handler for the `AttachmentService` a malware scan is
+registered.
+To see the whole process have a look in the [process description](Processes.md#malware-scan).
+
+##### Status
 
 ##### Store Scan Result
 
 draft or no draft
 
+#### Multi-Tenancy
 ### Texts
 
 Texts are not delivered with the feature but can be added.
