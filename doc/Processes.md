@@ -146,7 +146,7 @@ The endpoint will call a restore handler and the handler the restore event in th
 As input a timestamp is given which indicates which contents needs to be restored.
 Every content which was marked as deleted after the given timestamp will be restored.
 
-![Restore](./img/Restore_contents.png)
+![Restore](./img/Restore_Documents.png)
 
 ## Malware Scan
 
@@ -216,13 +216,13 @@ This check is implemented in the proxy for the following reasons:
 
 The following sequence diagram shows the process of reading a content including access to the attachment service.
 
-![Read with content Access](./img/Read_with_content.png)
+![Read with content Access](./img/Read_with_Document.png)
 
 ### Read without Access to the Content
 
 The following sequence diagram shows the process of reading a content without access to the attachment service.
 
-![Read without content Access](./img/Read_without_content.png)
+![Read without content Access](./img/Read_without_Document.png)
 
 ### Error because of Malware Scan Status
 
