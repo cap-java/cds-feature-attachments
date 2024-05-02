@@ -5,6 +5,7 @@
 <!-- TOC -->
 * [Folder Structure](#folder-structure)
 * [GitHub Actions](#github-actions)
+    * [Build Action](#build-action)
     * [Pull Requests Build](#pull-requests-build)
         * [Trigger](#trigger)
     * [Main Build](#main-build)
@@ -76,6 +77,13 @@ In folder `.github/workflows` are the GitHub Actions defined. The following tabl
 | `error-handling.yaml`        | Checks if the workflow started with `main-build.yaml` had errors and if yes, create a GitHub issue for the failing run.                                                                                    |
 | `main-build-and-deploy.yaml` | Creates a new version for main, builds the project, run all tests and deploy it to maven or artifactory. See also [Build and Deploy](#build-and-deploy)                                                    |
 
+### Build Action
+
+The build step is implemented in action `.github/actions/build/action.yaml` which is used in the workflows:
+"Pull Requests Build", "Main Build" and "Build and Deploy".
+As the build action does not only run a build of the project, but also the mutations tests this action is used in all
+the mentioned workflows.
+
 ### Pull Requests Build
 
 The `pull-requests-build.yaml` starts a workflow to build the project and run all unit and Spring Boot tests for the
@@ -103,16 +111,28 @@ If the workflow had errors a GitHub issue is created with the error message and 
 The `main-build-and-deploy.yaml` starts a workflow to build the project, run all tests and deploy it to maven or
 artifactory.
 The workflow is started if a new release is created in GitHub. The tags used in the release are used as new version for
-the
-project.
+the project.
 
 The following steps are executed in the workflow:
 
 1. Update the version in the `pom.xml` files. The tag used in the release is read and git commands are used to update
    the property `revision` in the parent `pom.xml` file.
-2. Build the project and run all unit, integration and mutation tests.
+2. Build the project and run all unit, integration and mutation tests. Here a reuse action is used which is also
+   executed in the main and pull request build.
 3. Deploy the project to maven or artifactory. The deployment is done with the maven command `mvn deploy`. The
-   deployment is done to the repository defined in the `pom.xml` file.
+   deployment is done to the repository defined in the `pom.xml` file. So only project parts which have defined the
+   repository are deployed.
+   With this the deployment is done only for the `cds-feature-attachments` and the root project but not for the
+   integration tests.
+
+Because in step 2 of the workflow the project is already build the projects does not to be build again in step 3.
+To avoid most of the plugin executions a property `skipDuringDeploy` was introduced for most of the plugins to skip
+the plugin execution.
+During deploy the following properties are used:
+
+- `maven.install.skip=true`
+- `maven.test.skip=true`
+- `skipDuringDeploy=true`
 
 #### Trigger
 
