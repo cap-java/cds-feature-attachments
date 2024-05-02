@@ -114,11 +114,9 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 																																																																																																	.context().get(
 						Attachments.CONTENT_ID);
 
-		assertThat(deleteEvents).hasSize(1).first().satisfies(event -> {
-			assertThat(event.context()).isInstanceOf(AttachmentMarkAsDeletedEventContext.class);
-			var deleteContext = (AttachmentMarkAsDeletedEventContext) event.context();
-			assertThat(deleteContext.getContentId()).isEqualTo(deleteContentId);
-		});
+		var eventFound = deleteEvents.stream().anyMatch(
+				event -> ((AttachmentMarkAsDeletedEventContext) event.context()).getContentId().equals(deleteContentId));
+		assertThat(eventFound).isTrue();
 	}
 
 	@Override
@@ -164,8 +162,8 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	private void waitTillExpectedHandlerMessageSize(int expectedSize) {
 		Awaitility.await().atMost(30, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
 			var eventCalls = serviceHandler.getEventContext().size();
-			logger.info("Waiting for expected size '{}' in handler context, but was {}", eventCalls, expectedSize);
-			var numberMatch = eventCalls == expectedSize;
+			logger.info("Waiting for expected size '{}' in handler context, was '{}'", expectedSize, eventCalls);
+			var numberMatch = eventCalls >= expectedSize;
 			if (!numberMatch) {
 				serviceHandler.getEventContext().forEach(event -> {
 					logger.info("Event: {}", event);

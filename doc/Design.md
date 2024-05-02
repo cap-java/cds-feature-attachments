@@ -648,6 +648,17 @@ based on the scenarios.
 To mock the results of the malware scan wiremock is used for the tests where the malware scanner is available.
 With this positive and negative results of the malware scan can be tested.
 
+## Quality Tools
 
+The following quality tools are used in the project to ensure the quality of the code and project:
 
-
+| Tool                  | Definition                                                                  | Description                                                                                                                                                |
+|-----------------------|-----------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Spotbugs              | Defined in the root `pom.xml`                                               | Static Code check for Java code working in the bytecode.                                                                                                   |
+| PMD/CPD               | Defined in the root `pom.xml`                                               | Static Code check for Java code working on the source code. CPD checks the coding for duplications.                                                        |
+| Maven Enforcer Plugin | Defined in the root `pom.xml`                                               | Checks if there are dependencies declared twice.                                                                                                           |
+| Mutation Tests        | Defined in `cds-feature-attachments/pom.xml`                                | See section [mutation tests](#mutation-tests).                                                                                                             |
+| Jacoco                | Defined in `cds-feature-attachments/pom.xml`                                | See section [unit tests](#unit-tests).                                                                                                                     |
+| Dependabot            | Config is defined in the `.github/dependabot.yml`                           | Checks for new versions of dependencies.                                                                                                                   |
+| CodeQl                | Defined in the GitHub project                                               | Checks for vulnerabilities in the coding. Executed as GitHub action with the default settings, so no action needs to be implemented in the project itself. |
+| BlackDuck             | As GitHub action is defined in folder `.github/actions/scan-with-blackduck` | Scans the coding with BlackDuck.                                                                                                                           |
