@@ -256,6 +256,18 @@ After the data are read the update-handler compares the data with the data in th
 all
 attachments which are not included in the request.
 
+#### Content for new Draft
+
+If a new draft is created the content of the attachment entity is not read from external sources in case it is stored
+external.
+To not call the delete method if the draft is activated with no changes in the attachment entity, because the content
+field is empty,
+not the content field itself is validated but the `contentId` field.
+
+To make this possible the fields needs to be filled also for storage of the content in the database.
+Because of this, also the default implementation of the handler of the `AttachmentService` will fill the `contentId`
+field.
+
 #### Delete
 
 For delete-events the does not call the `AttachmentService` directly but an outboxed version of the `AttachmentService`
@@ -377,6 +389,13 @@ The interface for the service is `AttachmentService`.
 The service is registered in the CAP Java framework, so the interface can be used in the Spring Boot context to autowire
 the implementation of the service.
 
+#### Multi-Tenancy
+
+The feature is ready for multitenancy scenarios.
+The attachment service is called without tenant information in the event-context but the tenant information needs to be
+included
+in the request context.
+
 #### Default Implementation
 
 In the `service.handler` package the default handler implementation of the `AttachmentService` is implemented.
@@ -414,19 +433,92 @@ If there will be other implementations of the `AttachmentService` which store th
 external
 storage the flag must not be set.
 
+##### Content ID
+
+As there is no external storage for the default implementation the content id is filled with the ID of the attachment
+entity.
+The content id needs to be filled, as also based on this ID the `ModifyAttachmentEventFactory` determines which event to
+use.
+
 #### Malware Scan
 
 During the processing of the default implementation of the handler for the `AttachmentService` a malware scan is
 registered.
 To see the whole process have a look in the [process description](Processes.md#malware-scan).
 
+##### Implementation
+
+The malware scan is implemented in package `service.handler.malware`.
+There are two interfaces implemented for the malware scan:
+
+- `AsyncMalwareScanExecutor`: to call the malware scan in an asynchronous way
+- `AttachmentMalwareScanner`: to scan the content of the attachment for malware
+
+There are two places where the malware scan is called:
+
+1. In the change set listener registered in the default ON-implementation of the `AttachmentService` create-event
+2. In the `ReadAttachmentsHandler`, a handler which is registered for the `ApplicationService`
+   to read the content of the attachment
+
+The interface `AsyncMalwareScanExecutor` and the `ChangeSetListener` are both implemented in
+record `EndTransactionMalwareScanRunner`
+to have the logic to start the malware scan in a asynchronous way in one place.
+
+The clas `DefaultAttachmentMalwareScanner` implements the interface `AttachmentMalwareScanner` and do the scan.
+
+###### Read Data
+
+Before the scan is executed the attachment entity data are read from the database.
+
+As the data could be stored in the active or in the draft entity, in case draft is activated, the data
+are tried to read from both, the draft entity and the active entity.
+If there is no draft entity available the data are only read from the active entity.
+
+The data are read with the where-condition of the `contentId`.
+
+###### Scan Content
+
+For each attachment entity that was found during the selection the content is scanned using the
+`MalwareScanClient`. The content is taken directly from tha attachment entity, as the malware scan is called for the
+default implementation of the `AttachmentService` handler and the content is stored in the database.
+
+The client first check if a malware scanner is bound, if not it returns the status `NO_SCANNER`.
+In this case a warning log is written, that no scanner is bound und this should not be used in productive systems.
+
+If a scanner is bound, the scanner is called and the result is mapped to the `MalwareScanResultStatus` and returned.
+
+###### Store Scan Result
+
+After the client returned the `MalwareScanResultStatus` this status is mapped to the possible status values defined in
+the data model.
+With this, the attachment entity is tried to be updated.
+
+###### Read Attachment calls Malware Scan
+
+Because a draft entity could be in the phase of the activation at the moment the scan is executed,
+the update will not be recognized for the activation.
+In this case the status will remain `Scanning` or `Unscanned`.
+
+This needs to be corrected in the future if a `MalwareScanService` is implemented which will rescan the content.
+For now the scan is retriggered if a read is executed for an entity which has this status values.
+Because of this, the malware scan needs to be triggered also from the `ReadAttachmentsHandler`.
+
 ##### Status
 
-##### Store Scan Result
+The following table gives an overview of the possible status values and the mapping to the `MalwareScanResultStatus`:
 
-draft or no draft
+| Status Value | MalwareScanResultStatus | Description                                                                                              |
+|--------------|-------------------------|----------------------------------------------------------------------------------------------------------|
+| `Unscanned`  | -                       | The content was not scanned.                                                                             |
+| `Scanning`   | -                       | The content is scanned.                                                                                  |
+| `Clean`      | `CLEAN`, `NO_SCANNER`   | The content was scanned and is clean. In case there is no scanner available the content is always clean. |
+| `Infected`   | `INFECTED`, `ENCRYPTED` | The content was scanned infected or encrypted content was found.                                         |
+| `Failed`     | `FAILED`                | During the scan an error occurred.                                                                       |
 
-#### Multi-Tenancy
+Only content with the status `Clean` can be downloaded from the UI.
+This is validated in the `DefaultAttachmentStatusValidator`. If the content is not clean the validator throws
+an `AttachmentStatusException`.
+
 ### Texts
 
 Texts are not delivered with the feature but can be added.
@@ -438,8 +530,73 @@ For more information see the following sections in the README.md file:
 
 ## Tests
 
+### Unit Tests
+
+The feature has unit tests for each class.
+In the `cds-feature-attachments/pom.xml` the plugin `jacoco-maven-plugin` is used to check if every class has a unit
+test.
+The following settings are used for this plugin:
+
+| Setting              | Value |
+|----------------------|-------|
+| Instruction Coverage | 95%   |
+| Branch Coverage      | 95%   |
+| Complexity Coverage  | 95%   |
+| Class Missed Count   | 0     |
+
+#### Mutation Tests
+
+In addition to this plugin, also mutation tests are executed during the build of the project in the GitHub Actions.
+To run the mutation tests the plugin `pitest-maven` is included in the same pom.
+
+Several mutators are maintained in the plugin and the following settings are used:
+
+| Setting                       | Value |
+|-------------------------------|-------|
+| Coverage Threshold            | 95%   |
+| Aggregated Mutation Threshold | 90%   |
+
 ### Integration Tests
 
-### Mutation Tests
+Spring Boot tests are implemented in the `integration-tests` folder.
+The tests are executed during the build of the project in the GitHub Actions.
+
+The folder `integration-tests` contains a simple Spring Boot application with the default CAP
+folder structure but without UI. All the tests are done using OData V4 requests.
+
+In the `db` folder a simple data model is implemented and in the `srv` folder services with draft enabled and without
+which uses the data model from the `db` folder.
+
+There are several tests implemented with different scenarios.
+To differentiate between the scenarios profiles are used in the tests and the setup.
+
+The following profiles are used:
+
+- `test-handler-enabled`
+- `test-handler-disabled`
+- `malware-scan-enabled`
+
+With the profile `test-handler-enabled` a handler is implemented which overwrites the default handler for the
+`AttachmentService`. With this an overwrite of the default implementation is tested.
+
+With the profile `test-handler-disabled` the default implementation of the `AttachmentService` is used.
+
+The profile `malware-scan-enabled` is used to test the malware scan. To enable a malware scan an environment variable
+is registered in the `application.yaml` of the tests if this profile is active which contains the settings for the
+malware scanner.
+
+The main tests are implemented in the following two packages:
+
+- `draftservice`: Tests for the draft service
+- `nondraftservice`: Tests for the application service without draft enabled
+
+Both packages contain a base class which implements most of the tests and has abstract methods for the specific
+validation
+based on the scenarios.
+
+To mock the results of the malware scan wiremock is used for the tests where the malware scanner is available.
+With this positive and negative results of the malware scan can be tested.
+
+
 
 
