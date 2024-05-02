@@ -3,7 +3,6 @@
 ## Table of Contents
 
 <!-- TOC -->
-
 * [Folder Structure](#folder-structure)
 * [GitHub Actions](#github-actions)
     * [Pull Requests Build](#pull-requests-build)
@@ -48,7 +47,7 @@
     * [Unit Tests](#unit-tests)
         * [Mutation Tests](#mutation-tests)
     * [Integration Tests](#integration-tests)
-
+* [Quality Tools](#quality-tools)
 <!-- TOC -->
 
 ## Folder Structure
