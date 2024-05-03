@@ -3,6 +3,8 @@
 ## Table of Contents
 
 <!-- TOC -->
+
+* [Links for Design, Processes and Readme](#links-for-design-processes-and-readme)
 * [Folder Structure](#folder-structure)
 * [GitHub Actions](#github-actions)
     * [Build Action](#build-action)
@@ -50,6 +52,20 @@
     * [Integration Tests](#integration-tests)
 * [Quality Tools](#quality-tools)
 <!-- TOC -->
+
+## Links for Design, Processes and Readme
+
+- [Bulk License Documentation](https://reuse.software/faq/#bulk-license)
+- [CAP Java Tutorial](https://cap.cloud.sap/docs/java/getting-started)
+- [CAP Java plugin concept](https://cap.cloud.sap/docs/java/building-plugins#building-plugins)
+- [CAP Java Outbox documentation](https://cap.cloud.sap/docs/java/outbox#outboxing-cap-service-events)
+- [CAP Java Security Documentation](https://cap.cloud.sap/docs/java/security)
+- [CAP Notebooks](https://cap.cloud.sap/docs/tools/#cap-vscode-notebook)
+- [BlackDuck Scan Results](https://sap.blackducksoftware.com/api/projects/480aae67-284b-42cf-840c-ba021be84378)
+- [BlackDuck User Groud Self Service](https://svmprod-zdohvhnx0v.dispatcher.int.sap.eu2.hana.ondemand.com/webapp/index.html)
+- [Artifactory](https://common.repositories.cloud.sap/ui/repos/tree/General/cap-java)
+- [SAP Malware Scanning Service](https://help.sap.com/docs/malware-scanning-servce)
+- [SAP Document Management Service](https://help.sap.com/docs/document-management-service)
 
 ## Folder Structure
 
@@ -193,6 +209,10 @@ The following user group is used for the BackDuck scan:
 - `CDSJAVA-OPEN-SOURCE`
 
 The group and other settings are defined in the project piper [config](../.pipeline/config.yml) file.
+BlackDuck Links:
+
+- [Scan Results](https://sap.blackducksoftware.com/api/projects/480aae67-284b-42cf-840c-ba021be84378)
+- [User Groud Self Service](https://svmprod-zdohvhnx0v.dispatcher.int.sap.eu2.hana.ondemand.com/webapp/index.html)
 
 ### Secrets
 
@@ -680,4 +700,4 @@ The following quality tools are used in the project to ensure the quality of the
 | Jacoco                | Defined in `cds-feature-attachments/pom.xml`                                | See section [unit tests](#unit-tests).                                                                                                                     |
 | Dependabot            | Config is defined in the `.github/dependabot.yml`                           | Checks for new versions of dependencies.                                                                                                                   |
 | CodeQl                | Defined in the GitHub project                                               | Checks for vulnerabilities in the coding. Executed as GitHub action with the default settings, so no action needs to be implemented in the project itself. |
-| BlackDuck             | As GitHub action is defined in folder `.github/actions/scan-with-blackduck` | Scans the coding with BlackDuck.                                                                                                                           |
+| BlackDuck             | As GitHub action is defined in folder `.github/actions/scan-with-blackduck` | Scans the coding with BlackDuck. See [design](#blackduck).                                                                                                 |
