@@ -40,6 +40,12 @@
         <dependency>
             <groupId>com.sap.cds</groupId>
             <artifactId>cds-services-utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.sap.cds</groupId>
