@@ -25,7 +25,7 @@
     <packaging>jar</packaging>
 
     <name>CDS Feature for Attachments</name>
-    <url>https://cap.cloud.sap/docs/java</url>
+    <url>https://cap.cloud.sap/docs/plugins/#attachments</url>
 
     <properties>
         <packageName>com.sap.cds.feature.attachments</packageName>
