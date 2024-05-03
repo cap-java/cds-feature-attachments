@@ -660,13 +660,21 @@ abstract class DraftOdataRequestValidationBase {
 																																																									.getId(), true) + "/content";
 
 
-		Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
+		Awaitility.await().atMost(30, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
 			var attachmentResponse = requestHelper.executeGet(attachmentUrl);
 			var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
 			var attachmentContentAsString = attachmentResponse.getResponse().getContentAsString();
 			var attachmentEntityContentAsString = attachmentEntityResponse.getResponse().getContentAsString();
-			return attachmentContentAsString.equals(attachmentContent) && attachmentEntityContentAsString.equals(
+
+			var booleanResult = attachmentContentAsString.equals(attachmentContent) && attachmentEntityContentAsString.equals(
 					attachmentEntityContent);
+
+			if (!booleanResult) {
+				logger.info(
+						"Attachment response content: {}, Attachment Test Content: {}, Attachment Entity response content: {}, Attachment Entity Test Content: {}",
+						attachmentContentAsString, attachmentContent, attachmentEntityContentAsString, attachmentEntityContent);
+			}
+			return booleanResult;
 		});
 		clearServiceHandlerContext();
 
