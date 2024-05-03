@@ -19,7 +19,7 @@ runs:
     - name: Get Major Version
       id: get-major-version
       run: |
-        mvn help:evaluate -Dexpression=revision -q -DforceStdout
+        mvn help:evaluate -Dexpression=revision -q -DforceStdout | cut -d '.' -f 1
         echo "MAJOR_VERSION=$(echo mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
       shell: bash
 
