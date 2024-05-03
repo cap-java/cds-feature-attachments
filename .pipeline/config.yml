@@ -12,7 +12,6 @@ steps:
     mavenExcludedScopes: [ "provided", "test" ]
     failOn: [ 'BLOCKER', 'CRITICAL', 'MAJOR' ]
     versioningModel: "major"
-    version: 1
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
     installArtifacts: true
     repository: '/cap-java/cds-feature-attachments'
