@@ -36,7 +36,7 @@
     <packaging>pom</packaging>
 
     <name>CDS Feature for Attachments - Root</name>
-    <url>https://cap.cloud.sap/docs/java</url>
+    <url>https://cap.cloud.sap/docs/plugins/#attachments</url>
 
     <modules>
         <module>cds-feature-attachments</module>
