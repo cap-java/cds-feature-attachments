@@ -20,19 +20,21 @@ runs:
       id: get-major-version
       run: |
         mvn help:evaluate -Dexpression=revision -q -DforceStdout | cut -d '.' -f 1
-        echo "MAJOR_VERSION=$(echo mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
+        echo "MAJOR_VERSION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout | cut -d '.' -f 1)" >> $GITHUB_OUTPUT
       shell: bash
 
-    #    - name: BlackDuck Scan
-    #      uses: SAP/project-piper-action@master
-    #      with:
-    #        command: detectExecuteScan
-    #        flags: \
-    #          --githubToken=$GITHUB_token
-    #      env:
-    #        PIPER_token: ${{ inputs.blackduck_token }}
-    #        GITHUB_token: ${{ inputs.github_token }}
-    #        SCAN_MODE: FULL
+    - name: BlackDuck Scan
+      uses: SAP/project-piper-action@master
+      with:
+        command: detectExecuteScan
+        flags: \
+          --githubToken=$GITHUB_token \
+          --version=$PROJECT_VERSION
+      env:
+        PIPER_token: ${{ inputs.blackduck_token }}
+        GITHUB_token: ${{ inputs.github_token }}
+        SCAN_MODE: FULL
+        PROJECT_VERSION: ${{ steps.get-major-version.outputs.MAJOR_VERSION }}
 
     - name: Print Action End
       if: always()
