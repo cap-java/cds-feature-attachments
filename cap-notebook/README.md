@@ -17,7 +17,7 @@ If the CAP notebook is finished you can start the project with the following com
 
 ```sh
 cd srv
-mvn spring-boot:run
+mvn cds:watch
 ```
 
 After the project is started you can access the application with the following URL:
