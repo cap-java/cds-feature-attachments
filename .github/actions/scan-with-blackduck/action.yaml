@@ -23,16 +23,16 @@ runs:
         echo "MAJOR_VERSION=$(echo mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: BlackDuck Scan
-      uses: SAP/project-piper-action@master
-      with:
-        command: detectExecuteScan
-        flags: \
-          --githubToken=$GITHUB_token
-      env:
-        PIPER_token: ${{ inputs.blackduck_token }}
-        GITHUB_token: ${{ inputs.github_token }}
-        SCAN_MODE: FULL
+    #    - name: BlackDuck Scan
+    #      uses: SAP/project-piper-action@master
+    #      with:
+    #        command: detectExecuteScan
+    #        flags: \
+    #          --githubToken=$GITHUB_token
+    #      env:
+    #        PIPER_token: ${{ inputs.blackduck_token }}
+    #        GITHUB_token: ${{ inputs.github_token }}
+    #        SCAN_MODE: FULL
 
     - name: Print Action End
       if: always()
