@@ -146,7 +146,7 @@
     {
         "kind": 1,
         "language": "markdown",
-        "value": "## Start the Service\n\nThe service can now be started with the following command in the `srv` module:\n\n```\nmvn spring-boot:run\n```\n\nAfter the service is startet the UI can be opened with:\n\n[http://localhost:8080](http://localhost:8080)\n\nUse user `admin` with password `admin` to be able to use both apps. \n\nUsing the tile `Manage Books` the attachments can be used in the detail area of the books.\n\nUsing the tile `Browse Books` no attachments are shown.",
+        "value": "## Start the Service\n\nThe service can now be started with the following command in the `srv` module:\n\n```\nmvn cds:watch\n```\n\nAfter the service is startet the UI can be opened with:\n\n[http://localhost:8080](http://localhost:8080)\n\nUse user `admin` with password `admin` to be able to use both apps. \n\nUsing the tile `Manage Books` the attachments can be used in the detail area of the books.\n\nUsing the tile `Browse Books` no attachments are shown.",
         "outputs": []
     }
 ]
