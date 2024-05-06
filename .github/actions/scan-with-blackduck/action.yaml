@@ -22,6 +22,10 @@ runs:
         echo "MAJOR_VERSION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout | cut -d '.' -f 1,2)" >> $GITHUB_OUTPUT
       shell: bash
 
+    - name: Print Version Number
+      run: echo "Version number is ${{ steps.get-major-version.outputs.MAJOR_VERSION }}"
+      shell: bash
+
     - name: BlackDuck Scan
       uses: SAP/project-piper-action@master
       with:
