@@ -19,7 +19,7 @@ runs:
     - name: Get Major Version
       id: get-major-version
       run: |
-        echo "MAJOR_VERSION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout | cut -d '.' -f 1)" >> $GITHUB_OUTPUT
+        echo "MAJOR_VERSION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout | cut -d '.' -f 1,2)" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: BlackDuck Scan

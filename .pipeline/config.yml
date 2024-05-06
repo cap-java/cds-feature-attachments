@@ -11,7 +11,7 @@ steps:
     serverUrl: 'https://sap.blackducksoftware.com/'
     mavenExcludedScopes: [ "provided", "test" ]
     failOn: [ 'BLOCKER', 'CRITICAL', 'MAJOR' ]
-    versioningModel: "major"
+    versioningModel: "major-minor"
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
     installArtifacts: true
     repository: '/cap-java/cds-feature-attachments'
