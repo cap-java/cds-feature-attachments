@@ -23,7 +23,7 @@ runs:
       shell: bash
 
     - name: Print Version Number
-      run: echo "Version number is ${{ steps.get-major-version.outputs.MAJOR_VERSION }}"
+      run: echo "${{ steps.get-major-version.outputs.MAJOR_VERSION }}"
       shell: bash
 
     - name: BlackDuck Scan
@@ -32,7 +32,7 @@ runs:
         command: detectExecuteScan
         flags: \
           --githubToken=$GITHUB_token \
-          --version=$PROJECT_VERSION
+          --version=${{ steps.get-major-version.outputs.MAJOR_VERSION }}
       env:
         PIPER_token: ${{ inputs.blackduck_token }}
         GITHUB_token: ${{ inputs.github_token }}
