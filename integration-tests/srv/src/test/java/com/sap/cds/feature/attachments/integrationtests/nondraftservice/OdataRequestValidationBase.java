@@ -10,6 +10,8 @@ import java.util.Objects;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.integration.test.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.AttachmentEntity;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.AttachmentEntity_;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Items;
@@ -246,7 +247,7 @@ abstract class OdataRequestValidationBase {
 		requestHelper.executeDelete(url);
 		var result = requestHelper.executeDelete(url);
 
-		assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+		assertThat(result.getResponse().getStatus()).isEqualTo(HttpStatus.PRECONDITION_FAILED.value());
 		verifySingleDeletionEvent(itemAttachmentAfterChange.getContentId());
 	}
 
@@ -375,7 +376,7 @@ abstract class OdataRequestValidationBase {
 		requestHelper.executeDelete(url);
 		MvcResult mvcResult = requestHelper.executeDelete(url);
 
-		assertThat(mvcResult.getResponse().getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+		assertThat(mvcResult.getResponse().getStatus()).isEqualTo(HttpStatus.PRECONDITION_FAILED.value());
 		if (Objects.nonNull(serviceHandler)) {
 			Awaitility.await().until(() -> serviceHandler.getEventContext().size() == 1);
 			verifyNumberOfEvents(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED, 1);
@@ -502,8 +503,9 @@ abstract class OdataRequestValidationBase {
 		verifySingleCreateAndUpdateEvent(attachment.getContentId(), itemAttachment.getContentId(), content);
 	}
 
-	@Test
-	void statusCannotBeUpdated() throws Exception {
+	@ParameterizedTest
+	@CsvSource({"status,INFECTED", "contentId,TEST"})
+	void statusCannotBeUpdated(String field, String value) throws Exception {
 		var serviceRoot = buildServiceRootWithDeepData();
 		postServiceRoot(serviceRoot);
 
@@ -511,17 +513,36 @@ abstract class OdataRequestValidationBase {
 		var item = getItemWithAttachmentEntity(selectedRoot);
 		var itemAttachment = getRandomItemAttachmentEntity(item);
 		putContentForAttachmentWithoutNavigation(itemAttachment);
-		itemAttachment.setStatus("INFECTED");
+		itemAttachment.setStatus(value);
 		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId());
 
 		requestHelper.resetHelper();
-		requestHelper.executePatchWithODataResponseAndAssertStatus(url, "{\"status\":\"" + StatusCode.INFECTED + "\"}",
+		requestHelper.executePatchWithODataResponseAndAssertStatus(url, "{\"" + field + "\":\"" + value + "\"}",
 				HttpStatus.OK);
 
 		selectedRoot = selectStoredRootWithDeepData();
 		item = getItemWithAttachmentEntity(selectedRoot);
 		itemAttachment = getRandomItemAttachmentEntity(item);
-		assertThat(itemAttachment.getStatus()).isNotNull().isNotEqualTo(StatusCode.INFECTED);
+		assertThat(itemAttachment.get(field)).isNotNull().isNotEqualTo(value);
+	}
+
+	@Test
+	void wrongEtagCouldNotBeUpdated() throws Exception {
+		var serviceRoot = buildServiceRootWithDeepData();
+		postServiceRoot(serviceRoot);
+
+		var selectedRoot = selectStoredRootWithDeepData();
+		var item = getItemWithAttachmentEntity(selectedRoot);
+		var itemAttachment = getRandomItemAttachmentEntity(item);
+
+		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId());
+		requestHelper.executePatchWithODataResponseAndAssertStatus(url, "{\"fileName\":\"test_for_change.txt\"}",
+				"W/\"2024-05-06T15:24:29.657713600Z\"",	HttpStatus.PRECONDITION_FAILED);
+
+		var selectedRootAfterChange = selectStoredRootWithDeepData();
+		var itemAfterChange = getItemWithAttachmentEntity(selectedRootAfterChange);
+		var itemAttachmentAfterChange = getRandomItemAttachmentEntity(itemAfterChange);
+		assertThat(itemAttachmentAfterChange.getFileName()).isEqualTo(itemAttachment.getFileName());
 	}
 
 	protected Items selectItem(Items item) {

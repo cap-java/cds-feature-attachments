@@ -54,6 +54,8 @@ Contribution and feedback are encouraged and always welcome. For more informatio
 structure, as well as additional contribution information,
 see our [Contribution Guidelines](./doc/CONTRIBUTING.md).
 
+## Security and Data Privacy
+
 ## Minimum Version
 
 The following version are the minimum versions for the usage of the plugin:

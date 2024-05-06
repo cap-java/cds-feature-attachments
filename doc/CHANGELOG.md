@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- added `@odata.etag` annotation for field `modifiedAt` to the MediaData entity to enable optimistic concurrency control
+
 ### Changed
 
 - CAP Java version was updated to 2.9.0
