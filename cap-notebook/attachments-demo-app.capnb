@@ -92,19 +92,13 @@
     {
         "kind": 1,
         "language": "markdown",
-        "value": "## UI Enahncements\n\n1. A property is added to the Java service make the static resources availabe.",
-        "outputs": []
-    },
-    {
-        "kind": 2,
-        "language": "shell",
-        "value": "%%writefile \"srv/src/main/resources/application.properties\"\nspring.web.resources.static-locations=file:../app\nspring.jmx.enabled=true",
+        "value": "## UI Enahncements\n",
         "outputs": []
     },
     {
         "kind": 1,
         "language": "markdown",
-        "value": "2. A UI facet is added for the attachments in the `AdminService`. Because the facet is only added in this service, only this services shows the attachments on the UI.",
+        "value": "1. A UI facet is added for the attachments in the `AdminService`. Because the facet is only added in this service, only this services shows the attachments on the UI.",
         "outputs": []
     },
     {
@@ -146,7 +140,13 @@
     {
         "kind": 1,
         "language": "markdown",
-        "value": "## Start the Service\n\nThe service can now be started with the following command in the `srv` module:\n\n```\nmvn cds:watch\n```\n\nAfter the service is startet the UI can be opened with:\n\n[http://localhost:8080](http://localhost:8080)\n\nUse user `admin` with password `admin` to be able to use both apps. \n\nUsing the tile `Manage Books` the attachments can be used in the detail area of the books.\n\nUsing the tile `Browse Books` no attachments are shown.",
+        "value": "## Start the Service\n\n\nThe service can now be started with the following command in the `srv` module:\n\n```\nmvn cds:watch\n```\n\nAfter the service is startet the UI can be opened with:\n\n[http://localhost:8080](http://localhost:8080)\n\nNavigate to the index.html of the webapp and use user `admin`with password `admin`. \n\nUsing the tile `Manage Books` the attachments can be used in the detail area of the books.\n\nUsing the tile `Browse Books` no attachments are shown.",
+        "outputs": []
+    },
+    {
+        "kind": 1,
+        "language": "markdown",
+        "value": "",
         "outputs": []
     }
 ]
