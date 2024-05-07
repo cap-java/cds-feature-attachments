@@ -98,7 +98,7 @@
     {
         "kind": 1,
         "language": "markdown",
-        "value": "1. A UI facet is added for the attachments in the `AdminService`. Because the facet is only added in this service, only this services shows the attachments on the UI.",
+        "value": "### UI Facet\n\nA UI facet is added for the attachments in the `AdminService`. Because the facet is only added in this service, only this services shows the attachments on the UI.\n\nThe following facet is added:\n\n```\n{\n    $Type : 'UI.ReferenceFacet',\n    ID    : 'AttachmentsFacet',\n    Label : '{i18n>attachments}',\n    Target: 'attachments/@UI.LineItem'\\n    \n}\n```",
         "outputs": []
     },
     {
@@ -110,7 +110,7 @@
     {
         "kind": 1,
         "language": "markdown",
-        "value": "3. i18n property file is enhanced with the texts for the attachments to show correct texts on the UI.",
+        "value": "### Texts\n\nThe i18n property file is enhanced with the texts for the attachments to show correct texts on the UI.",
         "outputs": []
     },
     {
