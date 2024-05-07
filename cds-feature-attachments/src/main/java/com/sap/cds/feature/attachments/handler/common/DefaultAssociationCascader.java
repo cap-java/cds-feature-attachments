@@ -67,8 +67,8 @@ public class DefaultAssociationCascader implements AssociationCascader {
 
 		Map<String, CdsEntity> associations = entity.elements().filter(
 						element -> element.getType().isAssociation() && element.getType().as(CdsAssociationType.class).isComposition())
-																																										.collect(Collectors.toMap(CdsElementDefinition::getName,
-																																												element -> element.getType().as(CdsAssociationType.class).getTarget()));
+				.collect(Collectors.toMap(CdsElementDefinition::getName,
+						element -> element.getType().as(CdsAssociationType.class).getTarget()));
 
 		if (associations.isEmpty()) {
 			return internalResultList;

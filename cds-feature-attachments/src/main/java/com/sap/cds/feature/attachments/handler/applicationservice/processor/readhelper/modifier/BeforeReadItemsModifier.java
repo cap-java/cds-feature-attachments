@@ -57,7 +57,7 @@ public class BeforeReadItemsModifier implements Modifier {
 					item.asExpand().items().stream().filter(i -> !i.isExpand()).toList());
 			enhanceWithNewFieldForMediaAssociation(item.asExpand().displayName(), newItemsFromExpand, newItemsFromExpand);
 			List<CqnSelectListItem> expandedSubItems = item.asExpand().items().stream().filter(CqnSelectListItem::isExpand)
-																																																.toList();
+					.toList();
 			var result = processExpandedEntities(expandedSubItems);
 			newItemsFromExpand.addAll(result);
 			var copy = CQL.copy(item.asExpand());
