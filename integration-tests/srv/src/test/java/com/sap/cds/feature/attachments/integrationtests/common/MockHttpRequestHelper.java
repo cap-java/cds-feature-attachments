@@ -49,7 +49,7 @@ public class MockHttpRequestHelper {
 
 	public MvcResult executePost(String url, String body) throws Exception {
 		return mvc.perform(MockMvcRequestBuilders.post(url).contentType(contentType).accept(accept).content(body))
-				.andReturn();
+											.andReturn();
 	}
 
 	public MvcResult executePatch(String url, String body) throws Exception {
@@ -58,7 +58,7 @@ public class MockHttpRequestHelper {
 
 	public MvcResult executePatch(String url, String body, String etag) throws Exception {
 		return mvc.perform(MockMvcRequestBuilders.patch(url).contentType(contentType).accept(accept).header(IF_MATCH, etag)
-				.content(body)).andReturn();
+																							.content(body)).andReturn();
 	}
 
 	public void executePostWithMatcher(String url, String body, ResultMatcher matcher) throws Exception {
@@ -72,7 +72,7 @@ public class MockHttpRequestHelper {
 
 	public MvcResult executeDelete(String url, String etag) throws Exception {
 		return mvc.perform(MockMvcRequestBuilders.delete(url).contentType(contentType).accept(accept).header(IF_MATCH, etag))
-				.andReturn();
+											.andReturn();
 	}
 
 	public void executeDeleteWithMatcher(String url, ResultMatcher matcher) throws Exception {
@@ -119,7 +119,7 @@ public class MockHttpRequestHelper {
 
 	public void executePutWithMatcher(String url, byte[] body, String etag, ResultMatcher matcher) throws Exception {
 		mvc.perform(MockMvcRequestBuilders.put(url).contentType(contentType).accept(accept).header(IF_MATCH, etag)
-				.content(body)).andExpect(matcher);
+																.content(body)).andExpect(matcher);
 	}
 
 	public void setContentType(MediaType contentType) {

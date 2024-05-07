@@ -48,7 +48,9 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 		if (Objects.nonNull(path)) {
 			var newContentId = path.target().values().get(Attachments.CONTENT_ID);
 			if (Objects.nonNull(newContentId) && newContentId.equals(existingData.get(Attachments.CONTENT_ID)) || !path.target()
-					.values().containsKey(Attachments.CONTENT_ID)) {
+																																																																																																												.values()
+																																																																																																												.containsKey(
+																																																																																																														Attachments.CONTENT_ID)) {
 				path.target().values().put(Attachments.CONTENT_ID, null);
 				path.target().values().put(Attachments.STATUS, null);
 				path.target().values().put(Attachments.SCANNED_AT, null);

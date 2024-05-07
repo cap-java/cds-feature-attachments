@@ -120,7 +120,8 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 	private Filter buildContentIdFilter() {
 		return (path, element, type) -> ApplicationHandlerHelper.isMediaEntity(path.target().type()) && element.getName()
-				.equals(Attachments.CONTENT_ID);
+																																																																																																				.equals(
+																																																																																																						Attachments.CONTENT_ID);
 	}
 
 }

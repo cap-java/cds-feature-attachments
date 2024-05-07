@@ -67,7 +67,8 @@ class ActiveEntityModifierTest {
 	void onlyRefActiveEntityIsReplaced() {
 		var select = Select.from(RootTable_.class).where(
 				root -> root.IsActiveEntity().eq(true).and(root.HasActiveEntity().eq(true).and(CQL.constant(true)
-						.eq(root.IsActiveEntity()).and(CQL.constant(true).eq(root.HasActiveEntity())))));
+																																																																																					.eq(root.IsActiveEntity()).and(
+								CQL.constant(true).eq(root.HasActiveEntity())))));
 
 		var result = CQL.copy(select, new ActiveEntityModifier(false, RootTable_.CDS_NAME));
 
