@@ -16,7 +16,7 @@ import com.sap.cds.services.EventName;
 public interface AttachmentRestoreEventContext extends EventContext {
 
 	/**
-		* Creates an {@link EventContext} already overlayed with this interface. The event is set to be
+		* Creates an {@link EventContext} already overlay with this interface. The event is set to be
 		* {@link AttachmentService#EVENT_RESTORE_ATTACHMENT}
 		*
 		* @return the {@link AttachmentRestoreEventContext}

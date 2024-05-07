@@ -1,6 +1,5 @@
 package com.sap.cds.feature.attachments.handler.draftservice;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;

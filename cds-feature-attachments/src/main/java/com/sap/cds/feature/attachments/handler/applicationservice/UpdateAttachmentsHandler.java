@@ -73,7 +73,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
 	private void doUpdate(CdsUpdateEventContext context, List<CdsData> data) {
 		var target = context.getTarget();
-		var noContentInData = !ApplicationHandlerHelper.isContentFieldInData(target, data);
+		var noContentInData = ApplicationHandlerHelper.noContentFieldInData(target, data);
 		var associationsAreUnchanged = associationsAreUnchanged(target, data);
 		if (noContentInData && associationsAreUnchanged) {
 			return;

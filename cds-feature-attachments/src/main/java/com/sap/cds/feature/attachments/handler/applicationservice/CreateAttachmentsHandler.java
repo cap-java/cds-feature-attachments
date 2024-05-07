@@ -63,7 +63,7 @@ public class CreateAttachmentsHandler implements EventHandler {
 	}
 
 	private void doCreate(CdsCreateEventContext context, List<CdsData> data) {
-		if (!ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
+		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
 

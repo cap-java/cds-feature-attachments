@@ -86,7 +86,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 	@After(event = CqnService.EVENT_READ)
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processAfter(CdsReadEventContext context, List<CdsData> data) {
-		if (!ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
+		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
 		logger.debug(marker, "Processing after read event for entity {}", context.getTarget().getName());

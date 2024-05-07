@@ -32,7 +32,6 @@ class RegistrationTest {
 	private Registration cut;
 	private CdsRuntimeConfigurer configurer;
 	private ServiceCatalog serviceCatalog;
-	private CdsEnvironment environment;
 	private PersistenceService persistenceService;
 	private AttachmentService attachmentService;
 	private OutboxService outboxService;
@@ -48,7 +47,7 @@ class RegistrationTest {
 		when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
 		serviceCatalog = mock(ServiceCatalog.class);
 		when(cdsRuntime.getServiceCatalog()).thenReturn(serviceCatalog);
-		environment = mock(CdsEnvironment.class);
+		CdsEnvironment environment = mock(CdsEnvironment.class);
 		when(cdsRuntime.getEnvironment()).thenReturn(environment);
 		persistenceService = mock(PersistenceService.class);
 		attachmentService = mock(AttachmentService.class);

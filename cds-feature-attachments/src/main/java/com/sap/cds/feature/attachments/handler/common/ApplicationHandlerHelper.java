@@ -29,13 +29,13 @@ public final class ApplicationHandlerHelper {
 	private ApplicationHandlerHelper() {
 	}
 
-	public static boolean isContentFieldInData(CdsEntity entity, List<CdsData> data) {
+	public static boolean noContentFieldInData(CdsEntity entity, List<CdsData> data) {
 		var isIncluded = new AtomicBoolean();
 		var filter = buildFilterForMediaTypeEntity();
 		Validator validator = (path, element, value) -> isIncluded.set(true);
 
 		callValidator(entity, data, filter, validator);
-		return isIncluded.get();
+		return !isIncluded.get();
 	}
 
 	public static void callProcessor(CdsEntity entity, List<CdsData> data, Filter filter, Converter converter) {
