@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- added `@odata.etag` annotation for field `modifiedAt` to the MediaData entity to enable optimistic concurrency control
+- added `@odata.etag` annotation for field `modifiedAt` to the Attachment entity to enable optimistic concurrency control
 
 ### Changed
 
