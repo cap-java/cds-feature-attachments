@@ -545,6 +545,27 @@ abstract class OdataRequestValidationBase {
 		assertThat(itemAttachmentAfterChange.getFileName()).isEqualTo(itemAttachment.getFileName());
 	}
 
+	@Test
+	void correctEtagCanBeUpdated() throws Exception {
+		var serviceRoot = buildServiceRootWithDeepData();
+		postServiceRoot(serviceRoot);
+
+		var selectedRoot = selectStoredRootWithDeepData();
+		var item = getItemWithAttachmentEntity(selectedRoot);
+		var itemAttachment = getRandomItemAttachmentEntity(item);
+		var modifiedAt = itemAttachment.getModifiedAt();
+		var eTag = "W/\"" + modifiedAt + "\"";
+
+		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId());
+		requestHelper.executePatchWithODataResponseAndAssertStatus(url, "{\"fileName\":\"test_for_change.txt\"}",
+				eTag,	HttpStatus.OK);
+
+		var selectedRootAfterChange = selectStoredRootWithDeepData();
+		var itemAfterChange = getItemWithAttachmentEntity(selectedRootAfterChange);
+		var itemAttachmentAfterChange = getRandomItemAttachmentEntity(itemAfterChange);
+		assertThat(itemAttachmentAfterChange.getFileName()).isEqualTo("test_for_change.txt");
+	}
+
 	protected Items selectItem(Items item) {
 		var selectedRootAfterContentCreated = selectStoredRootWithDeepData();
 		return selectedRootAfterContentCreated.getItems().stream().filter(i -> i.getId().equals(item.getId())).findAny()
