@@ -248,7 +248,7 @@ model is defined in the following folders in the `resources`:
 The cds model contains two files:
 
 - `attachments.cds`: model and aspect definition
-- `attachments-annotations.cds`: UI annotations for the attachments
+- `attachments-annotations.cds`: UI/OData annotations for the attachments
 
 A `index.cds` file is also included in this folder, which references the other two files.
 
@@ -258,6 +258,12 @@ In the model a new annotation is introduced to mark an entity as an attachment e
 
 The handler for the `DraftService` and `ApplicationService` checks if the entity has this annotation and if yes,
 the entity is treated as an attachment entity.
+
+#### ETag
+
+The field `modifiedAt` is annotated with the `@odata.etag` annotation to enable optimistic concurrency control.
+This is needed to make sure that the content of the attachment is not changed during the update of the entity.
+The Fiori Elements UI support this out of the box, so no other annotations or adjustments are needed.
 
 #### Usage of the CDS Model
 
