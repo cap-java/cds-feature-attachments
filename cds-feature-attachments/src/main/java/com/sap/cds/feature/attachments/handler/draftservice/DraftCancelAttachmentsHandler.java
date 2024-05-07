@@ -1,6 +1,6 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
- **************************************************************************/
+	* (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+	**************************************************************************/
 package com.sap.cds.feature.attachments.handler.draftservice;
 
 import java.util.List;
@@ -120,8 +120,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 	private Filter buildContentIdFilter() {
 		return (path, element, type) -> ApplicationHandlerHelper.isMediaEntity(path.target().type()) && element.getName()
-																																																																																																				.equals(
-																																																																																																						Attachments.CONTENT_ID);
+				.equals(Attachments.CONTENT_ID);
 	}
 
 }

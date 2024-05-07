@@ -1,6 +1,6 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
- **************************************************************************/
+	* (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+	**************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.helper;
 
 import java.util.List;
@@ -15,6 +15,9 @@ import com.sap.cds.services.EventContext;
 public final class ReadonlyDataContextEnhancer {
 
 	private static final String DRAFT_READONLY_CONTEXT = "DRAFT_READONLY_CONTEXT";
+
+	private ReadonlyDataContextEnhancer() {
+	}
 
 	public static void enhanceReadonlyDataInContext(EventContext context, List<CdsData> data, boolean isDraft) {
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
@@ -44,9 +47,6 @@ public final class ReadonlyDataContextEnhancer {
 			data.put(Attachments.SCANNED_AT, readOnlyData.get(Attachments.SCANNED_AT));
 			data.remove(DRAFT_READONLY_CONTEXT);
 		}
-	}
-
-	private ReadonlyDataContextEnhancer() {
 	}
 
 

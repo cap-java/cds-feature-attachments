@@ -537,7 +537,7 @@ abstract class OdataRequestValidationBase {
 
 		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId());
 		requestHelper.executePatchWithODataResponseAndAssertStatus(url, "{\"fileName\":\"test_for_change.txt\"}",
-				"W/\"2024-05-06T15:24:29.657713600Z\"",	HttpStatus.PRECONDITION_FAILED);
+				"W/\"2024-05-06T15:24:29.657713600Z\"", HttpStatus.PRECONDITION_FAILED);
 
 		var selectedRootAfterChange = selectStoredRootWithDeepData();
 		var itemAfterChange = getItemWithAttachmentEntity(selectedRootAfterChange);
@@ -557,8 +557,8 @@ abstract class OdataRequestValidationBase {
 		var eTag = "W/\"" + modifiedAt + "\"";
 
 		var url = buildDirectAttachmentEntityUrl(itemAttachment.getId());
-		requestHelper.executePatchWithODataResponseAndAssertStatus(url, "{\"fileName\":\"test_for_change.txt\"}",
-				eTag,	HttpStatus.OK);
+		requestHelper.executePatchWithODataResponseAndAssertStatus(url, "{\"fileName\":\"test_for_change.txt\"}",	eTag,
+				HttpStatus.OK);
 
 		var selectedRootAfterChange = selectStoredRootWithDeepData();
 		var itemAfterChange = getItemWithAttachmentEntity(selectedRootAfterChange);
@@ -569,7 +569,7 @@ abstract class OdataRequestValidationBase {
 	protected Items selectItem(Items item) {
 		var selectedRootAfterContentCreated = selectStoredRootWithDeepData();
 		return selectedRootAfterContentCreated.getItems().stream().filter(i -> i.getId().equals(item.getId())).findAny()
-											.orElseThrow();
+				.orElseThrow();
 	}
 
 	protected Roots buildServiceRootWithDeepData() {
@@ -590,8 +590,8 @@ abstract class OdataRequestValidationBase {
 
 	protected Roots selectStoredRootWithDeepData() {
 		CqnSelect select = Select.from(Roots_.class).columns(StructuredType::_all, root -> root.attachments().expand(),
-				root -> root.items().expand(StructuredType::_all, item -> item.attachments().expand(),
-						item -> item.attachmentEntities().expand()));
+				root -> root.items()
+						.expand(StructuredType::_all, item -> item.attachments().expand(),	item -> item.attachmentEntities().expand()));
 		var result = persistenceService.run(select);
 		return result.single(Roots.class);
 	}
@@ -628,7 +628,7 @@ abstract class OdataRequestValidationBase {
 
 	private Items getItemWithAttachmentEntity(Roots selectedRoot) {
 		return selectedRoot.getItems().stream().filter(item -> !item.getAttachmentEntities().isEmpty()).findAny()
-											.orElseThrow();
+				.orElseThrow();
 	}
 
 	protected String putContentForAttachmentWithNavigation(Roots selectedRoot,
@@ -640,7 +640,7 @@ abstract class OdataRequestValidationBase {
 			ResultMatcher matcher) throws Exception {
 		var selectedItem = selectedRoot.getItems().stream().filter(
 						item -> item.getAttachments().stream().anyMatch(attach -> attach.getId().equals(itemAttachment.getId()))).findAny()
-																							.orElseThrow();
+				.orElseThrow();
 		var url = buildNavigationAttachmentUrl(selectedRoot.getId(), selectedItem.getId(),
 				itemAttachment.getId()) + "/content";
 
@@ -677,11 +677,11 @@ abstract class OdataRequestValidationBase {
 
 	private Attachments selectUpdatedAttachmentWithExpand(Roots selectedRoot, Attachments itemAttachment) {
 		CqnSelect attachmentSelect = Select.from(Items_.class).where(a -> a.ID().eq(selectedRoot.getItems().get(0).getId()))
-																																	.columns(item -> item.attachments().expand());
+				.columns(item -> item.attachments().expand());
 		var result = persistenceService.run(attachmentSelect);
 		var items = result.single(Items.class);
 		return items.getAttachments().stream().filter(attach -> itemAttachment.getId().equals(attach.getId())).findAny()
-											.orElseThrow();
+				.orElseThrow();
 	}
 
 	private AttachmentEntity selectUpdatedAttachment(AttachmentEntity itemAttachment) {

@@ -232,8 +232,7 @@ class CreateAttachmentsHandlerTest {
 
 		cut.processBefore(createContext, List.of(attachment));
 
-		verify(eventFactory).getEvent(testStream, (String) readonlyFields.get(Attachment.CONTENT_ID), true,
-				CdsData.create());
+		verify(eventFactory).getEvent(testStream, (String) readonlyFields.get(Attachment.CONTENT_ID), true,	CdsData.create());
 		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
 		assertThat(attachment.getContentId()).isEqualTo(readonlyFields.get(Attachment.CONTENT_ID));
 		assertThat(attachment.getStatus()).isEqualTo(readonlyFields.get(Attachment.STATUS));

@@ -100,10 +100,9 @@ abstract class DraftOdataRequestValidationBase {
 		createNewDraftForExistingRoot(selectedRoot.getId());
 
 		var attachmentUrl = getAttachmentBaseUrl(selectedRoot.getItems().get(0).getId(), selectedRoot.getItems().get(0)
-																																																																																					.getAttachments().get(0).getId(),
-				false) + "/content";
+				.getAttachments().get(0).getId(),	false) + "/content";
 		var attachmentEntityUrl = getAttachmentEntityBaseUrl(selectedRoot.getItems().get(0).getAttachmentEntities().get(0)
-																																																									.getId(), false) + "/content";
+				.getId(), false) + "/content";
 
 		Awaitility.await().atMost(30, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
 			var attachmentResponse = requestHelper.executeGet(attachmentUrl);
@@ -646,18 +645,17 @@ abstract class DraftOdataRequestValidationBase {
 	private DraftRoots selectStoredRootData(String entityName, DraftRoots responseRoot) {
 		var select = Select.from(entityName).where(root -> root.get(DraftRoots.ID).eq(responseRoot.getId())).columns(
 				StructuredType::_all, root -> root.to(DraftRoots.ITEMS)
-																																				.expand(StructuredType::_all, item -> item.to(Items.ATTACHMENTS).expand(),
-																																						item -> item.to(Items.ATTACHMENT_ENTITIES).expand()));
+						.expand(StructuredType::_all, item -> item.to(Items.ATTACHMENTS).expand(),
+								item -> item.to(Items.ATTACHMENT_ENTITIES).expand()));
 		return persistenceService.run(select).single(DraftRoots.class);
 	}
 
 	protected void readAndValidateActiveContent(DraftRoots selectedRoot, String attachmentContent,
 			String attachmentEntityContent) throws Exception {
 		var attachmentUrl = getAttachmentBaseUrl(selectedRoot.getItems().get(0).getId(), selectedRoot.getItems().get(0)
-																																																																																					.getAttachments().get(0).getId(),
-				true) + "/content";
+				.getAttachments().get(0).getId(),	true) + "/content";
 		var attachmentEntityUrl = getAttachmentEntityBaseUrl(selectedRoot.getItems().get(0).getAttachmentEntities().get(0)
-																																																									.getId(), true) + "/content";
+				.getId(), true) + "/content";
 
 
 		Awaitility.await().atMost(30, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {

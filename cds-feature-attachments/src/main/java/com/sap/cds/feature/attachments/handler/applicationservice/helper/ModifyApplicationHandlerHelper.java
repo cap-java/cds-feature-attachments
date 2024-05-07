@@ -1,6 +1,6 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
- **************************************************************************/
+	* (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+	**************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.helper;
 
 import java.util.List;
@@ -43,7 +43,7 @@ public final class ModifyApplicationHandlerHelper {
 
 	private static CdsData getExistingData(Map<String, Object> keys, List<CdsData> existingDataList) {
 		return existingDataList.stream().filter(existingData -> ApplicationHandlerHelper.areKeysInData(keys, existingData))
-											.findAny().orElse(CdsData.create());
+				.findAny().orElse(CdsData.create());
 	}
 
 }

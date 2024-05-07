@@ -39,8 +39,8 @@ class BeforeReadItemsModifierTest {
 
 	@Test
 	void expandSelectDoNotExtendContentIdIfAlreadyExist() {
-		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.itemTable().expand(Items_::ID,
-				item -> item.attachments().expand(Attachment_::content, Attachment_::contentId)));
+		CqnSelect select = Select.from(RootTable_.class).columns(RootTable_::ID, root -> root.itemTable()
+				.expand(Items_::ID,	item -> item.attachments().expand(Attachment_::content, Attachment_::contentId)));
 
 		cut = new BeforeReadItemsModifier(List.of("attachments"));
 		runTestForExpand(cut, select, 1);
@@ -106,7 +106,7 @@ class BeforeReadItemsModifierTest {
 
 		var rootExpandedItem = resultItems.stream().filter(CqnSelectListItem::isExpand).findAny().orElseThrow();
 		var itemExpandedItem = rootExpandedItem.asExpand().items().stream().filter(CqnSelectListItem::isExpand).findAny()
-																											.orElseThrow();
+				.orElseThrow();
 		var count = itemExpandedItem.asExpand().items().stream().filter(
 				item -> item.isRef() && item.asRef().displayName().equals(Attachments.CONTENT_ID)).count();
 		assertThat(count).isEqualTo(expectedFieldCount);
