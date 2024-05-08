@@ -3,53 +3,56 @@
 ## Table of Contents
 
 <!-- TOC -->
-
 * [Links for Design, Processes and Readme](#links-for-design-processes-and-readme)
 * [Folder Structure](#folder-structure)
 * [GitHub Actions](#github-actions)
-    * [Build Action](#build-action)
-    * [Pull Requests Build](#pull-requests-build)
-        * [Trigger](#trigger)
-    * [Main Build](#main-build)
-        * [Trigger](#trigger-1)
-    * [Error Handling](#error-handling)
-    * [Build and Deploy](#build-and-deploy)
-        * [Trigger](#trigger-2)
-        * [Repository for Deploy](#repository-for-deploy)
-        * [Update Version](#update-version)
-            * [Token for Version Update](#token-for-version-update)
-    * [BlackDuck](#blackduck)
-    * [Secrets](#secrets)
+  * [Build Action](#build-action)
+  * [Pull Requests Build](#pull-requests-build)
+    * [Trigger](#trigger)
+  * [Main Build](#main-build)
+    * [Trigger](#trigger-1)
+  * [Error Handling](#error-handling)
+  * [Build and Deploy](#build-and-deploy)
+    * [Trigger](#trigger-2)
+    * [Repository for Deploy](#repository-for-deploy)
+    * [Update Version](#update-version)
+      * [Token for Version Update](#token-for-version-update)
+  * [BlackDuck](#blackduck)
+    * [Pull Requests](#pull-requests)
+    * [BlackDuck Links](#blackduck-links)
+  * [Secrets](#secrets)
 * [Feature](#feature)
-    * [CDS Model](#cds-model)
-        * [Usage of the CDS Model](#usage-of-the-cds-model)
-    * [Configuration](#configuration)
-    * [Handler](#handler)
-        * [Events](#events)
-        * [Draft Activate and Deep Updates](#draft-activate-and-deep-updates)
-        * [Content for new Draft](#content-for-new-draft)
-        * [Delete](#delete)
-        * [Draft Keys](#draft-keys)
-        * [Sibling Entity (Draft or Active)](#sibling-entity-draft-or-active)
-        * [Readonly Fields](#readonly-fields)
-    * [Service](#service)
-        * [Service Interface](#service-interface)
-        * [Multi-Tenancy](#multi-tenancy)
-        * [Default Implementation](#default-implementation)
-            * [Internal Stored](#internal-stored)
-            * [Content ID](#content-id)
-        * [Malware Scan](#malware-scan)
-            * [Implementation](#implementation)
-                * [Read Data](#read-data)
-                * [Scan Content](#scan-content)
-                * [Store Scan Result](#store-scan-result)
-                * [Read Attachment calls Malware Scan](#read-attachment-calls-malware-scan)
-            * [Status](#status)
-    * [Texts](#texts)
+  * [CDS Model](#cds-model)
+    * [ETag](#etag)
+    * [Usage of the CDS Model](#usage-of-the-cds-model)
+  * [Configuration](#configuration)
+  * [Handler](#handler)
+    * [Events](#events)
+    * [Draft Activate and Deep Updates](#draft-activate-and-deep-updates)
+    * [Content for new Draft](#content-for-new-draft)
+    * [Delete](#delete)
+    * [Draft Keys](#draft-keys)
+    * [Sibling Entity (Draft or Active)](#sibling-entity-draft-or-active)
+    * [Readonly Fields](#readonly-fields)
+    * [Lock](#lock)
+  * [Service](#service)
+    * [Service Interface](#service-interface)
+    * [Multi-Tenancy](#multi-tenancy)
+    * [Default Implementation](#default-implementation)
+      * [Internal Stored](#internal-stored)
+      * [Content ID](#content-id)
+    * [Malware Scan](#malware-scan)
+      * [Implementation](#implementation)
+        * [Read Data](#read-data)
+        * [Scan Content](#scan-content)
+        * [Store Scan Result](#store-scan-result)
+        * [Read Attachment calls Malware Scan](#read-attachment-calls-malware-scan)
+      * [Status](#status)
+  * [Texts](#texts)
 * [Tests](#tests)
-    * [Unit Tests](#unit-tests)
-        * [Mutation Tests](#mutation-tests)
-    * [Integration Tests](#integration-tests)
+  * [Unit Tests](#unit-tests)
+    * [Mutation Tests](#mutation-tests)
+  * [Integration Tests](#integration-tests)
 * [Quality Tools](#quality-tools)
 <!-- TOC -->
 
@@ -199,7 +202,7 @@ This token is used in the workflow to update the version in the `pom.xml` files.
 
 ### BlackDuck
 
-The BlackDuck action is called in the `main-build.yaml` and `pull-requests-build.yaml` to check the project for
+The BlackDuck action is called in the `main-build.yaml` and `main-build-and-deploy.yaml` to check the project for
 vulnerabilities.
 The action is defined in the `../.github/actions/scan-with-blackduck/action.yaml` file.
 The action uses the project piper action to call BlackDuck.
@@ -209,7 +212,12 @@ The following user group is used for the BackDuck scan:
 - `CDSJAVA-OPEN-SOURCE`
 
 The group and other settings are defined in the project piper [config](../.pipeline/config.yml) file.
-BlackDuck Links:
+
+#### Pull Requests
+The scan is not used in pull request builds as for the scan a token is needed and this token is
+not available in the pull request builds from fork projects or dependabot pull requests.
+
+#### BlackDuck Links
 
 - [Scan Results](https://sap.blackducksoftware.com/api/projects/480aae67-284b-42cf-840c-ba021be84378)
 - [User Groud Self Service](https://svmprod-zdohvhnx0v.dispatcher.int.sap.eu2.hana.ondemand.com/webapp/index.html)
