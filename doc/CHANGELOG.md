@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - added `@odata.etag` annotation for field `modifiedAt` to the Attachment entity to enable optimistic concurrency control
-- added pessimistic locking for the attachment entity to prevent concurrent updates on the same attachment
+- added pessimistic locking for the attachment entity updates to prevent concurrent updates on the same attachment
 
 ### Changed
 
