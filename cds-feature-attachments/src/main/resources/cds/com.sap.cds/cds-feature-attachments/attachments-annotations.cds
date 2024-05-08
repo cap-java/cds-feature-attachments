@@ -4,18 +4,18 @@ using {
 } from './attachments';
 
 annotate MediaData with @UI.MediaResource: {Stream: content} {
-    content    @(
+    content   @(
         title                      : '{i18n>attachment_content}',
         Core.MediaType             : mimeType,
         ContentDisposition.Filename: fileName,
         ContentDisposition.Type    : 'inline'
     );
-    mimeType   @(
+    mimeType  @(
         title: '{i18n>attachment_mimeType}',
         Core.IsMediaType
     );
-    fileName @(title: '{i18n>attachment_fileName}');
-    status @(title: '{i18n>attachment_status}');
+    fileName  @(title: '{i18n>attachment_fileName}');
+    status    @(title: '{i18n>attachment_status}');
     contentId @(UI.Hidden: true);
     scannedAt @(UI.Hidden: true);
 }
@@ -34,16 +34,11 @@ annotate Attachments with @UI: {
         {Value: note}
     ]
 } {
-    note     @(title: '{i18n>attachment_note}');
+    note       @(title: '{i18n>attachment_note}');
+    modifiedAt @(odata.etag);
 }
 
-annotate Attachments with @Common: {
-    SideEffects #ContentChanged : {
-         SourceProperties : [
-              content
-         ],
-         TargetProperties : [
-              'status'
-         ]
-    }
-}{};
+annotate Attachments with @Common: {SideEffects #ContentChanged: {
+    SourceProperties: [content],
+    TargetProperties: ['status']
+}} {};

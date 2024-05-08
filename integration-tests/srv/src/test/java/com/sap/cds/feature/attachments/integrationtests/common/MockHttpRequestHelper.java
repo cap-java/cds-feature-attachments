@@ -19,6 +19,7 @@ import com.sap.cds.Struct;
 public class MockHttpRequestHelper {
 
 	public static final String ODATA_BASE_URL = "/odata/v4/";
+	public static final String IF_MATCH = "If-Match";
 
 	@Autowired
 	private JsonToCapMapperTestHelper mapper;
@@ -52,8 +53,12 @@ public class MockHttpRequestHelper {
 	}
 
 	public MvcResult executePatch(String url, String body) throws Exception {
-		return mvc.perform(MockMvcRequestBuilders.patch(url).contentType(contentType).accept(accept).content(body))
-											.andReturn();
+		return executePatch(url, body, "*");
+	}
+
+	public MvcResult executePatch(String url, String body, String etag) throws Exception {
+		return mvc.perform(MockMvcRequestBuilders.patch(url).contentType(contentType).accept(accept).header(IF_MATCH, etag)
+																							.content(body)).andReturn();
 	}
 
 	public void executePostWithMatcher(String url, String body, ResultMatcher matcher) throws Exception {
@@ -62,11 +67,21 @@ public class MockHttpRequestHelper {
 	}
 
 	public MvcResult executeDelete(String url) throws Exception {
-		return mvc.perform(MockMvcRequestBuilders.delete(url).contentType(contentType).accept(accept)).andReturn();
+		return executeDelete(url, "*");
+	}
+
+	public MvcResult executeDelete(String url, String etag) throws Exception {
+		return mvc.perform(MockMvcRequestBuilders.delete(url).contentType(contentType).accept(accept).header(IF_MATCH, etag))
+											.andReturn();
 	}
 
 	public void executeDeleteWithMatcher(String url, ResultMatcher matcher) throws Exception {
-		mvc.perform(MockMvcRequestBuilders.delete(url).contentType(contentType).accept(accept)).andExpect(matcher);
+		executeDeleteWithMatcher(url, "*", matcher);
+	}
+
+	public void executeDeleteWithMatcher(String url, String etag, ResultMatcher matcher) throws Exception {
+		mvc.perform(MockMvcRequestBuilders.delete(url).contentType(contentType).accept(accept).header(IF_MATCH, etag))
+				.andExpect(matcher);
 	}
 
 	public CdsData executePostWithODataResponseAndAssertStatusCreated(String url, String body) throws Exception {
@@ -87,14 +102,24 @@ public class MockHttpRequestHelper {
 	}
 
 	public void executePatchWithODataResponseAndAssertStatus(String url, String body, HttpStatus status) throws Exception {
-		MvcResult result = executePatch(url, body);
+		executePatchWithODataResponseAndAssertStatus(url, body, "*", status);
+	}
+
+	public void executePatchWithODataResponseAndAssertStatus(String url, String body, String etag,
+			HttpStatus status) throws Exception {
+		MvcResult result = executePatch(url, body, etag);
 		String resultBody = result.getResponse().getContentAsString();
 		assertThat(result.getResponse().getStatus()).as("Unexpected HTTP status, with response body " + resultBody).isEqualTo(
 				status.value());
 	}
 
 	public void executePutWithMatcher(String url, byte[] body, ResultMatcher matcher) throws Exception {
-		mvc.perform(MockMvcRequestBuilders.put(url).contentType(contentType).accept(accept).content(body)).andExpect(matcher);
+		executePutWithMatcher(url, body, "*", matcher);
+	}
+
+	public void executePutWithMatcher(String url, byte[] body, String etag, ResultMatcher matcher) throws Exception {
+		mvc.perform(MockMvcRequestBuilders.put(url).contentType(contentType).accept(accept).header(IF_MATCH, etag)
+																.content(body)).andExpect(matcher);
 	}
 
 	public void setContentType(MediaType contentType) {

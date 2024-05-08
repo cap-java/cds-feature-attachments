@@ -25,6 +25,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
+import com.sap.cds.ql.cqn.CqnLock.Mode;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
@@ -73,6 +74,10 @@ class DraftPatchAttachmentsHandlerTest {
 		verify(persistence).run(selectCaptor.capture());
 		var select = selectCaptor.getValue();
 		assertThat(select.from().toString()).contains(Attachment_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
+		assertThat(select.getLock()).isPresent();
+		assertThat(select.getLock().get().mode()).isEqualTo(Mode.EXCLUSIVE);
+		assertThat(select.getLock().get().timeout()).isPresent();
+		assertThat(select.getLock().get().timeout()).contains(10);
 	}
 
 	@Test
