@@ -60,7 +60,7 @@ The following version are the minimum versions for the usage of the plugin:
 
 | Component | Minimum Version |
 |-----------|-----------------|
-| CAP Java  | 2.8.1           |
+| CAP Java  | 2.9.1           |
 | UI5       | 1.121.0         |
 
 ## Artifactory
