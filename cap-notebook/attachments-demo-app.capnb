@@ -8,25 +8,19 @@
     {
         "kind": 1,
         "language": "markdown",
-        "value": "## Add the App with Sample Data\n`cds init` is used to create a basic CAP Java app and after that the cds maven plugin is used to add the sample data.",
+        "value": "## Add the App with Sample Data\n`cds init` is used to create a basic CAP Java app with sample data.",
         "outputs": []
     },
     {
         "kind": 2,
         "language": "shell",
-        "value": "cds init demoapp --add java\n",
+        "value": "cds init demoapp --add java,sample\n",
         "outputs": []
     },
     {
         "kind": 2,
         "language": "shell",
         "value": "cd demoapp",
-        "outputs": []
-    },
-    {
-        "kind": 2,
-        "language": "shell",
-        "value": "mvn com.sap.cds:cds-maven-plugin:2.9.0:add -Dfeature=SAMPLE",
         "outputs": []
     },
     {
@@ -38,7 +32,19 @@
     {
         "kind": 2,
         "language": "shell",
-        "value": "%%writefile \"db/attachment-extension.cds\"\nusing {sap.capire.bookshop.Books} from './schema';\nusing {sap.attachments.Attachments} from`com.sap.cds/cds-feature-attachments`;\n\nextend entity Books with {\n    attachments : Composition of many Attachments;\n}\n",
+        "value": "%%writefile \"db/attachment-extension.cds\"\nusing {sap.capire.bookshop.Books} from './schema';\nusing {sap.attachments.Attachments, sap.attachments.StatusCode} from`com.sap.cds/cds-feature-attachments`;\n\nextend entity Books with {\n    attachments : Composition of many Attachments;\n}\n\nentity Statuses @cds.autoexpose @readonly {\n    key code : StatusCode;\n        text : localized String(255);\n}\n\nextend Attachments with {\n    statusText : Association to Statuses on statusText.code = $self.status;\n}\n\nannotate Books.attachments with {\n    status @(\n        Common.Text: {\n            $value: ![statusText.text],\n            ![@UI.TextArrangement]: #TextOnly\n        },\n        ValueList: {entity:'Statuses'},\n        sap.value.list: 'fixed-values'\n    );\n}\n",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "%%writefile \"db/data/Statuses.csv\"\ncode;text\nUnscanned;Unscanned Attachment\nScanning;Scanning Attachment\nClean;Clean Attachment\nInfected;Infected Attachment\nFailed;Scanning Failed",
+        "outputs": []
+    },
+    {
+        "kind": 2,
+        "language": "shell",
+        "value": "%%writefile \"db/data/Statuses_texts.csv\"\ncode;locale;text\nUnscanned;en;Unscanned Attachment\nScanning;en;Scanning Attachment\nClean;en;Clean Attachment\nInfected;en;Infected Attachment\nFailed;en;Scanning Failed",
         "outputs": []
     },
     {
@@ -140,7 +146,7 @@
     {
         "kind": 1,
         "language": "markdown",
-        "value": "## Start the Service\n\n\nThe service can now be started with the following command in the `srv` module:\n\n```\nmvn cds:watch\n```\n\nAfter the service is startet the UI can be opened with:\n\n[http://localhost:8080](http://localhost:8080)\n\nNavigate to the index.html of the webapp and use user `admin`with password `admin`. \n\nUsing the tile `Manage Books` the attachments can be used in the detail area of the books.\n\nUsing the tile `Browse Books` no attachments are shown.",
+        "value": "## Start the Service\n\n\nThe service can now be started with the following command in the `srv` module:\n\n```\nmvn cds:watch\n```\n\nAfter the service is startet the UI can be opened with:\n\n[http://localhost:8080](http://localhost:8080)\n\nNavigate to the index.html of the webapp and use user `admin` with password `admin`. \n\nUsing the tile `Manage Books` the attachments can be used in the detail area of the books.\n\nUsing the tile `Browse Books` no attachments are shown.",
         "outputs": []
     },
     {
