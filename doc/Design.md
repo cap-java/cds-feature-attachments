@@ -263,7 +263,7 @@ the entity is treated as an attachment entity.
 
 The field `modifiedAt` is annotated with the `@odata.etag` annotation to enable optimistic concurrency control.
 This is needed to make sure that the content of the attachment is not changed during the update of the entity.
-The Fiori Elements UI support this out of the box, so no other annotations or adjustments are needed.
+The Fiori Elements UI supports this out of the box, so no other annotations or adjustments are needed.
 
 #### Usage of the CDS Model
 
