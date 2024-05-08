@@ -1,6 +1,6 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
- **************************************************************************/
+	* (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+	**************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier;
 
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ public class BeforeReadItemsModifier implements Modifier {
 					item.asExpand().items().stream().filter(i -> !i.isExpand()).toList());
 			enhanceWithNewFieldForMediaAssociation(item.asExpand().displayName(), newItemsFromExpand, newItemsFromExpand);
 			List<CqnSelectListItem> expandedSubItems = item.asExpand().items().stream().filter(CqnSelectListItem::isExpand)
-																																																.toList();
+					.toList();
 			var result = processExpandedEntities(expandedSubItems);
 			newItemsFromExpand.addAll(result);
 			var copy = CQL.copy(item.asExpand());

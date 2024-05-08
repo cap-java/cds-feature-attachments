@@ -1,6 +1,6 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
- **************************************************************************/
+	* (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+	**************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import java.io.InputStream;
@@ -86,7 +86,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 	@After(event = CqnService.EVENT_READ)
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processAfter(CdsReadEventContext context, List<CdsData> data) {
-		if (!ApplicationHandlerHelper.isContentFieldInData(context.getTarget(), data)) {
+		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
 		logger.debug(marker, "Processing after read event for entity {}", context.getTarget().getName());
@@ -119,9 +119,8 @@ public class ReadAttachmentsHandler implements EventHandler {
 		}
 
 		Map<String, CdsEntity> annotatedEntitiesMap = entity.elements().filter(element -> element.getType().isAssociation())
-																																																		.collect(Collectors.toMap(CdsElementDefinition::getName,
-																																																				element -> element.getType().as(CdsAssociationType.class)
-																																																																	.getTarget()));
+				.collect(Collectors.toMap(CdsElementDefinition::getName,
+						element -> element.getType().as(CdsAssociationType.class).getTarget()));
 
 		if (annotatedEntitiesMap.isEmpty()) {
 			return associationNames;

@@ -1,6 +1,6 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
- **************************************************************************/
+	* (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+	**************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream;
 
 import java.io.IOException;
@@ -24,22 +24,11 @@ public class LazyProxyInputStream extends InputStream {
 	private final String status;
 	private InputStream delegate;
 
-
 	public LazyProxyInputStream(InputStreamSupplier inputStreamSupplier,
 			AttachmentStatusValidator attachmentStatusValidator, String status) {
 		this.inputStreamSupplier = inputStreamSupplier;
 		this.attachmentStatusValidator = attachmentStatusValidator;
 		this.status = status;
-	}
-
-	private InputStream getDelegate() throws IOException {
-		attachmentStatusValidator.verifyStatus(status);
-
-		if (delegate == null) {
-			logger.debug("Creating delegate input stream");
-			delegate = inputStreamSupplier.get();
-		}
-		return delegate;
 	}
 
 	@Override
@@ -68,9 +57,18 @@ public class LazyProxyInputStream extends InputStream {
 		}
 	}
 
+	private InputStream getDelegate() {
+		attachmentStatusValidator.verifyStatus(status);
+
+		if (delegate == null) {
+			logger.debug("Creating delegate input stream");
+			delegate = inputStreamSupplier.get();
+		}
+		return delegate;
+	}
+
 	public interface InputStreamSupplier {
-		InputStream get() throws IOException;
+		InputStream get();
 	}
 
 }
-

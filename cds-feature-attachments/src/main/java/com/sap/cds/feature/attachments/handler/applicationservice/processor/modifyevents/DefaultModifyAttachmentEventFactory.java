@@ -1,6 +1,6 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
- **************************************************************************/
+	* (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+	**************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
 import java.util.Objects;
@@ -37,8 +37,7 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 	}
 
 	@Override
-	public ModifyAttachmentEvent getEvent(Object content, String contentId, boolean contentIdExist,
-			CdsData existingData) {
+	public ModifyAttachmentEvent getEvent(Object content, String contentId, boolean contentIdExist,	CdsData existingData) {
 		var existingContentId = existingData.get(Attachments.CONTENT_ID);
 		var event = contentIdExist ? handleExistingContentId(content, contentId,
 				existingContentId) : handleNonExistingContentId(content, existingContentId);

@@ -11,7 +11,7 @@ public class RuntimeHelper {
 
 	private static CdsRuntime prepareRuntime() {
 		var runtime = CdsRuntimeConfigurer.create().cdsModel(CSN_FILE_PATH).serviceConfigurations()
-																		.eventHandlerConfigurations().complete();
+				.eventHandlerConfigurations().complete();
 		runtime.getServiceCatalog().getServices(ApplicationLifecycleService.class).forEach(
 				ApplicationLifecycleService::applicationPrepared);
 		return runtime;

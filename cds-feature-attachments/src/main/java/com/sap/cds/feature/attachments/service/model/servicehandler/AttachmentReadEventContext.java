@@ -1,6 +1,6 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
- **************************************************************************/
+	* (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+	**************************************************************************/
 package com.sap.cds.feature.attachments.service.model.servicehandler;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
@@ -15,7 +15,7 @@ import com.sap.cds.services.EventName;
 public interface AttachmentReadEventContext extends EventContext {
 
 	/**
-		* Creates an {@link EventContext} already overlayed with this interface. The event is set to be
+		* Creates an {@link EventContext} already overlay with this interface. The event is set to be
 		* {@link AttachmentService#EVENT_READ_ATTACHMENT}
 		*
 		* @return the {@link AttachmentReadEventContext}
