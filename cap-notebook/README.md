@@ -28,4 +28,4 @@ After the project is started you can access the application with the following U
 The file `cap-notebook/version.txt` contains the latest version of the project.
 The CAP notebook reads the version from the file and uses it in the project.
 
-If the file is not present the version is set to `1.0.0`.
+If the file is not present the version is set to `1.0.2`.
