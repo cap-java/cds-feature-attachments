@@ -84,6 +84,12 @@
         "outputs": []
     },
     {
+        "kind": 1,
+        "language": "markdown",
+        "value": "add the following dependency to the `srv/pom.xml`:\n```\n<dependency>\n    <groupId>com.sap.cds</groupId>\n    <artifactId>cds-feature-attachments</artifactId>\n    <version>${latest-version}</version>\n</dependency>\n```        ",
+        "outputs": []
+    },
+    {
         "kind": 2,
         "language": "java",
         "value": "\nPath versionPath = Paths.get(\"../../version.txt\");\nString version;\nif (Files.exists(versionPath)){\n    version = Files.readString(versionPath);\n    System.out.println(\"Using version from 'version.txt': \" + version);\n}else{\n    version = \"1.0.2\";\n    System.out.println(\"Using hard coded version: \" + version);\n}\n\nString filePath = \"pom.xml\";\ntry {\n    String pom = Files.readString(Path.of(filePath));\n    String searchString = \"<dependencies>\";\n    Pattern pattern = Pattern.compile(searchString);\n    Matcher matcher = pattern.matcher(pom);\n\n    if (matcher.find()) {\n        System.out.println(\"String found at position: \" + matcher.start());\n    } else {\n        System.out.println(\"String not found\");\n    }\n\n    String newDependency = \"\\n\\n         <dependency>\\n          <groupId>com.sap.cds</groupId>\\n           <artifactId>cds-feature-attachments</artifactId>\\n          <version>\" + version + \"</version>\\n        </dependency>\\n\\n\";\n    int insertPos = matcher.end();\n    pom = pom.substring(0, insertPos) + newDependency + pom.substring(insertPos);\n\n    Files.writeString(Path.of(filePath), pom);\n\n} catch (IOException e) {\n    e.printStackTrace();\n}",
