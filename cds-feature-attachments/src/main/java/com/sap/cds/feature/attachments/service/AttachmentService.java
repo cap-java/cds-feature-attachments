@@ -21,12 +21,12 @@ public interface AttachmentService extends Service {
 	String DEFAULT_NAME = "AttachmentService$Default";
 
 	/**
-		* This event is emitted when an attachment shall be uploaded
+		* This event is emitted when an attachment shall be created
 		*/
 	String EVENT_CREATE_ATTACHMENT = "CREATE_ATTACHMENT";
 
 	/**
-		* This event is emitted when an attachment shall be uploaded
+		* This event is emitted when an attachment shall be read
 		*/
 	String EVENT_READ_ATTACHMENT = "READ_ATTACHMENT";
 
@@ -36,7 +36,7 @@ public interface AttachmentService extends Service {
 	String EVENT_MARK_ATTACHMENT_AS_DELETED = "MARK_ATTACHMENT_AS_DELETED";
 
 	/**
-		* This event is emitted when an attachment shall be uploaded
+		* This event is emitted when an attachment shall be restored
 		*/
 	String EVENT_RESTORE_ATTACHMENT = "RESTORE_ATTACHMENT";
 
