@@ -26,7 +26,7 @@
 
     <properties>
         <!-- DEPENDENCIES VERSION -->
-        <spring.boot.version>3.2.5</spring.boot.version>
+        <spring.boot.version>3.3.0</spring.boot.version>
         <cds.install-cdsdk.version>7.7.0</cds.install-cdsdk.version>
         <cds.install-node.downloadUrl>https://nodejs.org/dist/</cds.install-node.downloadUrl>
     </properties>
