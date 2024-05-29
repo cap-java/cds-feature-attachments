@@ -93,6 +93,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
+			logger.info(marker, "Processing after read event for entity {}", element.getName());
 			var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 			var status = (String) path.target().values().get(Attachments.STATUS);
 			var content = (InputStream) path.target().values().get(Attachments.CONTENT);
