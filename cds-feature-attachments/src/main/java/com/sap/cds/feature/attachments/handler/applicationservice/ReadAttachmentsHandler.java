@@ -141,6 +141,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private void verifyStatus(Path path, String status, String contentId, boolean contentExists) {
 		if (areKeysEmpty(path.target().keys())) {
 			if (StatusCode.UNSCANNED.equals(status) && contentExists) {
+				logger.info(marker, "Scanning content with ID {} for malware, has current status {}", contentId, status);
 				asyncMalwareScanExecutor.scanAsync(path.target().entity(), contentId);
 			}
 			attachmentStatusValidator.verifyStatus(status);
