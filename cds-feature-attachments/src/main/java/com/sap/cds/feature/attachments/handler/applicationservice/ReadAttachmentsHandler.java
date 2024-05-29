@@ -93,6 +93,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
+			logger.info(marker, "Processing after read event for entity {}", element.getName());
 			var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 			var status = (String) path.target().values().get(Attachments.STATUS);
 			var content = (InputStream) path.target().values().get(Attachments.CONTENT);
@@ -140,7 +141,9 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	private void verifyStatus(Path path, String status, String contentId, boolean contentExists) {
 		if (areKeysEmpty(path.target().keys())) {
-			if (StatusCode.UNSCANNED.equals(status) && contentExists) {
+			logger.info(marker, "In verify status for content id {} and status {}", contentId, status);
+			if ((StatusCode.UNSCANNED.equals(status) || StatusCode.SCANNING.equals(status)) && contentExists) {
+				logger.info(marker, "Scanning content with ID {} for malware, has current status {}", contentId, status);
 				asyncMalwareScanExecutor.scanAsync(path.target().entity(), contentId);
 			}
 			attachmentStatusValidator.verifyStatus(status);
