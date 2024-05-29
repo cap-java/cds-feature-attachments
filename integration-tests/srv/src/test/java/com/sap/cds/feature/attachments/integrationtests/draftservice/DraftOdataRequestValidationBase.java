@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import com.sap.cds.Struct;
@@ -107,8 +109,8 @@ abstract class DraftOdataRequestValidationBase {
 		Awaitility.await().atMost(30, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
 			var attachmentResponse = requestHelper.executeGet(attachmentUrl);
 			var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
-			var attachmentResponseContent = attachmentResponse.getResponse().getContentAsString();
-			var attachmentEntityResponseContent = attachmentEntityResponse.getResponse().getContentAsString();
+			var attachmentResponseContent = getResponseContent(attachmentResponse);
+			var attachmentEntityResponseContent = getResponseContent(attachmentEntityResponse);
 			var result = attachmentResponseContent.equals(testContentAttachment) && attachmentEntityResponseContent.equals(
 					testContentAttachmentEntity);
 			if (!result) {
@@ -747,6 +749,11 @@ abstract class DraftOdataRequestValidationBase {
 		verifyTwoCreateAndDeleteEvents(newAttachmentContent, newAttachmentEntityContent);
 		clearServiceHandlerContext();
 		testPersistenceHandler.reset();
+	}
+
+	private String getResponseContent(MvcResult attachmentResponse) throws UnsupportedEncodingException {
+		return attachmentResponse.getResponse().getStatus() == HttpStatus.OK.value() ? attachmentResponse.getResponse()
+				.getContentAsString() : "";
 	}
 
 	protected abstract void verifyContentId(String contentId, String attachmentId);
