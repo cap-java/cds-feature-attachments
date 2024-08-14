@@ -16,7 +16,7 @@
     </organization>
 
     <properties>
-        <revision>1.0.3</revision>
+        <revision>1.0.2</revision>
         <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
