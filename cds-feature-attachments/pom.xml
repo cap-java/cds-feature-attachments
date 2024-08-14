@@ -412,8 +412,8 @@
         </snapshotRepository>
         <repository>
             <id>artifactory</id>
-            <name>Artifactory_DMZ</name>
-            <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
+            <name>MavenCentral</name>
+            <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
     </distributionManagement>
 
