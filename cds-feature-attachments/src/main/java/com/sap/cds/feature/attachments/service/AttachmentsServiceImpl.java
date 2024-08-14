@@ -21,25 +21,22 @@ import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.ServiceDelegator;
 
 /**
-	* Default implementation of the {@link AttachmentService} interface.
+	* Implementation of the {@link AttachmentService} interface.
 	* The main	purpose of this class is to set data in the corresponding context and
-	* to call the emit method for the attachment service.
+	* to call the emit method for the AttachmentService.
 	*/
-public class DefaultAttachmentsService extends ServiceDelegator implements AttachmentService {
+public class AttachmentsServiceImpl extends ServiceDelegator implements AttachmentService {
 
-	private static final Logger logger = LoggerFactory.getLogger(DefaultAttachmentsService.class);
-	private static final Marker create_marker = LoggingMarker.ATTACHMENT_SERVICE_CREATE_METHOD.getMarker();
-	private static final Marker delete_marker = LoggingMarker.ATTACHMENT_SERVICE_DELETE_METHOD.getMarker();
-	private static final Marker restore_marker = LoggingMarker.ATTACHMENT_SERVICE_RESTORE_METHOD.getMarker();
-	private static final Marker read_marker = LoggingMarker.ATTACHMENT_SERVICE_READ_METHOD.getMarker();
+	private static final Logger logger = LoggerFactory.getLogger(AttachmentsServiceImpl.class);
+	private static final Marker attachmentServiceMarker = LoggingMarker.ATTACHMENT_SERVICE.getMarker();
 
-	public DefaultAttachmentsService() {
+	public AttachmentsServiceImpl() {
 		super(DEFAULT_NAME);
 	}
 
 	@Override
 	public InputStream readAttachment(String contentId) {
-		logger.info(read_marker, "Reading attachment with document id: {}", contentId);
+		logger.debug(attachmentServiceMarker, "Reading attachment with document id {}", contentId);
 
 		var readContext = AttachmentReadEventContext.create();
 		readContext.setContentId(contentId);
@@ -52,7 +49,7 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 
 	@Override
 	public AttachmentModificationResult createAttachment(CreateAttachmentInput input) {
-		logger.info(create_marker, "Creating attachment for entity name: {}", input.attachmentEntity().getQualifiedName());
+		logger.info(attachmentServiceMarker, "Creating attachment for entity '{}'", input.attachmentEntity().getQualifiedName());
 
 		var createContext = AttachmentCreateEventContext.create();
 		createContext.setAttachmentIds(input.attachmentIds());
@@ -71,7 +68,7 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 
 	@Override
 	public void markAttachmentAsDeleted(String contentId) {
-		logger.info(delete_marker, "Marking attachment as deleted for document id: {}", contentId);
+		logger.info(attachmentServiceMarker, "Marking attachment as deleted for document id {}", contentId);
 
 		var deleteContext = AttachmentMarkAsDeletedEventContext.create();
 		deleteContext.setContentId(contentId);
@@ -81,7 +78,7 @@ public class DefaultAttachmentsService extends ServiceDelegator implements Attac
 
 	@Override
 	public void restoreAttachment(Instant restoreTimestamp) {
-		logger.info(restore_marker, "Restoring deleted attachment for timestamp: {}", restoreTimestamp);
+		logger.info(attachmentServiceMarker, "Restoring deleted attachment for timestamp {}", restoreTimestamp);
 		var restoreContext = AttachmentRestoreEventContext.create();
 		restoreContext.setRestoreTimestamp(restoreTimestamp);
 
