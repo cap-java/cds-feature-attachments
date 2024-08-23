@@ -228,9 +228,9 @@
             <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
         </snapshotRepository>
         <repository>
-            <id>artifactory</id>
-            <name>Artifactory_DMZ</name>
-            <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
+            <id>ossrh</id>
+            <name>MavenCentral</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
 
