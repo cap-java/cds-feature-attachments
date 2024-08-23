@@ -28,7 +28,6 @@ import com.sap.cds.services.ServiceDelegator;
 public class AttachmentsServiceImpl extends ServiceDelegator implements AttachmentService {
 
 	private static final Logger logger = LoggerFactory.getLogger(AttachmentsServiceImpl.class);
-	private static final Marker attachmentServiceMarker = LoggingMarker.ATTACHMENT_SERVICE.getMarker();
 
 	public AttachmentsServiceImpl() {
 		super(DEFAULT_NAME);
@@ -36,7 +35,6 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 
 	@Override
 	public InputStream readAttachment(String contentId) {
-		logger.debug(attachmentServiceMarker, "Reading attachment with document id {}", contentId);
 
 		var readContext = AttachmentReadEventContext.create();
 		readContext.setContentId(contentId);
@@ -49,7 +47,6 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 
 	@Override
 	public AttachmentModificationResult createAttachment(CreateAttachmentInput input) {
-		logger.info(attachmentServiceMarker, "Creating attachment for entity '{}'", input.attachmentEntity().getQualifiedName());
 
 		var createContext = AttachmentCreateEventContext.create();
 		createContext.setAttachmentIds(input.attachmentIds());
@@ -68,7 +65,6 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 
 	@Override
 	public void markAttachmentAsDeleted(String contentId) {
-		logger.info(attachmentServiceMarker, "Marking attachment as deleted for document id {}", contentId);
 
 		var deleteContext = AttachmentMarkAsDeletedEventContext.create();
 		deleteContext.setContentId(contentId);
@@ -78,7 +74,7 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 
 	@Override
 	public void restoreAttachment(Instant restoreTimestamp) {
-		logger.info(attachmentServiceMarker, "Restoring deleted attachment for timestamp {}", restoreTimestamp);
+
 		var restoreContext = AttachmentRestoreEventContext.create();
 		restoreContext.setRestoreTimestamp(restoreTimestamp);
 
