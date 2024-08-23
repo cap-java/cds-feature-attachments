@@ -81,6 +81,7 @@ jobs:
       - name: Deploy with Maven
         uses: ./.github/actions/deploy-release
         with:
+          server-id: osshr
           user: ${{ secrets.OSSRH_SONATYPE_ORG_API_USER }}
           password: ${{ secrets.OSSRH_SONATYPE_ORG_API_PASSWD }}
           profile: ${{ secrets.OSSRH_SONATYPE_ORG_PROFILE_ID }}
