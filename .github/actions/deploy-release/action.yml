@@ -35,7 +35,7 @@ runs:
         echo "pom-file: ${{ inputs.pom-file }}"
       shell: bash
 
-    - name: "Setup java"
+    - name: "Setup Java"
       uses: actions/setup-java@v4
       with:
         distribution: "temurin"
@@ -53,8 +53,8 @@ runs:
     - name: "Deploy Locally"
       run: >
         mvn
-        --batch-mode 
-        --no-transfer-progress 
+        --batch-mode
+        --no-transfer-progress
         --fail-at-end
         --threads 1C
         --show-version
@@ -66,23 +66,23 @@ runs:
         -Dgpg.keyname="$GPG_PUB_KEY"
         deploy
       env:
-         MAVEN_CENTRAL_USER: ${{ inputs.user }}
-         MAVEN_CENTRAL_PASSWORD: ${{ inputs.password }}
-         GPG_PASSPHRASE: ${{ inputs.pgp-passphrase }}
-         GPG_PUB_KEY: ${{ inputs.pgp-pub-key }}
+        MAVEN_CENTRAL_USER: ${{ inputs.user }}
+        MAVEN_CENTRAL_PASSWORD: ${{ inputs.password }}
+        GPG_PASSPHRASE: ${{ inputs.pgp-passphrase }}
+        GPG_PUB_KEY: ${{ inputs.pgp-pub-key }}
 
     - name: "Deploy Staging"
       run: >
-         mvn
-        --batch-mode 
-        --no-transfer-progress 
+        mvn
+        --batch-mode
+        --no-transfer-progress
         --fail-at-end
         --show-version
         org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy-staged-repository
         -DserverId=ossrh
         -DnexusUrl=https://oss.sonatype.org
         -DrepositoryDirectory=./temp_local_repo
-        -DstagingProfileId=$MAVEN_CENTRAL_PROFILE_ID
+        -DstagingProfileId="$MAVEN_CENTRAL_PROFILE_ID"
       env:
         MAVEN_CENTRAL_USER: ${{ inputs.user }}
         MAVEN_CENTRAL_PASSWORD: ${{ inputs.password }}
