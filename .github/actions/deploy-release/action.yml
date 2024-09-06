@@ -82,8 +82,9 @@ runs:
         --show-version
         org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy-staged-repository
         -DserverId=ossrh
-        -DnexusUrl=https://oss.sonatype.org/service/local/staging/deploy/maven2/
+        -DnexusUrl=https://oss.sonatype.org
         -DrepositoryDirectory=./temp_local_repo
+        -DstagingProfileId="$MAVEN_CENTRAL_PROFILE_ID"
       shell: bash  
       env:
         MAVEN_CENTRAL_USER: ${{ inputs.user }}
