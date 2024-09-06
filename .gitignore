@@ -13,3 +13,4 @@
 target/
 
 .flattened-pom.xml
+node_modules
