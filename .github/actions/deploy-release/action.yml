@@ -59,14 +59,14 @@ runs:
         --fail-at-end
         --threads 1C
         --show-version
-        -DrepositoryId=local
-        -Durl=file:./temp_local_repo
+        -DaltDeploymentRepository=local::default::file://./temp_local_repo
         -Dmaven.install.skip=true
+        -Dmaven.test.skip=true
         -f ${{ inputs.pom-file }}
         -Dgpg.passphrase="$GPG_PASSPHRASE"
         -Dgpg.keyname="$GPG_PUB_KEY"
         deploy
-      shell: bash  
+      shell: bash
       env:
         MAVEN_CENTRAL_USER: ${{ inputs.user }}
         MAVEN_CENTRAL_PASSWORD: ${{ inputs.password }}
