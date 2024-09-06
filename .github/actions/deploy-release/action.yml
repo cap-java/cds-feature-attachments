@@ -59,7 +59,7 @@ runs:
         --fail-at-end
         --threads 1C
         --show-version
-        -DaltDeploymentRepository=local::default::file://./temp_local_repo
+        -DaltDeploymentRepository=local::default::file://${{ github.workspace }}/temp_local_repo
         -Dmaven.install.skip=true
         -Dmaven.test.skip=true
         -f ${{ inputs.pom-file }}
@@ -83,7 +83,7 @@ runs:
         org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy-staged-repository
         -DserverId=ossrh
         -DnexusUrl=https://oss.sonatype.org
-        -DrepositoryDirectory=./temp_local_repo
+        -DrepositoryDirectory=${{ github.workspace }}/temp_local_repo
         -DstagingProfileId="$MAVEN_CENTRAL_PROFILE_ID"
       shell: bash  
       env:
