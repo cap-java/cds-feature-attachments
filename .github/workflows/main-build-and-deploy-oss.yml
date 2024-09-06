@@ -78,6 +78,11 @@ jobs:
       - run: echo "Start deployment to Maven Central"
         name: deploy start
 
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
