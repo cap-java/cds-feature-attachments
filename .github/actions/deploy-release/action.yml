@@ -47,6 +47,7 @@ runs:
     - name: "Import GPG Key"
       run: |
         echo "${{ inputs.pgp-private-key }}" | gpg --batch --passphrase "$PASSPHRASE" --import
+      shell: bash  
       env:
         PASSPHRASE: ${{ inputs.pgp-passphrase }}
 
@@ -65,6 +66,7 @@ runs:
         -Dgpg.passphrase="$GPG_PASSPHRASE"
         -Dgpg.keyname="$GPG_PUB_KEY"
         deploy
+      shell: bash  
       env:
         MAVEN_CENTRAL_USER: ${{ inputs.user }}
         MAVEN_CENTRAL_PASSWORD: ${{ inputs.password }}
@@ -83,6 +85,7 @@ runs:
         -DnexusUrl=https://oss.sonatype.org
         -DrepositoryDirectory=./temp_local_repo
         -DstagingProfileId="$MAVEN_CENTRAL_PROFILE_ID"
+      shell: bash  
       env:
         MAVEN_CENTRAL_USER: ${{ inputs.user }}
         MAVEN_CENTRAL_PASSWORD: ${{ inputs.password }}
