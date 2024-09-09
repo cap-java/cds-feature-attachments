@@ -6,7 +6,6 @@ env:
 
 on:
   release:
-    branches: [ "main" ]
     types: [ "published" ]
 
 jobs:
