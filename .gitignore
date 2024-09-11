@@ -14,3 +14,7 @@ target/
 
 .flattened-pom.xml
 node_modules
+
+## PMD
+.pmd
+.pmdruleset.xml
