@@ -43,8 +43,12 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
 		logger.info(marker, "CREATE Attachment called in dummy handler");
 		var contentId = UUID.randomUUID().toString();
 		documents.put(contentId, context.getData().getContent().readAllBytes());
-		context.setContentId(contentId);
-		context.getData().setStatus(StatusCode.CLEAN);
+		if (Boolean.TRUE.equals(context.get("draft"))){
+			context.setIsInternalStored(true);
+		}else {
+			context.setContentId(contentId);
+			context.getData().setStatus(StatusCode.CLEAN);
+		}
 		context.setCompleted();
 		eventContextHolder.add(new EventContextHolder(AttachmentService.EVENT_CREATE_ATTACHMENT, context));
 	}

@@ -60,6 +60,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 					DraftConstants.SIBLING_ENTITY);
 			var select = Select.from(draftElement.getQualifiedName()).matching(path.target().keys()).lock(LOCK_TIMEOUT_IN_SECONDS);
 			var result = persistence.run(select);
+			context.put("draft", true);
 
 			return ModifyApplicationHandlerHelper.handleAttachmentForEntity(result.listOf(CdsData.class), eventFactory, context,
 					path, value);

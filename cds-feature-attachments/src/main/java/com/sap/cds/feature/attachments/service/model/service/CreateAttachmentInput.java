@@ -11,5 +11,5 @@ import com.sap.cds.reflect.CdsEntity;
 /**
 	* The class {@link CreateAttachmentInput} is used to store the input for creating an attachment.
 	*/
-public record CreateAttachmentInput(Map<String, Object> attachmentIds, CdsEntity attachmentEntity, String fileName, String mimeType, InputStream content) {
+public record CreateAttachmentInput(Map<String, Object> attachmentIds, CdsEntity attachmentEntity, String fileName, String mimeType, InputStream content, boolean draft) {
 }

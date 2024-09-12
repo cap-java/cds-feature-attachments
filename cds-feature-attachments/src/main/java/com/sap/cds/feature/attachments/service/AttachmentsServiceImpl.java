@@ -59,6 +59,7 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 		mediaData.setMimeType(input.mimeType());
 		mediaData.setContent(input.content());
 		createContext.setData(mediaData);
+		createContext.put("draft", input.draft());
 
 		emit(createContext);
 
