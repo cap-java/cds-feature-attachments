@@ -38,8 +38,8 @@ runs:
     - name: "Setup Java"
       uses: actions/setup-java@v4
       with:
-        distribution: "temurin"
-        java-version: "17"
+        distribution: 'sapmachine'
+        java-version: '17'
         server-id: ossrh
         server-username: MAVEN_CENTRAL_USER
         server-password: MAVEN_CENTRAL_PASSWORD
