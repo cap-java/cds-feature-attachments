@@ -9,16 +9,16 @@ inputs:
     description: "The password used for the upload (technical user for maven central upload)"
     required: true
   profile:
-    description: "The profile id (of technical user for maven central upload)"
+    description: "The profile id"
     required: true
   pgp-pub-key:
-    description: "The public pgp key ID (technical user for maven central upload)"
+    description: "The public pgp key ID"
     required: true
   pgp-private-key:
-    description: "The private pgp key (technical user for maven central upload)"
+    description: "The private pgp key"
     required: true
   pgp-passphrase:
-    description: "The passphrase for pgp (technical user for maven central upload)"
+    description: "The passphrase for pgp"
     required: true
   pom-file:
     description: "The path to the POM file."
@@ -38,8 +38,8 @@ runs:
     - name: "Setup Java"
       uses: actions/setup-java@v4
       with:
-        distribution: "temurin"
-        java-version: "17"
+        distribution: 'sapmachine'
+        java-version: '17'
         server-id: ossrh
         server-username: MAVEN_CENTRAL_USER
         server-password: MAVEN_CENTRAL_PASSWORD
@@ -57,16 +57,16 @@ runs:
         --batch-mode
         --no-transfer-progress
         --fail-at-end
-        --threads 1C
         --show-version
-        -DrepositoryId=local
-        -Durl=file:./temp_local_repo
+        -DaltDeploymentRepository=local::default::file://${{ github.workspace }}/temp_local_repo
         -Dmaven.install.skip=true
+        -Dmaven.test.skip=true
         -f ${{ inputs.pom-file }}
         -Dgpg.passphrase="$GPG_PASSPHRASE"
         -Dgpg.keyname="$GPG_PUB_KEY"
+        -pl cds-feature-attachments
         deploy
-      shell: bash  
+      shell: bash
       env:
         MAVEN_CENTRAL_USER: ${{ inputs.user }}
         MAVEN_CENTRAL_PASSWORD: ${{ inputs.password }}
@@ -83,7 +83,7 @@ runs:
         org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy-staged-repository
         -DserverId=ossrh
         -DnexusUrl=https://oss.sonatype.org
-        -DrepositoryDirectory=./temp_local_repo
+        -DrepositoryDirectory=${{ github.workspace }}/temp_local_repo
         -DstagingProfileId="$MAVEN_CENTRAL_PROFILE_ID"
       shell: bash  
       env:
