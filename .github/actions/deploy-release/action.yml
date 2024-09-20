@@ -38,8 +38,8 @@ runs:
     - name: "Setup Java"
       uses: actions/setup-java@v4
       with:
-        distribution: "temurin"
-        java-version: "17"
+        distribution: 'sapmachine'
+        java-version: '17'
         server-id: ossrh
         server-username: MAVEN_CENTRAL_USER
         server-password: MAVEN_CENTRAL_PASSWORD
@@ -57,7 +57,6 @@ runs:
         --batch-mode
         --no-transfer-progress
         --fail-at-end
-        --threads 1C
         --show-version
         -DaltDeploymentRepository=local::default::file://${{ github.workspace }}/temp_local_repo
         -Dmaven.install.skip=true
@@ -65,6 +64,7 @@ runs:
         -f ${{ inputs.pom-file }}
         -Dgpg.passphrase="$GPG_PASSPHRASE"
         -Dgpg.keyname="$GPG_PUB_KEY"
+        -pl cds-feature-attachments
         deploy
       shell: bash
       env:
