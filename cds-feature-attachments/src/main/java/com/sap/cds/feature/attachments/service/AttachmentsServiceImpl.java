@@ -6,10 +6,6 @@ package com.sap.cds.feature.attachments.service;
 import java.io.InputStream;
 import java.time.Instant;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
-
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
@@ -17,7 +13,6 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
-import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.ServiceDelegator;
 
 /**
@@ -26,8 +21,6 @@ import com.sap.cds.services.ServiceDelegator;
 	* to call the emit method for the AttachmentService.
 	*/
 public class AttachmentsServiceImpl extends ServiceDelegator implements AttachmentService {
-
-	private static final Logger logger = LoggerFactory.getLogger(AttachmentsServiceImpl.class);
 
 	public AttachmentsServiceImpl() {
 		super(DEFAULT_NAME);
