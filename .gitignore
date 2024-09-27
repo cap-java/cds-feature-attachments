@@ -24,3 +24,7 @@ cds-feature-attachments/src/gen/
 cds-feature-attachments/src/test/gen/
 cds-feature-attachments/src/test/resources/gen/
 cds-feature-attachments/src/test/resources/schema.sql
+
+## Local github actions with act
+.env
+.secrets

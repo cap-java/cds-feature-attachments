@@ -5,6 +5,10 @@ inputs:
   java-version:
     description: "The Java version the build shall run with."
     required: true
+  maven-version:
+    description: "The version of Maven to use"
+    default: '3.6.3'
+    required: false
 
 runs:
   using: composite
@@ -13,8 +17,13 @@ runs:
       uses: actions/setup-java@v4
       with:
         java-version: ${{ inputs.java-version }}
-        distribution: 'sapmachine'
+        distribution: sapmachine
         cache: maven
+
+    - name: Setup Maven ${{ inputs.maven-version }}
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version: ${{ inputs.maven-version }}
 
     - name: mavenBuild
       uses: SAP/project-piper-action@master
