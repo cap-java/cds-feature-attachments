@@ -1,5 +1,3 @@
-# IDEs
-
 ## IntelliJ
 .idea
 *.iml
@@ -13,3 +11,18 @@
 target/
 
 .flattened-pom.xml
+node_modules
+
+## PMD
+.pmd
+.pmdruleset.xml
+
+## Generated classes and resources
+cds-feature-attachments/src/gen/
+cds-feature-attachments/src/test/gen/
+cds-feature-attachments/src/test/resources/gen/
+cds-feature-attachments/src/test/resources/schema.sql
+
+## files required for local execution of github actions with act
+.env
+.secrets
