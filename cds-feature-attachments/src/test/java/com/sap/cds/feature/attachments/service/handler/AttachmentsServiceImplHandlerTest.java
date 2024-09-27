@@ -26,7 +26,7 @@ import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.impl.changeset.ChangeSetContextImpl;
 
-class DefaultAttachmentsServiceHandlerTest {
+class AttachmentsServiceImplHandlerTest {
 
 	private static final int EXPECTED_HANDLER_ORDER = 11000;
 

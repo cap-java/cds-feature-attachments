@@ -35,7 +35,7 @@ import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmen
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.modifier.ActiveEntityModifier;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.DefaultAttachmentsService;
+import com.sap.cds.feature.attachments.service.AttachmentsServiceImpl;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanRunner;
@@ -115,8 +115,8 @@ public class Registration implements CdsRuntimeConfiguration {
 	}
 
 	private AttachmentService buildAttachmentService() {
-		logger.info(marker, "Registering attachment service");
-		return new DefaultAttachmentsService();
+		logger.info(marker, "Registering AttachmentService");
+		return new AttachmentsServiceImpl();
 	}
 
 	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,

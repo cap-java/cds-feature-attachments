@@ -5,6 +5,14 @@ inputs:
   java-version:
     description: "The Java version the build shall run with."
     required: true
+  maven-version:
+    description: "The Maven version the build shall run with."
+    default: '3.6.3'
+    required: false
+  mutation-testing:
+    description: "Whether to run mutation testing."
+    default: 'true'
+    required: false
 
 runs:
   using: composite
@@ -13,14 +21,20 @@ runs:
       uses: actions/setup-java@v4
       with:
         java-version: ${{ inputs.java-version }}
-        distribution: 'temurin'
+        distribution: sapmachine
         cache: maven
 
-    - name: mavenBuild
+    - name: Setup Maven ${{ inputs.maven-version }}
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version: ${{ inputs.maven-version }}
+
+    - name: Perform Piper Maven build
       uses: SAP/project-piper-action@master
       with:
         command: mavenBuild
 
     - name: Run Mutation Testing
+      if: ${{ inputs.mutation-testing == 'true' }}
       run: mvn org.pitest:pitest-maven:mutationCoverage -f cds-feature-attachments/pom.xml
       shell: bash

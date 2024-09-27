@@ -24,15 +24,15 @@ import com.sap.cds.services.handler.Handler;
 import com.sap.cds.services.impl.ServiceSPI;
 import com.sap.cds.services.runtime.CdsRuntime;
 
-class DefaultAttachmentsServiceTest {
+class AttachmentsServiceImplTest {
 
-	private DefaultAttachmentsService cut;
+	private AttachmentsServiceImpl cut;
 	private Handler handler;
 	private ServiceSPI serviceSpi;
 
 	@BeforeEach
 	void setup() {
-		cut = new DefaultAttachmentsService();
+		cut = new AttachmentsServiceImpl();
 
 		CdsRuntime runtime = mock(CdsRuntime.class);
 		handler = mock(Handler.class);

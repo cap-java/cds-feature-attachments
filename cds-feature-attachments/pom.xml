@@ -8,19 +8,6 @@
         <version>${revision}</version>
     </parent>
 
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <organization>
-        <name>SAP SE</name>
-        <url>https://www.sap.com</url>
-    </organization>
-
     <artifactId>cds-feature-attachments</artifactId>
     <packaging>jar</packaging>
 
@@ -32,8 +19,6 @@
         <cds.install-cdsdk.version>7.6.0</cds.install-cdsdk.version>
         <generation-package>com.sap.cds.feature.attachments.generated</generation-package>
         <test-generation-folder>src/test/gen</test-generation-folder>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -351,7 +336,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
@@ -403,18 +388,5 @@
 
         </plugins>
     </build>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>artifactory</id>
-            <name>Artifactory_DMZ-snapshots</name>
-            <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
-        </snapshotRepository>
-        <repository>
-            <id>artifactory</id>
-            <name>Artifactory_DMZ</name>
-            <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
-        </repository>
-    </distributionManagement>
 
 </project>
