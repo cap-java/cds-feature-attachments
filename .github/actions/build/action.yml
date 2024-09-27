@@ -6,11 +6,11 @@ inputs:
     description: "The Java version the build shall run with."
     required: true
   maven-version:
-    description: "The version of Maven to use"
+    description: "The Maven version to use for the build."
     default: '3.6.3'
     required: false
   mutation-testing:
-    description: "Whether to run mutation testing"
+    description: "Whether to run mutation testing."
     default: 'true'
     required: false
 
