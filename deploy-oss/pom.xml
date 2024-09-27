@@ -31,7 +31,9 @@
                             <artifactId>cds-feature-attachments</artifactId>
                             <packaging>jar</packaging>
                             <file>../cds-feature-attachments/target/cds-feature-attachments.jar</file>
-                            <pomFile>../pom.xml</pomFile>
+                            <sources>../cds-feature-attachments/target/cds-feature-attachments-sources.jar</sources>
+                            <javadoc>../cds-feature-attachments/target/cds-feature-attachments-javadoc.jar</javadoc>
+                            <pomFile>../cds-feature-attachments/pom.xml</pomFile>
                             <version>${revision}</version>
                         </configuration>
                     </execution>
@@ -44,11 +46,9 @@
                         <configuration>
                             <groupId>${project.groupId}</groupId>
                             <artifactId>cds-feature-attachments-root</artifactId>
-                            <packaging>jar</packaging>
-                            <file>../cds-feature-attachments/target/cds-feature-attachments.jar</file>
-                            <sources>../cds-feature-attachments/target/cds-feature-attachments-sources.jar</sources>
-                            <javadoc>../cds-feature-attachments/target/cds-feature-attachments-javadoc.jar</javadoc>
-                            <pomFile>../cds-feature-attachments/pom.xml</pomFile>
+                            <packaging>pom</packaging>
+                            <file>../pom.xml</file>
+                            <pomFile>../pom.xml</pomFile>
                             <version>${revision}</version>
                         </configuration>
                     </execution>
@@ -69,7 +69,9 @@
                             <artifactId>cds-feature-attachments</artifactId>
                             <packaging>jar</packaging>
                             <file>../cds-feature-attachments/target/cds-feature-attachments.jar</file>
-                            <pomFile>../pom.xml</pomFile>
+                            <sources>../cds-feature-attachments/target/cds-feature-attachments-sources.jar</sources>
+                            <javadoc>../cds-feature-attachments/target/cds-feature-attachments-javadoc.jar</javadoc>
+                            <pomFile>../cds-feature-attachments/pom.xml</pomFile>
                             <version>${revision}</version>
                         </configuration>
                     </execution>
@@ -82,11 +84,9 @@
                         <configuration>
                             <groupId>${project.groupId}</groupId>
                             <artifactId>cds-feature-attachments-root</artifactId>
-                            <packaging>jar</packaging>
-                            <file>../cds-feature-attachments/target/cds-feature-attachments.jar</file>
-                            <sources>../cds-feature-attachments/target/cds-feature-attachments-sources.jar</sources>
-                            <javadoc>../cds-feature-attachments/target/cds-feature-attachments-javadoc.jar</javadoc>
-                            <pomFile>../cds-feature-attachments/pom.xml</pomFile>
+                            <packaging>pom</packaging>
+                            <file>../pom.xml</file>
+                            <pomFile>../pom.xml</pomFile>
                             <version>${revision}</version>
                         </configuration>
                     </execution>
