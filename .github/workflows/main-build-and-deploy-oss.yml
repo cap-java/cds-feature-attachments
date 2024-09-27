@@ -1,13 +1,11 @@
-name: Java CI with Maven
+name: Java CI with Maven - deploy to OSS
 
 env:
   JAVA_VERSION: '17'
-  DEPLOY_REPOSITORY_URL: 'https://common.repositories.cloud.sap/artifactory/cap-java'
-  POM_FILE: '.flattened-pom.xml'
 
 on:
   release:
-    types: [ "prereleased" ]
+    types: [ "published" ]
 
 jobs:
 
@@ -43,8 +41,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: root-new-version
-          include-hidden-files: true
           path: .
+          include-hidden-files: true
           retention-days: 1
 
   build:
@@ -70,11 +68,11 @@ jobs:
           retention-days: 1
 
   deploy:
-    name: Deploy to Artifactory
+    name: Deploy to Maven Central
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - run: echo "Start the deploy to Artifactory"
+      - run: echo "Start deployment to Maven Central"
         name: deploy start
 
       - name: Download artifact
@@ -83,12 +81,15 @@ jobs:
           name: root-build
 
       - name: Deploy with Maven
-        uses: ./.github/actions/deploy
+        uses: ./.github/actions/deploy-release
         with:
-          user: ${{ secrets.DEPLOYMENT_USER }}
-          password: ${{ secrets.DEPLOYMENT_PASS }}
-          repository-url: ${{ env.DEPLOY_REPOSITORY_ID }}
-          pom-file: ${{ env.POM_FILE }}
+          user: ${{ secrets.OSSRH_SONATYPE_ORG_API_USER }}
+          password: ${{ secrets.OSSRH_SONATYPE_ORG_API_PASSWD }}
+          profile: ${{ secrets.OSSRH_SONATYPE_ORG_PROFILE_ID }}
+          pgp-pub-key: ${{ secrets.PGP_PUBKEY_ID }}
+          pgp-private-key: ${{ secrets.PGP_PRIVATE_KEY }}
+          pgp-passphrase: ${{ secrets.PGP_PASSPHRASE }}
+          revision: ${{ github.event.release.tag_name }}
 
       - name: Echo Status
         run: echo "The job status is ${{ job.status }}"

@@ -15,8 +15,15 @@
         <url>https://www.sap.com</url>
     </organization>
 
+    <developers>
+        <developer>
+          <organization>SAP SE</organization>
+          <organizationUrl>https://www.sap.com</organizationUrl>
+        </developer>
+      </developers>
+    
     <properties>
-        <revision>1.0.2</revision>
+        <revision>1.0.3</revision>
         <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -36,6 +43,7 @@
     <packaging>pom</packaging>
 
     <name>CDS Feature for Attachments - Root</name>
+    <description>This artifact is a CAP Java plugin that provides out-of-the box attachments storage and handling by using an aspect Attachments.</description>
     <url>https://cap.cloud.sap/docs/plugins/#attachments</url>
 
     <modules>
@@ -66,7 +74,6 @@
                 <artifactId>cds-feature-attachments</artifactId>
                 <version>${revision}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -202,7 +209,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>no-duplicate-declared-dependencies</id>
@@ -212,6 +219,12 @@
                         <configuration>
                             <rules>
                                 <banDuplicatePomDependencyVersions/>
+                                <requireMavenVersion>
+                                    <version>3.6.3</version>
+                                </requireMavenVersion>
+                                <requireJavaVersion>
+                                    <version>${java.version}</version>
+                                </requireJavaVersion>
                             </rules>
                         </configuration>
                     </execution>
@@ -228,10 +241,16 @@
             <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
         </snapshotRepository>
         <repository>
-            <id>artifactory</id>
-            <name>Artifactory_DMZ</name>
-            <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
+            <id>ossrh</id>
+            <name>MavenCentral</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
+
+    <scm>
+        <url>https://github.com/cap-java/cds-feature-attachments</url>
+        <connection>scm:git:git@github.com:cap-java/cds-feature-attachments.git</connection>
+        <developerConnection>scm:git:git@github.com:cap-java/cds-feature-attachments.git</developerConnection>
+    </scm>
 
 </project>
