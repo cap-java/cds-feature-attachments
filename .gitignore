@@ -1,5 +1,3 @@
-# IDEs
-
 ## IntelliJ
 .idea
 *.iml
@@ -25,6 +23,6 @@ cds-feature-attachments/src/test/gen/
 cds-feature-attachments/src/test/resources/gen/
 cds-feature-attachments/src/test/resources/schema.sql
 
-## Local github actions with act
+## files required for local execution of github actions with act
 .env
 .secrets
