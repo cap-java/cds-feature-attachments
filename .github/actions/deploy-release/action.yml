@@ -20,6 +20,9 @@ inputs:
   pgp-passphrase:
     description: "The passphrase for pgp"
     required: true
+  revision:
+    description: "The revision of cds-feature-attachments"
+    required: true
 
 runs:
   using: composite
@@ -58,6 +61,7 @@ runs:
         -Dmaven.test.skip=true
         -Dgpg.passphrase="$GPG_PASSPHRASE"
         -Dgpg.keyname="$GPG_PUB_KEY"
+        -Drevision="${{ inputs.revision }}"
         deploy
       working-directory: ./deploy-oss
       shell: bash
@@ -79,6 +83,7 @@ runs:
         -DnexusUrl=https://oss.sonatype.org
         -DrepositoryDirectory=./temp_local_repo
         -DstagingProfileId="$MAVEN_CENTRAL_PROFILE_ID"
+        -Drevision="${{ inputs.revision }}"
       working-directory: ./deploy-oss
       shell: bash  
       env:

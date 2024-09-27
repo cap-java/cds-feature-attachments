@@ -74,7 +74,6 @@
                 <artifactId>cds-feature-attachments</artifactId>
                 <version>${revision}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 

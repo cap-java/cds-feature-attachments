@@ -9,7 +9,6 @@
     <description>This artifact can be used to deploy all required artifacts of cds-feature-attachments to OSS Nexus</description>
 
     <properties>
-        <revision>1.0.3</revision>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.install.skip>true</maven.install.skip>
     </properties>
@@ -52,7 +51,7 @@
                             <version>${revision}</version>
                         </configuration>
                     </execution>
-                  </executions>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-gpg-plugin</artifactId>

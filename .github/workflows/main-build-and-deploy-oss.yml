@@ -89,6 +89,7 @@ jobs:
           pgp-pub-key: ${{ secrets.PGP_PUBKEY_ID }}
           pgp-private-key: ${{ secrets.PGP_PRIVATE_KEY }}
           pgp-passphrase: ${{ secrets.PGP_PASSPHRASE }}
+          revision: ${{ github.event.release.tag_name }}
 
       - name: Echo Status
         run: echo "The job status is ${{ job.status }}"
