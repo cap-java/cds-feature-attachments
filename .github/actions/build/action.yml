@@ -9,6 +9,10 @@ inputs:
     description: "The version of Maven to use"
     default: '3.6.3'
     required: false
+  mutation-testing:
+    description: "Whether to run mutation testing"
+    default: 'true'
+    required: false
 
 runs:
   using: composite
@@ -25,11 +29,12 @@ runs:
       with:
         maven-version: ${{ inputs.maven-version }}
 
-    - name: mavenBuild
+    - name: Perform Piper Maven build
       uses: SAP/project-piper-action@master
       with:
         command: mavenBuild
 
     - name: Run Mutation Testing
+      if: ${{ inputs.mutation-testing == 'true' }}
       run: mvn org.pitest:pitest-maven:mutationCoverage -f cds-feature-attachments/pom.xml
       shell: bash
