@@ -20,10 +20,9 @@ inputs:
   pgp-passphrase:
     description: "The passphrase for pgp"
     required: true
-  pom-file:
-    description: "The path to the POM file."
-    required: false
-    default: "pom.xml"
+  revision:
+    description: "The revision of cds-feature-attachments"
+    required: true
 
 runs:
   using: composite
@@ -32,7 +31,6 @@ runs:
       run: |
         echo "user: ${{ inputs.user }}"
         echo "profile: ${{ inputs.profile }}"
-        echo "pom-file: ${{ inputs.pom-file }}"
       shell: bash
 
     - name: "Setup Java"
@@ -58,14 +56,14 @@ runs:
         --no-transfer-progress
         --fail-at-end
         --show-version
-        -DaltDeploymentRepository=local::default::file://${{ github.workspace }}/temp_local_repo
+        -Durl=file:./temp_local_repo
         -Dmaven.install.skip=true
         -Dmaven.test.skip=true
-        -f ${{ inputs.pom-file }}
         -Dgpg.passphrase="$GPG_PASSPHRASE"
         -Dgpg.keyname="$GPG_PUB_KEY"
-        -pl cds-feature-attachments
+        -Drevision="${{ inputs.revision }}"
         deploy
+      working-directory: ./deploy-oss
       shell: bash
       env:
         MAVEN_CENTRAL_USER: ${{ inputs.user }}
@@ -83,8 +81,10 @@ runs:
         org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy-staged-repository
         -DserverId=ossrh
         -DnexusUrl=https://oss.sonatype.org
-        -DrepositoryDirectory=${{ github.workspace }}/temp_local_repo
+        -DrepositoryDirectory=./temp_local_repo
         -DstagingProfileId="$MAVEN_CENTRAL_PROFILE_ID"
+        -Drevision="${{ inputs.revision }}"
+      working-directory: ./deploy-oss
       shell: bash  
       env:
         MAVEN_CENTRAL_USER: ${{ inputs.user }}
