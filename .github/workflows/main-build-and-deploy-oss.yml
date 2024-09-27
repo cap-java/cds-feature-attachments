@@ -2,7 +2,6 @@ name: Java CI with Maven - deploy to OSS
 
 env:
   JAVA_VERSION: '17'
-  POM_FILE: '.flattened-pom.xml'
 
 on:
   release:
@@ -90,7 +89,6 @@ jobs:
           pgp-pub-key: ${{ secrets.PGP_PUBKEY_ID }}
           pgp-private-key: ${{ secrets.PGP_PRIVATE_KEY }}
           pgp-passphrase: ${{ secrets.PGP_PASSPHRASE }}
-          pom-file: ${{ env.POM_FILE }}
 
       - name: Echo Status
         run: echo "The job status is ${{ job.status }}"

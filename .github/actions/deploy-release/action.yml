@@ -20,10 +20,6 @@ inputs:
   pgp-passphrase:
     description: "The passphrase for pgp"
     required: true
-  pom-file:
-    description: "The path to the POM file."
-    required: false
-    default: "pom.xml"
 
 runs:
   using: composite
@@ -32,7 +28,6 @@ runs:
       run: |
         echo "user: ${{ inputs.user }}"
         echo "profile: ${{ inputs.profile }}"
-        echo "pom-file: ${{ inputs.pom-file }}"
       shell: bash
 
     - name: "Setup Java"
@@ -61,7 +56,6 @@ runs:
         -Durl=file:./temp_local_repo
         -Dmaven.install.skip=true
         -Dmaven.test.skip=true
-        -f ${{ inputs.pom-file }}
         -Dgpg.passphrase="$GPG_PASSPHRASE"
         -Dgpg.keyname="$GPG_PUB_KEY"
         deploy
