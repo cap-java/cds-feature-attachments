@@ -6,7 +6,7 @@ inputs:
     description: "The Java version the build shall run with."
     required: true
   maven-version:
-    description: "The version of Maven to use"
+    description: "The Maven version the build shall run with."
     default: '3.6.3'
     required: false
 
