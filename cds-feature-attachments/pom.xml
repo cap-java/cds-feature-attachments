@@ -76,7 +76,6 @@
             <plugin>
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
-                <version>1.17.0</version>
                 <configuration>
                     <targetClasses>
                         <param>com.sap.cds.feature.attachments.handler.*</param>
@@ -109,9 +108,7 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.4.0</version>
                 <configuration>
                     <filesets>
                         <fileset>
@@ -169,7 +166,6 @@
             <plugin>
                 <groupId>com.sap.cds</groupId>
                 <artifactId>cds-maven-plugin</artifactId>
-                <version>${cds.services.version}</version>
                 <configuration>
                     <skip>${skipDuringDeploy}</skip>
                 </configuration>
@@ -265,7 +261,6 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
                 <configuration>
                     <excludes>
                         <exclude>
@@ -336,7 +331,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
@@ -353,9 +347,7 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.10.0</version>
                 <configuration>
                     <skip>${skipDuringDeploy}</skip>
                     <failOnError>true</failOnError>
@@ -374,9 +366,7 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <goals>

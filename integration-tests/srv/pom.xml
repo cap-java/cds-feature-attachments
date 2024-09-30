@@ -80,9 +80,7 @@
         <plugins>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.4.0</version>
                 <configuration>
                     <filesets>
                         <fileset>
@@ -121,7 +119,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring.boot.version}</version>
                 <configuration>
                     <skip>${skipDuringDeploy}</skip>
                 </configuration>
@@ -142,7 +139,6 @@
             <plugin>
                 <groupId>com.sap.cds</groupId>
                 <artifactId>cds-maven-plugin</artifactId>
-                <version>${cds.services.version}</version>
                 <configuration>
                     <skip>${skipDuringDeploy}</skip>
                 </configuration>
