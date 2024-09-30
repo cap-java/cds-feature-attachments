@@ -63,12 +63,14 @@ The following version are the minimum versions for the usage of the plugin:
 | CAP Java  | 2.9.1           |
 | UI5       | 1.121.0         |
 
+## Maven Central
+
+The feature is released to Maven Central at:
+https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments
+
 ## Artifactory
 
-At the moment the dependency is not available in the public maven repository.
-But it is planned to be available in the public maven repository.
-
-Until then the dependency it only available SAP internally in the following SAP Artifactory:
+SAP internally, snapshots are deplyoed to SAP Artifactory:
 https://int.repositories.cloud.sap/ui/repos/tree/General/proxy-cap-java
 
 If you have access to this repository and want to use the plugin you need to add this repository to the
