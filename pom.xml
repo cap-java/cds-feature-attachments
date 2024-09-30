@@ -33,8 +33,6 @@
         <cds.services.version>2.9.1</cds.services.version>
 
         <generation-folder>src/gen</generation-folder>
-
-        <test-spring-boot-version>3.2.5</test-spring-boot-version>
     </properties>
 
     <groupId>com.sap.cds</groupId>
@@ -284,11 +282,6 @@
                     <groupId>com.sap.cds</groupId>
                     <artifactId>cds-maven-plugin</artifactId>
                     <version>${cds.services.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${test-spring-boot-version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
