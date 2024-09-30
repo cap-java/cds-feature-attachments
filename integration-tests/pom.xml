@@ -62,8 +62,6 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <release>${java.version}</release>
-                    <encoding>UTF-8</encoding>
                     <skip>${skipDuringDeploy}</skip>
                 </configuration>
             </plugin>
@@ -85,12 +83,12 @@
             </plugin>
         </plugins>
         <pluginManagement>
-        <plugins>
+            <plugins>
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <version>${test-spring-boot-version}</version>
-                </plugin>
+            </plugin>
         </plugins>
         </pluginManagement>
     </build>
