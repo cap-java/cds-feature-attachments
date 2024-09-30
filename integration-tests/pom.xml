@@ -18,7 +18,6 @@
     <properties>
         <!-- DEPENDENCIES VERSION -->
         <spring.boot.version>3.2.5</spring.boot.version>
-        <cds.install-node.downloadUrl>https://nodejs.org/dist/</cds.install-node.downloadUrl>
     </properties>
 
     <modules>
