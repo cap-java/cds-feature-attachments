@@ -25,7 +25,7 @@
 
     <properties>
         <!-- DEPENDENCIES VERSION -->
-        <test-spring-boot-version>3.2.5</test-spring-boot-version>
+        <spring.boot.version>3.2.5</spring.boot.version>
         <cds.install-cdsdk.version>7.7.0</cds.install-cdsdk.version>
         <cds.install-node.downloadUrl>https://nodejs.org/dist/</cds.install-node.downloadUrl>
     </properties>
@@ -41,7 +41,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${test-spring-boot-version}</version>
+                <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -87,7 +87,7 @@
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${test-spring-boot-version}</version>
+                    <version>${spring.boot.version}</version>
             </plugin>
         </plugins>
         </pluginManagement>
