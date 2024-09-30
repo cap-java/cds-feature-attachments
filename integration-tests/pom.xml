@@ -9,14 +9,6 @@
         <version>${revision}</version>
     </parent>
 
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
     <groupId>com.sap.cds.integration-tests</groupId>
     <artifactId>cds-feature-attachments-integration-tests-parent</artifactId>
     <packaging>pom</packaging>
