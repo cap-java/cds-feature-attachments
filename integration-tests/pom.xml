@@ -9,17 +9,8 @@
         <version>${revision}</version>
     </parent>
 
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
     <groupId>com.sap.cds.integration-tests</groupId>
     <artifactId>cds-feature-attachments-integration-tests-parent</artifactId>
-    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>integration tests parent</name>
@@ -27,8 +18,6 @@
     <properties>
         <!-- DEPENDENCIES VERSION -->
         <spring.boot.version>3.2.5</spring.boot.version>
-        <cds.install-cdsdk.version>7.7.0</cds.install-cdsdk.version>
-        <cds.install-node.downloadUrl>https://nodejs.org/dist/</cds.install-node.downloadUrl>
     </properties>
 
     <modules>
@@ -42,7 +31,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${test-spring-boot-version}</version>
+                <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -61,12 +50,8 @@
         <plugins>
             <!-- JAVA VERSION -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
                 <configuration>
-                    <release>${java.version}</release>
-                    <encoding>UTF-8</encoding>
                     <skip>${skipDuringDeploy}</skip>
                 </configuration>
             </plugin>
@@ -75,21 +60,27 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring.boot.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.1.3</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
             </plugin>
-
         </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring.boot.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 </project>
