@@ -137,7 +137,6 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.8.6.4</version>
                 <configuration>
                     <effort>Max</effort>
                     <xmlOutput>true</xmlOutput>
@@ -276,6 +275,11 @@
                     <groupId>org.pitest</groupId>
                     <artifactId>pitest-maven</artifactId>
                     <version>1.17.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>4.8.6.4</version>
                 </plugin>
                 <plugin>
                     <groupId>com.sap.cds</groupId>
