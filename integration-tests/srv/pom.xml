@@ -9,14 +9,6 @@
         <version>${revision}</version>
     </parent>
 
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
     <artifactId>cds-feature-attachments-integration-tests-srv</artifactId>
     <packaging>jar</packaging>
 
@@ -80,9 +72,7 @@
         <plugins>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.3.2</version>
                 <configuration>
                     <filesets>
                         <fileset>
@@ -121,7 +111,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring.boot.version}</version>
                 <configuration>
                     <skip>${skipDuringDeploy}</skip>
                 </configuration>
@@ -142,7 +131,6 @@
             <plugin>
                 <groupId>com.sap.cds</groupId>
                 <artifactId>cds-maven-plugin</artifactId>
-                <version>${cds.services.version}</version>
                 <configuration>
                     <skip>${skipDuringDeploy}</skip>
                 </configuration>
