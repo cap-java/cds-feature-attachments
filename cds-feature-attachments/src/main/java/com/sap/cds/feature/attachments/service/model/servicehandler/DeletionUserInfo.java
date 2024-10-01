@@ -7,6 +7,9 @@ import java.util.Set;
 import com.sap.cds.CdsData;
 import com.sap.cds.Struct;
 
+/**
+	* The {@link DeletionUserInfo} is used to store the user information of the user which triggers the deletion of an attachment.
+	*/
 public interface DeletionUserInfo extends CdsData {
 
 	String ID = "id";
@@ -19,6 +22,10 @@ public interface DeletionUserInfo extends CdsData {
 	String ROLES = "roles";
 	String ATTRIBUTES = "attributes";
 	String ADDITIONAL_ATTRIBUTED = "additionalAttributes";
+
+	static DeletionUserInfo create() {
+		return Struct.create(DeletionUserInfo.class);
+	}
 
 	String getId();
 
@@ -59,9 +66,5 @@ public interface DeletionUserInfo extends CdsData {
 	Map<String, Object> getAdditionalAttributes();
 
 	void setAdditionalAttributes(Map<String, Object> additionalAttributed);
-
-	static DeletionUserInfo create() {
-		return Struct.create(DeletionUserInfo.class);
-	}
 
 }
