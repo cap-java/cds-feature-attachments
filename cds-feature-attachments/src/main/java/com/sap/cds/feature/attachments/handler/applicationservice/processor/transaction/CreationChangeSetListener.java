@@ -1,11 +1,12 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
- **************************************************************************/
+	* (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+	**************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction;
 
 import java.util.function.Consumer;
 
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.services.changeset.ChangeSetListener;
 import com.sap.cds.services.request.RequestContext;
 import com.sap.cds.services.runtime.CdsRuntime;
@@ -32,7 +33,8 @@ public class CreationChangeSetListener implements ChangeSetListener {
 	public void afterClose(boolean completed) {
 		if (!completed) {
 			cdsRuntime.requestContext().run(
-					(Consumer<RequestContext>) requestContext -> outboxedAttachmentService.markAttachmentAsDeleted(contentId));
+					(Consumer<RequestContext>) requestContext -> outboxedAttachmentService.markAttachmentAsDeleted(
+							new MarkAsDeletedInput(contentId, requestContext.getUserInfo())));
 		}
 	}
 

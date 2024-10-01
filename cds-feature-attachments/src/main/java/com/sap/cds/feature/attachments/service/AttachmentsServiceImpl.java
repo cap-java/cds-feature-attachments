@@ -13,6 +13,7 @@ import org.slf4j.Marker;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
+import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
@@ -67,11 +68,12 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 	}
 
 	@Override
-	public void markAttachmentAsDeleted(String contentId) {
-		logger.info(attachmentServiceMarker, "Marking attachment as deleted for document id {}", contentId);
+	public void markAttachmentAsDeleted(MarkAsDeletedInput input) {
+		logger.info(attachmentServiceMarker, "Marking attachment as deleted for document id {}", input.contentId());
 
 		var deleteContext = AttachmentMarkAsDeletedEventContext.create();
-		deleteContext.setContentId(contentId);
+		deleteContext.setContentId(input.contentId());
+		deleteContext.setDeletionUserInfo(input.userInfo());
 
 		emit(deleteContext);
 	}

@@ -6,6 +6,7 @@ package com.sap.cds.feature.attachments.service.model.servicehandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.EventName;
+import com.sap.cds.services.request.UserInfo;
 
 /**
 	* The {@link AttachmentMarkAsDeletedEventContext} is used to mark an attachment as deleted.
@@ -34,5 +35,17 @@ public interface AttachmentMarkAsDeletedEventContext extends EventContext {
 		* @param contentId The content id of the attachment to be deleted
 		*/
 	void setContentId(String contentId);
+
+	/**
+		* @return The user information of the user which triggers the deletion of the attachment or {@code null} if no user information was specified
+		*/
+	UserInfo getDeletionUserInfo();
+
+	/**
+		* Sets the user information for the attachment to be deleted
+		*
+		* @param deletionUserInfo The user information of the user which triggers the deletion of the attachment
+		*/
+	void setDeletionUserInfo(UserInfo deletionUserInfo);
 
 }

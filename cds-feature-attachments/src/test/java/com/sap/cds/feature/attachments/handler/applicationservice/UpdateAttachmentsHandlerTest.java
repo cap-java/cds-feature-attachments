@@ -28,6 +28,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Update;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
@@ -41,6 +42,7 @@ import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 
 class UpdateAttachmentsHandlerTest {
@@ -58,6 +60,7 @@ class UpdateAttachmentsHandlerTest {
 	private ArgumentCaptor<CdsData> cdsDataArgumentCaptor;
 	private ArgumentCaptor<CqnSelect> selectCaptor;
 	private ThreadDataStorageReader storageReader;
+	private UserInfo userInfo;
 
 	@BeforeAll
 	static void classSetup() {
@@ -77,6 +80,7 @@ class UpdateAttachmentsHandlerTest {
 		cdsDataArgumentCaptor = ArgumentCaptor.forClass(CdsData.class);
 		selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
 		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		userInfo = mock(UserInfo.class);
 	}
 
 	@Test
@@ -396,12 +400,16 @@ class UpdateAttachmentsHandlerTest {
 		existingRoot.setAttachments(List.of(attachment));
 		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
 				List.of(existingRoot));
+		when(updateContext.getUserInfo()).thenReturn(userInfo);
 
 		cut.processBefore(updateContext, List.of(root));
 
 		verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
 		verifyNoInteractions(eventFactory);
-		verify(attachmentService).markAttachmentAsDeleted(attachment.getContentId());
+		var deletionInputCaptor = ArgumentCaptor.forClass(MarkAsDeletedInput.class);
+		verify(attachmentService).markAttachmentAsDeleted(deletionInputCaptor.capture());
+		assertThat(deletionInputCaptor.getValue().contentId()).isEqualTo(attachment.getContentId());
+		assertThat(deletionInputCaptor.getValue().userInfo()).isEqualTo(userInfo);
 	}
 
 	@Test
