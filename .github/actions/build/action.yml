@@ -30,9 +30,9 @@ runs:
         maven-version: ${{ inputs.maven-version }}
 
     - name: Perform Piper Maven build
-      uses: SAP/project-piper-action@master
+      uses: SAP/project-piper-action@main
       with:
-        command: mavenBuild
+        step-name: mavenBuild
 
     - name: Run Mutation Testing
       if: ${{ inputs.mutation-testing == 'true' }}
