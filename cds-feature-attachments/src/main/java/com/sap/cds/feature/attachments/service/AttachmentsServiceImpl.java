@@ -1,6 +1,6 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
- **************************************************************************/
+	* (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+	**************************************************************************/
 package com.sap.cds.feature.attachments.service;
 
 import java.io.InputStream;
@@ -18,8 +18,10 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.DeletionUserInfo;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.ServiceDelegator;
+import com.sap.cds.services.request.UserInfo;
 
 /**
 	* Implementation of the {@link AttachmentService} interface.
@@ -50,7 +52,8 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 
 	@Override
 	public AttachmentModificationResult createAttachment(CreateAttachmentInput input) {
-		logger.info(attachmentServiceMarker, "Creating attachment for entity '{}'", input.attachmentEntity().getQualifiedName());
+		logger.info(attachmentServiceMarker, "Creating attachment for entity '{}'",
+				input.attachmentEntity().getQualifiedName());
 
 		var createContext = AttachmentCreateEventContext.create();
 		createContext.setAttachmentIds(input.attachmentIds());
@@ -73,7 +76,7 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 
 		var deleteContext = AttachmentMarkAsDeletedEventContext.create();
 		deleteContext.setContentId(input.contentId());
-		deleteContext.setDeletionUserInfo(input.userInfo());
+		deleteContext.setDeletionUserInfo(fillDeletionUserInfo(input.userInfo()));
 
 		emit(deleteContext);
 	}
@@ -85,6 +88,22 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 		restoreContext.setRestoreTimestamp(restoreTimestamp);
 
 		emit(restoreContext);
+	}
+
+	private DeletionUserInfo fillDeletionUserInfo(UserInfo userInfo) {
+		var deletionUserInfo = DeletionUserInfo.create();
+		deletionUserInfo.setId(userInfo.getId());
+		deletionUserInfo.setName(userInfo.getName());
+		deletionUserInfo.setTenant(userInfo.getTenant());
+		deletionUserInfo.setIsSystemUser(userInfo.isSystemUser());
+		deletionUserInfo.setIsInternalUser(userInfo.isInternalUser());
+		deletionUserInfo.setIsAuthenticated(userInfo.isAuthenticated());
+		deletionUserInfo.setIsPrivileged(userInfo.isPrivileged());
+		deletionUserInfo.setRoles(userInfo.getRoles());
+		deletionUserInfo.setAttributes(userInfo.getAttributes());
+		deletionUserInfo.setAdditionalAttributes(userInfo.getAdditionalAttributes());
+
+		return deletionUserInfo;
 	}
 
 }

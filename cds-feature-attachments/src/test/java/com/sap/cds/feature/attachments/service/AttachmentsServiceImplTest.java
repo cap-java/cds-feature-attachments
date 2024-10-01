@@ -5,7 +5,9 @@ import static org.mockito.Mockito.*;
 
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,7 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRe
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.handler.Handler;
 import com.sap.cds.services.impl.ServiceSPI;
+import com.sap.cds.services.request.ModifiableUserInfo;
 import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 
@@ -121,13 +124,13 @@ class AttachmentsServiceImplTest {
 			return null;
 		}).when(handler).process(any());
 		serviceSpi.on(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED, "", handler);
-		var userInfo = mock(UserInfo.class);
+		var userInfo = mockUserInfo();
 
 		cut.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
 
 		var deleteEventContext = contextReference.get();
 		assertThat(deleteEventContext.getContentId()).isEqualTo(contentId);
-		assertThat(deleteEventContext.getDeletionUserInfo()).isEqualTo(userInfo);
+		validateUerInfo(deleteEventContext, userInfo);
 	}
 
 	@Test
@@ -147,6 +150,33 @@ class AttachmentsServiceImplTest {
 
 		var deleteEventContext = contextReference.get();
 		assertThat(deleteEventContext.getRestoreTimestamp()).isEqualTo(timestamp);
+	}
+
+	private ModifiableUserInfo mockUserInfo() {
+		var userInfo = UserInfo.create();
+		userInfo.setId("some id");
+		userInfo.setName("some name");
+		userInfo.setTenant("some tenant");
+		userInfo.setIsSystemUser(true);
+		userInfo.setIsInternalUser(true);
+		userInfo.setIsAuthenticated(true);
+		userInfo.setRoles(Set.of("role 1"));
+		userInfo.setAttributes(Map.of("attr 1", List.of("value 1")));
+		userInfo.setAdditionalAttributes(Map.of("attr 1", List.of("value 1")));
+		return userInfo;
+	}
+
+	private void validateUerInfo(AttachmentMarkAsDeletedEventContext deleteEventContext, ModifiableUserInfo userInfo) {
+		var deletionUserInfo = deleteEventContext.getDeletionUserInfo();
+		assertThat(deletionUserInfo.getId()).isEqualTo(userInfo.getId());
+		assertThat(deletionUserInfo.getName()).isEqualTo(userInfo.getName());
+		assertThat(deletionUserInfo.getTenant()).isEqualTo(userInfo.getTenant());
+		assertThat(deletionUserInfo.getIsSystemUser()).isEqualTo(userInfo.isSystemUser());
+		assertThat(deletionUserInfo.getIsInternalUser()).isEqualTo(userInfo.isInternalUser());
+		assertThat(deletionUserInfo.getIsAuthenticated()).isEqualTo(userInfo.isAuthenticated());
+		assertThat(deletionUserInfo.getRoles()).isEqualTo(userInfo.getRoles());
+		assertThat(deletionUserInfo.getAttributes()).isEqualTo(userInfo.getAttributes());
+		assertThat(deletionUserInfo.getAdditionalAttributes()).isEqualTo(userInfo.getAdditionalAttributes());
 	}
 
 }
