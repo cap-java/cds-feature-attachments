@@ -41,10 +41,10 @@ public interface AttachmentMarkAsDeletedEventContext extends EventContext {
 	DeletionUserInfo getDeletionUserInfo();
 
 	/**
-		* Sets the user information for the attachment to be deleted
-		*
-		* @param deletionUserInfo The user information of the user which triggers the deletion of the attachment
-		*/
+	 * Sets the user information for the attachment to be deleted
+	 *
+	 * @param deletionUserInfo The user information of the user which triggers the deletion of the attachment
+	 */
 	void setDeletionUserInfo(DeletionUserInfo deletionUserInfo);
 
 }
