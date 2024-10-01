@@ -34,10 +34,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 public class DefaultAttachmentsServiceHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(DefaultAttachmentsServiceHandler.class);
-	private static final Marker create_marker = LoggingMarker.ATTACHMENT_SERVICE_CREATE_HANDLER.getMarker();
-	private static final Marker delete_marker = LoggingMarker.ATTACHMENT_SERVICE_DELETE_HANDLER.getMarker();
-	private static final Marker restore_marker = LoggingMarker.ATTACHMENT_SERVICE_RESTORE_HANDLER.getMarker();
-	private static final Marker read_marker = LoggingMarker.ATTACHMENT_SERVICE_READ_HANDLER.getMarker();
+	private static final Marker attachmentServiceMarker = LoggingMarker.ATTACHMENT_SERVICE.getMarker();
 
 	private final EndTransactionMalwareScanProvider endTransactionMalwareScanProvider;
 
@@ -48,7 +45,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_CREATE_ATTACHMENT)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void createAttachment(AttachmentCreateEventContext context) {
-		logger.info(create_marker, "Default Attachment Service handler called for creating attachment for entity name: {}",
+		logger.info(attachmentServiceMarker, "Default Attachment Service handler called for creating attachment for entity '{}'",
 				context.getAttachmentEntity().getQualifiedName());
 		var contentId = (String) context.getAttachmentIds().get(Attachments.ID);
 		context.getData().setStatus(StatusCode.SCANNING);
@@ -62,7 +59,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
-		logger.info(delete_marker, "marking attachment as deleted with document id: {}", context.getContentId());
+		logger.info(attachmentServiceMarker, "Default Attachment Service handler called for marking attachment as deleted with document id {}", context.getContentId());
 
 		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
@@ -71,7 +68,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_RESTORE_ATTACHMENT)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void restoreAttachment(AttachmentRestoreEventContext context) {
-		logger.info(restore_marker, "Default Attachment Service handler called for restoring attachment for timestamp: {}",
+		logger.info(attachmentServiceMarker, "Default Attachment Service handler called for restoring attachment for timestamp {}",
 				context.getRestoreTimestamp());
 
 		//nothing to do as data are stored in the database and handled by the database
@@ -81,7 +78,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On(event = AttachmentService.EVENT_READ_ATTACHMENT)
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void readAttachment(AttachmentReadEventContext context) {
-		logger.info(read_marker, "Default Attachment Service handler called for reading attachment with document id: {}",
+		logger.debug(attachmentServiceMarker, "Default Attachment Service handler called for reading attachment with document id {}",
 				context.getContentId());
 
 		//nothing to do as data are stored in the database and handled by the database
