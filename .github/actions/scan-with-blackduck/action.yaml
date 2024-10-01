@@ -47,7 +47,7 @@ runs:
       shell: bash
 
     - name: BlackDuck Scan
-      uses: SAP/project-piper-action@master
+      uses: SAP/project-piper-action@main
       with:
         command: detectExecuteScan
         flags: \
