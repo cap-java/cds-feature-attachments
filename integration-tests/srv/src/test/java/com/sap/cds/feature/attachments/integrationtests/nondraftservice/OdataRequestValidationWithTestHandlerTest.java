@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
@@ -41,12 +42,8 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 		verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_CREATE_ATTACHMENT);
 		var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 		assertThat(deleteEvents).hasSize(2);
-		assertThat(deleteEvents.stream().anyMatch(
-				event -> ((AttachmentMarkAsDeletedEventContext) event.context()).getContentId()
-						.equals(itemAttachmentEntityAfterChange.getContentId()))).isTrue();
-		assertThat(deleteEvents.stream().anyMatch(
-				event -> ((AttachmentMarkAsDeletedEventContext) event.context()).getContentId()
-						.equals(itemAttachmentAfterChange.getContentId()))).isTrue();
+		assertThat(deleteEvents.stream().anyMatch(verifyContentIdAndUserInfo(itemAttachmentEntityAfterChange.getContentId()))).isTrue();
+		assertThat(deleteEvents.stream().anyMatch(verifyContentIdAndUserInfo(itemAttachmentAfterChange.getContentId()))).isTrue();
 	}
 
 	@Override
@@ -145,6 +142,12 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 	@Override
 	protected void verifyEventContextEmptyForEvent(String... events) {
 		Arrays.stream(events).forEach(event -> assertThat(serviceHandler.getEventContextForEvent(event)).isEmpty());
+	}
+
+	private Predicate<EventContextHolder> verifyContentIdAndUserInfo(String itemAttachmentEntityAfterChange) {
+		return event -> ((AttachmentMarkAsDeletedEventContext) event.context()).getContentId().equals(
+				itemAttachmentEntityAfterChange) && ((AttachmentMarkAsDeletedEventContext) event.context()).getDeletionUserInfo()
+				.getName().equals("anonymous");
 	}
 
 	private void verifyCreateEventsContainsContentId(String contentId, List<EventContextHolder> createEvents) {

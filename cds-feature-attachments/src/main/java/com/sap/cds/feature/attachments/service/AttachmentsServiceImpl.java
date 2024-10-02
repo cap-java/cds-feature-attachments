@@ -13,12 +13,15 @@ import org.slf4j.Marker;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
+import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
+import com.sap.cds.feature.attachments.service.model.servicehandler.DeletionUserInfo;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.ServiceDelegator;
+import com.sap.cds.services.request.UserInfo;
 
 /**
 	* Implementation of the {@link AttachmentService} interface.
@@ -49,7 +52,8 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 
 	@Override
 	public AttachmentModificationResult createAttachment(CreateAttachmentInput input) {
-		logger.info(attachmentServiceMarker, "Creating attachment for entity '{}'", input.attachmentEntity().getQualifiedName());
+		logger.info(attachmentServiceMarker, "Creating attachment for entity '{}'",
+				input.attachmentEntity().getQualifiedName());
 
 		var createContext = AttachmentCreateEventContext.create();
 		createContext.setAttachmentIds(input.attachmentIds());
@@ -67,11 +71,12 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 	}
 
 	@Override
-	public void markAttachmentAsDeleted(String contentId) {
-		logger.info(attachmentServiceMarker, "Marking attachment as deleted for document id {}", contentId);
+	public void markAttachmentAsDeleted(MarkAsDeletedInput input) {
+		logger.info(attachmentServiceMarker, "Marking attachment as deleted for document id {}", input.contentId());
 
 		var deleteContext = AttachmentMarkAsDeletedEventContext.create();
-		deleteContext.setContentId(contentId);
+		deleteContext.setContentId(input.contentId());
+		deleteContext.setDeletionUserInfo(fillDeletionUserInfo(input.userInfo()));
 
 		emit(deleteContext);
 	}
@@ -83,6 +88,12 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 		restoreContext.setRestoreTimestamp(restoreTimestamp);
 
 		emit(restoreContext);
+	}
+
+	private DeletionUserInfo fillDeletionUserInfo(UserInfo userInfo) {
+		var deletionUserInfo = DeletionUserInfo.create();
+		deletionUserInfo.setName(userInfo.getName());
+		return deletionUserInfo;
 	}
 
 }

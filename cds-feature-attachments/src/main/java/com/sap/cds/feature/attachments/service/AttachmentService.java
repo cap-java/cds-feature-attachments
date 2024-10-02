@@ -8,6 +8,7 @@ import java.time.Instant;
 
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
+import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.services.Service;
 
 /**
@@ -69,10 +70,10 @@ public interface AttachmentService extends Service {
 		* Marks an attachment as deleted based on the given attachment id
 		* The attachment will not be deleted physically, but marked as deleted
 		*
-		* @param contentId The content id of the content which shall be deleted
+		* @param input Contains the content id of the content which shall be deleted and the user input of the user which created the deletion request
 		* @throws com.sap.cds.services.ServiceException Exception to be thrown in case of errors during accessing the attachment
 		*/
-	void markAttachmentAsDeleted(String contentId);
+	void markAttachmentAsDeleted(MarkAsDeletedInput input);
 
 	/**
 		* Restores content after the given timestamp

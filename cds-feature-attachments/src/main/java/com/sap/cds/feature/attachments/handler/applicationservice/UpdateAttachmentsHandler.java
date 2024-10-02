@@ -19,6 +19,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnUpdate;
@@ -30,6 +31,7 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.utils.OrderConstants;
 import com.sap.cds.services.utils.model.CqnUtils;
 
@@ -88,7 +90,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context);
 
 		if (!associationsAreUnchanged) {
-			deleteRemovedAttachments(attachments, data, target);
+			deleteRemovedAttachments(attachments, data, target, context.getUserInfo());
 		}
 	}
 
@@ -101,7 +103,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		return CqnUtils.toSelect(update, target);
 	}
 
-	private void deleteRemovedAttachments(List<CdsData> exitingDataList, List<CdsData> updatedDataList, CdsEntity entity) {
+	private void deleteRemovedAttachments(List<CdsData> exitingDataList, List<CdsData> updatedDataList, CdsEntity entity, UserInfo userInfo) {
 		var condensedUpdatedData = ApplicationHandlerHelper.condenseData(updatedDataList, entity);
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Validator validator = (path, element, value) -> {
@@ -109,7 +111,8 @@ public class UpdateAttachmentsHandler implements EventHandler {
 			var entryExists = condensedUpdatedData.stream().anyMatch(
 					updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
 			if (!entryExists) {
-				outboxedAttachmentService.markAttachmentAsDeleted((String) path.target().values().get(Attachments.CONTENT_ID));
+				var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+				outboxedAttachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
 			}
 		};
 		ApplicationHandlerHelper.callValidator(entity, exitingDataList, filter, validator);
