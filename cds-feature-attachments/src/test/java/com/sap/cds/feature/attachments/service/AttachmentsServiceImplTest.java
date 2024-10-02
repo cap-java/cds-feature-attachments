@@ -152,17 +152,13 @@ class AttachmentsServiceImplTest {
 
 	private ModifiableUserInfo mockUserInfo() {
 		var userInfo = UserInfo.create();
-		userInfo.setId("some id");
 		userInfo.setName("some name");
-		userInfo.setTenant("some tenant");
 		return userInfo;
 	}
 
 	private void validateUerInfo(AttachmentMarkAsDeletedEventContext deleteEventContext, ModifiableUserInfo userInfo) {
 		var deletionUserInfo = deleteEventContext.getDeletionUserInfo();
-		assertThat(deletionUserInfo.getId()).isEqualTo(userInfo.getId());
 		assertThat(deletionUserInfo.getName()).isEqualTo(userInfo.getName());
-		assertThat(deletionUserInfo.getTenant()).isEqualTo(userInfo.getTenant());
 	}
 
 }

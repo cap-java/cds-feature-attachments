@@ -92,10 +92,7 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 
 	private DeletionUserInfo fillDeletionUserInfo(UserInfo userInfo) {
 		var deletionUserInfo = DeletionUserInfo.create();
-		deletionUserInfo.setId(userInfo.getId());
 		deletionUserInfo.setName(userInfo.getName());
-		deletionUserInfo.setTenant(userInfo.getTenant());
-
 		return deletionUserInfo;
 	}
 

@@ -8,24 +8,14 @@ import com.sap.cds.Struct;
  */
 public interface DeletionUserInfo extends CdsData {
 
-	String ID = "id";
 	String NAME = "name";
-	String TENANT = "tenant";
 
 	static DeletionUserInfo create() {
 		return Struct.create(DeletionUserInfo.class);
 	}
 
-	String getId();
-
-	void setId(String id);
-
 	String getName();
 
 	void setName(String id);
-
-	String getTenant();
-
-	void setTenant(String id);
 
 }
