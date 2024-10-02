@@ -41,7 +41,7 @@ jobs:
         shell: bash
   
       - name: "Deploy snapshot"
-        if: endsWith('-SNAPSHOT', ${{ steps.get-revision.outputs.REVISION }})
+        if: ${{ endsWith(steps.get-revision.outputs.REVISION, '-SNAPSHOT') }}
         # https://maven.apache.org/plugins/maven-deploy-plugin/usage.html#the-deploy-deploy-mojo
         run: >
           mvn -B -ntp -fae
