@@ -4,8 +4,8 @@ import com.sap.cds.CdsData;
 import com.sap.cds.Struct;
 
 /**
-	* The {@link DeletionUserInfo} is used to store the user information of the user which triggers the deletion of an attachment.
-	*/
+ * The {@link DeletionUserInfo} is used to store the user information of the user which triggers the deletion of an attachment.
+ */
 public interface DeletionUserInfo extends CdsData {
 
 	String ID = "id";
