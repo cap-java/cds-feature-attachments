@@ -30,14 +30,24 @@ jobs:
         with:
           maven-version: 3.6.3
 
+      - name: Get Revision
+        id: get-revision
+        run: |
+          echo "REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Print Revision
+        run: echo "Current revision ${{ steps.get-revision.outputs.REVISION }}"
+        shell: bash
+  
       - name: "Deploy snapshot"
+        if: endsWith('-SNAPSHOT', ${{ steps.get-revision.outputs.REVISION }})
         # https://maven.apache.org/plugins/maven-deploy-plugin/usage.html#the-deploy-deploy-mojo
         run: >
           mvn -B -ntp -fae
           -pl !integration-tests,!integration-tests/db,!integration-tests/srv
           -Dmaven.install.skip=true
           -Dmaven.test.skip=true
-          -Dmaven.compiler.showCompilationChanges
           -DdeployAtEnd=true
           deploy
         env:
