@@ -5,9 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -157,12 +155,6 @@ class AttachmentsServiceImplTest {
 		userInfo.setId("some id");
 		userInfo.setName("some name");
 		userInfo.setTenant("some tenant");
-		userInfo.setIsSystemUser(true);
-		userInfo.setIsInternalUser(true);
-		userInfo.setIsAuthenticated(true);
-		userInfo.setRoles(Set.of("role 1"));
-		userInfo.setAttributes(Map.of("attr 1", List.of("value 1")));
-		userInfo.setAdditionalAttributes(Map.of("attr 1", List.of("value 1")));
 		return userInfo;
 	}
 
@@ -171,12 +163,6 @@ class AttachmentsServiceImplTest {
 		assertThat(deletionUserInfo.getId()).isEqualTo(userInfo.getId());
 		assertThat(deletionUserInfo.getName()).isEqualTo(userInfo.getName());
 		assertThat(deletionUserInfo.getTenant()).isEqualTo(userInfo.getTenant());
-		assertThat(deletionUserInfo.getIsSystemUser()).isEqualTo(userInfo.isSystemUser());
-		assertThat(deletionUserInfo.getIsInternalUser()).isEqualTo(userInfo.isInternalUser());
-		assertThat(deletionUserInfo.getIsAuthenticated()).isEqualTo(userInfo.isAuthenticated());
-		assertThat(deletionUserInfo.getRoles()).isEqualTo(userInfo.getRoles());
-		assertThat(deletionUserInfo.getAttributes()).isEqualTo(userInfo.getAttributes());
-		assertThat(deletionUserInfo.getAdditionalAttributes()).isEqualTo(userInfo.getAdditionalAttributes());
 	}
 
 }

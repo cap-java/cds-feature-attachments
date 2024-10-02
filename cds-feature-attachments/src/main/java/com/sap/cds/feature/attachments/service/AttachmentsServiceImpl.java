@@ -95,13 +95,6 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 		deletionUserInfo.setId(userInfo.getId());
 		deletionUserInfo.setName(userInfo.getName());
 		deletionUserInfo.setTenant(userInfo.getTenant());
-		deletionUserInfo.setIsSystemUser(userInfo.isSystemUser());
-		deletionUserInfo.setIsInternalUser(userInfo.isInternalUser());
-		deletionUserInfo.setIsAuthenticated(userInfo.isAuthenticated());
-		deletionUserInfo.setIsPrivileged(userInfo.isPrivileged());
-		deletionUserInfo.setRoles(userInfo.getRoles());
-		deletionUserInfo.setAttributes(userInfo.getAttributes());
-		deletionUserInfo.setAdditionalAttributes(userInfo.getAdditionalAttributes());
 
 		return deletionUserInfo;
 	}
