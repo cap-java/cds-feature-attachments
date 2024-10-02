@@ -31,10 +31,10 @@ jobs:
           maven-version: 3.6.3
 
       - name: "Deploy snapshot"
+        # https://maven.apache.org/plugins/maven-deploy-plugin/usage.html#the-deploy-deploy-mojo
         run: >
           mvn -B -ntp -fae
           -pl !integration-tests,!integration-tests/db,!integration-tests/srv
-          -DrepositoryId=${{ env.SERVER_ID }}
           -Dmaven.install.skip=true
           -Dmaven.test.skip=true
           -Dmaven.compiler.showCompilationChanges
