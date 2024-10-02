@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
+import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
@@ -22,6 +23,8 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRe
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.handler.Handler;
 import com.sap.cds.services.impl.ServiceSPI;
+import com.sap.cds.services.request.ModifiableUserInfo;
+import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 
 class AttachmentsServiceImplTest {
@@ -119,11 +122,13 @@ class AttachmentsServiceImplTest {
 			return null;
 		}).when(handler).process(any());
 		serviceSpi.on(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED, "", handler);
+		var userInfo = mockUserInfo();
 
-		cut.markAttachmentAsDeleted(contentId);
+		cut.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
 
 		var deleteEventContext = contextReference.get();
 		assertThat(deleteEventContext.getContentId()).isEqualTo(contentId);
+		validateUerInfo(deleteEventContext, userInfo);
 	}
 
 	@Test
@@ -143,6 +148,17 @@ class AttachmentsServiceImplTest {
 
 		var deleteEventContext = contextReference.get();
 		assertThat(deleteEventContext.getRestoreTimestamp()).isEqualTo(timestamp);
+	}
+
+	private ModifiableUserInfo mockUserInfo() {
+		var userInfo = UserInfo.create();
+		userInfo.setName("some name");
+		return userInfo;
+	}
+
+	private void validateUerInfo(AttachmentMarkAsDeletedEventContext deleteEventContext, ModifiableUserInfo userInfo) {
+		var deletionUserInfo = deleteEventContext.getDeletionUserInfo();
+		assertThat(deletionUserInfo.getName()).isEqualTo(userInfo.getName());
 	}
 
 }
