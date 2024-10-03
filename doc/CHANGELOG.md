@@ -6,6 +6,28 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Version 1.0.4 - tbd
+
+### Added
+
+- Added user info to deletion context.
+
+### Changed
+
+- Updated several Maven build plugins to latest versions.
+
+### Fixed
+
+## Version 1.0.3 - 2024-09-30
+
+### Added
+
+- First public release on https://repo1.maven.org/maven2/com/sap/cds/
+
+### Changed
+
+### Fixed
+
 ## Version 1.0.2 - 2024-05-08
 
 ### Added
