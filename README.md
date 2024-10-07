@@ -61,7 +61,7 @@ The following version are the minimum versions for the usage of the plugin:
 | Component | Minimum Version |
 |-----------|-----------------|
 | CAP Java  | 2.9.1           |
-| UI5       | 1.121.0         |
+| UI5       | 1.126.0         |
 
 ## Maven Central
 
@@ -243,17 +243,18 @@ annotate service.Incidents with @(
             ID : 'Overview',
             Facets : [
                 {
-            $Type : 'UI.ReferenceFacet',
-            Label : '{i18n>GeneralInformation}',
-            ID : 'i18nGeneralInformation',
-            Target : '@UI.FieldGroup#i18nGeneralInformation',
-        },
+                    $Type : 'UI.ReferenceFacet',
+                    Label : '{i18n>GeneralInformation}',
+                    ID : 'i18nGeneralInformation',
+                    Target : '@UI.FieldGroup#i18nGeneralInformation',
+                },
                 {
                     $Type : 'UI.ReferenceFacet',
                     Label : '{i18n>Details}',
                     ID : 'i18nDetails',
                     Target : '@UI.FieldGroup#i18nDetails',
-                },],
+                }
+            ]
         },
         {
             $Type : 'UI.ReferenceFacet',
