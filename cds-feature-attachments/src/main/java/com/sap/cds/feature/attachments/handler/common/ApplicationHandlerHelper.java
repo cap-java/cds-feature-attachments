@@ -24,17 +24,23 @@ import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.Drafts;
 import com.sap.cds.services.utils.model.CdsModelUtils;
 
+/**
+ * The class {@link ApplicationHandlerHelper} provides helper methods for the attachment application handlers.
+ */
 public final class ApplicationHandlerHelper {
 
-	private ApplicationHandlerHelper() {
-	}
-
+	/**
+	 * Checks if the data contains a content field.
+	 * 
+	 * @param entity The {@link CdsEntity} to check
+	 * @param data   The data to check
+	 * @return <code>true</code> if the data contains a content field, <code>false</code> otherwise
+	 */
 	public static boolean noContentFieldInData(CdsEntity entity, List<CdsData> data) {
 		var isIncluded = new AtomicBoolean();
-		var filter = buildFilterForMediaTypeEntity();
 		Validator validator = (path, element, value) -> isIncluded.set(true);
 
-		callValidator(entity, data, filter, validator);
+		callValidator(entity, data, buildFilterForMediaTypeEntity(), validator);
 		return !isIncluded.get();
 	}
 
@@ -46,11 +52,24 @@ public final class ApplicationHandlerHelper {
 		CdsDataProcessor.create().addValidator(filter, validator).process(data, entity);
 	}
 
+	/**
+	 * Builds the filter for media type entities. The filter checks if the entity is a media entity and if the element
+	 * has the annotation "Core.MediaType".
+	 * 
+	 * @return The {@link Filter} for media type entities
+	 */
 	public static Filter buildFilterForMediaTypeEntity() {
 		return (path, element, type) -> isMediaEntity(path.target().type()) && hasElementAnnotation(element,
 				ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
 	}
 
+	/**
+	 * Checks if the entity is a media entity. A media entity is an entity that is annotated with the annotation
+	 * "_is_media_data".
+	 * 
+	 * @param baseEntity The entity to check
+	 * @return <code>true</code> if the entity is a media entity, <code>false</code> otherwise
+	 */
 	public static boolean isMediaEntity(CdsStructuredType baseEntity) {
 		return baseEntity.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false);
 	}
@@ -93,6 +112,10 @@ public final class ApplicationHandlerHelper {
 
 	private static boolean isDraftActiveEntityField(String key) {
 		return key.equals(Drafts.IS_ACTIVE_ENTITY);
+	}
+
+	private ApplicationHandlerHelper() {
+		// avoid instantiation
 	}
 
 }

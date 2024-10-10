@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -20,7 +21,6 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream.InputStreamSupplier;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
@@ -43,14 +43,14 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 /**
-	* The class {@link ReadAttachmentsHandler} is an event handler that is
-	* responsible for reading attachments for entities.
-	* In the before read event, it modifies the CQN to include the content ID and status.
-	* In the after read event, it adds a proxy for the stream of the attachments service to the data.
-	* Only if the data are read the proxy forwards the request to the attachment service to read the attachment.
-	* This is needed to have a filled stream in the data to enable the OData V4 adapter to enrich the data that
-	* a link to the content can be shown on the UI.
-	*/
+ * The class {@link ReadAttachmentsHandler} is an event handler that is
+ * responsible for reading attachments for entities.
+ * In the before read event, it modifies the CQN to include the content ID and status.
+ * In the after read event, it adds a proxy for the stream of the attachments service to the data.
+ * Only if the data are read the proxy forwards the request to the attachment service to read the attachment.
+ * This is needed to have a filled stream in the data to enable the OData V4 adapter to enrich the data that
+ * a link to the content can be shown on the UI.
+ */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class ReadAttachmentsHandler implements EventHandler {
 
@@ -100,7 +100,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 			var contentExists = Objects.nonNull(content);
 			if (Objects.nonNull(contentId) || contentExists) {
 				verifyStatus(path, status, contentId, contentExists);
-				InputStreamSupplier supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(
+				Supplier<InputStream> supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(
 						contentId);
 				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
 			} else {
