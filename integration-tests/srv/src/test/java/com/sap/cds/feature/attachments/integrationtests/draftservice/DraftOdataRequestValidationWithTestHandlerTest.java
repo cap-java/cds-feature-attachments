@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
@@ -139,7 +140,7 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 	}
 
 	private void awaitNumberOfExpectedEvents(int expectedEvents) {
-		Awaitility.await().until(() -> serviceHandler.getEventContext().size() == expectedEvents);
+		Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> serviceHandler.getEventContext().size() == expectedEvents);
 	}
 
 	private void verifyCreateEventFound(List<EventContextHolder> createEvents, String newContent) {

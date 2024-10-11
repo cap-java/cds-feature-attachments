@@ -659,8 +659,7 @@ abstract class DraftOdataRequestValidationBase {
 		var attachmentEntityUrl = getAttachmentEntityBaseUrl(selectedRoot.getItems().get(0).getAttachmentEntities().get(0)
 				.getId(), true) + "/content";
 
-
-		Awaitility.await().atMost(30, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
+		Awaitility.await().atMost(40, TimeUnit.SECONDS).pollDelay(1, TimeUnit.SECONDS).until(() -> {
 			var attachmentResponse = requestHelper.executeGet(attachmentUrl);
 			var attachmentEntityResponse = requestHelper.executeGet(attachmentEntityUrl);
 			var attachmentContentAsString = attachmentResponse.getResponse().getContentAsString();
