@@ -175,6 +175,9 @@
                         <exclude>
                             **/${excluded.generation.package}**
                         </exclude>
+                        <exclude>
+                            **/*Test**
+                        </exclude>
                     </excludes>
                     <skip>${skipDuringDeploy}</skip>
                 </configuration>

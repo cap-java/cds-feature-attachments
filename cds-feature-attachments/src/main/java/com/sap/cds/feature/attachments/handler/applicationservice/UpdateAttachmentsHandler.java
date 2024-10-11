@@ -26,7 +26,6 @@ import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
-import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -61,13 +60,13 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		this.storageReader = storageReader;
 	}
 
-	@Before(event = CqnService.EVENT_UPDATE)
+	@Before
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
 	public void processBeforeForDraft(CdsUpdateEventContext context, List<CdsData> data) {
 		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
 	}
 
-	@Before(event = CqnService.EVENT_UPDATE)
+	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
 		doUpdate(context, data);
@@ -95,6 +94,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	}
 
 	private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
+		// TODO: check if this should be replaced with entity.assocations().noneMatch(...)
 		return entity.compositions().noneMatch(
 				association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
 	}

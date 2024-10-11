@@ -16,7 +16,6 @@ import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
-import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -42,7 +41,7 @@ public class DeleteAttachmentsHandler implements EventHandler {
 		this.deleteContentAttachmentEvent = deleteContentAttachmentEvent;
 	}
 
-	@Before(event = CqnService.EVENT_DELETE)
+	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsDeleteEventContext context) {
 		logger.debug(marker, "Processing before delete event for entity {}", context.getTarget().getName());

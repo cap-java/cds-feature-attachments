@@ -53,7 +53,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 		this.activeEntityModifierProvider = activeEntityModifierProvider;
 	}
 
-	@Before(event = DraftService.EVENT_DRAFT_CANCEL)
+	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBeforeDraftCancel(DraftCancelEventContext context) {
 		if (isWhereEmpty(context)) {

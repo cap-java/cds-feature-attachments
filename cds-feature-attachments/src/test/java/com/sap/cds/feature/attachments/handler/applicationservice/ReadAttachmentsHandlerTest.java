@@ -1,8 +1,15 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,7 +48,6 @@ import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.Modifier;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
-import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -290,7 +296,7 @@ class ReadAttachmentsHandlerTest {
 		var readAfterAnnotation = method.getAnnotation(After.class);
 		var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-		assertThat(readAfterAnnotation.event()).containsOnly(CqnService.EVENT_READ);
+		assertThat(readAfterAnnotation.event()).isEmpty();
 		assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
 	}
 
@@ -301,7 +307,7 @@ class ReadAttachmentsHandlerTest {
 		var readBeforeAnnotation = method.getAnnotation(Before.class);
 		var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-		assertThat(readBeforeAnnotation.event()).containsOnly(CqnService.EVENT_READ);
+		assertThat(readBeforeAnnotation.event()).isEmpty();
 		assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
 	}
 
