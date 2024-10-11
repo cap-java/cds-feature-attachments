@@ -1,7 +1,12 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 import java.util.List;
@@ -14,15 +19,14 @@ import org.junit.jupiter.api.Test;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots_;
-import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
-import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -119,7 +123,7 @@ class DeleteAttachmentsHandlerTest {
 		var deleteBeforeAnnotation = method.getAnnotation(Before.class);
 		var deleteHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-		assertThat(deleteBeforeAnnotation.event()).containsOnly(CqnService.EVENT_DELETE);
+		assertThat(deleteBeforeAnnotation.event()).isEmpty();
 		assertThat(deleteHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 

@@ -35,7 +35,6 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
-import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.Before;
@@ -70,7 +69,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 		this.asyncMalwareScanExecutor = asyncMalwareScanExecutor;
 	}
 
-	@Before(event = CqnService.EVENT_READ)
+	@Before
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processBefore(CdsReadEventContext context) {
 		logger.debug(marker, "Processing before read event for entity {}", context.getTarget().getName());
@@ -83,7 +82,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 		}
 	}
 
-	@After(event = CqnService.EVENT_READ)
+	@After
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processAfter(CdsReadEventContext context, List<CdsData> data) {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {

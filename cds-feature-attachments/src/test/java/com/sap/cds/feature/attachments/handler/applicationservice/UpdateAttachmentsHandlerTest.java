@@ -1,8 +1,15 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 import java.time.Instant;
@@ -22,7 +29,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -38,7 +45,6 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
-import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -59,7 +65,7 @@ class UpdateAttachmentsHandlerTest {
 	private ModifyAttachmentEvent event;
 	private ArgumentCaptor<CdsData> cdsDataArgumentCaptor;
 	private ArgumentCaptor<CqnSelect> selectCaptor;
-	private ThreadDataStorageReader storageReader;
+	private ThreadLocalDataStorage storageReader;
 	private UserInfo userInfo;
 
 	@BeforeAll
@@ -72,7 +78,7 @@ class UpdateAttachmentsHandlerTest {
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
 		attachmentsReader = mock(AttachmentsReader.class);
 		attachmentService = mock(AttachmentService.class);
-		storageReader = mock(ThreadDataStorageReader.class);
+		storageReader = mock(ThreadLocalDataStorage.class);
 		cut = new UpdateAttachmentsHandler(eventFactory, attachmentsReader, attachmentService, storageReader);
 
 		event = mock(ModifyAttachmentEvent.class);
@@ -427,7 +433,7 @@ class UpdateAttachmentsHandlerTest {
 		var updateBeforeAnnotation = method.getAnnotation(Before.class);
 		var updateHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-		assertThat(updateBeforeAnnotation.event()).containsOnly(CqnService.EVENT_UPDATE);
+		assertThat(updateBeforeAnnotation.event()).isEmpty();
 		assertThat(updateHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 

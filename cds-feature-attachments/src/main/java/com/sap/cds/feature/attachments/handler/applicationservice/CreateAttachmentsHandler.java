@@ -23,7 +23,6 @@ import com.sap.cds.reflect.CdsBaseType;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
-import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -50,13 +49,13 @@ public class CreateAttachmentsHandler implements EventHandler {
 		this.storageReader = storageReader;
 	}
 
-	@Before(event = CqnService.EVENT_CREATE)
+	@Before
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
 	public void processBeforeForDraft(CdsCreateEventContext context, List<CdsData> data) {
 		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
 	}
 
-	@Before(event = CqnService.EVENT_CREATE)
+	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsCreateEventContext context, List<CdsData> data) {
 		doCreate(context, data);
