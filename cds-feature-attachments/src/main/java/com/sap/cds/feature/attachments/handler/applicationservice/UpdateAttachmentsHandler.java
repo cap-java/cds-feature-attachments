@@ -94,6 +94,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	}
 
 	private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
+		// TODO: check if this should be replaced with entity.assocations().noneMatch(...)
 		return entity.compositions().noneMatch(
 				association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
 	}

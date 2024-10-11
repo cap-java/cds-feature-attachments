@@ -118,7 +118,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 			associationNames.add(associationName);
 		}
 
-		Map<String, CdsEntity> annotatedEntitiesMap = entity.elements().filter(element -> element.getType().isAssociation())
+		Map<String, CdsEntity> annotatedEntitiesMap = entity.associations()
 				.collect(Collectors.toMap(CdsElementDefinition::getName,
 						element -> element.getType().as(CdsAssociationType.class).getTarget()));
 
