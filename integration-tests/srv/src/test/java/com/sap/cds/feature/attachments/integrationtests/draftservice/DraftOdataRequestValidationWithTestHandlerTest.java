@@ -140,7 +140,7 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 	}
 
 	private void awaitNumberOfExpectedEvents(int expectedEvents) {
-		Awaitility.await().atMost(40, TimeUnit.SECONDS).until(() -> serviceHandler.getEventContext().size() == expectedEvents);
+		Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> serviceHandler.getEventContext().size() == expectedEvents);
 	}
 
 	private void verifyCreateEventFound(List<EventContextHolder> createEvents, String newContent) {
