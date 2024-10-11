@@ -1,7 +1,12 @@
 package com.sap.cds.feature.attachments.handler.draftservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 import java.util.List;
@@ -28,7 +33,7 @@ import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.CqnLock.Mode;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.services.EventContext;
+import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -41,7 +46,7 @@ class DraftPatchAttachmentsHandlerTest {
 	private static CdsRuntime runtime;
 
 	private DraftPatchAttachmentsHandler cut;
-	private EventContext eventContext;
+	private DraftPatchEventContext eventContext;
 	private PersistenceService persistence;
 	private ModifyAttachmentEventFactory eventFactory;
 	private ModifyAttachmentEvent event;
@@ -57,7 +62,7 @@ class DraftPatchAttachmentsHandlerTest {
 		persistence = mock(PersistenceService.class);
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
 		cut = new DraftPatchAttachmentsHandler(persistence, eventFactory);
-		eventContext = mock(EventContext.class);
+		eventContext = mock(DraftPatchEventContext.class);
 		event = mock(ModifyAttachmentEvent.class);
 		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
 		selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
@@ -148,14 +153,13 @@ class DraftPatchAttachmentsHandlerTest {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBeforeDraftPatch", EventContext.class, List.class);
+		var method = cut.getClass().getMethod("processBeforeDraftPatch", DraftPatchEventContext.class, List.class);
 		var beforeAnnotation = method.getAnnotation(Before.class);
 		var handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-		assertThat(beforeAnnotation.event()).containsOnly(DraftService.EVENT_DRAFT_PATCH);
+		assertThat(beforeAnnotation.event()).isEmpty();
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
-
 
 	private RootTable buildRooWithAttachment(Attachments attachments) {
 		var items = Items.create();
