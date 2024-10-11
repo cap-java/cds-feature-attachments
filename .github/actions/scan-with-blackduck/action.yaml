@@ -8,10 +8,30 @@ inputs:
   github_token:
     description: "The token to use for GitHub authentication"
     required: true
+  java-version:
+    description: "The version of Java to use"
+    default: '17'
+    required: false
+  maven-version:
+    description: "The Maven version the build shall run with."
+    default: '3.6.3'
+    required: false
 
 runs:
   using: composite
   steps:
+    - name: Set up JDK ${{ inputs.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: sapmachine
+        cache: maven
+
+    - name: Setup Maven ${{ inputs.maven-version }}
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version: ${{ inputs.maven-version }}
+
     - name: Print Action Start
       run: echo ">>>>> Starting Scan with BlackDuck Action; Not printing inputs as they might contain sensitive information."
       shell: bash
@@ -27,7 +47,7 @@ runs:
       shell: bash
 
     - name: BlackDuck Scan
-      uses: SAP/project-piper-action@master
+      uses: SAP/project-piper-action@main
       with:
         command: detectExecuteScan
         flags: \

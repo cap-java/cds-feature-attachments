@@ -1,7 +1,9 @@
 package com.sap.cds.feature.attachments.service.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import java.util.Objects;
@@ -102,7 +104,7 @@ class AttachmentsServiceImplHandlerTest {
 		var onAnnotation = createMethod.getAnnotation(On.class);
 		var handlerOrderAnnotation = createMethod.getAnnotation(HandlerOrder.class);
 
-		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_CREATE_ATTACHMENT);
+		assertThat(onAnnotation.event()).isEmpty();
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
 	}
 
@@ -112,7 +114,7 @@ class AttachmentsServiceImplHandlerTest {
 		var onAnnotation = updateMethod.getAnnotation(On.class);
 		var handlerOrderAnnotation = updateMethod.getAnnotation(HandlerOrder.class);
 
-		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_RESTORE_ATTACHMENT);
+		assertThat(onAnnotation.event()).isEmpty();
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
 	}
 
@@ -122,7 +124,7 @@ class AttachmentsServiceImplHandlerTest {
 		var onAnnotation = deleteMethod.getAnnotation(On.class);
 		var handlerOrderAnnotation = deleteMethod.getAnnotation(HandlerOrder.class);
 
-		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
+		assertThat(onAnnotation.event()).isEmpty();
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
 	}
 
@@ -132,7 +134,7 @@ class AttachmentsServiceImplHandlerTest {
 		var onAnnotation = readMethod.getAnnotation(On.class);
 		var handlerOrderAnnotation = readMethod.getAnnotation(HandlerOrder.class);
 
-		assertThat(onAnnotation.event()).containsOnly(AttachmentService.EVENT_READ_ATTACHMENT);
+		assertThat(onAnnotation.event()).isEmpty();
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
 	}
 

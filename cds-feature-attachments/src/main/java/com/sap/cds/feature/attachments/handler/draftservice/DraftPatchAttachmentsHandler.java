@@ -18,7 +18,7 @@ import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.Select;
-import com.sap.cds.services.EventContext;
+import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
@@ -48,9 +48,9 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 		this.eventFactory = eventFactory;
 	}
 
-	@Before(event = DraftService.EVENT_DRAFT_PATCH)
+	@Before
 	@HandlerOrder(HandlerOrder.LATE)
-	public void processBeforeDraftPatch(EventContext context, List<CdsData> data) {
+	public void processBeforeDraftPatch(DraftPatchEventContext context, List<CdsData> data) {
 		logger.debug(marker, "Processing before draft patch event for entity {}", context.getTarget().getName());
 
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();

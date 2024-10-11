@@ -7,7 +7,6 @@ env:
 
 on:
   release:
-    branches: [ "main" ]
     types: [ "prereleased" ]
 
 jobs:

@@ -12,6 +12,7 @@ import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.draft.DraftService;
@@ -39,7 +40,8 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 		if (ApplicationHandlerHelper.doesContentIdExistsBefore(existingData) && !DraftService.EVENT_DRAFT_PATCH.equals(
 				eventContext.getEvent())) {
 			logger.debug("Calling attachment service with mark as delete event for entity {}", qualifiedName);
-			outboxedAttachmentService.markAttachmentAsDeleted((String) existingData.get(Attachments.CONTENT_ID));
+			var contentId = (String) existingData.get(Attachments.CONTENT_ID);
+			outboxedAttachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, eventContext.getUserInfo()));
 		} else {
 			logger.debug(
 					"Do NOT call attachment service with mark as delete event for entity {} as no document id found in existing data and event is DRAFT_PATCH event",

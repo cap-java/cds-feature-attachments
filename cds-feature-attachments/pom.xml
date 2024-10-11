@@ -8,19 +8,6 @@
         <version>${revision}</version>
     </parent>
 
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <organization>
-        <name>SAP SE</name>
-        <url>https://www.sap.com</url>
-    </organization>
-
     <artifactId>cds-feature-attachments</artifactId>
     <packaging>jar</packaging>
 
@@ -29,11 +16,8 @@
 
     <properties>
         <packageName>com.sap.cds.feature.attachments</packageName>
-        <cds.install-cdsdk.version>7.6.0</cds.install-cdsdk.version>
         <generation-package>com.sap.cds.feature.attachments.generated</generation-package>
         <test-generation-folder>src/test/gen</test-generation-folder>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -61,25 +45,19 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.8.5</version>
+            <version>4.8.6</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.6</version>
+            <version>1.5.9</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>4.2.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <version>4.2.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -91,7 +69,6 @@
             <plugin>
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
-                <version>1.16.1</version>
                 <configuration>
                     <targetClasses>
                         <param>com.sap.cds.feature.attachments.handler.*</param>
@@ -124,9 +101,7 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <version>3.3.2</version>
                 <configuration>
                     <filesets>
                         <fileset>
@@ -184,7 +159,6 @@
             <plugin>
                 <groupId>com.sap.cds</groupId>
                 <artifactId>cds-maven-plugin</artifactId>
-                <version>${cds.services.version}</version>
                 <configuration>
                     <skip>${skipDuringDeploy}</skip>
                 </configuration>
@@ -280,7 +254,6 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
                 <configuration>
                     <excludes>
                         <exclude>
@@ -349,28 +322,7 @@
             </plugin>
 
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.5.0</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${project.basedir}/${generation-folder}/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.6.3</version>
                 <configuration>
                     <skip>${skipDuringDeploy}</skip>
                     <failOnError>true</failOnError>
@@ -389,9 +341,7 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <goals>
@@ -403,18 +353,5 @@
 
         </plugins>
     </build>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>artifactory</id>
-            <name>Artifactory_DMZ-snapshots</name>
-            <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
-        </snapshotRepository>
-        <repository>
-            <id>artifactory</id>
-            <name>MavenCentral</name>
-            <url>https://oss.sonatype.org/content/repositories/releases</url>
-        </repository>
-    </distributionManagement>
 
 </project>

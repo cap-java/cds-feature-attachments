@@ -2,7 +2,12 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -32,7 +37,6 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
-import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -274,7 +278,7 @@ class CreateAttachmentsHandlerTest {
 		var createBeforeAnnotation = method.getAnnotation(Before.class);
 		var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-		assertThat(createBeforeAnnotation.event()).containsOnly(CqnService.EVENT_CREATE);
+		assertThat(createBeforeAnnotation.event()).isEmpty();
 		assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 
