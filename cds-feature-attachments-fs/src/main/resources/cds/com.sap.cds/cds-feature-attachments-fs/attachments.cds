@@ -16,4 +16,5 @@ annotate Attachments with @UI: {LineItem: [
 ]} {
     // temporary workaround for issue with etag and Fiori Elements
     modifiedAt @(odata.etag: null);
+    size @(title: '{i18n>attachment_size}');
 }
