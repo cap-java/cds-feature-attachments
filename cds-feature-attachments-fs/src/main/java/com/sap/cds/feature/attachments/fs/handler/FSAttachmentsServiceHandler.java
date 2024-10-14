@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +25,7 @@ import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 /**
- * The class {@link FSAttachmentsServiceHandler} is an event handler that is called when an attachment is created,
- * marked as deleted, restored or read.
- * <p>
- * As the documents and content is stored in the database with this handler the handler sets the isInternalStored flag
- * to true in the create-context. Without this flag the content would be deleted in the database.
+ * This class is an event handler that is called when an attachment is created, marked as deleted, restored or read.
  */
 @ServiceName(value = "*", type = AttachmentService.class)
 public class FSAttachmentsServiceHandler implements EventHandler {
@@ -39,10 +34,11 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 
 	private final Path rootFolder;
 
-	public FSAttachmentsServiceHandler() throws IOException {
-		Path tmpPath = FileUtils.getTempDirectory().toPath();
-		this.rootFolder = tmpPath.resolve(this.getClass().getCanonicalName());
-		Files.createDirectories(this.rootFolder);
+	public FSAttachmentsServiceHandler(Path rootFolder) throws IOException {
+		this.rootFolder = rootFolder;
+		if (!Files.exists(this.rootFolder)) {
+			Files.createDirectories(this.rootFolder);
+		}
 	}
 
 	@On
@@ -59,9 +55,6 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 			Files.createDirectories(contentPath.getParent());
 			Files.copy(input, contentPath);
 
-			Path metaDataPath = getMetaDataPath(contentId);
-			Files.writeString(metaDataPath, data.toJson());
-
 			context.setIsInternalStored(false);
 			context.setContentId(contentId);
 			context.setCompleted();
@@ -73,9 +66,7 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 		logger.info("Marking attachment as deleted with document id: {}", context.getContentId());
 
 		Path contenPath = getContentPath(context.getContentId());
-		Path metaDataPath = getMetaDataPath(context.getContentId());
 		Files.deleteIfExists(contenPath);
-		Files.deleteIfExists(metaDataPath);
 		Files.deleteIfExists(contenPath.getParent());
 		context.setCompleted();
 	}
@@ -105,10 +96,6 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 
 	private Path getContentPath(String contentId) {
 		return this.rootFolder.resolve("%s/content.bin".formatted(contentId));
-	}
-
-	private Path getMetaDataPath(String contentId) {
-		return this.rootFolder.resolve("%s/metadata.json".formatted(contentId));
 	}
 
 }
