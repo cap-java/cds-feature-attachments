@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,6 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
-import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -34,10 +34,16 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 
 	private final Path rootFolder;
 
+	private final Path deletedFolder;
+
 	public FSAttachmentsServiceHandler(Path rootFolder) throws IOException {
 		this.rootFolder = rootFolder;
+		this.deletedFolder = rootFolder.resolve("deleted");
 		if (!Files.exists(this.rootFolder)) {
 			Files.createDirectories(this.rootFolder);
+		}
+		if (!Files.exists(this.deletedFolder)) {
+			Files.createDirectories(this.deletedFolder);
 		}
 	}
 
@@ -66,8 +72,8 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 		logger.info("Marking attachment as deleted with document id: {}", context.getContentId());
 
 		Path contenPath = getContentPath(context.getContentId());
-		Files.deleteIfExists(contenPath);
-		Files.deleteIfExists(contenPath.getParent());
+		Path parent = contenPath.getParent();
+		FileUtils.moveDirectory(parent.toFile(), this.deletedFolder.resolve(parent.getFileName()).toFile());
 		context.setCompleted();
 	}
 
@@ -81,17 +87,13 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 	}
 
 	@On
-	public void readAttachment(AttachmentReadEventContext context) {
+	public void readAttachment(AttachmentReadEventContext context) throws IOException {
 		logger.info("FS Attachment Service handler called for reading attachment with document id: {}",
 				context.getContentId());
 
-		try {
-			InputStream fileInputStream = Files.newInputStream(getContentPath(context.getContentId()));
-			context.getData().setContent(fileInputStream);
-			context.setCompleted();
-		} catch (IOException e) {
-			throw new ServiceException(e);
-		}
+		InputStream fileInputStream = Files.newInputStream(getContentPath(context.getContentId()));
+		context.getData().setContent(fileInputStream);
+		context.setCompleted();
 	}
 
 	private Path getContentPath(String contentId) {
