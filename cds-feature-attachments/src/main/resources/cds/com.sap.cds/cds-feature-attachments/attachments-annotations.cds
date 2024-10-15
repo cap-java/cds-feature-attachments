@@ -34,6 +34,7 @@ annotate Attachments with @UI: {
         {Value: note}
     ]
 } {
+    content    @Core.ContentDisposition: { Filename: fileName, Type: 'inline' };
     note       @(title: '{i18n>attachment_note}');
     modifiedAt @(odata.etag);
 }
