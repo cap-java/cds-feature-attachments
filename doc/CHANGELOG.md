@@ -14,9 +14,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- Updated several Maven build plugins to latest versions.
+- Updated several dependencies and Maven build plugins to latest versions.
 
 ### Fixed
+
+- Fixed a problem with deleting attachments on BTP with HANA.
 
 ## Version 1.0.3 - 2024-09-30
 
