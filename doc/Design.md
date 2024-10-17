@@ -34,7 +34,7 @@
     * [Draft Keys](#draft-keys)
     * [Sibling Entity (Draft or Active)](#sibling-entity-draft-or-active)
     * [Readonly Fields](#readonly-fields)
-    * [Lock](#optimistic-concurrency-control)
+    * [Optimistic Concurrency Control](#optimistic-concurrency-control)
   * [Service](#service)
     * [Service Interface](#service-interface)
     * [Multi-Tenancy](#multi-tenancy)
