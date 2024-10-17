@@ -11,7 +11,6 @@ import org.slf4j.Marker;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
-import com.sap.cds.feature.attachments.configuration.LockTimeoutConstant;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
@@ -36,7 +35,6 @@ import com.sap.cds.services.persistence.PersistenceService;
 @ServiceName(value = "*", type = DraftService.class)
 public class DraftPatchAttachmentsHandler implements EventHandler {
 
-	private static final int LOCK_TIMEOUT_IN_SECONDS = LockTimeoutConstant.LOCK_TIMEOUT_IN_SECONDS;
 	private static final Logger logger = LoggerFactory.getLogger(DraftPatchAttachmentsHandler.class);
 	private static final Marker marker = LoggingMarker.DRAFT_PATCH_HANDLER.getMarker();
 
@@ -58,7 +56,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 			var draftElement = path.target().entity().getQualifiedName().endsWith(
 					DraftConstants.DRAFT_TABLE_POSTFIX) ? path.target().entity() : path.target().entity().getTargetOf(
 					DraftConstants.SIBLING_ENTITY);
-			var select = Select.from(draftElement.getQualifiedName()).matching(path.target().keys()).lock(LOCK_TIMEOUT_IN_SECONDS);
+			var select = Select.from(draftElement.getQualifiedName()).matching(path.target().keys());
 			var result = persistence.run(select);
 
 			return ModifyApplicationHandlerHelper.handleAttachmentForEntity(result.listOf(CdsData.class), eventFactory, context,
