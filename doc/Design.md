@@ -34,7 +34,7 @@
     * [Draft Keys](#draft-keys)
     * [Sibling Entity (Draft or Active)](#sibling-entity-draft-or-active)
     * [Readonly Fields](#readonly-fields)
-    * [Lock](#lock)
+    * [Optimistic Concurrency Control](#optimistic-concurrency-control)
   * [Service](#service)
     * [Service Interface](#service-interface)
     * [Multi-Tenancy](#multi-tenancy)
@@ -472,21 +472,12 @@ Because of this the method is annotated with:
 
 During the processing of the attachment entity the readonly fields are restored from the field `DRAFT_READONLY_CONTEXT`.
 
-#### Lock
+#### Optimistic Concurrency Control
 
 To avoid the possibility that two update requests update the content field of the same attachment entity we use 
-pessimistic locking for these entities.
-In the Update handler for the `ApplicationService` we call the `DefaultAttachmentsReader` which selects the data.
-These select-statements have the following addition to request a lock for selected entities.
-The select will wait 10 seconds to get a pessimistic lock for the selected entities.
+[optimistic concurrency control](https://cap.cloud.sap/docs/java/working-with-cql/query-execution#optimistic) with an Etag for these entities.
 
-```java
-.lock(10)
-```
-
-The same lock is set in the handler for updating the `DraftService` in class `DraftPatchAttachmentsHandler`.
-
-The lock is only needed for updates as for new attachment entities there is no possibility to overwrite existing data
+The concurrency control is only needed for updates as for new attachment entities there is no possibility to overwrite existing data
 or data from another transaction as always new entities are created.
 
 ### Service

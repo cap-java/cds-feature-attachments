@@ -1,7 +1,10 @@
 package com.sap.cds.feature.attachments.handler.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +28,6 @@ import com.sap.cds.feature.attachments.helper.LogObserver;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Delete;
 import com.sap.cds.ql.cqn.CqnDelete;
-import com.sap.cds.ql.cqn.CqnLock.Mode;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
@@ -78,10 +80,7 @@ class DefaultAttachmentsReaderTest {
 
 		verify(persistenceService).run(selectArgumentCaptor.capture());
 		var usedSelect = selectArgumentCaptor.getValue();
-		assertThat(usedSelect.getLock()).isPresent();
-		assertThat(usedSelect.getLock().get().mode()).isEqualTo(Mode.EXCLUSIVE);
-		assertThat(usedSelect.getLock().get().timeout()).isPresent();
-		assertThat(usedSelect.getLock().get().timeout()).contains(10);
+		assertThat(usedSelect.getLock()).isEmpty();
 		assertThat(usedSelect).hasToString(
 				getExpectedSelectStatementWithWhereAndFilter((String) keys.get("ID")));
 		assertThat(resultData).isEqualTo(data);
@@ -222,7 +221,7 @@ class DefaultAttachmentsReaderTest {
 				           "columns":[{"ref":["items"],
 				            "expand":[{"ref":["attachments"],
 				            "expand":["*"]}]}],
-				           "where":[{"ref":["$key"]},"=",{"val":"test"}],"forUpdate":{"wait":10}}}
+				           "where":[{"ref":["$key"]},"=",{"val":"test"}]}}
 				""".formatted(id);
 		return removeSpaceInString(select);
 	}
@@ -234,7 +233,7 @@ class DefaultAttachmentsReaderTest {
 				             "and",{"ref":["ID"]},"=",{"val":"%s"}]}]},
 				           "columns":[{"ref":["attachments"],
 				           "expand":["*"]}],
-				           "where":[{"ref":["$key"]},"=",{"val":"test"}],"forUpdate":{"wait":10}}}
+				           "where":[{"ref":["$key"]},"=",{"val":"test"}]}}
 				""".formatted(id);
 		return removeSpaceInString(select);
 	}
@@ -245,7 +244,7 @@ class DefaultAttachmentsReaderTest {
 				           "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
 				             "and",{"ref":["ID"]},"=",{"val":"%s"}]}]},
 				           "columns":["*"],
-				           "where":[{"ref":["$key"]},"=",{"val":"test"}],"forUpdate":{"wait":10}}}
+				           "where":[{"ref":["$key"]},"=",{"val":"test"}]}}
 				""".formatted(id);
 		return removeSpaceInString(select);
 	}
@@ -257,7 +256,7 @@ class DefaultAttachmentsReaderTest {
 				             "and",{"ref":["ID"]},"=",{"val":"%s"}]}]},
 				           "columns":[{"ref":["items"],
 				           "expand":[{"ref":["attachments"],
-				           "expand":["*"]}]}],"forUpdate":{"wait":10}}}
+				           "expand":["*"]}]}]}}
 				""".formatted(id);
 		return removeSpaceInString(select);
 	}
@@ -268,7 +267,7 @@ class DefaultAttachmentsReaderTest {
 				          "columns":[{"ref":["items"],
 				          "expand":[{"ref":["attachments"],
 				          "expand":["*"]}]}],
-				          "where":[{"ref":["$key"]},"=",{"val":"test"}],"forUpdate":{"wait":10}}}
+				          "where":[{"ref":["$key"]},"=",{"val":"test"}]}}
 				""";
 		return removeSpaceInString(select);
 	}
@@ -278,7 +277,7 @@ class DefaultAttachmentsReaderTest {
 				{"SELECT":{"from":{"ref":["unit.test.TestService.RootTable"]},
 				          "columns":[{"ref":["items"],
 				          "expand":[{"ref":["attachments"],
-				          "expand":["*"]}]}],"forUpdate":{"wait":10}}}
+				          "expand":["*"]}]}]}}
 				""";
 		return removeSpaceInString(select);
 	}
