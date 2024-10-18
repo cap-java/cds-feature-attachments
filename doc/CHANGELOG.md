@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - [Fixed a problem](https://github.com/cap-java/cds-feature-attachments/pull/232) with missing fileName when creating an attachment.
 - [Fixed a problem](https://github.com/cap-java/cds-feature-attachments/pull/239) with deleting attachments on BTP with HANA.
+- [Fixed a problem](https://github.com/cap-java/cds-feature-attachments/pull/246) with Malware scanning in multitenancy applications.
 
 ## Version 1.0.3 - 2024-09-30
 
