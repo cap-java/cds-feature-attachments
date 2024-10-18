@@ -5,10 +5,10 @@ using {
 
 annotate MediaData with @UI.MediaResource: {Stream: content} {
     content   @(
-        title                      : '{i18n>attachment_content}',
-        Core.MediaType             : mimeType,
-        ContentDisposition.Filename: fileName,
-        ContentDisposition.Type    : 'inline'
+        title                           : '{i18n>attachment_content}',
+        Core.MediaType                  : mimeType,
+        Core.ContentDisposition.Filename: fileName,
+        Core.ContentDisposition.Type    : 'inline'
     );
     mimeType  @(
         title: '{i18n>attachment_mimeType}',

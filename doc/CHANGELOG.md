@@ -14,9 +14,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- Updated several Maven build plugins to latest versions.
+- Updated several dependencies and Maven build plugins to latest versions.
 
 ### Fixed
+
+- [Fixed a problem](https://github.com/cap-java/cds-feature-attachments/pull/232) with missing fileName when creating an attachment.
+- [Fixed a problem](https://github.com/cap-java/cds-feature-attachments/pull/239) with deleting attachments on BTP with HANA.
 
 ## Version 1.0.3 - 2024-09-30
 

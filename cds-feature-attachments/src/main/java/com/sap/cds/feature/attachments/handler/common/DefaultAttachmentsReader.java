@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.configuration.LockTimeoutConstant;
 import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Expand;
@@ -31,7 +30,6 @@ import com.sap.cds.services.persistence.PersistenceService;
 public class DefaultAttachmentsReader implements AttachmentsReader {
 
 	private static final Logger logger = LoggerFactory.getLogger(DefaultAttachmentsReader.class);
-	private static final int LOCK_TIMEOUT_IN_SECONDS = LockTimeoutConstant.LOCK_TIMEOUT_IN_SECONDS;
 
 	private final AssociationCascader cascader;
 	private final PersistenceService persistence;
@@ -48,8 +46,8 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 		var nodePath = cascader.findEntityPath(model, entity);
 		var expandList = buildExpandList(nodePath);
 
-		Select<?> select = !expandList.isEmpty() ? Select.from(statement.ref()).columns(expandList).lock(LOCK_TIMEOUT_IN_SECONDS) : Select.from(
-				statement.ref()).columns(StructuredType::_all).lock(LOCK_TIMEOUT_IN_SECONDS);
+		Select<?> select = !expandList.isEmpty() ? Select.from(statement.ref()).columns(expandList)
+				: Select.from(statement.ref()).columns(StructuredType::_all);
 		statement.where().ifPresent(select::where);
 
 		var result = persistence.run(select);
