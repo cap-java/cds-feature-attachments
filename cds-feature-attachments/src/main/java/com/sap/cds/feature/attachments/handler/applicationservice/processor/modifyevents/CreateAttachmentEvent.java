@@ -53,7 +53,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		var fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, existingData);
 
 		var createEventInput = new CreateAttachmentInput(keys, path.target().entity(), fileNameOptional.orElse(null),
-				mimeTypeOptional.orElse(null), (InputStream) value);
+				mimeTypeOptional.orElse(null), (InputStream) value, Boolean.TRUE.equals(eventContext.get("draft")));
 		var result = attachmentService.createAttachment(createEventInput);
 		var createListener = listenerProvider.provideListener(result.contentId(), eventContext.getCdsRuntime());
 		var context = eventContext.getChangeSetContext();
