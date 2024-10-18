@@ -14,7 +14,7 @@ import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -35,12 +35,12 @@ import com.sap.cds.services.utils.OrderConstants;
 import com.sap.cds.services.utils.model.CqnUtils;
 
 /**
-	* The class {@link UpdateAttachmentsHandler} is an event handler that
-	* is called before an update event is executed.
-	* As updates in draft entities or non-draft entities can also be
-	* create-events, update-events or delete-events the handler needs to distinguish between
-	* the different cases.
-	*/
+ * he class {@link UpdateAttachmentsHandler} is an event handler that
+ * is called before an update event is executed.
+ * As updates in draft entities or non-draft entities can also be
+ * create-events, update-events or delete-events the handler needs to distinguish between
+ * the different cases.
+ */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class UpdateAttachmentsHandler implements EventHandler {
 
@@ -50,10 +50,10 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	private final ModifyAttachmentEventFactory eventFactory;
 	private final AttachmentsReader attachmentsReader;
 	private final AttachmentService outboxedAttachmentService;
-	private final ThreadDataStorageReader storageReader;
+	private final ThreadLocalDataStorage storageReader;
 
 	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader,
-			AttachmentService outboxedAttachmentService, ThreadDataStorageReader storageReader) {
+			AttachmentService outboxedAttachmentService, ThreadLocalDataStorage storageReader) {
 		this.eventFactory = eventFactory;
 		this.attachmentsReader = attachmentsReader;
 		this.outboxedAttachmentService = outboxedAttachmentService;

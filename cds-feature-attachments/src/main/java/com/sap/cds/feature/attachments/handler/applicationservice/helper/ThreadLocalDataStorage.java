@@ -3,7 +3,7 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.helper;
 
-public class ThreadLocalDataStorage implements ThreadDataStorageSetter, ThreadDataStorageReader {
+public class ThreadLocalDataStorage implements ThreadDataStorageSetter {
 
 	private static final ThreadLocal<Boolean> threadLocal = new ThreadLocal<>();
 
@@ -17,7 +17,6 @@ public class ThreadLocalDataStorage implements ThreadDataStorageSetter, ThreadDa
 		}
 	}
 
-	@Override
 	public boolean get() {
 		return Boolean.TRUE.equals(threadLocal.get());
 	}

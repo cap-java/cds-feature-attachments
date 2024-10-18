@@ -29,7 +29,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -65,7 +65,7 @@ class UpdateAttachmentsHandlerTest {
 	private ModifyAttachmentEvent event;
 	private ArgumentCaptor<CdsData> cdsDataArgumentCaptor;
 	private ArgumentCaptor<CqnSelect> selectCaptor;
-	private ThreadDataStorageReader storageReader;
+	private ThreadLocalDataStorage storageReader;
 	private UserInfo userInfo;
 
 	@BeforeAll
@@ -78,7 +78,7 @@ class UpdateAttachmentsHandlerTest {
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
 		attachmentsReader = mock(AttachmentsReader.class);
 		attachmentService = mock(AttachmentService.class);
-		storageReader = mock(ThreadDataStorageReader.class);
+		storageReader = mock(ThreadLocalDataStorage.class);
 		cut = new UpdateAttachmentsHandler(eventFactory, attachmentsReader, attachmentService, storageReader);
 
 		event = mock(ModifyAttachmentEvent.class);
