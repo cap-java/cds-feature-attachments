@@ -1,23 +1,26 @@
 package com.sap.cds.feature.attachments.handler.draftservice;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageSetter;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.services.draft.DraftSaveEventContext;
 
 class DraftActiveAttachmentsHandlerTest {
 
 	private DraftActiveAttachmentsHandler cut;
-	private ThreadDataStorageSetter threadLocalSetter;
+	private ThreadLocalDataStorage threadLocalSetter;
 	private ArgumentCaptor<Runnable> runnableCaptor;
 
 	@BeforeEach
 	void setup() {
-		threadLocalSetter = mock(ThreadDataStorageSetter.class);
+		threadLocalSetter = mock(ThreadLocalDataStorage.class);
 		cut = new DraftActiveAttachmentsHandler(threadLocalSetter);
 
 		runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
