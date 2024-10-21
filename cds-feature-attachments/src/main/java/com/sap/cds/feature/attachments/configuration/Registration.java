@@ -56,9 +56,9 @@ import com.sap.cds.services.utils.environment.ServiceBindingUtils;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 /**
-	* The class {@link Registration} is a configuration class that registers the
-	* services and event handlers for the attachments feature.
-	*/
+ * The class {@link Registration} is a configuration class that registers the
+ * services and event handlers for the attachments feature.
+ */
 public class Registration implements CdsRuntimeConfiguration {
 
 	private static final Logger logger = LoggerFactory.getLogger(Registration.class);
@@ -89,7 +89,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		var malwareStatusMapper = new DefaultMalwareClientStatusMapper();
 		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService,
 				new DefaultMalwareScanClient(clientProviderFactory), malwareStatusMapper, Objects.nonNull(binding));
-		var malwareScanEndTransactionListener = createEndTransactionMalwareScanListener(malwareScanner);
+		var malwareScanEndTransactionListener = createEndTransactionMalwareScanListener(malwareScanner, configurer);
 		configurer.eventHandler(new DefaultAttachmentsServiceHandler(malwareScanEndTransactionListener));
 
 		var deleteContentEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
@@ -100,8 +100,8 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(buildCreateHandler(eventFactory, storage));
 		configurer.eventHandler(buildUpdateHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 		configurer.eventHandler(buildDeleteHandler(attachmentsReader, deleteContentEvent));
-		configurer.eventHandler(
-				buildReadHandler(attachmentService, new EndTransactionMalwareScanRunner(null, null, malwareScanner)));
+		configurer.eventHandler(buildReadHandler(attachmentService,
+				new EndTransactionMalwareScanRunner(null, null, malwareScanner, configurer.getCdsRuntime())));
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
 		configurer.eventHandler(
 				new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent, ActiveEntityModifier::new));
@@ -109,9 +109,9 @@ public class Registration implements CdsRuntimeConfiguration {
 	}
 
 	private EndTransactionMalwareScanProvider createEndTransactionMalwareScanListener(
-			DefaultAttachmentMalwareScanner malwareScanner) {
+			DefaultAttachmentMalwareScanner malwareScanner, CdsRuntimeConfigurer configurer) {
 		return (attachmentEntity, contentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, contentId,
-				malwareScanner);
+				malwareScanner, configurer.getCdsRuntime());
 	}
 
 	private AttachmentService buildAttachmentService() {
@@ -119,7 +119,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		return new AttachmentsServiceImpl();
 	}
 
-	protected DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
+	private DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
 			ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
 		var creationChangeSetListener = createCreationFailedListener(outboxedAttachmentService);
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
