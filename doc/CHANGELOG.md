@@ -10,7 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- Added user info to deletion context.
+- [Added user info](https://github.com/cap-java/cds-feature-attachments/pull/217) to deletion context.
+- [Added HTML CSS](https://github.com/cap-java/cds-feature-attachments/pull/248) annotations to specify column width.
 
 ### Changed
 
