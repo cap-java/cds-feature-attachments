@@ -6,11 +6,20 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.0.4 - tbd
+## Version 1.0.5 - tbd.
 
 ### Added
 
-- Added user info to deletion context.
+### Changed
+
+### Fixed
+
+## Version 1.0.4 - 2024-10-22
+
+### Added
+
+- [Added user info](https://github.com/cap-java/cds-feature-attachments/pull/217) to deletion context.
+- [Added HTML CSS](https://github.com/cap-java/cds-feature-attachments/pull/248) annotations to specify column width.
 
 ### Changed
 
