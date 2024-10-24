@@ -36,7 +36,6 @@ import com.sap.cds.feature.attachments.service.AttachmentsServiceImpl;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanRunner;
-import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
 import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
@@ -45,7 +44,6 @@ import com.sap.cds.feature.attachments.service.malware.constants.MalwareScanCons
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
-import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
@@ -95,9 +93,10 @@ public class Registration implements CdsRuntimeConfiguration {
 
 		// register event handlers on the AttachmentsService
 		configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
-		configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
+		configurer.eventHandler(
+				new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 		configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
-		configurer.eventHandler(buildReadHandler(attachmentService,
+		configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(),
 				new EndTransactionMalwareScanRunner(null, null, malwareScanner, configurer.getCdsRuntime())));
 
 		// register event handlers on the DraftService
@@ -126,12 +125,6 @@ public class Registration implements CdsRuntimeConfiguration {
 
 	private ListenerProvider createCreationFailedListener(AttachmentService outboxedAttachmentService) {
 		return (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId, cdsRuntime, outboxedAttachmentService);
-	}
-
-	protected EventHandler buildReadHandler(AttachmentService attachmentService,
-			AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
-		return new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(),
-				asyncMalwareScanExecutor);
 	}
 
 }
