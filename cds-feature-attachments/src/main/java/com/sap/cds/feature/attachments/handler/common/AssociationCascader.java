@@ -15,12 +15,10 @@ import org.slf4j.LoggerFactory;
 
 import com.sap.cds.feature.attachments.handler.common.model.AssociationIdentifier;
 import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
-import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
-import com.sap.cds.reflect.CdsStructuredType;
 
 /**
  * The class {@link AssociationCascader} is used to find entity paths
@@ -53,7 +51,7 @@ public class AssociationCascader {
 		currentList.set(new LinkedList<>());
 
 		var baseEntity = ApplicationHandlerHelper.getBaseEntity(model, entity);
-		var isMediaEntity = isMediaEntity(baseEntity);
+		var isMediaEntity = ApplicationHandlerHelper.isMediaEntity(baseEntity);
 		if (isMediaEntity) {
 			var identifier = new AssociationIdentifier(associationName, entity.getQualifiedName());
 			firstList.addLast(identifier);
@@ -94,10 +92,6 @@ public class AssociationCascader {
 		}
 
 		return internalResultList;
-	}
-
-	private boolean isMediaEntity(CdsStructuredType baseEntity) {
-		return baseEntity.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false);
 	}
 
 }

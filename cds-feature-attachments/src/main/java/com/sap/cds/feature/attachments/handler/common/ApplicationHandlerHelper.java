@@ -74,7 +74,7 @@ public final class ApplicationHandlerHelper {
 		return baseEntity.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false);
 	}
 
-	public static boolean hasElementAnnotation(CdsElement element, String annotation) {
+	static boolean hasElementAnnotation(CdsElement element, String annotation) {
 		return element.findAnnotation(annotation).isPresent();
 	}
 
