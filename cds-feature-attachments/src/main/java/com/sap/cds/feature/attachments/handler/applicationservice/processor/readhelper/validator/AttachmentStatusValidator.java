@@ -3,8 +3,17 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator;
 
-public interface AttachmentStatusValidator {
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception.AttachmentStatusException;
 
-	void verifyStatus(String attachmentStatus);
+public class AttachmentStatusValidator {
+
+	public void verifyStatus(String attachmentStatus) {
+		if (!StatusCode.CLEAN.equals(attachmentStatus)) {
+			throw StatusCode.UNSCANNED.equals(attachmentStatus) || StatusCode.SCANNING.equals(attachmentStatus)
+					? AttachmentStatusException.getNotScannedException()
+					: AttachmentStatusException.getNotCleanException();
+		}
+	}
 
 }
