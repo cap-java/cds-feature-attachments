@@ -9,7 +9,6 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 
 import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
@@ -17,10 +16,10 @@ import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachment
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.CreateAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DoNothingAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.UpdateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.DefaultAttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.CreationChangeSetListener;
@@ -41,7 +40,6 @@ import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScan
 import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
 import com.sap.cds.feature.attachments.service.malware.client.mapper.DefaultMalwareClientStatusMapper;
 import com.sap.cds.feature.attachments.service.malware.constants.MalwareScanConstants;
-import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cds.services.outbox.OutboxService;
@@ -58,7 +56,6 @@ import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 public class Registration implements CdsRuntimeConfiguration {
 
 	private static final Logger logger = LoggerFactory.getLogger(Registration.class);
-	private static final Marker marker = LoggingMarker.ATTACHMENT_SERVICE_REGISTRATION.getMarker();
 
 	@Override
 	public void services(CdsRuntimeConfigurer configurer) {
@@ -67,7 +64,7 @@ public class Registration implements CdsRuntimeConfiguration {
 
 	@Override
 	public void eventHandlers(CdsRuntimeConfigurer configurer) {
-		logger.info(marker, "Registering event handler for attachment service");
+		logger.info("Registering event handler for attachment service");
 
 		ServiceCatalog catalog = configurer.getCdsRuntime().getServiceCatalog();
 		var persistenceService = catalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
