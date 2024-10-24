@@ -20,6 +20,7 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
+import com.sap.cds.services.EventContext;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -34,16 +35,10 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 
 	private final Path rootFolder;
 
-	private final Path deletedFolder;
-
 	public FSAttachmentsServiceHandler(Path rootFolder) throws IOException {
 		this.rootFolder = rootFolder;
-		this.deletedFolder = rootFolder.resolve("deleted");
 		if (!Files.exists(this.rootFolder)) {
 			Files.createDirectories(this.rootFolder);
-		}
-		if (!Files.exists(this.deletedFolder)) {
-			Files.createDirectories(this.deletedFolder);
 		}
 	}
 
@@ -57,7 +52,7 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 		data.setStatus(StatusCode.CLEAN);
 
 		try (InputStream input = data.getContent()) {
-			Path contentPath = getContentPath(contentId);
+			Path contentPath = getContentPath(context, contentId);
 			Files.createDirectories(contentPath.getParent());
 			Files.copy(input, contentPath);
 
@@ -71,9 +66,11 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) throws IOException {
 		logger.info("Marking attachment as deleted with document id: {}", context.getContentId());
 
-		Path contenPath = getContentPath(context.getContentId());
+		Path contenPath = getContentPath(context, context.getContentId());
 		Path parent = contenPath.getParent();
-		FileUtils.moveDirectory(parent.toFile(), this.deletedFolder.resolve(parent.getFileName()).toFile());
+		Path destPath = getDeletedFolder(context).resolve(parent.getFileName());
+
+		FileUtils.moveDirectory(parent.toFile(), destPath.toFile());
 		context.setCompleted();
 	}
 
@@ -90,14 +87,25 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 	public void readAttachment(AttachmentReadEventContext context) throws IOException {
 		logger.info("FS Attachment Service handler called for reading attachment with document id: {}",
 				context.getContentId());
-
-		InputStream fileInputStream = Files.newInputStream(getContentPath(context.getContentId()));
+		InputStream fileInputStream = Files.newInputStream(getContentPath(context, context.getContentId()));
 		context.getData().setContent(fileInputStream);
 		context.setCompleted();
 	}
 
-	private Path getContentPath(String contentId) {
-		return this.rootFolder.resolve("%s/content.bin".formatted(contentId));
+	private Path getContentPath(EventContext context, String contentId) {
+		return this.rootFolder.resolve("%s/%s/content.bin".formatted(getTenant(context), contentId));
+	}
+
+	private Path getDeletedFolder(EventContext context) {
+		return this.rootFolder.resolve("%s/deleted".formatted(getTenant(context)));
+	}
+
+	private static String getTenant(EventContext context) {
+		String tenant = context.getUserInfo().getTenant();
+		if (tenant == null) {
+			tenant = "default";
+		}
+		return tenant;
 	}
 
 }

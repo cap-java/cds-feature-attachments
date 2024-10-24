@@ -49,7 +49,7 @@ public class FSApplicationServiceHandler implements EventHandler {
 	@Before
 	@HandlerOrder(HandlerOrder.LATE - 1)
 	public void processBeforeDraftPatch(DraftPatchEventContext context, List<CdsData> data) {
-		setSize(context, data);
+//		setSize(context, data);
 	}
 
 	private void setSize(EventContext context, List<CdsData> data) {
