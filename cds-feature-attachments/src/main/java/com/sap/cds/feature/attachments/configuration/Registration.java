@@ -22,7 +22,6 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.UpdateAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.BeforeReadItemsModifier;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.DefaultAttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.CreationChangeSetListener;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.ListenerProvider;
@@ -131,7 +130,7 @@ public class Registration implements CdsRuntimeConfiguration {
 
 	protected EventHandler buildReadHandler(AttachmentService attachmentService,
 			AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
-		return new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new, new DefaultAttachmentStatusValidator(),
+		return new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(),
 				asyncMalwareScanExecutor);
 	}
 

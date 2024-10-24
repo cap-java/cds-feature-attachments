@@ -19,7 +19,7 @@ import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.ItemModifierProvider;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.BeforeReadItemsModifier;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
@@ -57,14 +57,11 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private static final Marker marker = LoggingMarker.APPLICATION_READ_HANDLER.getMarker();
 
 	private final AttachmentService attachmentService;
-	private final ItemModifierProvider provider;
 	private final AttachmentStatusValidator attachmentStatusValidator;
 	private final AsyncMalwareScanExecutor asyncMalwareScanExecutor;
 
-	public ReadAttachmentsHandler(AttachmentService attachmentService, ItemModifierProvider provider,
-			AttachmentStatusValidator attachmentStatusValidator, AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
+	public ReadAttachmentsHandler(AttachmentService attachmentService, AttachmentStatusValidator attachmentStatusValidator, AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
 		this.attachmentService = attachmentService;
-		this.provider = provider;
 		this.attachmentStatusValidator = attachmentStatusValidator;
 		this.asyncMalwareScanExecutor = asyncMalwareScanExecutor;
 	}
@@ -77,7 +74,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 		var cdsModel = context.getModel();
 		var fieldNames = getAttachmentAssociations(cdsModel, context.getTarget(), "", new ArrayList<>());
 		if (!fieldNames.isEmpty()) {
-			var resultCqn = CQL.copy(context.getCqn(), provider.getBeforeReadContentIdEnhancer(fieldNames));
+			var resultCqn = CQL.copy(context.getCqn(), new BeforeReadItemsModifier(fieldNames));
 			context.setCqn(resultCqn);
 		}
 	}
