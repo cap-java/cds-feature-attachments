@@ -7,6 +7,11 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCod
 
 public class AttachmentStatusValidator {
 
+	/**
+	 * This method validates the status of the attachment. If the status is not clean, then it throws an exception.
+	 * 
+	 * @param attachmentStatus The status of the attachment
+	 */
 	public void verifyStatus(String attachmentStatus) {
 		if (!StatusCode.CLEAN.equals(attachmentStatus)) {
 			throw StatusCode.UNSCANNED.equals(attachmentStatus) || StatusCode.SCANNING.equals(attachmentStatus)

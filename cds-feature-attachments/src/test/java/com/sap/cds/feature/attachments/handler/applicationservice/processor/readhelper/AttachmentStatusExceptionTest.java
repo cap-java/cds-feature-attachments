@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.AttachmentStatusException;
 import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
 
 class AttachmentStatusExceptionTest {
