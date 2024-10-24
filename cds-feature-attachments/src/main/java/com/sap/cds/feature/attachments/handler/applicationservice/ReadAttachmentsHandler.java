@@ -22,7 +22,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.read
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.BeforeReadItemsModifier;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.CQL;
