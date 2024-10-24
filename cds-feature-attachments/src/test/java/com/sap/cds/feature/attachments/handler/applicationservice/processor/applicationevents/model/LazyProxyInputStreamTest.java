@@ -14,9 +14,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception.AttachmentStatusException;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.AttachmentStatusException;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.AttachmentStatusValidator;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
