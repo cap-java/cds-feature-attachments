@@ -96,8 +96,10 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(
 				new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 		configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
+		var malwareScanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner,
+				configurer.getCdsRuntime());
 		configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(),
-				new EndTransactionMalwareScanRunner(null, null, malwareScanner, configurer.getCdsRuntime())));
+				malwareScanRunner));
 
 		// register event handlers on the DraftService
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
@@ -114,17 +116,13 @@ public class Registration implements CdsRuntimeConfiguration {
 
 	private DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
 			ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
-		var creationChangeSetListener = createCreationFailedListener(outboxedAttachmentService);
+		ListenerProvider creationChangeSetListener = (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId, cdsRuntime, outboxedAttachmentService);
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
 		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();
 		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent,
 				doNothingAttachmentEvent);
-	}
-
-	private ListenerProvider createCreationFailedListener(AttachmentService outboxedAttachmentService) {
-		return (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId, cdsRuntime, outboxedAttachmentService);
 	}
 
 }
