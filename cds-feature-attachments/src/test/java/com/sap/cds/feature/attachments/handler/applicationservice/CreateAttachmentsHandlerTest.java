@@ -29,7 +29,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
@@ -51,7 +51,7 @@ class CreateAttachmentsHandlerTest {
 	private ModifyAttachmentEventFactory eventFactory;
 	private CdsCreateEventContext createContext;
 	private ModifyAttachmentEvent event;
-	private ThreadDataStorageReader storageReader;
+	private ThreadLocalDataStorage storageReader;
 
 	@BeforeAll
 	static void classSetup() {
@@ -61,7 +61,7 @@ class CreateAttachmentsHandlerTest {
 	@BeforeEach
 	void setup() {
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
-		storageReader = mock(ThreadDataStorageReader.class);
+		storageReader = mock(ThreadLocalDataStorage.class);
 		cut = new CreateAttachmentsHandler(eventFactory, storageReader);
 
 		createContext = mock(CdsCreateEventContext.class);

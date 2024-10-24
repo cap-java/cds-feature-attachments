@@ -7,20 +7,18 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
-import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.reflect.CdsEntity;
@@ -35,25 +33,24 @@ import com.sap.cds.services.utils.OrderConstants;
 import com.sap.cds.services.utils.model.CqnUtils;
 
 /**
-	* The class {@link UpdateAttachmentsHandler} is an event handler that
-	* is called before an update event is executed.
-	* As updates in draft entities or non-draft entities can also be
-	* create-events, update-events or delete-events the handler needs to distinguish between
-	* the different cases.
-	*/
+ * he class {@link UpdateAttachmentsHandler} is an event handler that
+ * is called before an update event is executed.
+ * As updates in draft entities or non-draft entities can also be
+ * create-events, update-events or delete-events the handler needs to distinguish between
+ * the different cases.
+ */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class UpdateAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
-	private static final Marker marker = LoggingMarker.APPLICATION_UPDATE_HANDLER.getMarker();
 
 	private final ModifyAttachmentEventFactory eventFactory;
 	private final AttachmentsReader attachmentsReader;
 	private final AttachmentService outboxedAttachmentService;
-	private final ThreadDataStorageReader storageReader;
+	private final ThreadLocalDataStorage storageReader;
 
 	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader,
-			AttachmentService outboxedAttachmentService, ThreadDataStorageReader storageReader) {
+			AttachmentService outboxedAttachmentService, ThreadLocalDataStorage storageReader) {
 		this.eventFactory = eventFactory;
 		this.attachmentsReader = attachmentsReader;
 		this.outboxedAttachmentService = outboxedAttachmentService;
@@ -80,7 +77,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 			return;
 		}
 
-		logger.debug(marker, "Processing before update event for entity {}", target.getName());
+		logger.debug("Processing before update event for entity {}", target.getName());
 
 		var select = getSelect(context.getCqn(), context.getTarget());
 		var attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
