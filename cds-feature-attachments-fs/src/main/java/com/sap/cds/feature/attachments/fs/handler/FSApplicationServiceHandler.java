@@ -16,6 +16,7 @@ import com.sap.cds.services.EventContext;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
+import com.sap.cds.services.draft.DraftCreateEventContext;
 import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
@@ -27,6 +28,11 @@ import com.sap.cds.services.utils.OrderConstants;
 public class FSApplicationServiceHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(FSApplicationServiceHandler.class);
+
+	@Before
+	public void processBeforeNewDraft(DraftCreateEventContext context, List<CdsData> data) {
+		logger.info("Creating new draft for entity {}", context.getTarget());
+	}
 
 	@Before
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES + 1)
