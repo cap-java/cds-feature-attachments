@@ -18,6 +18,7 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
     status    @(title: '{i18n>attachment_status}');
     contentId @(UI.Hidden: true);
     scannedAt @(UI.Hidden: true);
+    up_       @(UI.Hidden: true);
 }
 
 annotate Attachments with @UI: {
