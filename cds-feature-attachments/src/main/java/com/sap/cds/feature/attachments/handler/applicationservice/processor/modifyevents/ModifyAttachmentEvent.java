@@ -3,6 +3,8 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
+import java.io.InputStream;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
@@ -17,11 +19,11 @@ public interface ModifyAttachmentEvent {
 	 * Processes the event on the {@link AttachmentService}.
 	 * 
 	 * @param path         the path of the attachment
-	 * @param value        the content of the attachment
+	 * @param content      the content of the attachment
 	 * @param existingData existing data
 	 * @param eventContext the current event context
 	 * @return
 	 */
-	Object processEvent(Path path, Object value, CdsData existingData, EventContext eventContext);
+	Object processEvent(Path path, InputStream content, CdsData existingData, EventContext eventContext);
 
 }

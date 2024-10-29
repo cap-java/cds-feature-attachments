@@ -22,9 +22,8 @@ import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 
 /**
- * The class {@link CreateAttachmentEvent} handles the creation of an attachment.
- * It calls the {@link AttachmentService} to create the attachment and registers the
- * transaction listener to be able to revert the creation in case of errors.
+ * The class {@link CreateAttachmentEvent} handles the creation of an attachment. It calls the {@link AttachmentService}
+ * to create the attachment and registers the transaction listener to be able to revert the creation in case of errors.
  */
 public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
@@ -45,22 +44,23 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 	}
 
 	@Override
-	public Object processEvent(Path path, Object value, CdsData existingData, EventContext eventContext) {
-		logger.debug("Calling attachment service with create event for entity {}", path.target().entity().getQualifiedName());
+	public Object processEvent(Path path, InputStream content, CdsData existingData, EventContext eventContext) {
+		logger.debug("Calling attachment service with create event for entity {}",
+				path.target().entity().getQualifiedName());
 		var values = path.target().values();
 		var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 		var mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, existingData);
 		var fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, existingData);
 
 		var createEventInput = new CreateAttachmentInput(keys, path.target().entity(), fileNameOptional.orElse(null),
-				mimeTypeOptional.orElse(null), (InputStream) value);
+				mimeTypeOptional.orElse(null), content);
 		var result = attachmentService.createAttachment(createEventInput);
 		var createListener = listenerProvider.provideListener(result.contentId(), eventContext.getCdsRuntime());
 		var context = eventContext.getChangeSetContext();
 		context.register(createListener);
 		path.target().values().put(Attachments.CONTENT_ID, result.contentId());
 		path.target().values().put(Attachments.STATUS, result.status());
-		return result.isInternalStored() ? value : null;
+		return result.isInternalStored() ? content : null;
 	}
 
 }

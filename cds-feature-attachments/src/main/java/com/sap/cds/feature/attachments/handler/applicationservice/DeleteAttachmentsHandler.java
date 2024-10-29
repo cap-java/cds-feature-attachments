@@ -3,6 +3,8 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
+import java.io.InputStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -22,9 +24,8 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 /**
- * The class {@link DeleteAttachmentsHandler} is an event handler that is
- * responsible for deleting attachments for entities.
- * It is called before a delete event is executed.
+ * The class {@link DeleteAttachmentsHandler} is an event handler that is responsible for deleting attachments for
+ * entities. It is called before a delete event is executed.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class DeleteAttachmentsHandler implements EventHandler {
@@ -48,8 +49,8 @@ public class DeleteAttachmentsHandler implements EventHandler {
 
 		var attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn());
 		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
-		Converter converter = (path, element, value) -> deleteContentAttachmentEvent.processEvent(path, value,
-				CdsData.create(path.target().values()), context);
+		Converter converter = (path, element, value) -> deleteContentAttachmentEvent.processEvent(path,
+				(InputStream) value, CdsData.create(path.target().values()), context);
 
 		ApplicationHandlerHelper.callProcessor(context.getTarget(), attachments, filter, converter);
 	}

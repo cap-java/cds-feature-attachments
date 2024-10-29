@@ -3,6 +3,7 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.helper;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -25,25 +26,26 @@ public final class ModifyApplicationHandlerHelper {
 			ModifyAttachmentEventFactory eventFactory, EventContext eventContext) {
 		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingDataList, eventFactory,
-				eventContext, path, value);
+				eventContext, path, (InputStream) value);
 		ApplicationHandlerHelper.callProcessor(entity, data, filter, converter);
 	}
 
 	public static Object handleAttachmentForEntity(List<CdsData> existingDataList,
-			ModifyAttachmentEventFactory eventFactory, EventContext eventContext, Path path, Object value) {
+			ModifyAttachmentEventFactory eventFactory, EventContext eventContext, Path path, InputStream content) {
 		var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 		ReadonlyDataContextEnhancer.fillReadonlyInContext((CdsData) path.target().values());
 		var existingData = getExistingData(keys, existingDataList);
 		var contentIdExists = path.target().values().containsKey(Attachments.CONTENT_ID);
 		var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 
-		var eventToProcess = eventFactory.getEvent(value, contentId, contentIdExists, existingData);
-		return eventToProcess.processEvent(path, value, existingData, eventContext);
+		var eventToProcess = eventFactory.getEvent(content, contentId, contentIdExists, existingData);
+		return eventToProcess.processEvent(path, content, existingData, eventContext);
 	}
 
 	private static CdsData getExistingData(Map<String, Object> keys, List<CdsData> existingDataList) {
-		return existingDataList.stream().filter(existingData -> ApplicationHandlerHelper.areKeysInData(keys, existingData))
-				.findAny().orElse(CdsData.create());
+		return existingDataList.stream()
+				.filter(existingData -> ApplicationHandlerHelper.areKeysInData(keys, existingData)).findAny()
+				.orElse(CdsData.create());
 	}
 
 }

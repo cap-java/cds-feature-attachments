@@ -3,6 +3,7 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.draftservice;
 
+import java.io.InputStream;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -26,10 +27,9 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
 
 /**
- * The class {@link DraftPatchAttachmentsHandler} is an event handler that is called
- * before a draft patch event is executed.
- * The handler checks the attachments of the draft entity and calls the event factory
- * and corresponding events.
+ * The class {@link DraftPatchAttachmentsHandler} is an event handler that is called before a draft patch event is
+ * executed. The handler checks the attachments of the draft entity and calls the event factory and corresponding
+ * events.
  */
 @ServiceName(value = "*", type = DraftService.class)
 public class DraftPatchAttachmentsHandler implements EventHandler {
@@ -52,14 +52,14 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 
 		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
-			var draftElement = path.target().entity().getQualifiedName().endsWith(
-					DraftConstants.DRAFT_TABLE_POSTFIX) ? path.target().entity() : path.target().entity().getTargetOf(
-					DraftConstants.SIBLING_ENTITY);
+			var draftElement = path.target().entity().getQualifiedName().endsWith(DraftConstants.DRAFT_TABLE_POSTFIX)
+					? path.target().entity()
+					: path.target().entity().getTargetOf(DraftConstants.SIBLING_ENTITY);
 			var select = Select.from(draftElement.getQualifiedName()).matching(path.target().keys());
 			var result = persistence.run(select);
 
-			return ModifyApplicationHandlerHelper.handleAttachmentForEntity(result.listOf(CdsData.class), eventFactory, context,
-					path, value);
+			return ModifyApplicationHandlerHelper.handleAttachmentForEntity(result.listOf(CdsData.class), eventFactory,
+					context, path, (InputStream) value);
 		};
 
 		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, filter, converter);

@@ -3,6 +3,8 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
+import java.io.InputStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +21,10 @@ public class DoNothingAttachmentEvent implements ModifyAttachmentEvent {
 	private static final Logger logger = LoggerFactory.getLogger(DoNothingAttachmentEvent.class);
 
 	@Override
-	public Object processEvent(Path path, Object value, CdsData existingData, EventContext eventContext) {
+	public Object processEvent(Path path, InputStream content, CdsData existingData, EventContext eventContext) {
 		logger.debug("Do nothing event for entity {}", path.target().entity().getQualifiedName());
 
-		return value;
+		return content;
 	}
 
 }
