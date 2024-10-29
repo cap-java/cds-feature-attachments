@@ -24,6 +24,6 @@ public interface ModifyAttachmentEvent {
 	 * @param eventContext the current event context
 	 * @return
 	 */
-	Object processEvent(Path path, InputStream content, CdsData existingData, EventContext eventContext);
+	InputStream processEvent(Path path, InputStream content, CdsData existingData, EventContext eventContext);
 
 }

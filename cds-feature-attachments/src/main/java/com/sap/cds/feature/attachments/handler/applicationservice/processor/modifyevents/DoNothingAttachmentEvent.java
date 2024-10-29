@@ -21,7 +21,7 @@ public class DoNothingAttachmentEvent implements ModifyAttachmentEvent {
 	private static final Logger logger = LoggerFactory.getLogger(DoNothingAttachmentEvent.class);
 
 	@Override
-	public Object processEvent(Path path, InputStream content, CdsData existingData, EventContext eventContext) {
+	public InputStream processEvent(Path path, InputStream content, CdsData existingData, EventContext eventContext) {
 		logger.debug("Do nothing event for entity {}", path.target().entity().getQualifiedName());
 
 		return content;
