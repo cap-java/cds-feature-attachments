@@ -33,14 +33,14 @@ public interface AttachmentCreateEventContext extends EventContext {
 	String getContentId();
 
 	/**
-	 * Sets the id af the content for the attachment storage
+	 * Sets the ID of the content for the attachment storage
 	 *
 	 * @param contentId The key of the content
 	 */
 	void setContentId(String contentId);
 
 	/**
-	 * @return The ids of the attachment storage entity or {@code Collections.emptyMap} if no id was specified
+	 * @return The IDs of the attachment storage entity or {@code Collections.emptyMap} if no id was specified
 	 */
 	Map<String, Object> getAttachmentIds();
 
