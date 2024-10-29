@@ -12,12 +12,12 @@ import com.sap.cds.services.ErrorStatuses;
 public enum AttachmentErrorStatuses implements ErrorStatus {
 
 	/**
-	 * Attachment not clean.
+	 * The attachment is not clean.
 	 */
 	NOT_CLEAN("not_clean", "Attachment is not clean", ErrorStatuses.METHOD_NOT_ALLOWED),
 
 	/**
-	 * Attachment not scanned.
+	 * The attachment is not scanned.
 	 */
 	NOT_SCANNED("not_scanned", "Attachment is not scanned, try again in a few minutes",
 			ErrorStatuses.METHOD_NOT_ALLOWED);
