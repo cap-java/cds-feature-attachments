@@ -35,12 +35,12 @@ import com.sap.cds.services.utils.OrderConstants;
 import com.sap.cds.services.utils.model.CqnUtils;
 
 /**
-	* The class {@link UpdateAttachmentsHandler} is an event handler that
-	* is called before an update event is executed.
-	* As updates in draft entities or non-draft entities can also be
-	* create-events, update-events or delete-events the handler needs to distinguish between
-	* the different cases.
-	*/
+ * The class {@link UpdateAttachmentsHandler} is an event handler that
+ * is called before an update event is executed.
+ * As updates in draft entities or non-draft entities can also be
+ * create-events, update-events or delete-events the handler needs to distinguish between
+ * the different cases.
+ */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class UpdateAttachmentsHandler implements EventHandler {
 

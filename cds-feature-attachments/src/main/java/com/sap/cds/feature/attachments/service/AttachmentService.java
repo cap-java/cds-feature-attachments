@@ -55,15 +55,19 @@ public interface AttachmentService extends Service {
 	 * Creates the content with the given parameter
 	 *
 	 * @param input Contains needed data to store the content like
+	 *              <ul>
 	 *              <li>attachmentIds - list of keys for attachment entity</li>
 	 *              <li>attachmentEntity - cds entity in which the attachment will be stored</li>
 	 *              <li>fileName</li>
 	 *              <li>mimeType</li>
 	 *              <li>content (mandatory)</li>
+	 *              </ul>
 	 * @return the result of the storage:
+	 *         <ul>
 	 *         <li>isInternalStored - shows if the content was stored internally, this does not indicate errors, in case
 	 *         of errors ServiceException is thrown</li>
 	 *         <li>contentId - id of the stored content</li>
+	 *         </ul>
 	 * @throws ServiceException Exception to be thrown in case of errors during accessing the attachment
 	 */
 	AttachmentModificationResult createAttachment(CreateAttachmentInput input);
