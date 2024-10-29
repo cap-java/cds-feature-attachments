@@ -22,10 +22,10 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 /**
-	* The class {@link DeleteAttachmentsHandler} is an event handler that is
-	* responsible for deleting attachments for entities.
-	* It is called before a delete event is executed.
-	*/
+ * The class {@link DeleteAttachmentsHandler} is an event handler that is
+ * responsible for deleting attachments for entities.
+ * It is called before a delete event is executed.
+ */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class DeleteAttachmentsHandler implements EventHandler {
 

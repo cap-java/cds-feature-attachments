@@ -18,9 +18,9 @@ import com.sap.cds.services.EventContext;
 import com.sap.cds.services.draft.DraftService;
 
 /**
-	* The class {@link MarkAsDeletedAttachmentEvent} handles the mark of deletion of an attachment.
-	* It calls the {@link AttachmentService} to mark the attachment as deleted.
-	*/
+ * The class {@link MarkAsDeletedAttachmentEvent} handles the mark of deletion of an attachment.
+ * It calls the {@link AttachmentService} to mark the attachment as deleted.
+*/
 public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 
 	private static final Logger logger = LoggerFactory.getLogger(MarkAsDeletedAttachmentEvent.class);

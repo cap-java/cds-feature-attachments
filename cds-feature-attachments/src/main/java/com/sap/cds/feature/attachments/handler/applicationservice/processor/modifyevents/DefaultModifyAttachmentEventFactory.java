@@ -11,16 +11,18 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.service.AttachmentService;
 
 /**
-	* The class {@link DefaultModifyAttachmentEventFactory} is a factory class
-	* that creates the corresponding event for the attachment service {@link AttachmentService}.
-	* The class is used to determine the event that should be executed based on the content,
-	* the contentId and the existingData.
-	* The events could be: <br>
-	* - create <br>
-	* - update <br>
-	* - deleteContent <br>
-	* - doNothing <br>
-	*/
+ * The class {@link DefaultModifyAttachmentEventFactory} is a factory class
+ * that creates the corresponding event for the attachment service {@link AttachmentService}.
+ * The class is used to determine the event that should be executed based on the content,
+ * the contentId and the existingData.<br>
+ * The events could be:
+ * <ul>
+ * <li>create</li>
+ * <li>update</li>
+ * <li>deleteContent</li>
+ * <li>doNothing</li>
+ * </ul>
+ */
 public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEventFactory {
 
 	private final ModifyAttachmentEvent createEvent;

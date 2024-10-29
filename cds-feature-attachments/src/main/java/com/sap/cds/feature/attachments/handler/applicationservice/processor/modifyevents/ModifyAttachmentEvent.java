@@ -9,11 +9,19 @@ import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 
 /**
-	* The interface {@link ModifyAttachmentEvent} provides a method to process an event on the
-	* {@link AttachmentService}.
-	*/
+ * The interface {@link ModifyAttachmentEvent} provides a method to process an event on the {@link AttachmentService}.
+ */
 public interface ModifyAttachmentEvent {
 
+	/**
+	 * Processes the event on the {@link AttachmentService}.
+	 * 
+	 * @param path         the path of the attachment
+	 * @param value        the content of the attachment
+	 * @param existingData existing data
+	 * @param eventContext the current event context
+	 * @return
+	 */
 	Object processEvent(Path path, Object value, CdsData existingData, EventContext eventContext);
 
 }
