@@ -59,7 +59,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		var context = eventContext.getChangeSetContext();
 		context.register(createListener);
 		path.target().values().put(Attachments.CONTENT_ID, result.contentId());
-		path.target().values().put(Attachments.STATUS, result.attachmentStatus());
+		path.target().values().put(Attachments.STATUS, result.status());
 		return result.isInternalStored() ? value : null;
 	}
 

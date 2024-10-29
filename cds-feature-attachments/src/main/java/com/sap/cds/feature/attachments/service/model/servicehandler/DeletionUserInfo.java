@@ -21,5 +21,4 @@ public interface DeletionUserInfo extends CdsData {
 	String getName();
 
 	void setName(String id);
-
 }
