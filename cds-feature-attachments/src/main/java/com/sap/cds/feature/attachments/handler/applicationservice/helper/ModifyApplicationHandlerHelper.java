@@ -30,7 +30,7 @@ public final class ModifyApplicationHandlerHelper {
 		ApplicationHandlerHelper.callProcessor(entity, data, filter, converter);
 	}
 
-	public static Object handleAttachmentForEntity(List<CdsData> existingDataList,
+	public static InputStream handleAttachmentForEntity(List<CdsData> existingDataList,
 			ModifyAttachmentEventFactory eventFactory, EventContext eventContext, Path path, InputStream content) {
 		var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 		ReadonlyDataContextEnhancer.fillReadonlyInContext((CdsData) path.target().values());
