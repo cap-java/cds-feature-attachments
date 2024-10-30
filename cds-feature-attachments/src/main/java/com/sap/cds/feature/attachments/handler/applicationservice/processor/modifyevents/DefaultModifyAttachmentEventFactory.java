@@ -3,6 +3,7 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
+import java.io.InputStream;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -39,7 +40,7 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 	}
 
 	@Override
-	public ModifyAttachmentEvent getEvent(Object content, String contentId, boolean contentIdExist,	CdsData existingData) {
+	public ModifyAttachmentEvent getEvent(InputStream content, String contentId, boolean contentIdExist, CdsData existingData) {
 		var existingContentId = existingData.get(Attachments.CONTENT_ID);
 		var event = contentIdExist ? handleExistingContentId(content, contentId,
 				existingContentId) : handleNonExistingContentId(content, existingContentId);

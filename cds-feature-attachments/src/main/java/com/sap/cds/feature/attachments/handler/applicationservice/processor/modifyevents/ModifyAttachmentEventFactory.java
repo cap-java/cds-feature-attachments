@@ -25,6 +25,6 @@ public interface ModifyAttachmentEventFactory {
 	 * @param existingData   the existing {@link CdsData data}
 	 * @return the corresponding {@link ModifyAttachmentEvent} that should be executed
 	 */
-	ModifyAttachmentEvent getEvent(Object content, String contentId, boolean contentIdExist, CdsData existingData);
+	ModifyAttachmentEvent getEvent(InputStream content, String contentId, boolean contentIdExist, CdsData existingData);
 
 }
