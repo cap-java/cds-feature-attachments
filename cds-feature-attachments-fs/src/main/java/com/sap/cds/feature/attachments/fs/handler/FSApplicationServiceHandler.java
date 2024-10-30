@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
-import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.services.EventContext;
@@ -53,7 +52,6 @@ public class FSApplicationServiceHandler implements EventHandler {
 	}
 
 	private void setSize(EventContext context, List<CdsData> data) {
-		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 
 		Validator validator = (path, element, value) -> {
 			if (value instanceof InputStream input) {
@@ -67,6 +65,7 @@ public class FSApplicationServiceHandler implements EventHandler {
 			}
 		};
 
-		CdsDataProcessor.create().addValidator(filter, validator).process(data, context.getTarget());
+		CdsDataProcessor.create().addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator).process(data,
+				context.getTarget());
 	}
 }
