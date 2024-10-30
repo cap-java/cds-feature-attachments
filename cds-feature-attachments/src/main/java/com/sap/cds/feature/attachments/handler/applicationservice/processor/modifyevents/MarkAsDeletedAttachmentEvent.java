@@ -3,6 +3,7 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
+import java.io.InputStream;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 	}
 
 	@Override
-	public Object processEvent(Path path, Object value, CdsData existingData, EventContext eventContext) {
+	public InputStream processEvent(Path path, InputStream content, CdsData existingData, EventContext eventContext) {
 		var qualifiedName = eventContext.getTarget().getQualifiedName();
 		logger.debug("Processing the event for calling attachment service with mark as delete event for entity {}",
 				qualifiedName);
@@ -56,7 +57,7 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 				path.target().values().put(Attachments.SCANNED_AT, null);
 			}
 		}
-		return value;
+		return content;
 	}
 
 }

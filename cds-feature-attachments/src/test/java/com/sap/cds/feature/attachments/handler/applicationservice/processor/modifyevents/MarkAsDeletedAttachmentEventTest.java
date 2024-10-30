@@ -1,8 +1,13 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,7 +54,7 @@ class MarkAsDeletedAttachmentEventTest {
 
 	@Test
 	void documentIsExternallyDeleted() {
-		var value = "test";
+		var value = new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8));
 		var contentId = "some id";
 		var data = Attachments.create();
 		data.setContentId(contentId);
@@ -69,7 +74,7 @@ class MarkAsDeletedAttachmentEventTest {
 
 	@Test
 	void documentIsNotExternallyDeletedBecauseDoesNotExistBefore() {
-		var value = "test";
+		var value = new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8));
 		var data = Attachments.create();
 
 		var expectedValue = cut.processEvent(path, value, data, context);
@@ -82,7 +87,7 @@ class MarkAsDeletedAttachmentEventTest {
 
 	@Test
 	void documentIsNotExternallyDeletedBecauseItIsDraftChangeEvent() {
-		var value = "test";
+		var value = new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8));
 		var contentId = "some id";
 		var data = Attachments.create();
 		data.setContentId(contentId);

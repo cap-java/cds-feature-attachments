@@ -105,7 +105,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
 	private void deleteRemovedAttachments(List<CdsData> exitingDataList, List<CdsData> updatedDataList, CdsEntity entity, UserInfo userInfo) {
 		var condensedUpdatedData = ApplicationHandlerHelper.condenseData(updatedDataList, entity);
-		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
+
 		Validator validator = (path, element, value) -> {
 			var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 			var entryExists = condensedUpdatedData.stream().anyMatch(
@@ -115,7 +115,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 				outboxedAttachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
 			}
 		};
-		ApplicationHandlerHelper.callValidator(entity, exitingDataList, filter, validator);
+		ApplicationHandlerHelper.callValidator(entity, exitingDataList, ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator);
 	}
 
 }
