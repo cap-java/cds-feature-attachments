@@ -35,7 +35,7 @@ import com.sap.cds.services.persistence.PersistenceService;
 public class DraftPatchAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(DraftPatchAttachmentsHandler.class);
-	private static final Marker marker = LoggingMarker.DRAFT_PATCH_HANDLER.getMarker();
+	private static final Marker marker = LoggingMarker.DRAFT_HANDLER.getMarker();
 
 	private final PersistenceService persistence;
 	private final ModifyAttachmentEventFactory eventFactory;

@@ -45,7 +45,7 @@ import com.sap.cds.services.utils.model.CqnUtils;
 public class UpdateAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
-	private static final Marker marker = LoggingMarker.APPLICATION_UPDATE_HANDLER.getMarker();
+	private static final Marker marker = LoggingMarker.APPLICATION_HANDLER.getMarker();
 
 	private final ModifyAttachmentEventFactory eventFactory;
 	private final AttachmentsReader attachmentsReader;
