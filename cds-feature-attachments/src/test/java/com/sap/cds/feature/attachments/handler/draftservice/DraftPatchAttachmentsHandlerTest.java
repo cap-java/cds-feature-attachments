@@ -2,7 +2,6 @@ package com.sap.cds.feature.attachments.handler.draftservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -63,7 +62,7 @@ class DraftPatchAttachmentsHandlerTest {
 		cut = new DraftPatchAttachmentsHandler(persistence, eventFactory);
 		eventContext = mock(DraftPatchEventContext.class);
 		event = mock(ModifyAttachmentEvent.class);
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(),  any())).thenReturn(event);
 		selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
 	}
 
@@ -108,7 +107,7 @@ class DraftPatchAttachmentsHandlerTest {
 
 		cut.processBeforeDraftPatch(eventContext, List.of(root));
 
-		verify(eventFactory).getEvent(content, attachment.getContentId(), false, attachment);
+		verify(eventFactory).getEvent(content, attachment.getContentId(), attachment);
 	}
 
 	@Test
@@ -124,7 +123,7 @@ class DraftPatchAttachmentsHandlerTest {
 
 		cut.processBeforeDraftPatch(eventContext, List.of(root));
 
-		verify(eventFactory).getEvent(content, attachment.getContentId(), true, attachment);
+		verify(eventFactory).getEvent(content, attachment.getContentId(), attachment);
 		verify(event).processEvent(any(), eq(content), eq(attachment), eq(eventContext));
 	}
 

@@ -45,11 +45,10 @@ public final class ModifyApplicationHandlerHelper {
 		var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 		ReadonlyDataContextEnhancer.fillReadonlyInContext((CdsData) path.target().values());
 		var existingData = getExistingData(keys, existingDataList);
-		var contentIdExists = path.target().values().containsKey(Attachments.CONTENT_ID);
 		var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 
 		// for the current request find the event to process
-		ModifyAttachmentEvent eventToProcess = eventFactory.getEvent(content, contentId, contentIdExists, existingData);
+		ModifyAttachmentEvent eventToProcess = eventFactory.getEvent(content, contentId, existingData);
 
 		// process the event
 		return eventToProcess.processEvent(path, content, existingData, eventContext);
