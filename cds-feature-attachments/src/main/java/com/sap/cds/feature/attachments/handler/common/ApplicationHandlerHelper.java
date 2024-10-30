@@ -70,10 +70,6 @@ public final class ApplicationHandlerHelper {
 		return baseEntity.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false);
 	}
 
-	public static boolean hasElementAnnotation(CdsElement element, String annotation) {
-		return element.findAnnotation(annotation).isPresent();
-	}
-
 	public static boolean doesContentIdExistsBefore(Map<?, Object> existingData) {
 		return Objects.nonNull(existingData.get(Attachments.CONTENT_ID));
 	}
@@ -103,6 +99,10 @@ public final class ApplicationHandlerHelper {
 	public static CdsEntity getBaseEntity(CdsModel model, CdsEntity entity) {
 		var entityResultOptional = entity.query().map(q -> CdsModelUtils.getEntityPath(q, model).rootEntity());
 		return entityResultOptional.orElseGet(() -> model.findEntity(entity.getQualifiedName()).orElseThrow());
+	}
+
+	private static boolean hasElementAnnotation(CdsElement element, String annotation) {
+		return element.findAnnotation(annotation).isPresent();
 	}
 
 	private static boolean isDraftActiveEntityField(String key) {
