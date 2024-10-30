@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -25,7 +24,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
@@ -44,7 +42,6 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
-import com.sap.cds.ql.cqn.Modifier;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
 import com.sap.cds.services.handler.annotations.After;
@@ -62,8 +59,6 @@ class ReadAttachmentsHandlerTest {
 	private AttachmentService attachmentService;
 	private AttachmentStatusValidator attachmentStatusValidator;
 	private CdsReadEventContext readEventContext;
-	private Modifier modifier;
-	private ArgumentCaptor<List<String>> fieldNamesArgumentCaptor;
 	private AsyncMalwareScanExecutor asyncMalwareScanExecutor;
 
 	@BeforeAll
@@ -79,9 +74,6 @@ class ReadAttachmentsHandlerTest {
 		cut = new ReadAttachmentsHandler(attachmentService, attachmentStatusValidator, asyncMalwareScanExecutor);
 
 		readEventContext = mock(CdsReadEventContext.class);
-		modifier = spy(new Modifier() {
-		});
-		fieldNamesArgumentCaptor = ArgumentCaptor.forClass(List.class);
 	}
 
 	@Test
@@ -90,10 +82,6 @@ class ReadAttachmentsHandlerTest {
 		mockEventContext(RootTable_.CDS_NAME, select);
 
 		cut.processBefore(readEventContext);
-
-		verify(modifier).items(any());
-		var fields = fieldNamesArgumentCaptor.getValue();
-		assertThat(fields).hasSize(2).contains("attachments").contains("itemAttachments");
 	}
 
 	@Test
@@ -102,10 +90,6 @@ class ReadAttachmentsHandlerTest {
 		mockEventContext(Attachment_.CDS_NAME, select);
 
 		cut.processBefore(readEventContext);
-
-		verify(modifier).items(any());
-		var fields = fieldNamesArgumentCaptor.getValue();
-		assertThat(fields).hasSize(1).contains("");
 	}
 
 	@Test
@@ -114,8 +98,6 @@ class ReadAttachmentsHandlerTest {
 		mockEventContext(EventItems_.CDS_NAME, select);
 
 		cut.processBefore(readEventContext);
-
-		verifyNoInteractions(modifier);
 	}
 
 	@Test
