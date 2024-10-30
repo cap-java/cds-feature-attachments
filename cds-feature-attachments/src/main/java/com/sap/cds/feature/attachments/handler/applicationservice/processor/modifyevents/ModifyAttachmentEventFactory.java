@@ -21,10 +21,9 @@ public interface ModifyAttachmentEventFactory {
 	 * 
 	 * @param content        the optional content as {@link InputStream}
 	 * @param contentId      the optional content id
-	 * @param contentIdExist the flag if the content id exists
 	 * @param existingData   the existing {@link CdsData data}
 	 * @return the corresponding {@link ModifyAttachmentEvent} that should be executed
 	 */
-	ModifyAttachmentEvent getEvent(InputStream content, String contentId, boolean contentIdExist, CdsData existingData);
+	ModifyAttachmentEvent getEvent(InputStream content, String contentId, CdsData existingData);
 
 }

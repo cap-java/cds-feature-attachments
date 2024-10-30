@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -85,7 +84,7 @@ class UpdateAttachmentsHandlerTest {
 		updateContext = mock(CdsUpdateEventContext.class);
 		cdsDataArgumentCaptor = ArgumentCaptor.forClass(CdsData.class);
 		selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 		userInfo = mock(UserInfo.class);
 	}
 
@@ -113,7 +112,7 @@ class UpdateAttachmentsHandlerTest {
 
 		cut.processBefore(updateContext, List.of(attachment));
 
-		verify(eventFactory).getEvent(testStream, null, false, attachment);
+		verify(eventFactory).getEvent(testStream, null, attachment);
 	}
 
 	@Test
@@ -129,11 +128,11 @@ class UpdateAttachmentsHandlerTest {
 		attachment.setContent(testStream);
 		attachment.put("DRAFT_READONLY_CONTEXT", readonlyUpdateFields);
 
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
 		cut.processBefore(updateContext, List.of(attachment));
 
-		verify(eventFactory).getEvent(testStream, (String) readonlyUpdateFields.get(Attachment.CONTENT_ID), true,
+		verify(eventFactory).getEvent(testStream, (String) readonlyUpdateFields.get(Attachment.CONTENT_ID), 
 				CdsData.create());
 		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
 		assertThat(attachment.getContentId()).isEqualTo(readonlyUpdateFields.get(Attachment.CONTENT_ID));
@@ -242,7 +241,7 @@ class UpdateAttachmentsHandlerTest {
 
 		cut.processBefore(updateContext, List.of(root));
 
-		verify(eventFactory).getEvent(eq(testStream), eq(null), eq(false), cdsDataArgumentCaptor.capture());
+		verify(eventFactory).getEvent(eq(testStream), eq(null), cdsDataArgumentCaptor.capture());
 		assertThat(cdsDataArgumentCaptor.getValue()).isEqualTo(root.getAttachments().get(0));
 		cdsDataArgumentCaptor.getAllValues().clear();
 		verify(event).processEvent(any(), eq(testStream), cdsDataArgumentCaptor.capture(), eq(updateContext));
@@ -259,7 +258,7 @@ class UpdateAttachmentsHandlerTest {
 
 		cut.processBefore(updateContext, List.of(root));
 
-		verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
+		verify(eventFactory).getEvent(testStream, null, CdsData.create());
 	}
 
 	@Test
