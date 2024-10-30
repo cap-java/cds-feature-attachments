@@ -34,7 +34,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 public class DefaultAttachmentsServiceHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(DefaultAttachmentsServiceHandler.class);
-	private static final Marker attachmentServiceMarker = LoggingMarker.ATTACHMENT_SERVICE.getMarker();
+	private static final Marker marker = LoggingMarker.ATTACHMENT_SERVICE.getMarker();
 
 	private final EndTransactionMalwareScanProvider endTransactionMalwareScanProvider;
 
@@ -45,7 +45,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void createAttachment(AttachmentCreateEventContext context) {
-		logger.info(attachmentServiceMarker, "Default Attachment Service handler called for creating attachment for entity '{}'",
+		logger.info(marker, "Default Attachment Service handler called for creating attachment for entity '{}'",
 				context.getAttachmentEntity().getQualifiedName());
 		var contentId = (String) context.getAttachmentIds().get(Attachments.ID);
 		context.getData().setStatus(StatusCode.SCANNING);
@@ -59,7 +59,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
-		logger.info(attachmentServiceMarker, "Default Attachment Service handler called for marking attachment as deleted with document id {}", context.getContentId());
+		logger.info(marker, "Default Attachment Service handler called for marking attachment as deleted with document id {}", context.getContentId());
 
 		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
@@ -68,7 +68,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void restoreAttachment(AttachmentRestoreEventContext context) {
-		logger.info(attachmentServiceMarker, "Default Attachment Service handler called for restoring attachment for timestamp {}",
+		logger.info(marker, "Default Attachment Service handler called for restoring attachment for timestamp {}",
 				context.getRestoreTimestamp());
 
 		//nothing to do as data are stored in the database and handled by the database
@@ -78,7 +78,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void readAttachment(AttachmentReadEventContext context) {
-		logger.debug(attachmentServiceMarker, "Default Attachment Service handler called for reading attachment with document id {}",
+		logger.debug(marker, "Default Attachment Service handler called for reading attachment with document id {}",
 				context.getContentId());
 
 		//nothing to do as data are stored in the database and handled by the database

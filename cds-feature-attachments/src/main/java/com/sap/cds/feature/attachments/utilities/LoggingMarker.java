@@ -16,9 +16,6 @@ public enum LoggingMarker {
 
 	ATTACHMENT_SERVICE,
 
-	MALWARE_SCAN_SCAN_METHOD,
-
-	MALWARE_SCAN_SERVICE_SCAN_HANDLER,
 	MALWARE_SCANNER;
 
 	public Marker getMarker() {
