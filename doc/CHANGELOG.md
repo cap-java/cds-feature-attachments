@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- Simplified logging markers
 - [Improved Javadoc](https://github.com/cap-java/cds-feature-attachments/pull/256)
 - Updated dependencies and Maven build plugins to latest versions.
 
