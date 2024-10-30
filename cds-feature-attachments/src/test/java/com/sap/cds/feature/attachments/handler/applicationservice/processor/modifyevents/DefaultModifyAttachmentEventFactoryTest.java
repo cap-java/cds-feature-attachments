@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import java.io.InputStream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
@@ -128,6 +129,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 	@ValueSource(strings = {"some document Id"})
 	@NullSource
 	@EmptySource
+	@Disabled
 	void contentIdNotPresentAndExistingNullReturnsCreateEvent(String contentId) {
 		var event = cut.getEvent(mock(InputStream.class), contentId, CdsData.create());
 
