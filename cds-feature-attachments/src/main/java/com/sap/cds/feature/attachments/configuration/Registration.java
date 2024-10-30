@@ -22,7 +22,6 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.UpdateAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.BeforeReadItemsModifier;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.DefaultAttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.CreationChangeSetListener;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.ListenerProvider;
@@ -96,8 +95,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 		configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
 		var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, configurer.getCdsRuntime());
-		configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, BeforeReadItemsModifier::new, new DefaultAttachmentStatusValidator(),
-				scanRunner));
+		configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
 
 		// register event handlers for draft service
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));

@@ -37,7 +37,6 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception.AttachmentStatusException;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.modifier.ItemModifierProvider;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
@@ -61,7 +60,6 @@ class ReadAttachmentsHandlerTest {
 	private ReadAttachmentsHandler cut;
 
 	private AttachmentService attachmentService;
-	private ItemModifierProvider provider;
 	private AttachmentStatusValidator attachmentStatusValidator;
 	private CdsReadEventContext readEventContext;
 	private Modifier modifier;
@@ -76,15 +74,13 @@ class ReadAttachmentsHandlerTest {
 	@BeforeEach
 	void setup() {
 		attachmentService = mock(AttachmentService.class);
-		provider = mock(ItemModifierProvider.class);
 		attachmentStatusValidator = mock(AttachmentStatusValidator.class);
 		asyncMalwareScanExecutor = mock(AsyncMalwareScanExecutor.class);
-		cut = new ReadAttachmentsHandler(attachmentService, provider, attachmentStatusValidator, asyncMalwareScanExecutor);
+		cut = new ReadAttachmentsHandler(attachmentService, attachmentStatusValidator, asyncMalwareScanExecutor);
 
 		readEventContext = mock(CdsReadEventContext.class);
 		modifier = spy(new Modifier() {
 		});
-		when(provider.getBeforeReadContentIdEnhancer(any())).thenReturn(modifier);
 		fieldNamesArgumentCaptor = ArgumentCaptor.forClass(List.class);
 	}
 
@@ -95,7 +91,6 @@ class ReadAttachmentsHandlerTest {
 
 		cut.processBefore(readEventContext);
 
-		verify(provider).getBeforeReadContentIdEnhancer(fieldNamesArgumentCaptor.capture());
 		verify(modifier).items(any());
 		var fields = fieldNamesArgumentCaptor.getValue();
 		assertThat(fields).hasSize(2).contains("attachments").contains("itemAttachments");
@@ -108,7 +103,6 @@ class ReadAttachmentsHandlerTest {
 
 		cut.processBefore(readEventContext);
 
-		verify(provider).getBeforeReadContentIdEnhancer(fieldNamesArgumentCaptor.capture());
 		verify(modifier).items(any());
 		var fields = fieldNamesArgumentCaptor.getValue();
 		assertThat(fields).hasSize(1).contains("");
@@ -121,7 +115,6 @@ class ReadAttachmentsHandlerTest {
 
 		cut.processBefore(readEventContext);
 
-		verifyNoInteractions(provider);
 		verifyNoInteractions(modifier);
 	}
 
