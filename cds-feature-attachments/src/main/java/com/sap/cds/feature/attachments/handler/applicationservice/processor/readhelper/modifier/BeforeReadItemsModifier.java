@@ -16,9 +16,9 @@ import com.sap.cds.ql.cqn.CqnSelectListItem;
 import com.sap.cds.ql.cqn.Modifier;
 
 /**
-	* The class {@link BeforeReadItemsModifier} is a modifier that adds the content id field
-	* and status code to the select items.
-	*/
+ * The class {@link BeforeReadItemsModifier} is a modifier that adds the content id field
+ * and status code to the select items.
+ */
 public class BeforeReadItemsModifier implements Modifier {
 
 	private static final Logger logger = LoggerFactory.getLogger(BeforeReadItemsModifier.class);

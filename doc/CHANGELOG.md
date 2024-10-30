@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- [Improved Javadoc](https://github.com/cap-java/cds-feature-attachments/pull/256)
+- Updated dependencies and Maven build plugins to latest versions.
+
 ### Fixed
 
 ## Version 1.0.4 - 2024-10-22

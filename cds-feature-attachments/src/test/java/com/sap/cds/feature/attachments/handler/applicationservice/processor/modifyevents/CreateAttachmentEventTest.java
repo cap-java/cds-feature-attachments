@@ -116,7 +116,7 @@ class CreateAttachmentEventTest {
 		cut.processEvent(path, attachment.getContent(), CdsData.create(), eventContext);
 
 		assertThat(attachment.getContentId()).isEqualTo(attachmentServiceResult.contentId());
-		assertThat(attachment.getStatus()).isEqualTo(attachmentServiceResult.attachmentStatus());
+		assertThat(attachment.getStatus()).isEqualTo(attachmentServiceResult.status());
 	}
 
 	@Test

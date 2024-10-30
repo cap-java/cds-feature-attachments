@@ -18,10 +18,12 @@ import com.sap.cds.ql.cqn.Modifier;
 import com.sap.cds.services.draft.Drafts;
 
 /**
-	* The class {@link ActiveEntityModifier} is used to modify the following values in a given ref: <br>
-	* - {@code isActiveEntity} <br>
-	* - {@code fullEntityName}
-	*/
+ * The class is used to modify the following values in a given {@link CqnStructuredTypeRef}:
+ * <ul>
+ * <li>{@code isActiveEntity}</li>
+ * <li>{@code fullEntityName}</li>
+ * </ul>
+ */
 public class ActiveEntityModifier implements Modifier {
 
 	private static final Logger logger = LoggerFactory.getLogger(ActiveEntityModifier.class);
@@ -63,6 +65,4 @@ public class ActiveEntityModifier implements Modifier {
 		return CQL.comparison(lhsNew, op, rhsNew);
 	}
 
-
 }
-

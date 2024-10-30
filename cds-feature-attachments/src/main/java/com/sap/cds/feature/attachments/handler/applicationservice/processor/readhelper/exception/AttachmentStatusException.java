@@ -9,18 +9,16 @@ import com.sap.cds.services.utils.ErrorStatusException;
 
 public class AttachmentStatusException extends ErrorStatusException {
 
-	private AttachmentStatusException(ErrorStatus errorStatus, String message) {
-		super(errorStatus, message);
+	private AttachmentStatusException(ErrorStatus errorStatus) {
+		super(errorStatus);
 	}
 
 	public static AttachmentStatusException getNotCleanException() {
-		return new AttachmentStatusException(AttachmentErrorStatuses.NOT_CLEAN,
-				AttachmentErrorStatuses.NOT_CLEAN.getDescription());
+		return new AttachmentStatusException(AttachmentErrorStatuses.NOT_CLEAN);
 	}
 
 	public static AttachmentStatusException getNotScannedException() {
-		return new AttachmentStatusException(AttachmentErrorStatuses.NOT_SCANNED,
-				AttachmentErrorStatuses.NOT_SCANNED.getDescription());
+		return new AttachmentStatusException(AttachmentErrorStatuses.NOT_SCANNED);
 	}
 
 }

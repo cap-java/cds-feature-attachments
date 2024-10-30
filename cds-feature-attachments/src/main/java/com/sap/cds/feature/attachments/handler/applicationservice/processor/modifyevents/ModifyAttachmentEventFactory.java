@@ -3,17 +3,28 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
+import java.io.InputStream;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 
 /**
-	* The class {@link ModifyAttachmentEventFactory} is a factory
-	* that creates the corresponding event for the attachment service {@link AttachmentService}.
-	* The class is used to determine the event that should be executed based on the content,
-	* the contentId and the existingData.
-	*/
+ * The class {@link ModifyAttachmentEventFactory} is a factory
+ * that creates the corresponding event for the attachment service {@link AttachmentService}.
+ * The class is used to determine the event that should be executed based on the content,
+ * the contentId and the existingData.
+ */
 public interface ModifyAttachmentEventFactory {
 
-	ModifyAttachmentEvent getEvent(Object content, String contentId, boolean contentIdExist, CdsData existingData);
+	/**
+	 * Returns the event that should be executed based on the given parameters.
+	 * 
+	 * @param content        the optional content as {@link InputStream}
+	 * @param contentId      the optional content id
+	 * @param contentIdExist the flag if the content id exists
+	 * @param existingData   the existing {@link CdsData data}
+	 * @return the corresponding {@link ModifyAttachmentEvent} that should be executed
+	 */
+	ModifyAttachmentEvent getEvent(InputStream content, String contentId, boolean contentIdExist, CdsData existingData);
 
 }

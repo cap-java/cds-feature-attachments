@@ -20,7 +20,7 @@ public final class ReadonlyDataContextEnhancer {
 	}
 
 	public static void enhanceReadonlyDataInContext(EventContext context, List<CdsData> data, boolean isDraft) {
-		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
+
 		Validator validator = (path, element, value) -> {
 			if (isDraft) {
 				var contentId = path.target().values().get(Attachments.CONTENT_ID);
@@ -36,7 +36,8 @@ public final class ReadonlyDataContextEnhancer {
 			}
 		};
 
-		ApplicationHandlerHelper.callValidator(context.getTarget(), data, filter, validator);
+		ApplicationHandlerHelper.callValidator(context.getTarget(), data, ApplicationHandlerHelper.MEDIA_CONTENT_FILTER,
+				validator);
 	}
 
 	public static void fillReadonlyInContext(CdsData data) {
@@ -48,6 +49,5 @@ public final class ReadonlyDataContextEnhancer {
 			data.remove(DRAFT_READONLY_CONTEXT);
 		}
 	}
-
 
 }

@@ -30,10 +30,10 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.utils.OrderConstants;
 
 /**
-	* The class {@link CreateAttachmentsHandler} is an event handler that is
-	* responsible for creating attachments for entities.
-	* It is called before a create event is executed.
-	*/
+ * The class {@link CreateAttachmentsHandler} is an event handler that is
+ * responsible for creating attachments for entities.
+ * It is called before a create event is executed.
+ */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class CreateAttachmentsHandler implements EventHandler {
 
