@@ -9,8 +9,8 @@ import java.util.Map;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
-import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.ql.cqn.Path;
@@ -20,14 +20,24 @@ import com.sap.cds.services.EventContext;
 public final class ModifyApplicationHandlerHelper {
 
 	private ModifyApplicationHandlerHelper() {
+		// avoid instantiation
 	}
 
+	/**
+	 * Handles attachments for entities.
+	 * 
+	 * @param entity           the {@link CdsEntity entity} to handle attachments for
+	 * @param data             the given list of {@link CdsData data}
+	 * @param existingDataList the given list of existing {@link CdsData data}
+	 * @param eventFactory     the {@link ModifyAttachmentEventFactory} to create the corresponding event
+	 * @param eventContext     the current {@link EventContext}
+	 */
 	public static void handleAttachmentForEntities(CdsEntity entity, List<CdsData> data, List<CdsData> existingDataList,
 			ModifyAttachmentEventFactory eventFactory, EventContext eventContext) {
-		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingDataList, eventFactory,
 				eventContext, path, (InputStream) value);
-		ApplicationHandlerHelper.callProcessor(entity, data, filter, converter);
+
+		ApplicationHandlerHelper.callProcessor(entity, data, ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter);
 	}
 
 	public static InputStream handleAttachmentForEntity(List<CdsData> existingDataList,
@@ -38,7 +48,10 @@ public final class ModifyApplicationHandlerHelper {
 		var contentIdExists = path.target().values().containsKey(Attachments.CONTENT_ID);
 		var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 
-		var eventToProcess = eventFactory.getEvent(content, contentId, contentIdExists, existingData);
+		// for the current request find the event to process
+		ModifyAttachmentEvent eventToProcess = eventFactory.getEvent(content, contentId, contentIdExists, existingData);
+
+		// process the event
 		return eventToProcess.processEvent(path, content, existingData, eventContext);
 	}
 

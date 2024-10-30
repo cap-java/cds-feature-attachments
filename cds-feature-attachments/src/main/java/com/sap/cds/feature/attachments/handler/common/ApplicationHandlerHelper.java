@@ -30,6 +30,13 @@ import com.sap.cds.services.utils.model.CdsModelUtils;
 public final class ApplicationHandlerHelper {
 
 	/**
+	 * A filter for media content fields. The filter checks if the entity is a media entity and if the element has the
+	 * annotation "Core.MediaType".
+	 */
+	public static final Filter MEDIA_CONTENT_FILTER = (path, element, type) -> isMediaEntity(path.target().type())
+			&& hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
+
+	/**
 	 * Checks if the data contains a content field.
 	 * 
 	 * @param entity The {@link CdsEntity} to check
@@ -40,7 +47,7 @@ public final class ApplicationHandlerHelper {
 		var isIncluded = new AtomicBoolean();
 		Validator validator = (path, element, value) -> isIncluded.set(true);
 
-		callValidator(entity, data, buildFilterForMediaTypeEntity(), validator);
+		callValidator(entity, data, MEDIA_CONTENT_FILTER, validator);
 		return !isIncluded.get();
 	}
 
@@ -50,17 +57,6 @@ public final class ApplicationHandlerHelper {
 
 	public static void callValidator(CdsEntity entity, List<CdsData> data, Filter filter, Validator validator) {
 		CdsDataProcessor.create().addValidator(filter, validator).process(data, entity);
-	}
-
-	/**
-	 * Builds the filter for media type entities. The filter checks if the entity is a media entity and if the element
-	 * has the annotation "Core.MediaType".
-	 * 
-	 * @return The {@link Filter} for media type entities
-	 */
-	public static Filter buildFilterForMediaTypeEntity() {
-		return (path, element, type) -> isMediaEntity(path.target().type()) && hasElementAnnotation(element,
-				ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
 	}
 
 	/**
@@ -85,10 +81,9 @@ public final class ApplicationHandlerHelper {
 	public static List<CdsData> condenseData(List<CdsData> data, CdsEntity entity) {
 		var resultList = new ArrayList<CdsData>();
 
-		Filter filter = buildFilterForMediaTypeEntity();
 		Validator validator = (path, element, value) -> resultList.add(CdsData.create(path.target().values()));
 
-		callValidator(entity, data, filter, validator);
+		callValidator(entity, data, MEDIA_CONTENT_FILTER, validator);
 		return resultList;
 	}
 

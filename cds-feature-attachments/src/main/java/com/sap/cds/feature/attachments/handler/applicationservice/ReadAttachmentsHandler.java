@@ -90,7 +90,6 @@ public class ReadAttachmentsHandler implements EventHandler {
 		}
 		logger.debug(marker, "Processing after read event for entity {}", context.getTarget().getName());
 
-		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
 			logger.info(marker, "Processing after read event for entity {}", element.getName());
 			var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
@@ -107,7 +106,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 			}
 		};
 
-		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, filter, converter);
+		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter);
 	}
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName,

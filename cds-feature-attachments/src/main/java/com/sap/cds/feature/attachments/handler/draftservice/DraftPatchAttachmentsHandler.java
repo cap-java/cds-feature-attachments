@@ -50,7 +50,6 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 	public void processBeforeDraftPatch(DraftPatchEventContext context, List<CdsData> data) {
 		logger.debug(marker, "Processing before draft patch event for entity {}", context.getTarget().getName());
 
-		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
 		Converter converter = (path, element, value) -> {
 			var draftElement = path.target().entity().getQualifiedName().endsWith(DraftConstants.DRAFT_TABLE_POSTFIX)
 					? path.target().entity()
@@ -62,7 +61,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 					context, path, (InputStream) value);
 		};
 
-		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, filter, converter);
+		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter);
 	}
 
 }

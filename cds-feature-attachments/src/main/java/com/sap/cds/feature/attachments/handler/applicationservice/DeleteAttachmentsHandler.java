@@ -11,7 +11,6 @@ import org.slf4j.Marker;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
-import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -48,11 +47,11 @@ public class DeleteAttachmentsHandler implements EventHandler {
 		logger.debug(marker, "Processing before delete event for entity {}", context.getTarget().getName());
 
 		var attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn());
-		Filter filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
+
 		Converter converter = (path, element, value) -> deleteContentAttachmentEvent.processEvent(path,
 				(InputStream) value, CdsData.create(path.target().values()), context);
 
-		ApplicationHandlerHelper.callProcessor(context.getTarget(), attachments, filter, converter);
+		ApplicationHandlerHelper.callProcessor(context.getTarget(), attachments, ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter);
 	}
 
 }
