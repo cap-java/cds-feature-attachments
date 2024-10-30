@@ -46,7 +46,7 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 		return event.orElse(doNothingEvent);
 	}
 
-	private Optional<ModifyAttachmentEvent> handleExistingContentId(Object content, String contentId,
+	private Optional<ModifyAttachmentEvent> handleExistingContentId(InputStream content, String contentId,
 			String existingContentId) {
 		ModifyAttachmentEvent event = null;
 		if (contentId.equals(existingContentId) && Objects.nonNull(content)) {
