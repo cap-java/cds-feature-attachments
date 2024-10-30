@@ -90,7 +90,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		var attachmentsReader = new DefaultAttachmentsReader(new DefaultAssociationCascader(), persistenceService);
 		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
-		// register event handlers for attachment service
+		// register event handlers for application service
 		configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
 		configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 		configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
