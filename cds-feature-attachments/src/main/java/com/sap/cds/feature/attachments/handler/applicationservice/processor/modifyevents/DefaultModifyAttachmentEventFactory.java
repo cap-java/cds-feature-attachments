@@ -49,25 +49,13 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 	private Optional<ModifyAttachmentEvent> handleExistingContentId(Object content, String contentId,
 			String existingContentId) {
 		ModifyAttachmentEvent event = null;
-		if (Objects.isNull(contentId) && Objects.isNull(existingContentId) && Objects.nonNull(content)) {
-			event = createEvent;
-		}
-		if (Objects.isNull(contentId) && Objects.nonNull(existingContentId)) {
-			if (Objects.nonNull(content)) {
-				event = updateEvent;
-			} else {
-				event = deleteContentEvent;
-			}
-		}
-		if (Objects.nonNull(contentId) && contentId.equals(existingContentId) && Objects.nonNull(content)) {
+		if (contentId.equals(existingContentId) && Objects.nonNull(content)) {
 			event = updateEvent;
 		}
-		if (Objects.nonNull(contentId) && Objects.nonNull(existingContentId) && !contentId.equals(existingContentId)
-				&& Objects.isNull(content)) {
+		if (Objects.nonNull(existingContentId) && !contentId.equals(existingContentId) && Objects.isNull(content)) {
 			event = deleteContentEvent;
 		}
-		if (Objects.nonNull(contentId) && Objects.nonNull(existingContentId) && !contentId.equals(existingContentId)
-				&& Objects.nonNull(content)) {
+		if (Objects.nonNull(existingContentId) && !contentId.equals(existingContentId) && Objects.nonNull(content)) {
 			event = updateEvent;
 		}
 
