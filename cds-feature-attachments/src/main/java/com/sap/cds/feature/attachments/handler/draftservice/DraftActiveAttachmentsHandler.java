@@ -19,7 +19,7 @@ public class DraftActiveAttachmentsHandler implements EventHandler {
 		this.threadLocalSetter = threadLocalSetter;
 	}
 
-	@On(event = DraftService.EVENT_DRAFT_SAVE)
+	@On
 	public void processDraftSave(DraftSaveEventContext context) {
 		threadLocalSetter.set(true, context::proceed);
 	}

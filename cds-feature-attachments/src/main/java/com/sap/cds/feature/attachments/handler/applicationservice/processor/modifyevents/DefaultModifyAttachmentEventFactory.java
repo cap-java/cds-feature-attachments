@@ -3,6 +3,7 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
+import java.io.InputStream;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -11,16 +12,17 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.service.AttachmentService;
 
 /**
-	* The class {@link DefaultModifyAttachmentEventFactory} is a factory class
-	* that creates the corresponding event for the attachment service {@link AttachmentService}.
-	* The class is used to determine the event that should be executed based on the content,
-	* the contentId and the existingData.
-	* The events could be: <br>
-	* - create <br>
-	* - update <br>
-	* - deleteContent <br>
-	* - doNothing <br>
-	*/
+ * The class {@link DefaultModifyAttachmentEventFactory} is a factory class that creates the corresponding event for the
+ * attachment service {@link AttachmentService}. The class is used to determine the event that should be executed based
+ * on the content, the contentId and the existingData.<br>
+ * The events could be:
+ * <ul>
+ * <li>create</li>
+ * <li>update</li>
+ * <li>deleteContent</li>
+ * <li>doNothing</li>
+ * </ul>
+ */
 public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEventFactory {
 
 	private final ModifyAttachmentEvent createEvent;
@@ -37,35 +39,23 @@ public class DefaultModifyAttachmentEventFactory implements ModifyAttachmentEven
 	}
 
 	@Override
-	public ModifyAttachmentEvent getEvent(Object content, String contentId, boolean contentIdExist,	CdsData existingData) {
+	public ModifyAttachmentEvent getEvent(InputStream content, String contentId, CdsData existingData) {
 		var existingContentId = existingData.get(Attachments.CONTENT_ID);
-		var event = contentIdExist ? handleExistingContentId(content, contentId,
-				existingContentId) : handleNonExistingContentId(content, existingContentId);
+		var event = contentId != null ? handleExistingContentId(content, contentId, (String) existingContentId)
+				: handleNonExistingContentId(content, existingContentId);
 		return event.orElse(doNothingEvent);
 	}
 
-	private Optional<ModifyAttachmentEvent> handleExistingContentId(Object content, String contentId,
-			Object existingContentId) {
+	private Optional<ModifyAttachmentEvent> handleExistingContentId(InputStream content, String contentId,
+			String existingContentId) {
 		ModifyAttachmentEvent event = null;
-		if (Objects.isNull(contentId) && Objects.isNull(existingContentId) && Objects.nonNull(content)) {
-			event = createEvent;
-		}
-		if (Objects.isNull(contentId) && Objects.nonNull(existingContentId)) {
-			if (Objects.nonNull(content)) {
-				event = updateEvent;
-			} else {
-				event = deleteContentEvent;
-			}
-		}
-		if (Objects.nonNull(contentId) && contentId.equals(existingContentId) && Objects.nonNull(content)) {
+		if (contentId.equals(existingContentId) && Objects.nonNull(content)) {
 			event = updateEvent;
 		}
-		if (Objects.nonNull(contentId) && Objects.nonNull(existingContentId) && !contentId.equals(
-				existingContentId) && Objects.isNull(content)) {
+		if (Objects.nonNull(existingContentId) && !contentId.equals(existingContentId) && Objects.isNull(content)) {
 			event = deleteContentEvent;
 		}
-		if (Objects.nonNull(contentId) && Objects.nonNull(existingContentId) && !contentId.equals(
-				existingContentId) && Objects.nonNull(content)) {
+		if (Objects.nonNull(existingContentId) && !contentId.equals(existingContentId) && Objects.nonNull(content)) {
 			event = updateEvent;
 		}
 

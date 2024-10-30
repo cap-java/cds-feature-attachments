@@ -1,7 +1,11 @@
 package com.sap.cds.feature.attachments.handler.draftservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 import java.util.List;
@@ -25,10 +29,9 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
-import com.sap.cds.ql.cqn.CqnLock.Mode;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.services.EventContext;
+import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -41,7 +44,7 @@ class DraftPatchAttachmentsHandlerTest {
 	private static CdsRuntime runtime;
 
 	private DraftPatchAttachmentsHandler cut;
-	private EventContext eventContext;
+	private DraftPatchEventContext eventContext;
 	private PersistenceService persistence;
 	private ModifyAttachmentEventFactory eventFactory;
 	private ModifyAttachmentEvent event;
@@ -57,9 +60,9 @@ class DraftPatchAttachmentsHandlerTest {
 		persistence = mock(PersistenceService.class);
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
 		cut = new DraftPatchAttachmentsHandler(persistence, eventFactory);
-		eventContext = mock(EventContext.class);
+		eventContext = mock(DraftPatchEventContext.class);
 		event = mock(ModifyAttachmentEvent.class);
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(),  any())).thenReturn(event);
 		selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
 	}
 
@@ -74,10 +77,7 @@ class DraftPatchAttachmentsHandlerTest {
 		verify(persistence).run(selectCaptor.capture());
 		var select = selectCaptor.getValue();
 		assertThat(select.from().toString()).contains(Attachment_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
-		assertThat(select.getLock()).isPresent();
-		assertThat(select.getLock().get().mode()).isEqualTo(Mode.EXCLUSIVE);
-		assertThat(select.getLock().get().timeout()).isPresent();
-		assertThat(select.getLock().get().timeout()).contains(10);
+		assertThat(select.getLock()).isEmpty();
 	}
 
 	@Test
@@ -107,7 +107,7 @@ class DraftPatchAttachmentsHandlerTest {
 
 		cut.processBeforeDraftPatch(eventContext, List.of(root));
 
-		verify(eventFactory).getEvent(content, attachment.getContentId(), false, attachment);
+		verify(eventFactory).getEvent(content, attachment.getContentId(), attachment);
 	}
 
 	@Test
@@ -123,7 +123,7 @@ class DraftPatchAttachmentsHandlerTest {
 
 		cut.processBeforeDraftPatch(eventContext, List.of(root));
 
-		verify(eventFactory).getEvent(content, attachment.getContentId(), true, attachment);
+		verify(eventFactory).getEvent(content, attachment.getContentId(), attachment);
 		verify(event).processEvent(any(), eq(content), eq(attachment), eq(eventContext));
 	}
 
@@ -148,14 +148,13 @@ class DraftPatchAttachmentsHandlerTest {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBeforeDraftPatch", EventContext.class, List.class);
+		var method = cut.getClass().getMethod("processBeforeDraftPatch", DraftPatchEventContext.class, List.class);
 		var beforeAnnotation = method.getAnnotation(Before.class);
 		var handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-		assertThat(beforeAnnotation.event()).containsOnly(DraftService.EVENT_DRAFT_PATCH);
+		assertThat(beforeAnnotation.event()).isEmpty();
 		assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
-
 
 	private RootTable buildRooWithAttachment(Attachments attachments) {
 		var items = Items.create();

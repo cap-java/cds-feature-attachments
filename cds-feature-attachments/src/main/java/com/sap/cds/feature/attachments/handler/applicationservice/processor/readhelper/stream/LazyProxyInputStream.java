@@ -5,6 +5,7 @@ package com.sap.cds.feature.attachments.handler.applicationservice.processor.rea
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,19 +13,19 @@ import org.slf4j.LoggerFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
 
 /**
-	* The class {@link LazyProxyInputStream} is a lazy proxy for an {@link InputStream}.
-	* The class is used to create a proxy for an {@link InputStream} that is not yet available.
-	* Before the {@link InputStream} is accessed, the status of the attachment is validated.
-	*/
+ * The class {@link LazyProxyInputStream} is a lazy proxy for an {@link InputStream}.
+ * The class is used to create a proxy for an {@link InputStream} that is not yet available.
+ * Before the {@link InputStream} is accessed, the status of the attachment is validated.
+ */
 public class LazyProxyInputStream extends InputStream {
 	private static final Logger logger = LoggerFactory.getLogger(LazyProxyInputStream.class);
 
-	private final InputStreamSupplier inputStreamSupplier;
+	private final Supplier<InputStream> inputStreamSupplier;
 	private final AttachmentStatusValidator attachmentStatusValidator;
 	private final String status;
 	private InputStream delegate;
 
-	public LazyProxyInputStream(InputStreamSupplier inputStreamSupplier,
+	public LazyProxyInputStream(Supplier<InputStream> inputStreamSupplier,
 			AttachmentStatusValidator attachmentStatusValidator, String status) {
 		this.inputStreamSupplier = inputStreamSupplier;
 		this.attachmentStatusValidator = attachmentStatusValidator;
@@ -65,10 +66,6 @@ public class LazyProxyInputStream extends InputStream {
 			delegate = inputStreamSupplier.get();
 		}
 		return delegate;
-	}
-
-	public interface InputStreamSupplier {
-		InputStream get();
 	}
 
 }

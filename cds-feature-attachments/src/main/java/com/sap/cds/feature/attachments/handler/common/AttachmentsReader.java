@@ -11,8 +11,8 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 
 /**
-	* The interface {@link AttachmentsReader} is used to read attachments from the database.
-	*/
+ * The interface {@link AttachmentsReader} is used to read attachments from the database.
+ */
 public interface AttachmentsReader {
 
 	List<CdsData> readAttachments(CdsModel model, CdsEntity entity, CqnFilterableStatement statement);

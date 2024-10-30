@@ -23,7 +23,6 @@ import com.sap.cds.reflect.CdsBaseType;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
-import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -31,10 +30,10 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.utils.OrderConstants;
 
 /**
-	* The class {@link CreateAttachmentsHandler} is an event handler that is
-	* responsible for creating attachments for entities.
-	* It is called before a create event is executed.
-	*/
+ * The class {@link CreateAttachmentsHandler} is an event handler that is
+ * responsible for creating attachments for entities.
+ * It is called before a create event is executed.
+ */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class CreateAttachmentsHandler implements EventHandler {
 
@@ -50,13 +49,13 @@ public class CreateAttachmentsHandler implements EventHandler {
 		this.storageReader = storageReader;
 	}
 
-	@Before(event = CqnService.EVENT_CREATE)
+	@Before
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
 	public void processBeforeForDraft(CdsCreateEventContext context, List<CdsData> data) {
 		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
 	}
 
-	@Before(event = CqnService.EVENT_CREATE)
+	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsCreateEventContext context, List<CdsData> data) {
 		doCreate(context, data);

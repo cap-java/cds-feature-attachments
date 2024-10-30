@@ -2,7 +2,11 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -32,7 +36,6 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
-import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -83,7 +86,7 @@ class CreateAttachmentsHandlerTest {
 		attachment.setContent(null);
 		attachment.put("up__ID", "test");
 		roots.setAttachments(List.of(attachment));
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
 		cut.processBefore(createContext, List.of(roots));
 
@@ -98,11 +101,11 @@ class CreateAttachmentsHandlerTest {
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
 			var attachment = Attachments.create();
 			attachment.setContent(testStream);
-			when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+			when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
 			cut.processBefore(createContext, List.of(attachment));
 
-			verify(eventFactory).getEvent(testStream, null, false, CdsData.create());
+			verify(eventFactory).getEvent(testStream, null, CdsData.create());
 		}
 	}
 
@@ -174,7 +177,7 @@ class CreateAttachmentsHandlerTest {
 		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
 			var attachment = Attachments.create();
 			attachment.setContent(testStream);
-			when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+			when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 			when(createContext.getService()).thenReturn(mock(ApplicationService.class));
 
 			cut.processBeforeForDraft(createContext, List.of(attachment));
@@ -189,7 +192,7 @@ class CreateAttachmentsHandlerTest {
 		var attachment = Attachments.create();
 		attachment.setFileName("test.txt");
 		attachment.setContent(null);
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 		when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));
 
 		List<CdsData> input = List.of(attachment);
@@ -206,7 +209,7 @@ class CreateAttachmentsHandlerTest {
 		attachment.setContent(mock(InputStream.class));
 		items.setAttachments(List.of(attachment));
 		events.setItems(List.of(items));
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
 		List<CdsData> input = List.of(events);
 		cut.processBefore(createContext, input);
@@ -228,11 +231,11 @@ class CreateAttachmentsHandlerTest {
 		attachment.setContent(testStream);
 		attachment.put("DRAFT_READONLY_CONTEXT", readonlyFields);
 
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
 		cut.processBefore(createContext, List.of(attachment));
 
-		verify(eventFactory).getEvent(testStream, (String) readonlyFields.get(Attachment.CONTENT_ID), true, CdsData.create());
+		verify(eventFactory).getEvent(testStream, (String) readonlyFields.get(Attachment.CONTENT_ID), CdsData.create());
 		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
 		assertThat(attachment.getContentId()).isEqualTo(readonlyFields.get(Attachment.CONTENT_ID));
 		assertThat(attachment.getStatus()).isEqualTo(readonlyFields.get(Attachment.STATUS));
@@ -249,7 +252,7 @@ class CreateAttachmentsHandlerTest {
 		attachment.setContent(mock(InputStream.class));
 		eventItems.setAttachments(List.of(attachment));
 		events.setEventItems(List.of(eventItems));
-		when(eventFactory.getEvent(any(), any(), anyBoolean(), any())).thenReturn(event);
+		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
 		List<CdsData> input = List.of(events);
 		cut.processBefore(createContext, input);
@@ -274,7 +277,7 @@ class CreateAttachmentsHandlerTest {
 		var createBeforeAnnotation = method.getAnnotation(Before.class);
 		var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-		assertThat(createBeforeAnnotation.event()).containsOnly(CqnService.EVENT_CREATE);
+		assertThat(createBeforeAnnotation.event()).isEmpty();
 		assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 

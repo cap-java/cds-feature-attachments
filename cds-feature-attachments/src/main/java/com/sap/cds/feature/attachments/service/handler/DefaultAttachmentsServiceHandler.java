@@ -42,7 +42,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		this.endTransactionMalwareScanProvider = endTransactionMalwareScanProvider;
 	}
 
-	@On(event = AttachmentService.EVENT_CREATE_ATTACHMENT)
+	@On
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void createAttachment(AttachmentCreateEventContext context) {
 		logger.info(attachmentServiceMarker, "Default Attachment Service handler called for creating attachment for entity '{}'",
@@ -56,7 +56,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		context.setCompleted();
 	}
 
-	@On(event = AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED)
+	@On
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
 		logger.info(attachmentServiceMarker, "Default Attachment Service handler called for marking attachment as deleted with document id {}", context.getContentId());
@@ -65,7 +65,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		context.setCompleted();
 	}
 
-	@On(event = AttachmentService.EVENT_RESTORE_ATTACHMENT)
+	@On
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void restoreAttachment(AttachmentRestoreEventContext context) {
 		logger.info(attachmentServiceMarker, "Default Attachment Service handler called for restoring attachment for timestamp {}",
@@ -75,7 +75,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		context.setCompleted();
 	}
 
-	@On(event = AttachmentService.EVENT_READ_ATTACHMENT)
+	@On
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void readAttachment(AttachmentReadEventContext context) {
 		logger.debug(attachmentServiceMarker, "Default Attachment Service handler called for reading attachment with document id {}",

@@ -6,6 +6,44 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Version 1.0.5 - tbd.
+
+### Added
+
+### Changed
+
+- [Improved Javadoc](https://github.com/cap-java/cds-feature-attachments/pull/256)
+- Updated dependencies and Maven build plugins to latest versions.
+
+### Fixed
+
+## Version 1.0.4 - 2024-10-22
+
+### Added
+
+- [Added user info](https://github.com/cap-java/cds-feature-attachments/pull/217) to deletion context.
+- [Added HTML CSS](https://github.com/cap-java/cds-feature-attachments/pull/248) annotations to specify column width.
+
+### Changed
+
+- Updated several dependencies and Maven build plugins to latest versions.
+
+### Fixed
+
+- [Fixed a problem](https://github.com/cap-java/cds-feature-attachments/pull/232) with missing fileName when creating an attachment.
+- [Fixed a problem](https://github.com/cap-java/cds-feature-attachments/pull/239) with deleting attachments on BTP with HANA.
+- [Fixed a problem](https://github.com/cap-java/cds-feature-attachments/pull/246) with Malware scanning in multitenancy applications.
+
+## Version 1.0.3 - 2024-09-30
+
+### Added
+
+- First public release on https://repo1.maven.org/maven2/com/sap/cds/
+
+### Changed
+
+### Fixed
+
 ## Version 1.0.2 - 2024-05-08
 
 ### Added

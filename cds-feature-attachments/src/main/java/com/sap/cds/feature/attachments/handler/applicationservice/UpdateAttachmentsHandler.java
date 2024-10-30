@@ -19,27 +19,28 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
-import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.utils.OrderConstants;
 import com.sap.cds.services.utils.model.CqnUtils;
 
 /**
-	* The class {@link UpdateAttachmentsHandler} is an event handler that
-	* is called before an update event is executed.
-	* As updates in draft entities or non-draft entities can also be
-	* create-events, update-events or delete-events the handler needs to distinguish between
-	* the different cases.
-	*/
+ * The class {@link UpdateAttachmentsHandler} is an event handler that
+ * is called before an update event is executed.
+ * As updates in draft entities or non-draft entities can also be
+ * create-events, update-events or delete-events the handler needs to distinguish between
+ * the different cases.
+ */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class UpdateAttachmentsHandler implements EventHandler {
 
@@ -59,13 +60,13 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		this.storageReader = storageReader;
 	}
 
-	@Before(event = CqnService.EVENT_UPDATE)
+	@Before
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
 	public void processBeforeForDraft(CdsUpdateEventContext context, List<CdsData> data) {
 		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
 	}
 
-	@Before(event = CqnService.EVENT_UPDATE)
+	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
 		doUpdate(context, data);
@@ -88,11 +89,12 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory, context);
 
 		if (!associationsAreUnchanged) {
-			deleteRemovedAttachments(attachments, data, target);
+			deleteRemovedAttachments(attachments, data, target, context.getUserInfo());
 		}
 	}
 
 	private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
+		// TODO: check if this should be replaced with entity.assocations().noneMatch(...)
 		return entity.compositions().noneMatch(
 				association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
 	}
@@ -101,18 +103,19 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		return CqnUtils.toSelect(update, target);
 	}
 
-	private void deleteRemovedAttachments(List<CdsData> exitingDataList, List<CdsData> updatedDataList, CdsEntity entity) {
+	private void deleteRemovedAttachments(List<CdsData> exitingDataList, List<CdsData> updatedDataList, CdsEntity entity, UserInfo userInfo) {
 		var condensedUpdatedData = ApplicationHandlerHelper.condenseData(updatedDataList, entity);
-		var filter = ApplicationHandlerHelper.buildFilterForMediaTypeEntity();
+
 		Validator validator = (path, element, value) -> {
 			var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
 			var entryExists = condensedUpdatedData.stream().anyMatch(
 					updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
 			if (!entryExists) {
-				outboxedAttachmentService.markAttachmentAsDeleted((String) path.target().values().get(Attachments.CONTENT_ID));
+				var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+				outboxedAttachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
 			}
 		};
-		ApplicationHandlerHelper.callValidator(entity, exitingDataList, filter, validator);
+		ApplicationHandlerHelper.callValidator(entity, exitingDataList, ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator);
 	}
 
 }

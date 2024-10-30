@@ -31,11 +31,11 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 /**
-	* The class {@link DraftCancelAttachmentsHandler} is an event handler that is called
-	* before a draft cancel event is executed.
-	* The handler checks if the attachments of the draft entity are still valid and
-	* deletes the content of the attachments if necessary.
-	*/
+ * The class {@link DraftCancelAttachmentsHandler} is an event handler that is called
+ * before a draft cancel event is executed.
+ * The handler checks if the attachments of the draft entity are still valid and
+ * deletes the content of the attachments if necessary.
+ */
 @ServiceName(value = "*", type = DraftService.class)
 public class DraftCancelAttachmentsHandler implements EventHandler {
 
@@ -53,7 +53,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 		this.activeEntityModifierProvider = activeEntityModifierProvider;
 	}
 
-	@Before(event = DraftService.EVENT_DRAFT_CANCEL)
+	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBeforeDraftCancel(DraftCancelEventContext context) {
 		if (isWhereEmpty(context)) {
