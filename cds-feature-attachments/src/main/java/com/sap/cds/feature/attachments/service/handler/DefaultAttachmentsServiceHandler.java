@@ -10,7 +10,6 @@ import org.slf4j.Marker;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.service.AttachmentService;
-import com.sap.cds.feature.attachments.service.handler.constants.HandlerConstants;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
@@ -33,6 +32,8 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 @ServiceName(value = "*", type = AttachmentService.class)
 public class DefaultAttachmentsServiceHandler implements EventHandler {
 
+	private static final int DEFAULT_ON = 10 * HandlerOrder.AFTER + HandlerOrder.LATE;
+
 	private static final Logger logger = LoggerFactory.getLogger(DefaultAttachmentsServiceHandler.class);
 	private static final Marker marker = LoggingMarker.ATTACHMENT_SERVICE.getMarker();
 
@@ -43,7 +44,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	}
 
 	@On
-	@HandlerOrder(HandlerConstants.DEFAULT_ON)
+	@HandlerOrder(DEFAULT_ON)
 	public void createAttachment(AttachmentCreateEventContext context) {
 		logger.debug(marker, "Default Attachment Service handler called for creating attachment for entity '{}'",
 				context.getAttachmentEntity().getQualifiedName());
@@ -57,7 +58,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	}
 
 	@On
-	@HandlerOrder(HandlerConstants.DEFAULT_ON)
+	@HandlerOrder(DEFAULT_ON)
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
 		logger.debug(marker, "Default Attachment Service handler called for marking attachment as deleted with document id {}", context.getContentId());
 
@@ -66,7 +67,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	}
 
 	@On
-	@HandlerOrder(HandlerConstants.DEFAULT_ON)
+	@HandlerOrder(DEFAULT_ON)
 	public void restoreAttachment(AttachmentRestoreEventContext context) {
 		logger.debug(marker, "Default Attachment Service handler called for restoring attachment for timestamp {}",
 				context.getRestoreTimestamp());
@@ -76,7 +77,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	}
 
 	@On
-	@HandlerOrder(HandlerConstants.DEFAULT_ON)
+	@HandlerOrder(DEFAULT_ON)
 	public void readAttachment(AttachmentReadEventContext context) {
 		logger.debug(marker, "Default Attachment Service handler called for reading attachment with document id {}",
 				context.getContentId());
