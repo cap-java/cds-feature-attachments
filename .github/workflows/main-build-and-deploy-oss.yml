@@ -23,6 +23,7 @@ jobs:
         with:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          maven-version: ${{ env.MAVEN_VERSION }}
 
   update-version:
     runs-on: ubuntu-latest

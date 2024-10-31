@@ -14,8 +14,7 @@ inputs:
     required: false
   maven-version:
     description: "The Maven version the build shall run with."
-    default: '3.6.3'
-    required: false
+    required: true
 
 runs:
   using: composite
