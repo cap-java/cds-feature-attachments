@@ -45,7 +45,6 @@ runs:
         --batch-mode
         --no-transfer-progress
         --fail-at-end
-        --threads 1C
         -Durl=${{ inputs.repository-url }}
         -DrepositoryId=${{ inputs.server-id }}
         -Dmaven.install.skip=true
