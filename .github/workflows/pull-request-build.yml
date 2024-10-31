@@ -1,7 +1,6 @@
 name: Pull Request Build with Maven
 
 env:
-  JAVA_VERSION: '17'
   MAVEN_VERSION: '3.6.3'
 
 on:
