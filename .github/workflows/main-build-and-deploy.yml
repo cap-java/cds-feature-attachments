@@ -2,6 +2,7 @@ name: Java CI with Maven
 
 env:
   JAVA_VERSION: '17'
+  MAVEN_VERSION: '3.6.3'
   DEPLOY_REPOSITORY_URL: 'https://common.repositories.cloud.sap/artifactory/cap-java'
   POM_FILE: '.flattened-pom.xml'
 
@@ -24,6 +25,7 @@ jobs:
         with:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          maven-version: ${{ env.MAVEN_VERSION }}
 
   update-version:
     runs-on: ubuntu-latest
@@ -38,6 +40,7 @@ jobs:
         uses: ./.github/actions/newrelease
         with:
           java-version: ${{ env.JAVA_VERSION }}
+          maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Upload Changed Artifacts
         uses: actions/upload-artifact@v4
@@ -60,6 +63,7 @@ jobs:
         uses: ./.github/actions/build
         with:
           java-version: ${{ env.JAVA_VERSION }}
+          maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Upload Changed Artifacts
         uses: actions/upload-artifact@v4

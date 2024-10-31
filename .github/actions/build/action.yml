@@ -7,8 +7,7 @@ inputs:
     required: true
   maven-version:
     description: "The Maven version the build shall run with."
-    default: '3.6.3'
-    required: false
+    required: true
   mutation-testing:
     description: "Whether to run mutation testing."
     default: 'true'
@@ -17,7 +16,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set up JDK ${{ inputs.java-version }}
+    - name: Set up Java ${{ inputs.java-version }}
       uses: actions/setup-java@v4
       with:
         java-version: ${{ inputs.java-version }}
