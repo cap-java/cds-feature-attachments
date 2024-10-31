@@ -45,7 +45,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void createAttachment(AttachmentCreateEventContext context) {
-		logger.info(marker, "Default Attachment Service handler called for creating attachment for entity '{}'",
+		logger.debug(marker, "Default Attachment Service handler called for creating attachment for entity '{}'",
 				context.getAttachmentEntity().getQualifiedName());
 		var contentId = (String) context.getAttachmentIds().get(Attachments.ID);
 		context.getData().setStatus(StatusCode.SCANNING);
@@ -59,7 +59,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
-		logger.info(marker, "Default Attachment Service handler called for marking attachment as deleted with document id {}", context.getContentId());
+		logger.debug(marker, "Default Attachment Service handler called for marking attachment as deleted with document id {}", context.getContentId());
 
 		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
@@ -68,7 +68,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On
 	@HandlerOrder(HandlerConstants.DEFAULT_ON)
 	public void restoreAttachment(AttachmentRestoreEventContext context) {
-		logger.info(marker, "Default Attachment Service handler called for restoring attachment for timestamp {}",
+		logger.debug(marker, "Default Attachment Service handler called for restoring attachment for timestamp {}",
 				context.getRestoreTimestamp());
 
 		//nothing to do as data are stored in the database and handled by the database
