@@ -54,7 +54,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 public class ReadAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(ReadAttachmentsHandler.class);
-	private static final Marker marker = LoggingMarker.APPLICATION_READ_HANDLER.getMarker();
+	private static final Marker marker = LoggingMarker.APPLICATION_HANDLER.getMarker();
 
 	private final AttachmentService attachmentService;
 	private final AttachmentStatusValidator attachmentStatusValidator;

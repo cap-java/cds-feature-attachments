@@ -30,7 +30,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 public class DeleteAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(DeleteAttachmentsHandler.class);
-	private static final Marker marker = LoggingMarker.APPLICATION_DELETE_HANDLER.getMarker();
+	private static final Marker marker = LoggingMarker.APPLICATION_HANDLER.getMarker();
 
 	private final AttachmentsReader attachmentsReader;
 	private final ModifyAttachmentEvent deleteContentAttachmentEvent;
