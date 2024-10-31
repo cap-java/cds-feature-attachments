@@ -9,7 +9,6 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 
 import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
@@ -41,7 +40,6 @@ import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScan
 import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
 import com.sap.cds.feature.attachments.service.malware.client.mapper.DefaultMalwareClientStatusMapper;
 import com.sap.cds.feature.attachments.service.malware.constants.MalwareScanConstants;
-import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -57,8 +55,6 @@ import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 public class Registration implements CdsRuntimeConfiguration {
 
 	private static final Logger logger = LoggerFactory.getLogger(Registration.class);
-	private static final Marker marker = LoggingMarker.ATTACHMENT_SERVICE_REGISTRATION.getMarker();
-
 	@Override
 	public void services(CdsRuntimeConfigurer configurer) {
 		configurer.service(new AttachmentsServiceImpl());
@@ -66,7 +62,7 @@ public class Registration implements CdsRuntimeConfiguration {
 
 	@Override
 	public void eventHandlers(CdsRuntimeConfigurer configurer) {
-		logger.info(marker, "Registering event handler for attachment service");
+		logger.debug("Registering event handlers");
 
 		var serviceCatalog = configurer.getCdsRuntime().getServiceCatalog();
 		var persistenceService = serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
@@ -83,6 +79,8 @@ public class Registration implements CdsRuntimeConfiguration {
 		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService,
 				new DefaultMalwareScanClient(clientProviderFactory), malwareStatusMapper, Objects.nonNull(binding));
 		var malwareScanEndTransactionListener = createEndTransactionMalwareScanListener(malwareScanner, configurer);
+
+		// register event handlers for attachment service
 		configurer.eventHandler(new DefaultAttachmentsServiceHandler(malwareScanEndTransactionListener));
 
 		var deleteContentEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
@@ -112,17 +110,13 @@ public class Registration implements CdsRuntimeConfiguration {
 
 	private DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
 			ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
-		var creationChangeSetListener = createCreationFailedListener(outboxedAttachmentService);
+		ListenerProvider creationChangeSetListener = (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId, cdsRuntime, outboxedAttachmentService);
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
 		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();
 		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent,
 				doNothingAttachmentEvent);
-	}
-
-	private ListenerProvider createCreationFailedListener(AttachmentService outboxedAttachmentService) {
-		return (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId, cdsRuntime, outboxedAttachmentService);
 	}
 
 }

@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
-	* The class {@link NodeTree} is a tree data structure that holds the association identifier and its children.
-	*/
+ * The class {@link NodeTree} is a tree data structure that holds the association identifier and its children.
+ */
 public class NodeTree {
 
 	final AssociationIdentifier identifier;

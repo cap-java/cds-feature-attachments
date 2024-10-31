@@ -38,7 +38,7 @@ import com.sap.cds.services.utils.OrderConstants;
 public class CreateAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(CreateAttachmentsHandler.class);
-	private static final Marker marker = LoggingMarker.APPLICATION_CREATE_HANDLER.getMarker();
+	private static final Marker marker = LoggingMarker.APPLICATION_HANDLER.getMarker();
 
 	private final ModifyAttachmentEventFactory eventFactory;
 	private final ThreadDataStorageReader storageReader;

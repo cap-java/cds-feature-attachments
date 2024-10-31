@@ -40,7 +40,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 public class DraftCancelAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(DraftCancelAttachmentsHandler.class);
-	private static final Marker marker = LoggingMarker.DRAFT_CANCEL_HANDLER.getMarker();
+	private static final Marker marker = LoggingMarker.DRAFT_HANDLER.getMarker();
 
 	private final AttachmentsReader attachmentsReader;
 	private final ModifyAttachmentEvent deleteContentAttachmentEvent;
