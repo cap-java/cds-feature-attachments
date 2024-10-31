@@ -58,7 +58,7 @@ jobs:
           server-username: DEPLOYMENT_USER
           server-password: DEPLOYMENT_PASS
 
-      - name: Setup Maven  ${{ env.MAVEN_VERSION }}
+      - name: Setup Maven ${{ env.MAVEN_VERSION }}
         uses: stCarolas/setup-maven@v5
         with:
           maven-version: ${{ env.MAVEN_VERSION }}
