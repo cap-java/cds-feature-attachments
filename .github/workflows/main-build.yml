@@ -1,5 +1,9 @@
 name: Java Build with Maven
 
+env:
+  JAVA_VERSION: '17'
+  MAVEN_VERSION: '3.6.3'
+
 on:
   push:
     branches: [ "main" ]
@@ -19,6 +23,7 @@ jobs:
         uses: ./.github/actions/build
         with:
           java-version: ${{ matrix.java-version }}
+          maven-version: ${{ env.MAVEN_VERSION }}
 
   scan:
     name: Blackduck Scan
