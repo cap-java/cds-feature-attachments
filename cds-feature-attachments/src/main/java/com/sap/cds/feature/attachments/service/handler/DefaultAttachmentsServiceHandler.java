@@ -23,13 +23,13 @@ import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 /**
-	* The class {@link DefaultAttachmentsServiceHandler} is an event handler that
-	* is called when an attachment is created, marked as deleted, restored or read.
-	* <p>
-	* As the documents and content is stored in the database with this handler the
-	* handler sets the isInternalStored flag to true in the create-context.
-	* Without this flag the content would be deleted in the database.
-	*/
+ * The class {@link DefaultAttachmentsServiceHandler} is an event handler that
+ * is called when an attachment is created, marked as deleted, restored or read.
+ * <p>
+ * As the documents and content is stored in the database with this handler the
+ * handler sets the isInternalStored flag to true in the create-context.
+ * Without this flag the content would be deleted in the database.
+ */
 @ServiceName(value = "*", type = AttachmentService.class)
 public class DefaultAttachmentsServiceHandler implements EventHandler {
 

@@ -8,8 +8,6 @@ import org.slf4j.MarkerFactory;
 
 public enum LoggingMarker {
 
-	ATTACHMENT_SERVICE_REGISTRATION,
-
 	APPLICATION_HANDLER,
 
 	DRAFT_HANDLER,
