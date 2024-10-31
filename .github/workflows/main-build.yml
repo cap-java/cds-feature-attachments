@@ -48,20 +48,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up Java ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: ${{ env.JAVA_VERSION }}
           distribution: sapmachine
           cache: maven
           server-id: artifactory
           server-username: DEPLOYMENT_USER
           server-password: DEPLOYMENT_PASS
 
-      - name: Setup Maven
+      - name: Setup Maven  ${{ env.MAVEN_VERSION }}
         uses: stCarolas/setup-maven@v5
         with:
-          maven-version: 3.6.3
+          maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Get Revision
         id: get-revision
