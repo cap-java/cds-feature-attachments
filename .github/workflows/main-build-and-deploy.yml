@@ -39,6 +39,7 @@ jobs:
         uses: ./.github/actions/newrelease
         with:
           java-version: ${{ env.JAVA_VERSION }}
+          maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Upload Changed Artifacts
         uses: actions/upload-artifact@v4
