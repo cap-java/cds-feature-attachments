@@ -34,6 +34,7 @@ runs:
       run: |
         echo "user: ${{ inputs.user }}"
         echo "profile: ${{ inputs.profile }}"
+        echo "revision: ${{ inputs.revision }}"
       shell: bash
 
     - name: "Setup Java"
