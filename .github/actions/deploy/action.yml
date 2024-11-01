@@ -18,6 +18,9 @@ inputs:
     description: "The path to the POM file."
     required: false
     default: "pom.xml"
+  maven-version:
+    description: "The Maven version the build shall run with."
+    required: true
 
 runs:
   using: composite
@@ -38,6 +41,11 @@ runs:
         server-id: ${{ inputs.server-id }}
         server-username: DEPLOYMENT_USER
         server-password: DEPLOYMENT_PASS
+
+    - name: Setup Maven ${{ inputs.maven-version }}
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version: ${{ inputs.maven-version }}
 
     - name: "Publish package"
       run: >

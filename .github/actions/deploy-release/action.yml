@@ -23,6 +23,9 @@ inputs:
   revision:
     description: "The revision of cds-feature-attachments"
     required: true
+  maven-version:
+    description: "The Maven version the build shall run with."
+    required: true
 
 runs:
   using: composite
@@ -42,6 +45,11 @@ runs:
         server-id: ossrh
         server-username: MAVEN_CENTRAL_USER
         server-password: MAVEN_CENTRAL_PASSWORD
+
+    - name: Setup Maven ${{ inputs.maven-version }}
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version: ${{ inputs.maven-version }}
 
     - name: "Import GPG Key"
       run: |
