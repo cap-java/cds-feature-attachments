@@ -31,6 +31,7 @@ runs:
         echo "user: ${{ inputs.user }}"
         echo "password: ${{ inputs.password }}"
         echo "pom-file: ${{ inputs.pom-file }}"
+        echo "altDeploymentRepository: ${{inputs.server-id}}::${{inputs.repository-url}}"
       shell: bash
 
     - name: "Setup java"
@@ -53,8 +54,7 @@ runs:
         --batch-mode
         --no-transfer-progress
         --fail-at-end
-        -Durl=${{ inputs.repository-url }}
-        -DrepositoryId=${{ inputs.server-id }}
+        -DaltDeploymentRepository=${{inputs.server-id}}::${{inputs.repository-url}}
         -Dmaven.install.skip=true
         -Dmaven.test.skip=true
         -Dmaven.compiler.showCompilationChanges
