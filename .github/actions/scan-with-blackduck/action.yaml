@@ -34,11 +34,11 @@ runs:
     - name: Get Major Version
       id: get-major-version
       run: |
-        echo "MAJOR_VERSION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
+        echo "REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Print Version Number
-      run: echo "${{ steps.get-major-version.outputs.MAJOR_VERSION }}"
+      run: echo "${{ steps.get-major-version.outputs.REVISION }}"
       shell: bash
 
     - name: BlackDuck Scan
@@ -47,7 +47,7 @@ runs:
         command: detectExecuteScan
         flags: \
           --githubToken=$GITHUB_token \
-          --version=${{ steps.get-major-version.outputs.MAJOR_VERSION }}
+          --version=${{ steps.get-major-version.outputs.REVISION }}
       env:
         PIPER_token: ${{ inputs.blackduck_token }}
         GITHUB_token: ${{ inputs.github_token }}

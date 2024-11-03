@@ -11,7 +11,6 @@
     * [Trigger](#trigger)
   * [Main Build](#main-build)
     * [Trigger](#trigger-1)
-  * [Error Handling](#error-handling)
   * [Build and Deploy](#build-and-deploy)
     * [Trigger](#trigger-2)
     * [Repository for Deploy](#repository-for-deploy)
@@ -93,7 +92,6 @@ In folder `.github/workflows` are the GitHub Actions defined. The following tabl
 |------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `pull-requests-build.yaml`   | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 for new pull requests. Each pull request need to have green runs from this workflow to be able to be merged. |
 | `main-build.yaml`            | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 once commits are merged to the master to get an indicator if everything works with the main branch.          |
-| `error-handling.yaml`        | Checks if the workflow started with `main-build.yaml` had errors and if yes, create a GitHub issue for the failing run.                                                                                    |
 | `main-build-and-deploy.yaml` | Creates a new version for main, builds the project, run all tests and deploy it to maven or artifactory. See also [Build and Deploy](#build-and-deploy)                                                    |
 
 ### Build Action
@@ -119,11 +117,6 @@ The `main-build.yaml` starts a workflow to build the project and run all unit an
 #### Trigger
 
 This workflow is triggered if a new commit is pushed to the main branch.
-
-### Error Handling
-
-The `error-handling.yaml` starts a workflow to check if the workflow started with `main-build.yaml` had errors.
-If the workflow had errors a GitHub issue is created with the error message and the failing run.
 
 ### Build and Deploy
 
