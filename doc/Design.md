@@ -121,10 +121,8 @@ This workflow is triggered if a new commit is pushed to the main branch.
 
 ### Build and Deploy
 
-The `main-build-and-deploy.yaml` starts a workflow to build the project, run all tests and deploy it to maven or
-artifactory.
-The workflow is started if a new release is created in GitHub. The tags used in the release are used as new version for
-the project.
+The `main-build-and-deploy.yaml` and `main-build-and-deploy-oss.yaml` start a workflow to build the project, run all tests and deploy it to maven or artifactory.
+The workflows are started if a new release or pre-release is created in GitHub. The tags used in the release are used as new version for the project.
 
 The following steps are executed in the workflow:
 
@@ -154,8 +152,7 @@ With this a new version is published to maven or artifactory once a new release 
 
 #### Repository for Deploy
 
-In the root `pom.xml` and the `cds-feature-attachments/pom.xml` the repository for the deployment is defined.
-The following code snippet shows the repository definition in the `pom.xml` file.
+In the root `pom.xml` the repository for the deployment is defined. The following code snippet shows the repository definition in the `pom.xml` file.
 
 ```xml
 <distributionManagement>
@@ -196,10 +193,8 @@ This token is used in the workflow to update the version in the `pom.xml` files.
 
 ### BlackDuck
 
-The BlackDuck action is called in the `main-build.yaml` and `main-build-and-deploy.yaml` to check the project for
-vulnerabilities.
-The action is defined in the `../.github/actions/scan-with-blackduck/action.yaml` file.
-The action uses the project piper action to call BlackDuck.
+The BlackDuck action is called in the `main-build.yaml`, `main-build-and-deploy.yaml` and `main-build-and-deploy-oss.yaml` to check the project for vulnerabilities.
+The action is defined in the `../.github/actions/scan-with-blackduck/action.yaml` file. The action uses the project piper action to call BlackDuck.
 
 The following user group is used for the BackDuck scan:
 
