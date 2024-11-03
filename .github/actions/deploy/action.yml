@@ -50,16 +50,11 @@ runs:
 
     - name: "Publish package"
       run: >
-        mvn 
-        --batch-mode
-        --no-transfer-progress
-        --fail-at-end
+        mvn -B -ntp --fae
+        -pl !integration-tests,!integration-tests/db,!integration-tests/srv
         -DaltDeploymentRepository=${{inputs.server-id}}::${{inputs.repository-url}}
         -Dmaven.install.skip=true
         -Dmaven.test.skip=true
-        -Dmaven.compiler.showCompilationChanges
-        -Dhttp.keepAlive=false
-        -DskipDuringDeploy=true
         -f ${{ inputs.pom-file }}
         deploy
       env:
