@@ -19,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build with Maven
+      - name: Build
         uses: ./.github/actions/build
         with:
           java-version: ${{ matrix.java-version }}
@@ -33,7 +33,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: "Scan With Black Duck"
+      - name: Scan
         uses: ./.github/actions/scan-with-blackduck
         with:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
@@ -58,7 +58,7 @@ jobs:
           server-username: DEPLOYMENT_USER
           server-password: DEPLOYMENT_PASS
 
-      - name: Setup Maven ${{ env.MAVEN_VERSION }}
+      - name: Set up Maven ${{ env.MAVEN_VERSION }}
         uses: stCarolas/setup-maven@v5
         with:
           maven-version: ${{ env.MAVEN_VERSION }}

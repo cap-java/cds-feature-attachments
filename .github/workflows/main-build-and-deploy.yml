@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Deploy to Artifactory
 
 env:
   JAVA_VERSION: '17'
@@ -13,14 +13,14 @@ on:
 jobs:
 
   blackduck:
-    name: "Blackduck Scan"
+    name: Blackduck Scan
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: "Scan With Black Duck"
+      - name: Scan With Black Duck
         uses: ./.github/actions/scan-with-blackduck
         with:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}

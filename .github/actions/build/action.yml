@@ -28,12 +28,12 @@ runs:
       with:
         maven-version: ${{ inputs.maven-version }}
 
-    - name: Perform Piper Maven build
+    - name: Piper Maven build
       uses: SAP/project-piper-action@main
       with:
         step-name: mavenBuild
 
-    - name: Run Mutation Testing
+    - name: Mutation Testing
       if: ${{ inputs.mutation-testing == 'true' }}
       run: mvn org.pitest:pitest-maven:mutationCoverage -f cds-feature-attachments/pom.xml
       shell: bash
