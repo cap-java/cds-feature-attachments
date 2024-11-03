@@ -18,6 +18,9 @@ inputs:
     description: "The path to the POM file."
     required: false
     default: "pom.xml"
+  maven-version:
+    description: "The Maven version the build shall run with."
+    required: true
 
 runs:
   using: composite
@@ -28,6 +31,7 @@ runs:
         echo "user: ${{ inputs.user }}"
         echo "password: ${{ inputs.password }}"
         echo "pom-file: ${{ inputs.pom-file }}"
+        echo "altDeploymentRepository: ${{inputs.server-id}}::${{inputs.repository-url}}"
       shell: bash
 
     - name: "Setup java"
@@ -39,19 +43,18 @@ runs:
         server-username: DEPLOYMENT_USER
         server-password: DEPLOYMENT_PASS
 
+    - name: Setup Maven ${{ inputs.maven-version }}
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version: ${{ inputs.maven-version }}
+
     - name: "Publish package"
       run: >
-        mvn 
-        --batch-mode
-        --no-transfer-progress
-        --fail-at-end
-        -Durl=${{ inputs.repository-url }}
-        -DrepositoryId=${{ inputs.server-id }}
+        mvn -B -ntp --fae
+        -pl !integration-tests,!integration-tests/db,!integration-tests/srv
+        -DaltDeploymentRepository=${{inputs.server-id}}::${{inputs.repository-url}}
         -Dmaven.install.skip=true
         -Dmaven.test.skip=true
-        -Dmaven.compiler.showCompilationChanges
-        -Dhttp.keepAlive=false
-        -DskipDuringDeploy=true
         -f ${{ inputs.pom-file }}
         deploy
       env:

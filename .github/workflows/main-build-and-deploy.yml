@@ -89,8 +89,9 @@ jobs:
           user: ${{ secrets.DEPLOYMENT_USER }}
           password: ${{ secrets.DEPLOYMENT_PASS }}
           server-id: artifactory
-          repository-url: ${{ env.DEPLOY_REPOSITORY_ID }}
+          repository-url: ${{ env.DEPLOY_REPOSITORY_URL }}
           pom-file: ${{ env.POM_FILE }}
+          maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Echo Status
         run: echo "The job status is ${{ job.status }}"
