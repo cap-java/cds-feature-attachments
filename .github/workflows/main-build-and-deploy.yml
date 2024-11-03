@@ -59,7 +59,7 @@ jobs:
         with:
           name: root-new-version
 
-      - name: Build with Maven
+      - name: Build
         uses: ./.github/actions/build
         with:
           java-version: ${{ env.JAVA_VERSION }}

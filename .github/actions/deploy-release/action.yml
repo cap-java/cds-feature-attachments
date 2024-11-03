@@ -1,5 +1,5 @@
-name: Maven Release
-description: "Deploys a Maven package to Maven Central repository."
+name: Deploy Release to Maven Central
+description: "Deploys released artifacts to Maven Central repository."
 
 inputs:
   user:
@@ -30,42 +30,38 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: "Echo Inputs"
+    - name: Echo Inputs
       run: |
         echo "user: ${{ inputs.user }}"
         echo "profile: ${{ inputs.profile }}"
         echo "revision: ${{ inputs.revision }}"
       shell: bash
 
-    - name: "Setup Java"
+    - name: Set up Java
       uses: actions/setup-java@v4
       with:
-        distribution: 'sapmachine'
+        distribution: sapmachine
         java-version: '17'
         cache: maven
         server-id: ossrh
         server-username: MAVEN_CENTRAL_USER
         server-password: MAVEN_CENTRAL_PASSWORD
 
-    - name: Setup Maven ${{ inputs.maven-version }}
+    - name: Set up Maven ${{ inputs.maven-version }}
       uses: stCarolas/setup-maven@v5
       with:
         maven-version: ${{ inputs.maven-version }}
 
-    - name: "Import GPG Key"
+    - name: Import GPG Key
       run: |
         echo "${{ inputs.pgp-private-key }}" | gpg --batch --passphrase "$PASSPHRASE" --import
       shell: bash  
       env:
         PASSPHRASE: ${{ inputs.pgp-passphrase }}
 
-    - name: "Deploy Locally"
+    - name: Deploy Locally
       run: >
-        mvn
-        --batch-mode
-        --no-transfer-progress
-        --fail-at-end
-        --show-version
+        mvn -B -ntp -fae --show-version
         -Durl=file:./temp_local_repo
         -Dmaven.install.skip=true
         -Dmaven.test.skip=true
@@ -81,13 +77,9 @@ runs:
         GPG_PASSPHRASE: ${{ inputs.pgp-passphrase }}
         GPG_PUB_KEY: ${{ inputs.pgp-pub-key }}
 
-    - name: "Deploy Staging"
+    - name: Deploy Staging
       run: >
-        mvn
-        --batch-mode
-        --no-transfer-progress
-        --fail-at-end
-        --show-version
+        mvn -B -ntp -fae --show-version
         org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy-staged-repository
         -DserverId=ossrh
         -DnexusUrl=https://oss.sonatype.org

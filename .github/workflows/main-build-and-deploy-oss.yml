@@ -57,7 +57,7 @@ jobs:
         with:
           name: root-new-version
 
-      - name: Build with Maven
+      - name: Build
         uses: ./.github/actions/build
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -81,7 +81,7 @@ jobs:
         with:
           name: root-build
 
-      - name: Deploy with Maven
+      - name: Deploy
         uses: ./.github/actions/deploy-release
         with:
           user: ${{ secrets.OSSRH_SONATYPE_ORG_API_USER }}

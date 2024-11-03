@@ -1,4 +1,4 @@
-name: Java Build with Maven
+name: Build and deploy main
 
 env:
   JAVA_VERSION: '17'
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build with Maven
+    name: Build
     runs-on: ubuntu-latest
     strategy:
       matrix:
