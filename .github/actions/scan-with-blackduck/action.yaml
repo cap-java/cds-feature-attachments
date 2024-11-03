@@ -19,7 +19,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set up JDK ${{ inputs.java-version }}
+    - name: Set up Java ${{ inputs.java-version }}
       uses: actions/setup-java@v4
       with:
         java-version: ${{ inputs.java-version }}
@@ -30,10 +30,6 @@ runs:
       uses: stCarolas/setup-maven@v5
       with:
         maven-version: ${{ inputs.maven-version }}
-
-    - name: Print Action Start
-      run: echo ">>>>> Starting Scan with BlackDuck Action; Not printing inputs as they might contain sensitive information."
-      shell: bash
 
     - name: Get Major Version
       id: get-major-version
@@ -56,8 +52,3 @@ runs:
         PIPER_token: ${{ inputs.blackduck_token }}
         GITHUB_token: ${{ inputs.github_token }}
         SCAN_MODE: FULL
-
-    - name: Print Action End
-      if: always()
-      run: echo "<<<<< Finished Scan with BlackDuck Action"
-      shell: bash

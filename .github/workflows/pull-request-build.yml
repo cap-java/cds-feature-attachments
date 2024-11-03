@@ -1,4 +1,4 @@
-name: Pull Request Build with Maven
+name: Pull Request Voter
 
 env:
   MAVEN_VERSION: '3.6.3'
@@ -20,7 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build with Maven
+      - name: Build
         uses: ./.github/actions/build
         with:
           java-version: ${{ matrix.java-version }}

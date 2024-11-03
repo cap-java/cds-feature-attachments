@@ -1,4 +1,4 @@
-name: Java CI with Maven - deploy to OSS
+name: Deploy to OSS
 
 env:
   JAVA_VERSION: '17'
