@@ -88,11 +88,12 @@ The following tables shows the folder structure of the project.
 
 In folder `.github/workflows` are the GitHub Actions defined. The following table shows the actions and their purpose.
 
-| File Name                    | Description                                                                                                                                                                                                |
-|------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `pull-requests-build.yaml`   | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 for new pull requests. Each pull request need to have green runs from this workflow to be able to be merged. |
-| `main-build.yaml`            | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 once commits are merged to the master to get an indicator if everything works with the main branch.          |
-| `main-build-and-deploy.yaml` | Creates a new version for main, builds the project, run all tests and deploy it to maven or artifactory. See also [Build and Deploy](#build-and-deploy)                                                    |
+| File Name                        | Description                                                                                                                                                                                                |
+|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `pull-requests-build.yaml`       | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 for new pull requests. Each pull request need to have green runs from this workflow to be able to be merged. |
+| `main-build.yaml`                | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 once commits are merged to the master to get an indicator if everything works with the main branch.          |
+| `main-build-and-deploy.yaml`     | Creates a new version for main, builds the project, run all tests and deploy it to maven or artifactory. See also [Build and Deploy](#build-and-deploy)                                                    |
+| `main-build-and-deploy-oss.yaml` | Creates a new version for main, builds the project, run all tests and deploy it to Maven Central. See also [Build and Deploy](#build-and-deploy)                                                    |
 
 ### Build Action
 
@@ -164,9 +165,9 @@ The following code snippet shows the repository definition in the `pom.xml` file
         <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
     </snapshotRepository>
     <repository>
-        <id>artifactory</id>
-        <name>Artifactory_DMZ</name>
-        <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
+        <id>ossrh</id>
+        <name>MavenCentral</name>
+        <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
 </distributionManagement>
 ```
