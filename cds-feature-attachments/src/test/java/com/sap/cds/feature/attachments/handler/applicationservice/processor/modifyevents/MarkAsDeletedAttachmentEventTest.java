@@ -67,9 +67,8 @@ class MarkAsDeletedAttachmentEventTest {
 		verify(attachmentService).markAttachmentAsDeleted(deletionInputCaptor.capture());
 		assertThat(deletionInputCaptor.getValue().contentId()).isEqualTo(contentId);
 		assertThat(deletionInputCaptor.getValue().userInfo()).isEqualTo(userInfo);
-		assertThat(currentData).containsEntry(Attachments.CONTENT_ID, null);
-		assertThat(currentData).containsEntry(Attachments.STATUS, null);
-		assertThat(currentData).containsEntry(Attachments.SCANNED_AT, null);
+		assertThat(currentData).containsEntry(Attachments.CONTENT_ID, null).containsEntry(Attachments.STATUS, null)
+				.containsEntry(Attachments.SCANNED_AT, null);
 	}
 
 	@Test

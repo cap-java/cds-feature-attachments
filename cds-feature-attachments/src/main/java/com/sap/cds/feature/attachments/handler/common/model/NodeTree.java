@@ -4,6 +4,7 @@
 package com.sap.cds.feature.attachments.handler.common.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -11,8 +12,8 @@ import java.util.List;
  */
 public class NodeTree {
 
-	final AssociationIdentifier identifier;
-	final List<NodeTree> children = new ArrayList<>();
+	private final AssociationIdentifier identifier;
+	private final List<NodeTree> children = new ArrayList<>();
 
 	public NodeTree(AssociationIdentifier identifier) {
 		this.identifier = identifier;
@@ -52,7 +53,7 @@ public class NodeTree {
 	}
 
 	public List<NodeTree> getChildren() {
-		return children;
+		return Collections.unmodifiableList(children);
 	}
 
 	@Override

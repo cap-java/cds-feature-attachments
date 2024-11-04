@@ -14,13 +14,12 @@ inputs:
     required: false
   maven-version:
     description: "The Maven version the build shall run with."
-    default: '3.6.3'
-    required: false
+    required: true
 
 runs:
   using: composite
   steps:
-    - name: Set up JDK ${{ inputs.java-version }}
+    - name: Set up Java ${{ inputs.java-version }}
       uses: actions/setup-java@v4
       with:
         java-version: ${{ inputs.java-version }}
@@ -32,18 +31,14 @@ runs:
       with:
         maven-version: ${{ inputs.maven-version }}
 
-    - name: Print Action Start
-      run: echo ">>>>> Starting Scan with BlackDuck Action; Not printing inputs as they might contain sensitive information."
-      shell: bash
-
     - name: Get Major Version
       id: get-major-version
       run: |
-        echo "MAJOR_VERSION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
+        echo "REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Print Version Number
-      run: echo "${{ steps.get-major-version.outputs.MAJOR_VERSION }}"
+      run: echo "${{ steps.get-major-version.outputs.REVISION }}"
       shell: bash
 
     - name: BlackDuck Scan
@@ -52,13 +47,8 @@ runs:
         command: detectExecuteScan
         flags: \
           --githubToken=$GITHUB_token \
-          --version=${{ steps.get-major-version.outputs.MAJOR_VERSION }}
+          --version=${{ steps.get-major-version.outputs.REVISION }}
       env:
         PIPER_token: ${{ inputs.blackduck_token }}
         GITHUB_token: ${{ inputs.github_token }}
         SCAN_MODE: FULL
-
-    - name: Print Action End
-      if: always()
-      run: echo "<<<<< Finished Scan with BlackDuck Action"
-      shell: bash

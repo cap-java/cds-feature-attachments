@@ -26,3 +26,4 @@ cds-feature-attachments/src/test/resources/schema.sql
 ## files required for local execution of github actions with act
 .env
 .secrets
+event.json

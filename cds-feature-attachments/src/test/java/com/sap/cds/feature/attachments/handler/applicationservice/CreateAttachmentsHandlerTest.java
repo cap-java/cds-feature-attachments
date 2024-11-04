@@ -125,9 +125,9 @@ class CreateAttachmentsHandlerTest {
 		verifyNoInteractions(eventFactory, event);
 		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNotNull();
 		var readOnlyData = (CdsData) attachment.get(DRAFT_READONLY_CONTEXT);
-		assertThat(readOnlyData).containsEntry(Attachment.CONTENT_ID, attachment.getContentId());
-		assertThat(readOnlyData).containsEntry(Attachment.STATUS, attachment.getStatus());
-		assertThat(readOnlyData).containsEntry(Attachment.SCANNED_AT, attachment.getScannedAt());
+		assertThat(readOnlyData).containsEntry(Attachment.CONTENT_ID, attachment.getContentId())
+				.containsEntry(Attachment.STATUS, attachment.getStatus())
+				.containsEntry(Attachment.SCANNED_AT, attachment.getScannedAt());
 	}
 
 	@Test
@@ -149,9 +149,8 @@ class CreateAttachmentsHandlerTest {
 
 		verifyNoInteractions(eventFactory, event);
 		assertThat(createAttachment.get(DRAFT_READONLY_CONTEXT)).isNull();
-		assertThat(createAttachment).containsEntry(Attachment.CONTENT_ID, contentId);
-		assertThat(createAttachment).doesNotContainKey(Attachment.STATUS);
-		assertThat(createAttachment).doesNotContainKey(Attachment.SCANNED_AT);
+		assertThat(createAttachment).containsEntry(Attachment.CONTENT_ID, contentId)
+				.doesNotContainKey(Attachment.STATUS).doesNotContainKey(Attachment.SCANNED_AT);
 	}
 
 	@Test
