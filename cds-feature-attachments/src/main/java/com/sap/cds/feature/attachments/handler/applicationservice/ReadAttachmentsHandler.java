@@ -110,8 +110,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName,
 			List<String> processedEntities) {
 		var associationNames = new ArrayList<String>();
-		var baseEntity = ApplicationHandlerHelper.getBaseEntity(model, entity);
-		if (ApplicationHandlerHelper.isMediaEntity(baseEntity)) {
+		if (ApplicationHandlerHelper.isMediaEntity(entity)) {
 			associationNames.add(associationName);
 		}
 

@@ -22,7 +22,7 @@ class NodeTreeTest {
 		var cut = new NodeTree(identifier);
 		cut.addPath(List.of(identifier));
 
-		assertThat(cut.children).isEmpty();
+		assertThat(cut.getChildren()).isEmpty();
 	}
 
 	@Test
@@ -65,26 +65,26 @@ class NodeTreeTest {
 		cut.addPath(List.of(identifier1, identifier4, identifier2, identifier3));
 		cut.addPath(List.of(identifier1, identifier4, identifier4));
 
-		assertThat(cut.children).hasSize(3);
-		assertThat(cut.children.get(0).identifier).isEqualTo(identifier2);
-		assertThat(cut.children.get(0).children).hasSize(1);
-		assertThat(cut.children.get(0).children.get(0).identifier).isEqualTo(identifier3);
-		assertThat(cut.children.get(0).children.get(0).children).isNotNull().isEmpty();
+		assertThat(cut.getChildren()).hasSize(3);
+		assertThat(cut.getChildren().get(0).getIdentifier()).isEqualTo(identifier2);
+		assertThat(cut.getChildren().get(0).getChildren()).hasSize(1);
+		assertThat(cut.getChildren().get(0).getChildren().get(0).getIdentifier()).isEqualTo(identifier3);
+		assertThat(cut.getChildren().get(0).getChildren().get(0).getChildren()).isNotNull().isEmpty();
 
-		assertThat(cut.children.get(1).identifier).isEqualTo(identifier3);
-		assertThat(cut.children.get(1).children).hasSize(1);
-		assertThat(cut.children.get(1).children.get(0).identifier).isEqualTo(identifier4);
-		assertThat(cut.children.get(1).children.get(0).children).isNotNull().isEmpty();
+		assertThat(cut.getChildren().get(1).getIdentifier()).isEqualTo(identifier3);
+		assertThat(cut.getChildren().get(1).getChildren()).hasSize(1);
+		assertThat(cut.getChildren().get(1).getChildren().get(0).getIdentifier()).isEqualTo(identifier4);
+		assertThat(cut.getChildren().get(1).getChildren().get(0).getChildren()).isNotNull().isEmpty();
 
-		assertThat(cut.children.get(2).identifier).isEqualTo(identifier4);
-		assertThat(cut.children.get(2).children).hasSize(2);
-		assertThat(cut.children.get(2).children.get(0).identifier).isEqualTo(identifier2);
-		assertThat(cut.children.get(2).children.get(0).children).hasSize(1);
-		assertThat(cut.children.get(2).children.get(0).children.get(0).identifier).isEqualTo(identifier3);
-		assertThat(cut.children.get(2).children.get(0).children.get(0).children).isNotNull().isEmpty();
+		assertThat(cut.getChildren().get(2).getIdentifier()).isEqualTo(identifier4);
+		assertThat(cut.getChildren().get(2).getChildren()).hasSize(2);
+		assertThat(cut.getChildren().get(2).getChildren().get(0).getIdentifier()).isEqualTo(identifier2);
+		assertThat(cut.getChildren().get(2).getChildren().get(0).getChildren()).hasSize(1);
+		assertThat(cut.getChildren().get(2).getChildren().get(0).getChildren().get(0).getIdentifier()).isEqualTo(identifier3);
+		assertThat(cut.getChildren().get(2).getChildren().get(0).getChildren().get(0).getChildren()).isNotNull().isEmpty();
 
-		assertThat(cut.children.get(2).children.get(1).identifier).isEqualTo(identifier4);
-		assertThat(cut.children.get(2).children.get(1).children).isNotNull().isEmpty();
+		assertThat(cut.getChildren().get(2).getChildren().get(1).getIdentifier()).isEqualTo(identifier4);
+		assertThat(cut.getChildren().get(2).getChildren().get(1).getChildren()).isNotNull().isEmpty();
 	}
 
 	@Test
@@ -96,16 +96,16 @@ class NodeTreeTest {
 		var cut = new NodeTree(identifier1);
 		cut.addPath(List.of(identifier2, identifier3));
 
-		assertThat(cut.children).isEmpty();
+		assertThat(cut.getChildren()).isEmpty();
 	}
 
 	private void verifyTwoNodeHierarchies(NodeTree cut, AssociationIdentifier identifier2,
 			AssociationIdentifier identifier3) {
-		assertThat(cut.children).hasSize(1);
-		assertThat(cut.children.get(0).identifier).isEqualTo(identifier2);
-		assertThat(cut.children.get(0).children).hasSize(1);
-		assertThat(cut.children.get(0).children.get(0).identifier).isEqualTo(identifier3);
-		assertThat(cut.children.get(0).children.get(0).children).isEmpty();
+		assertThat(cut.getChildren()).hasSize(1);
+		assertThat(cut.getChildren().get(0).getIdentifier()).isEqualTo(identifier2);
+		assertThat(cut.getChildren().get(0).getChildren()).hasSize(1);
+		assertThat(cut.getChildren().get(0).getChildren().get(0).getIdentifier()).isEqualTo(identifier3);
+		assertThat(cut.getChildren().get(0).getChildren().get(0).getChildren()).isEmpty();
 	}
 
 }

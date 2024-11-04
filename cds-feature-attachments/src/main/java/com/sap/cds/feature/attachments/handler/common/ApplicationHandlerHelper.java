@@ -19,10 +19,8 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.Drafts;
-import com.sap.cds.services.utils.model.CdsModelUtils;
 
 /**
  * The class {@link ApplicationHandlerHelper} provides helper methods for the attachment application handlers.
@@ -94,11 +92,6 @@ public final class ApplicationHandlerHelper {
 		var keyMap = new HashMap<>(keys);
 		keyMap.entrySet().removeIf(entry -> isDraftActiveEntityField(entry.getKey()));
 		return keyMap;
-	}
-
-	public static CdsEntity getBaseEntity(CdsModel model, CdsEntity entity) {
-		var entityResultOptional = entity.query().map(q -> CdsModelUtils.getEntityPath(q, model).rootEntity());
-		return entityResultOptional.orElseGet(() -> model.findEntity(entity.getQualifiedName()).orElseThrow());
 	}
 
 	private static boolean hasElementAnnotation(CdsElement element, String annotation) {

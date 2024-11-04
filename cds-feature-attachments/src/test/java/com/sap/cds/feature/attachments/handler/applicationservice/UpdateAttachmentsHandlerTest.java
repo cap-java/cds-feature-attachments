@@ -52,7 +52,7 @@ import com.sap.cds.services.runtime.CdsRuntime;
 
 class UpdateAttachmentsHandlerTest {
 
-	private static final String UP__ID = "up__ID";
+	private static final String UP_ID = "up__ID";
 	private static final String DRAFT_READONLY_CONTEXT = "DRAFT_READONLY_CONTEXT";
 	private static CdsRuntime runtime;
 
@@ -156,9 +156,9 @@ class UpdateAttachmentsHandlerTest {
 		verifyNoInteractions(eventFactory, event);
 		assertThat(updateAttachment.get(DRAFT_READONLY_CONTEXT)).isNotNull();
 		var readOnlyUpdateData = (CdsData) updateAttachment.get(DRAFT_READONLY_CONTEXT);
-		assertThat(readOnlyUpdateData).containsEntry(Attachment.CONTENT_ID, updateAttachment.getContentId());
-		assertThat(readOnlyUpdateData).containsEntry(Attachment.STATUS, updateAttachment.getStatus());
-		assertThat(readOnlyUpdateData).containsEntry(Attachment.SCANNED_AT, updateAttachment.getScannedAt());
+		assertThat(readOnlyUpdateData).containsEntry(Attachment.CONTENT_ID, updateAttachment.getContentId())
+				.containsEntry(Attachment.STATUS, updateAttachment.getStatus())
+				.containsEntry(Attachment.SCANNED_AT, updateAttachment.getScannedAt());
 	}
 
 	@Test
@@ -180,9 +180,8 @@ class UpdateAttachmentsHandlerTest {
 
 		verifyNoInteractions(eventFactory, event);
 		assertThat(updateAttachment.get(DRAFT_READONLY_CONTEXT)).isNull();
-		assertThat(updateAttachment).containsEntry(Attachment.CONTENT_ID, contentId);
-		assertThat(updateAttachment).doesNotContainKey(Attachment.STATUS);
-		assertThat(updateAttachment).doesNotContainKey(Attachment.SCANNED_AT);
+		assertThat(updateAttachment).containsEntry(Attachment.CONTENT_ID, contentId)
+				.doesNotContainKey(Attachment.STATUS).doesNotContainKey(Attachment.SCANNED_AT);
 	}
 
 	@Test
@@ -280,7 +279,7 @@ class UpdateAttachmentsHandlerTest {
 	void selectIsUsedWithFilterAndWhere() {
 		var attachment = Attachments.create();
 		attachment.setId(UUID.randomUUID().toString());
-		attachment.put(UP__ID, "test_full");
+		attachment.put(UP_ID, "test_full");
 		attachment.setContent(mock(InputStream.class));
 		var entityWithKeys = CQL.entity(Attachment_.CDS_NAME).matching(getAttachmentKeyMap(attachment));
 		CqnUpdate update = Update.entity(entityWithKeys).byId("test");
@@ -293,14 +292,14 @@ class UpdateAttachmentsHandlerTest {
 		var select = selectCaptor.getValue();
 		assertThat(select.toString()).contains(getRefString("$key", "test"));
 		assertThat(select.toString()).contains(getRefString(Attachment.ID, attachment.getId()));
-		assertThat(select.toString()).contains(getRefString(UP__ID, (String) attachment.get(UP__ID)));
+		assertThat(select.toString()).contains(getRefString(UP_ID, (String) attachment.get(UP_ID)));
 	}
 
 	@Test
 	void selectIsUsedWithFilter() {
 		var attachment = Attachments.create();
 		attachment.setId(UUID.randomUUID().toString());
-		attachment.put(UP__ID, "test_filter");
+		attachment.put(UP_ID, "test_filter");
 		attachment.setContent(mock(InputStream.class));
 		var entityWithKeys = CQL.entity(Attachment_.CDS_NAME).matching(getAttachmentKeyMap(attachment));
 		CqnUpdate update = Update.entity(entityWithKeys);
@@ -312,14 +311,14 @@ class UpdateAttachmentsHandlerTest {
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
 		var select = selectCaptor.getValue();
 		assertThat(select.toString()).contains(getRefString(Attachment.ID, attachment.getId()));
-		assertThat(select.toString()).contains(getRefString(UP__ID, (String) attachment.get(UP__ID)));
+		assertThat(select.toString()).contains(getRefString(UP_ID, (String) attachment.get(UP_ID)));
 	}
 
 	@Test
 	void selectIsUsedWithWhere() {
 		var attachment = Attachments.create();
 		attachment.setId(UUID.randomUUID().toString());
-		attachment.put(UP__ID, "test_where");
+		attachment.put(UP_ID, "test_where");
 		attachment.setContent(mock(InputStream.class));
 		CqnUpdate update = Update.entity(Attachment_.CDS_NAME).byId("test");
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
@@ -330,7 +329,7 @@ class UpdateAttachmentsHandlerTest {
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
 		var select = selectCaptor.getValue();
 		assertThat(select.toString()).doesNotContain(Attachment.ID);
-		assertThat(select.toString()).doesNotContain(UP__ID);
+		assertThat(select.toString()).doesNotContain(UP_ID);
 		assertThat(select.toString()).contains(getRefString("$key", "test"));
 	}
 
@@ -338,7 +337,7 @@ class UpdateAttachmentsHandlerTest {
 	void selectIsUsedWithAttachmentId() {
 		var attachment = Attachments.create();
 		attachment.setId(UUID.randomUUID().toString());
-		attachment.put(UP__ID, "test_up_id");
+		attachment.put(UP_ID, "test_up_id");
 		attachment.setContent(mock(InputStream.class));
 		var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
 		CqnUpdate update = Update.entity(Attachment_.class).where(entity -> entity.ID().eq(attachment.getId()));
@@ -349,18 +348,18 @@ class UpdateAttachmentsHandlerTest {
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
 		var select = selectCaptor.getValue();
 		assertThat(select.toString()).contains(getRefString(Attachment.ID, attachment.getId()));
-		assertThat(select.toString()).doesNotContain(UP__ID);
+		assertThat(select.toString()).doesNotContain(UP_ID);
 	}
 
 	@Test
 	void selectIsCorrectForMultipleAttachments() {
 		var attachment1 = Attachments.create();
 		attachment1.setId(UUID.randomUUID().toString());
-		attachment1.put(UP__ID, "test_multiple 2");
+		attachment1.put(UP_ID, "test_multiple 2");
 		attachment1.setContent(mock(InputStream.class));
 		var attachment2 = Attachments.create();
 		attachment2.setId(UUID.randomUUID().toString());
-		attachment2.put(UP__ID, "test_multiple 2");
+		attachment2.put(UP_ID, "test_multiple 2");
 		attachment2.setContent(mock(InputStream.class));
 		CqnUpdate update = Update.entity(Attachment_.class).where(
 				attachment -> attachment.ID().eq(attachment1.getId()).or(attachment.ID().eq(attachment2.getId())));
@@ -466,7 +465,7 @@ class UpdateAttachmentsHandlerTest {
 	}
 
 	private Map<String, Object> getAttachmentKeyMap(Attachments attachment) {
-		return Map.of(Attachment.ID, attachment.getId(), "up__ID", attachment.get(UP__ID));
+		return Map.of(Attachment.ID, attachment.getId(), "up__ID", attachment.get(UP_ID));
 	}
 
 	private String getRefString(String key, String value) {

@@ -42,8 +42,8 @@ import com.sap.cds.services.persistence.PersistenceService;
 abstract class DraftOdataRequestValidationBase {
 
 	protected static final Logger logger = LoggerFactory.getLogger(DraftOdataRequestValidationBase.class);
-	private final static String BASE_URL = MockHttpRequestHelper.ODATA_BASE_URL + "TestDraftService/";
-	private final static String BASE_ROOT_URL = BASE_URL + "DraftRoots";
+	private static final String BASE_URL = MockHttpRequestHelper.ODATA_BASE_URL + "TestDraftService/";
+	private static final String BASE_ROOT_URL = BASE_URL + "DraftRoots";
 	@Autowired(required = false)
 	protected TestPluginAttachmentsServiceHandler serviceHandler;
 	@Autowired

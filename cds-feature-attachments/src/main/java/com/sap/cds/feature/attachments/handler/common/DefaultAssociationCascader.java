@@ -51,8 +51,7 @@ public class DefaultAssociationCascader implements AssociationCascader {
 		var localProcessEntities = new ArrayList<String>();
 		currentList.set(new LinkedList<>());
 
-		var baseEntity = ApplicationHandlerHelper.getBaseEntity(model, entity);
-		var isMediaEntity = ApplicationHandlerHelper.isMediaEntity(baseEntity);
+		var isMediaEntity = ApplicationHandlerHelper.isMediaEntity(entity);
 		if (isMediaEntity) {
 			var identifier = new AssociationIdentifier(associationName, entity.getQualifiedName());
 			firstList.addLast(identifier);
