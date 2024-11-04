@@ -27,3 +27,12 @@ steps:
     # https://www.project-piper.io/steps/detectExecuteScan/#dockerimage
     # If empty, Docker is not used and the command is executed directly on the Jenkins system.
     dockerImage: ''
+
+  sonarExecuteScan:
+    serverUrl: https://sonar.tools.sap
+    sonarTokenCredentialsId: SONARQ_TOKEN
+    projectKey: cds-feature-attachments
+    # https://www.project-piper.io/steps/sonarExecuteScan/#dockerimage
+    # If empty, Docker is not used and the command is executed directly on the Jenkins system.
+    dockerImage: ''
+    
