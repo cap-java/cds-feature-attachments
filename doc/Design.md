@@ -11,7 +11,6 @@
     * [Trigger](#trigger)
   * [Main Build](#main-build)
     * [Trigger](#trigger-1)
-  * [Error Handling](#error-handling)
   * [Build and Deploy](#build-and-deploy)
     * [Trigger](#trigger-2)
     * [Repository for Deploy](#repository-for-deploy)
@@ -89,12 +88,12 @@ The following tables shows the folder structure of the project.
 
 In folder `.github/workflows` are the GitHub Actions defined. The following table shows the actions and their purpose.
 
-| File Name                    | Description                                                                                                                                                                                                |
-|------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `pull-requests-build.yaml`   | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 for new pull requests. Each pull request need to have green runs from this workflow to be able to be merged. |
-| `main-build.yaml`            | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 once commits are merged to the master to get an indicator if everything works with the main branch.          |
-| `error-handling.yaml`        | Checks if the workflow started with `main-build.yaml` had errors and if yes, create a GitHub issue for the failing run.                                                                                    |
-| `main-build-and-deploy.yaml` | Creates a new version for main, builds the project, run all tests and deploy it to maven or artifactory. See also [Build and Deploy](#build-and-deploy)                                                    |
+| File Name                        | Description                                                                                                                                                                                                |
+|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `pull-requests-build.yaml`       | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 for new pull requests. Each pull request need to have green runs from this workflow to be able to be merged. |
+| `main-build.yaml`                | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 once commits are merged to the master to get an indicator if everything works with the main branch.          |
+| `main-build-and-deploy.yaml`     | Creates a new version for main, builds the project, run all tests and deploy it to maven or artifactory. See also [Build and Deploy](#build-and-deploy)                                                    |
+| `main-build-and-deploy-oss.yaml` | Creates a new version for main, builds the project, run all tests and deploy it to Maven Central. See also [Build and Deploy](#build-and-deploy)                                                    |
 
 ### Build Action
 
@@ -120,17 +119,10 @@ The `main-build.yaml` starts a workflow to build the project and run all unit an
 
 This workflow is triggered if a new commit is pushed to the main branch.
 
-### Error Handling
-
-The `error-handling.yaml` starts a workflow to check if the workflow started with `main-build.yaml` had errors.
-If the workflow had errors a GitHub issue is created with the error message and the failing run.
-
 ### Build and Deploy
 
-The `main-build-and-deploy.yaml` starts a workflow to build the project, run all tests and deploy it to maven or
-artifactory.
-The workflow is started if a new release is created in GitHub. The tags used in the release are used as new version for
-the project.
+The `main-build-and-deploy.yaml` and `main-build-and-deploy-oss.yaml` start a workflow to build the project, run all tests and deploy it to maven or artifactory.
+The workflows are started if a new release or pre-release is created in GitHub. The tags used in the release are used as new version for the project.
 
 The following steps are executed in the workflow:
 
@@ -160,8 +152,7 @@ With this a new version is published to maven or artifactory once a new release 
 
 #### Repository for Deploy
 
-In the root `pom.xml` and the `cds-feature-attachments/pom.xml` the repository for the deployment is defined.
-The following code snippet shows the repository definition in the `pom.xml` file.
+In the root `pom.xml` the repository for the deployment is defined. The following code snippet shows the repository definition in the `pom.xml` file.
 
 ```xml
 <distributionManagement>
@@ -171,9 +162,9 @@ The following code snippet shows the repository definition in the `pom.xml` file
         <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
     </snapshotRepository>
     <repository>
-        <id>artifactory</id>
-        <name>Artifactory_DMZ</name>
-        <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
+        <id>ossrh</id>
+        <name>MavenCentral</name>
+        <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
 </distributionManagement>
 ```
@@ -202,10 +193,8 @@ This token is used in the workflow to update the version in the `pom.xml` files.
 
 ### BlackDuck
 
-The BlackDuck action is called in the `main-build.yaml` and `main-build-and-deploy.yaml` to check the project for
-vulnerabilities.
-The action is defined in the `../.github/actions/scan-with-blackduck/action.yaml` file.
-The action uses the project piper action to call BlackDuck.
+The BlackDuck action is called in the `main-build.yaml`, `main-build-and-deploy.yaml` and `main-build-and-deploy-oss.yaml` to check the project for vulnerabilities.
+The action is defined in the `../.github/actions/scan-with-blackduck/action.yaml` file. The action uses the project piper action to call BlackDuck.
 
 The following user group is used for the BackDuck scan:
 
