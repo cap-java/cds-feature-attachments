@@ -35,5 +35,5 @@ runs:
 
     - name: Mutation Testing
       if: ${{ inputs.mutation-testing == 'true' }}
-      run: mvn org.pitest:pitest-maven:mutationCoverage -f cds-feature-attachments/pom.xml
+      run: mvn org.pitest:pitest-maven:mutationCoverage -f cds-feature-attachments/pom.xml -ntp -B
       shell: bash
