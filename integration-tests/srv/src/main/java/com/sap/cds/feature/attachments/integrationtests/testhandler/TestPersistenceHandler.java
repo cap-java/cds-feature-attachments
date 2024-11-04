@@ -1,5 +1,8 @@
 package com.sap.cds.feature.attachments.integrationtests.testhandler;
 
+import static com.sap.cds.services.cds.CqnService.EVENT_CREATE;
+import static com.sap.cds.services.cds.CqnService.EVENT_UPDATE;
+
 import org.springframework.stereotype.Component;
 
 import com.sap.cds.services.ServiceException;
@@ -15,14 +18,14 @@ public class TestPersistenceHandler implements EventHandler {
 	private boolean throwExceptionOnUpdate = false;
 	private boolean throwExceptionOnCreate = false;
 
-	@Before(event = PersistenceService.EVENT_UPDATE)
+	@Before(event = EVENT_UPDATE)
 	public void throwExceptionOnUpdate() {
 		if (throwExceptionOnUpdate) {
 			throw new ServiceException("Exception on update");
 		}
 	}
 
-	@Before(event = PersistenceService.EVENT_CREATE)
+	@Before(event = EVENT_CREATE)
 	public void throwExceptionOnCreate() {
 		if (throwExceptionOnCreate) {
 			throw new ServiceException("Exception on create");
