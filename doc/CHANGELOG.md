@@ -12,11 +12,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- Simplified logging markers
+- [Simplified logging markers](https://github.com/cap-java/cds-feature-attachments/pull/178)
 - [Improved Javadoc](https://github.com/cap-java/cds-feature-attachments/pull/256)
-- Updated dependencies and Maven build plugins to latest versions.
+- Updated some dependencies to latest versions.
 
 ### Fixed
+
+- [Fixed a bug](https://github.com/cap-java/cds-feature-attachments/pull/270) that caused malware scanning to fail if the content was stored in a HANA DB.
 
 ## Version 1.0.4 - 2024-10-22
 
