@@ -40,6 +40,7 @@ import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScan
 import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
 import com.sap.cds.feature.attachments.service.malware.client.mapper.DefaultMalwareClientStatusMapper;
 import com.sap.cds.feature.attachments.service.malware.constants.MalwareScanConstants;
+import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cds.services.outbox.OutboxService;
@@ -66,19 +67,24 @@ public class Registration implements CdsRuntimeConfiguration {
 	public void eventHandlers(CdsRuntimeConfigurer configurer) {
 		logger.debug("Registering event handlers");
 
-		var serviceCatalog = configurer.getCdsRuntime().getServiceCatalog();
+		CdsRuntime runtime = configurer.getCdsRuntime();
+		ServiceCatalog serviceCatalog = runtime.getServiceCatalog();
+		CdsEnvironment environment = runtime.getEnvironment();
+
+		// get required services from the service catalog
 		var persistenceService = serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
 		var attachmentService = serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
 		var outbox = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
 		var outboxedAttachmentService = outbox.outboxed(attachmentService);
 
-		List<ServiceBinding> bindings = configurer.getCdsRuntime().getEnvironment().getServiceBindings().filter(
-				b -> ServiceBindingUtils.matches(b, MalwareScanConstants.MALWARE_SCAN_SERVICE_LABEL)).toList();
+		// retrieve the service binding for the malware scanner service
+		List<ServiceBinding> bindings = environment.getServiceBindings()
+				.filter(b -> ServiceBindingUtils.matches(b, MalwareScanConstants.MALWARE_SCAN_SERVICE_LABEL)).toList();
 		var binding = !bindings.isEmpty() ? bindings.get(0) : null;
 
-		// create connection pool configuration
-		var connectionPool = getConnectionPool(configurer.getCdsRuntime());
-		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, configurer.getCdsRuntime(), connectionPool);
+		// get HTTP connection pool configuration
+		var connectionPool = getConnectionPool(environment);
+		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, runtime, connectionPool);
 		var malwareStatusMapper = new DefaultMalwareClientStatusMapper();
 		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService,
 				new DefaultMalwareScanClient(clientProviderFactory), malwareStatusMapper, Objects.nonNull(binding));
@@ -96,7 +102,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
 		configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 		configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
-		var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, configurer.getCdsRuntime());
+		var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
 		configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
 
 		// register event handlers for draft service
@@ -123,10 +129,9 @@ public class Registration implements CdsRuntimeConfiguration {
 				doNothingAttachmentEvent);
 	}
 
-	private static ConnectionPool getConnectionPool(CdsRuntime runtime) {
+	private static ConnectionPool getConnectionPool(CdsEnvironment env) {
 		// the common prefix for the connection pool configuration
 		final String prefix = "cds.attachments.malware.http.%s";
-		CdsEnvironment env = runtime.getEnvironment();
 		Duration timeout = Duration
 				.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, 120));
 		int maxConnections = env.getProperty(prefix.formatted("maxConnections"), Integer.class, 20);
