@@ -1,7 +1,11 @@
 package com.sap.cds.feature.attachments.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 
@@ -48,6 +52,7 @@ class RegistrationTest {
 		serviceCatalog = mock(ServiceCatalog.class);
 		when(cdsRuntime.getServiceCatalog()).thenReturn(serviceCatalog);
 		CdsEnvironment environment = mock(CdsEnvironment.class);
+		when(environment.getProperty(any(), any(), any())).thenAnswer(invocation -> invocation.getArgument(2));
 		when(cdsRuntime.getEnvironment()).thenReturn(environment);
 		persistenceService = mock(PersistenceService.class);
 		attachmentService = mock(AttachmentService.class);
