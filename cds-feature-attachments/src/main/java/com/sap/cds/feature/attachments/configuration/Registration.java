@@ -73,7 +73,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		List<ServiceBinding> bindings = configurer.getCdsRuntime().getEnvironment().getServiceBindings().filter(
 				b -> ServiceBindingUtils.matches(b, MalwareScanConstants.MALWARE_SCAN_SERVICE_LABEL)).toList();
 		var binding = !bindings.isEmpty() ? bindings.get(0) : null;
-		var connectionPoll = new ConnectionPool(Duration.ofSeconds(60), 2, 20);
+		var connectionPoll = new ConnectionPool(Duration.ofSeconds(300), 2, 20);
 		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, configurer.getCdsRuntime(), connectionPoll);
 		var malwareStatusMapper = new DefaultMalwareClientStatusMapper();
 		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService,
