@@ -50,7 +50,7 @@ runs:
 
     - name: Deploy
       run: >
-        mvn -B -ntp --fae --show-version
+        mvn -B -ntp -fae --show-version
         -pl !integration-tests,!integration-tests/db,!integration-tests/srv
         -DaltDeploymentRepository=${{inputs.server-id}}::${{inputs.repository-url}}
         -Dmaven.install.skip=true
