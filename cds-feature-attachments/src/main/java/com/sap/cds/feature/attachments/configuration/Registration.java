@@ -40,9 +40,11 @@ import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScan
 import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
 import com.sap.cds.feature.attachments.service.malware.client.mapper.DefaultMalwareClientStatusMapper;
 import com.sap.cds.feature.attachments.service.malware.constants.MalwareScanConstants;
+import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
+import com.sap.cds.services.runtime.CdsRuntime;
 import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 import com.sap.cds.services.utils.environment.ServiceBindingUtils;
@@ -73,8 +75,10 @@ public class Registration implements CdsRuntimeConfiguration {
 		List<ServiceBinding> bindings = configurer.getCdsRuntime().getEnvironment().getServiceBindings().filter(
 				b -> ServiceBindingUtils.matches(b, MalwareScanConstants.MALWARE_SCAN_SERVICE_LABEL)).toList();
 		var binding = !bindings.isEmpty() ? bindings.get(0) : null;
-		var connectionPoll = new ConnectionPool(Duration.ofSeconds(120), 2, 20);
-		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, configurer.getCdsRuntime(), connectionPoll);
+
+		// create connection pool configuration
+		var connectionPool = getConnectionPool(configurer.getCdsRuntime());
+		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, configurer.getCdsRuntime(), connectionPool);
 		var malwareStatusMapper = new DefaultMalwareClientStatusMapper();
 		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService,
 				new DefaultMalwareScanClient(clientProviderFactory), malwareStatusMapper, Objects.nonNull(binding));
@@ -117,6 +121,18 @@ public class Registration implements CdsRuntimeConfiguration {
 		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();
 		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent,
 				doNothingAttachmentEvent);
+	}
+
+	private static ConnectionPool getConnectionPool(CdsRuntime runtime) {
+		// the common prefix for the connection pool configuration
+		final String prefix = "cds.attachments.malware.http.%s";
+		CdsEnvironment env = runtime.getEnvironment();
+		Duration timeout = Duration.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, Integer.valueOf(120)));
+		int maxConnectionsPerRoute = env.getProperty(prefix.formatted("maxConnectionsPerRoute"), Integer.class, 2);
+		int maxConnections = env.getProperty(prefix.formatted("maxConnections"), Integer.class, 20);
+		logger.debug("Connection pool configuration: timeout={}, maxConnectionsPerRoute={}, maxConnections={}", timeout,
+				maxConnectionsPerRoute, maxConnections);
+		return new ConnectionPool(timeout, maxConnectionsPerRoute, maxConnections);
 	}
 
 }

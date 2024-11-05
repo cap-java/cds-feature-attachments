@@ -10,9 +10,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- [Added support to configure the HTTP client](https://github.com/cap-java/cds-feature-attachments/pull/276) to the malware scanner service to 120s.
+
 ### Changed
 
-- [Increased the HTTP client timeout](https://github.com/cap-java/cds-feature-attachments/pull/276) to the malware scanner service to 120s.
 - [Simplified logging markers](https://github.com/cap-java/cds-feature-attachments/pull/178)
 - [Improved Javadoc](https://github.com/cap-java/cds-feature-attachments/pull/256)
 - Updated some dependencies to latest versions.
