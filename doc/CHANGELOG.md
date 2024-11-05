@@ -10,9 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- [Added support to configure the HTTP client pool](https://github.com/cap-java/cds-feature-attachments/pull/276) to the malware scanner service. Supported configuration  properties are:
+- [Added support to configure the HTTP client pool](https://github.com/cap-java/cds-feature-attachments/pull/276) to Malware Scanning Service. Supported configuration properties are:
   - `cds.attachments.malware.http.timeout`: The HTTP request timeout in seconds, defaults to 120s
-  - `cds.attachments.malware.http.maxConnections`: The max. number of parallel HTTP connections to malware scan service, defaults to 20 connections
+  - `cds.attachments.malware.http.maxConnections`: The max. number of parallel HTTP connections to Malware Scanning Service, defaults to 20 connections
 
 
 ### Changed
@@ -23,7 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
-- [Fixed a bug](https://github.com/cap-java/cds-feature-attachments/pull/270) that caused malware scanning to fail if the content was stored in a HANA DB.
+- [Fixed a bug](https://github.com/cap-java/cds-feature-attachments/pull/270) that caused malware scanning to fail, if the content was stored in a HANA DB.
 
 ## Version 1.0.4 - 2024-10-22
 
