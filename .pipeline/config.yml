@@ -35,6 +35,7 @@ steps:
     # If empty, Docker is not used and the command is executed directly on the Jenkins system.
     dockerImage: ''
     options:
+      - sonar.qualitygate.wait=true
       - sonar.java.source=17
       - sonar.exclusions=**/node_modules/**,**/target/**
       - sonar.coverage.jacoco.xmlReportPaths=cds-feature-attachments/target/site/jacoco/jacoco.xml
