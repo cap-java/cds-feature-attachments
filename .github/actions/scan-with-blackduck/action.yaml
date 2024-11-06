@@ -44,7 +44,7 @@ runs:
     - name: BlackDuck Scan
       uses: SAP/project-piper-action@main
       with:
-        command: detectExecuteScan
+        step-name: detectExecuteScan
         flags: \
           --githubToken=$GITHUB_token \
           --version=${{ steps.get-major-version.outputs.REVISION }}

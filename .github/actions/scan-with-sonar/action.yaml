@@ -44,7 +44,7 @@ runs:
     - name: SonarQube Scan
       uses: SAP/project-piper-action@main
       with:
-        command: sonarExecuteScan
+        step-name: sonarExecuteScan
         flags: \
           --token=${{ inputs.sonarq-token }} \
           --githubToken=${{ inputs.github-token }} \
