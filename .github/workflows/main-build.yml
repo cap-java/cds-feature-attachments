@@ -44,7 +44,6 @@ jobs:
 
       - name: Scan
         uses: ./.github/actions/scan-with-blackduck
-        if: false
         with:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
