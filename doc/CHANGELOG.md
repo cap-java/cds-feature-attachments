@@ -11,8 +11,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - [Added support to configure the HTTP client pool](https://github.com/cap-java/cds-feature-attachments/pull/276) to Malware Scanning Service. Supported configuration properties are:
-  - `cds.attachments.malware.http.timeout`: The HTTP request timeout in seconds, defaults to 120s
-  - `cds.attachments.malware.http.maxConnections`: The max. number of parallel HTTP connections to Malware Scanning Service, defaults to 20 connections
+  - `cds.attachments.malwareScanner.http.timeout`: The HTTP request timeout in seconds, defaults to 120s
+  - `cds.attachments.malwareScanner.http.maxConnections`: The max. number of parallel HTTP connections to Malware Scanning Service, defaults to 20 connections
 
 
 ### Changed
