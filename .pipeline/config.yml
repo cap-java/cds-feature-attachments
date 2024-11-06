@@ -35,5 +35,6 @@ steps:
     # If empty, Docker is not used and the command is executed directly on the Jenkins system.
     dockerImage: ''
     options:
+      - sonar.exclusions=**/node_modules/**,**/target/**
       - sonar.coverage.jacoco.xmlReportPaths=cds-feature-attachments/target/site/jacoco/jacoco.xml
-      - sonar.coverage.exclusions=cds-feature-attachments/src/test/**,cds-feature-attachments/src/gen/**,cds-feature-attachments-integration-tests-parent/**
+      - sonar.coverage.exclusions=cds-feature-attachments/src/test/**,cds-feature-attachments/src/gen/**,integration-tests/**
