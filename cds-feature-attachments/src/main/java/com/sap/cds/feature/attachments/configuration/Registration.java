@@ -126,7 +126,7 @@ public class Registration implements CdsRuntimeConfiguration {
 
 	private static ConnectionPool getConnectionPool(CdsEnvironment env) {
 		// the common prefix for the connection pool configuration
-		final String prefix = "cds.attachments.malware.http.%s";
+		final String prefix = "cds.attachments.malwareScanner.http.%s";
 		Duration timeout = Duration
 				.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, 120));
 		int maxConnections = env.getProperty(prefix.formatted("maxConnections"), Integer.class, 20);
