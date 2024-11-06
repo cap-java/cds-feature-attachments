@@ -36,3 +36,4 @@ steps:
     dockerImage: ''
     options:
       - sonar.coverage.jacoco.xmlReportPaths=cds-feature-attachments/target/site/jacoco/jacoco.xml
+      - sonar.coverage.exclusions=cds-feature-attachments/src/test/**,cds-feature-attachments/src/gen/**
