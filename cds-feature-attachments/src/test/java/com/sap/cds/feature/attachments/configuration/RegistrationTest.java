@@ -69,7 +69,7 @@ class RegistrationTest {
 		var services = serviceArgumentCaptor.getAllValues();
 		assertThat(services).hasSize(1);
 
-		var attachmentServiceFound = services.stream().anyMatch(service -> service instanceof AttachmentService);
+		var attachmentServiceFound = services.stream().anyMatch(AttachmentService.class::isInstance);
 
 		assertThat(attachmentServiceFound).isTrue();
 	}
