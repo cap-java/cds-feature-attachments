@@ -50,9 +50,7 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 
 	@Override
 	protected void verifyEventContextEmptyForEvent(String... events) {
-		Arrays.stream(events).forEach(event -> {
-			assertThat(serviceHandler.getEventContextForEvent(event)).isEmpty();
-		});
+		Arrays.stream(events).forEach(event -> assertThat(serviceHandler.getEventContextForEvent(event)).isEmpty());
 	}
 
 	@Override
