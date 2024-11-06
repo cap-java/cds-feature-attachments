@@ -6,7 +6,7 @@ import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 
 public class RuntimeHelper {
 
-	public static final String CSN_FILE_PATH = "gen/src/main/resources/edmx/csn.json";
+	private static final String CSN_FILE_PATH = "gen/src/main/resources/edmx/csn.json";
 	public static final CdsRuntime runtime = prepareRuntime();
 
 	private static CdsRuntime prepareRuntime() {
