@@ -27,6 +27,7 @@ jobs:
 
       - name: SonarQube Scan
         uses: ./.github/actions/scan-with-sonar
+        if: ${{ matrix.java-version == 17 }}
         with:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
