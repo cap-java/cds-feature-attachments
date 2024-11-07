@@ -28,11 +28,7 @@ and handling by using an aspect Attachments.
 
 ## Badge
 
-[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml)
-
-[![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build-and-deploy.yml/badge.svg?branch=main)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build-and-deploy.yml)
-
-[![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
+[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml) [![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build-and-deploy.yml/badge.svg?branch=main)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build-and-deploy.yml) [![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments) [![Quality Gate Status](https://sonar.tools.sap/api/project_badges/measure?project=cds-feature-attachments&metric=alert_status&token=sqb_23dd92be4b315f72a8e84726f7575df8bc5a3c1e)](https://sonar.tools.sap/dashboard?id=cds-feature-attachments)
 
 ## Additional Information
 
