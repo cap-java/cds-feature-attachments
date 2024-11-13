@@ -16,8 +16,7 @@ class JsonToCapMapperTestHelper {
 	private ObjectMapper objectMapper;
 
 	public CdsData mapResponseToSingleResult(String resultBody) throws Exception {
-		var map = new HashMap<String, Object>();
-		return Struct.access(objectMapper.readValue(resultBody, map.getClass())).as(CdsData.class);
+		return Struct.access(objectMapper.readValue(resultBody, HashMap.class)).as(CdsData.class);
 	}
 
 }

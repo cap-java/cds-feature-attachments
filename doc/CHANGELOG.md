@@ -6,17 +6,24 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.0.5 - tbd.
+## Version 1.0.5 - 2024-11-06
 
 ### Added
 
+- [Added support to configure the HTTP client pool](https://github.com/cap-java/cds-feature-attachments/pull/276) to Malware Scanning Service. Supported configuration properties are:
+  - `cds.attachments.malwareScanner.http.timeout`: The HTTP request timeout in seconds, defaults to 120s
+  - `cds.attachments.malwareScanner.http.maxConnections`: The max. number of parallel HTTP connections to Malware Scanning Service, defaults to 20 connections
+
+
 ### Changed
 
-- Simplified logging markers
+- [Simplified logging markers](https://github.com/cap-java/cds-feature-attachments/pull/178)
 - [Improved Javadoc](https://github.com/cap-java/cds-feature-attachments/pull/256)
-- Updated dependencies and Maven build plugins to latest versions.
+- Updated some dependencies to latest versions.
 
 ### Fixed
+
+- [Fixed a bug](https://github.com/cap-java/cds-feature-attachments/pull/270) that caused malware scanning to fail, if the content was stored in a HANA DB.
 
 ## Version 1.0.4 - 2024-10-22
 

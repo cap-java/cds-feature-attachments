@@ -23,7 +23,7 @@
     </developers>
 
     <properties>
-        <revision>1.0.5-SNAPSHOT</revision>
+        <revision>1.0.6-SNAPSHOT</revision>
         <java.version>17</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -279,7 +279,7 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.8.6.5</version>
+                    <version>4.8.6.6</version>
                 </plugin>
                 <plugin>
                     <groupId>com.sap.cds</groupId>
