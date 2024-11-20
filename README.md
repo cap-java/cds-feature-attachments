@@ -1,3 +1,5 @@
+[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml) [![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build-and-deploy.yml/badge.svg?branch=main)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build-and-deploy.yml) [![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
+
 # Attachments Plugin for SAP Cloud Application Programming Model (CAP)
 
 The `com.sap.cds:cds-feature-attachments` dependency is
@@ -25,14 +27,6 @@ and handling by using an aspect Attachments.
         * [HTTP Endpoint](#http-endpoint)
         * [Security](#security)
 <!-- TOC -->
-
-## Badge
-
-[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml)
-
-[![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build-and-deploy.yml/badge.svg?branch=main)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build-and-deploy.yml)
-
-[![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
 
 ## Additional Information
 
