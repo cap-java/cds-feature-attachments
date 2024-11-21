@@ -9,7 +9,6 @@ and handling by using an aspect Attachments.
 ## Table of Contents
 
 <!-- TOC -->
-* [Badge](#badge)
 * [Additional Information](#additional-information)
 * [Support, Feedback, Contributing](#support-feedback-contributing)
 * [Minimum Version](#minimum-version)
