@@ -33,6 +33,10 @@
                         <groupId>com.sap.cloud.mt</groupId>
                         <artifactId>tools</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>com.sap.cds</groupId>
+                        <artifactId>cds-adapter-api</artifactId>
+                    </exclusion>
                 </exclusions>
         </dependency>
 
