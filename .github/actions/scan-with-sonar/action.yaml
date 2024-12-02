@@ -10,8 +10,7 @@ inputs:
     required: true
   java-version:
     description: The version of Java to use
-    default: '17'
-    required: false
+    required: true
   maven-version:
     description: The version of Maven to use
     required: true
@@ -21,23 +20,23 @@ runs:
   steps:
     - name: Echo Inputs
       run: |
-        echo "sonarq-token: ${{ inputs.sonarq-token }}"
-        echo "github-token: ${{ inputs.github-token }}"
-        echo "java-version: ${{ inputs.java-version }}"
-        echo "maven-version: ${{ inputs.maven-version }}"
+        echo "sonarq-token: ${{inputs.sonarq-token}}"
+        echo "github-token: ${{inputs.github-token}}"
+        echo "java-version: ${{inputs.java-version}}"
+        echo "maven-version: ${{inputs.maven-version}}"
       shell: bash
 
-    - name: Set up Java ${{ inputs.java-version }}
+    - name: Set up Java ${{inputs.java-version}}
       uses: actions/setup-java@v4
       with:
-        java-version: ${{ inputs.java-version }}
+        java-version: ${{inputs.java-version}}
         distribution: sapmachine
         cache: maven
 
-    - name: Set up Maven ${{ inputs.maven-version }}
+    - name: Set up Maven ${{inputs.maven-version}}
       uses: stCarolas/setup-maven@v5
       with:
-        maven-version: ${{ inputs.maven-version }}
+        maven-version: ${{inputs.maven-version}}
 
     - name: Get Revision
       id: get-revision
@@ -46,15 +45,11 @@ runs:
       shell: bash
 
     - name: Print Revision
-      run: echo "${{ steps.get-revision.outputs.REVISION }}"
+      run: echo "${{steps.get-revision.outputs.REVISION}}"
       shell: bash
 
     - name: SonarQube Scan
       uses: SAP/project-piper-action@main
       with:
         step-name: sonarExecuteScan
-        flags: \
-          --token=${{ inputs.sonarq-token }} \
-          --githubToken=${{ inputs.github-token }} \
-          --version=${{ steps.get-revision.outputs.REVISION }} \
-          --inferJavaBinaries=true
+        flags: --token=${{inputs.sonarq-token}} --githubToken=${{inputs.github-token}} --version=${{steps.get-revision.outputs.REVISION}} --inferJavaBinaries=true
