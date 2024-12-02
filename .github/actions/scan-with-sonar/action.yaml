@@ -19,6 +19,14 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Echo Inputs
+      run: |
+        echo "sonarq-token: ${{ inputs.sonarq-token }}"
+        echo "github-token: ${{ inputs.github-token }}"
+        echo "java-version: ${{ inputs.java-version }}"
+        echo "maven-version: ${{ inputs.maven-version }}"
+      shell: bash
+
     - name: Set up Java ${{ inputs.java-version }}
       uses: actions/setup-java@v4
       with:
