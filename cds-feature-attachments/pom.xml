@@ -24,12 +24,24 @@
         <dependency>
             <groupId>com.sap.cds</groupId>
             <artifactId>cds-integration-cloud-sdk</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-lang3</artifactId>
+                    </exclusion>
+                </exclusions>
         </dependency>
 
         <!-- TESTS -->
         <dependency>
             <groupId>com.sap.cds</groupId>
             <artifactId>cds-services-impl</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
