@@ -22,6 +22,15 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.sap.cloud.sdk.cloudplatform</groupId>
+            <artifactId>cloudplatform-connectivity</artifactId>
+        </dependency> 
+        <dependency>
+            <groupId>com.sap.cds</groupId>
+            <artifactId>cds-services-utils</artifactId>
+        </dependency> 
+
+        <dependency>
             <groupId>com.sap.cds</groupId>
             <artifactId>cds-integration-cloud-sdk</artifactId>
                 <exclusions>
