@@ -47,6 +47,10 @@
                     <groupId>com.sap.cds</groupId>
                     <artifactId>cds4j-core</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.sap.cloud.mt</groupId>
+                    <artifactId>tools</artifactId>
+                </exclusion>
             </exclusions>
         </dependency> 
 
