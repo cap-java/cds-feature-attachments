@@ -45,7 +45,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>com.sap.cds</groupId>
-                    <artifactId>cds4-core</artifactId>
+                    <artifactId>cds4j-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency> 
