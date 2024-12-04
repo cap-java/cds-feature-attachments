@@ -24,16 +24,30 @@
         <dependency>
             <groupId>com.sap.cloud.sdk.cloudplatform</groupId>
             <artifactId>cloudplatform-core</artifactId>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>guava</artifactId>
-                    </exclusion>
-                </exclusions>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.vavr</groupId>
+                    <artifactId>vavr</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.sap.cds</groupId>
             <artifactId>cds-services-utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sap.cds</groupId>
+                    <artifactId>cds-adapter-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sap.cds</groupId>
+                    <artifactId>cds4-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency> 
 
         <!-- TESTS -->
