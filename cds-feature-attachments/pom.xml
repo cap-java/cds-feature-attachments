@@ -23,8 +23,14 @@
     <dependencies>
         <dependency>
             <groupId>com.sap.cloud.sdk.cloudplatform</groupId>
-            <artifactId>cloudplatform-connectivity</artifactId>
-        </dependency> 
+            <artifactId>cloudplatform-core</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                </exclusions>
+        </dependency>
         <dependency>
             <groupId>com.sap.cds</groupId>
             <artifactId>cds-services-utils</artifactId>
