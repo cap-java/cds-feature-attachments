@@ -22,35 +22,37 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.sap.cds</groupId>
-            <artifactId>cds-integration-cloud-sdk</artifactId>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-lang3</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>commons-io</groupId>
-                        <artifactId>commons-io</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>guava</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sap.cloud.mt</groupId>
-                        <artifactId>tools</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sap.cds</groupId>
-                        <artifactId>cds-adapter-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sap.cds</groupId>
-                        <artifactId>cds4j-core</artifactId>
-                    </exclusion>
-                </exclusions>
+            <groupId>com.sap.cloud.sdk.cloudplatform</groupId>
+            <artifactId>cloudplatform-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.vavr</groupId>
+                    <artifactId>vavr</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.sap.cds</groupId>
+            <artifactId>cds-services-utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sap.cds</groupId>
+                    <artifactId>cds-adapter-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sap.cds</groupId>
+                    <artifactId>cds4j-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sap.cloud.mt</groupId>
+                    <artifactId>tools</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency> 
 
         <!-- TESTS -->
         <dependency>
@@ -61,13 +63,11 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.17.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.18.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

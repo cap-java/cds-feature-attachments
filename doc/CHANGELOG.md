@@ -6,6 +6,17 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Version 1.0.6 - tbd.
+
+### Added
+
+### Changed
+
+- [Removal of unneeded transitive dependencies](https://github.com/cap-java/cds-feature-attachments/pull/290)
+- [Replaced the dependency](https://github.com/cap-java/cds-feature-attachments/pull/292) on `com.sap.cds:cds-integration-cloud-sdk` with `com.sap.cloud.sdk.cloudplatform:cloudplatform-core` to use the Cloud SDK directly.
+
+### Fixed
+
 ## Version 1.0.5 - 2024-11-06
 
 ### Added
@@ -13,7 +24,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - [Added support to configure the HTTP client pool](https://github.com/cap-java/cds-feature-attachments/pull/276) to Malware Scanning Service. Supported configuration properties are:
   - `cds.attachments.malwareScanner.http.timeout`: The HTTP request timeout in seconds, defaults to 120s
   - `cds.attachments.malwareScanner.http.maxConnections`: The max. number of parallel HTTP connections to Malware Scanning Service, defaults to 20 connections
-
 
 ### Changed
 
