@@ -6,6 +6,7 @@
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-feature-attachments-root</artifactId>
         <version>${revision}</version>
+        <relativePath>../..</relativePath>
     </parent>
 
     <artifactId>cds-feature-attachments-fs</artifactId>
@@ -34,13 +35,11 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.9</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>4.2.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
