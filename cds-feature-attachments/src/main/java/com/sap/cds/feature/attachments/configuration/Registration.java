@@ -84,7 +84,7 @@ public class Registration implements CdsRuntimeConfiguration {
 
 		// get HTTP connection pool configuration
 		var connectionPool = getConnectionPool(environment);
-		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, runtime, connectionPool);
+		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, connectionPool);
 		var malwareStatusMapper = new DefaultMalwareClientStatusMapper();
 		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService,
 				new DefaultMalwareScanClient(clientProviderFactory), malwareStatusMapper, Objects.nonNull(binding));

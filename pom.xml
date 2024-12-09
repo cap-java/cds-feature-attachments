@@ -61,6 +61,14 @@
             </dependency>
 
             <dependency>
+                <groupId>com.sap.cloud.sdk</groupId>
+                <artifactId>sdk-bom</artifactId>
+                <version>5.14.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-bom</artifactId>
                 <version>5.14.2</version>
@@ -274,7 +282,7 @@
                 <plugin>
                     <groupId>org.pitest</groupId>
                     <artifactId>pitest-maven</artifactId>
-                    <version>1.17.1</version>
+                    <version>1.17.2</version>
                 </plugin>
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>

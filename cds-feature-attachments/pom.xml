@@ -22,24 +22,52 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.sap.cds</groupId>
-            <artifactId>cds-services-utils</artifactId>
+            <groupId>com.sap.cloud.sdk.cloudplatform</groupId>
+            <artifactId>cloudplatform-core</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>commons-codec</groupId>
-                    <artifactId>commons-codec</artifactId>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.vavr</groupId>
+                    <artifactId>vavr</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>com.sap.cds</groupId>
-            <artifactId>cds-integration-cloud-sdk</artifactId>
-        </dependency>
+            <artifactId>cds-services-utils</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sap.cds</groupId>
+                    <artifactId>cds-adapter-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sap.cds</groupId>
+                    <artifactId>cds4j-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sap.cloud.mt</groupId>
+                    <artifactId>tools</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency> 
 
         <!-- TESTS -->
         <dependency>
             <groupId>com.sap.cds</groupId>
             <artifactId>cds-services-impl</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

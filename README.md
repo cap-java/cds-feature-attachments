@@ -1,3 +1,5 @@
+[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml) [![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build-and-deploy.yml/badge.svg?branch=main)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build-and-deploy.yml) [![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
+
 # Attachments Plugin for SAP Cloud Application Programming Model (CAP)
 
 The `com.sap.cds:cds-feature-attachments` dependency is
@@ -7,7 +9,6 @@ and handling by using an aspect Attachments.
 ## Table of Contents
 
 <!-- TOC -->
-* [Badge](#badge)
 * [Additional Information](#additional-information)
 * [Support, Feedback, Contributing](#support-feedback-contributing)
 * [Minimum Version](#minimum-version)
@@ -25,14 +26,6 @@ and handling by using an aspect Attachments.
         * [HTTP Endpoint](#http-endpoint)
         * [Security](#security)
 <!-- TOC -->
-
-## Badge
-
-[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml)
-
-[![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build-and-deploy.yml/badge.svg?branch=main)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build-and-deploy.yml)
-
-[![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
 
 ## Additional Information
 
@@ -60,8 +53,8 @@ The following version are the minimum versions for the usage of the plugin:
 
 | Component | Minimum Version |
 |-----------|-----------------|
-| CAP Java  | 2.9.1           |
-| UI5       | 1.126.0         |
+| CAP Java  | 3.4.1           |
+| UI5       | 1.131.0         |
 
 ## Maven Central
 
