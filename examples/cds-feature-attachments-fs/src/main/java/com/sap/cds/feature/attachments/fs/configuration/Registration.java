@@ -5,7 +5,6 @@ import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
 
-import com.sap.cds.feature.attachments.fs.handler.FSApplicationServiceHandler;
 import com.sap.cds.feature.attachments.fs.handler.FSAttachmentsServiceHandler;
 import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
@@ -17,8 +16,6 @@ public class Registration implements CdsRuntimeConfiguration {
 
 	@Override
 	public void eventHandlers(CdsRuntimeConfigurer configurer) {
-		configurer.eventHandler(new FSApplicationServiceHandler());
-
 		Path tmpPath = FileUtils.getTempDirectory().toPath();
 		Path rootFolder = tmpPath.resolve("com.sap.cds.cds-feature-attachments-fs");
 
