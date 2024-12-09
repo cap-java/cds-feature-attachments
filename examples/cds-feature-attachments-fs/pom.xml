@@ -21,11 +21,6 @@
             <artifactId>cds-feature-attachments</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.sap.cds</groupId>
-            <artifactId>cds-services-api</artifactId>
-        </dependency>
-
         <!-- TESTS -->
         <dependency>
             <groupId>com.sap.cds</groupId>
@@ -35,11 +30,6 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
