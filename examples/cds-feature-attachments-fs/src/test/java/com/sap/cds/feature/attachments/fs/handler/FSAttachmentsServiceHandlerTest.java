@@ -61,7 +61,7 @@ class FSAttachmentsServiceHandlerTest {
 		AttachmentCreateEventContext createContext = createAttachment(tenant, contentId, TEST_CONTENT);
 
 		assertEquals(contentId, createContext.getContentId());
-		Path file = rootFolder.resolve("%s/%s/content.bin".formatted(tenant == null ? "default" : tenant, contentId));
+		Path file = resolveContentPath(tenant, contentId);
 		assertTrue(Files.exists(file));
 		assertTrue(createContext.isCompleted());
 		assertFalse(createContext.getIsInternalStored());
@@ -100,8 +100,8 @@ class FSAttachmentsServiceHandlerTest {
 		doReturn(getUserInfoMock(tenant)).when(context).getUserInfo();
 		context.setContentId(contentId);
 
-		Path filePath = rootFolder.resolve("%s/%s/content.bin".formatted(tenant == null ? "default" : tenant, contentId));
-		Path deletedPath = rootFolder.resolve("%s/deleted/%s/content.bin".formatted(tenant == null ? "default" : tenant, contentId));
+		Path filePath = resolveContentPath(tenant, contentId);
+		Path deletedPath = resolveDeletedContentPath(tenant, contentId);
 		assertTrue(Files.exists(filePath));
 		assertFalse(Files.exists(deletedPath));
 
@@ -141,4 +141,14 @@ class FSAttachmentsServiceHandlerTest {
 		when(userInfo.getTenant()).thenReturn(tenant);
 		return userInfo;
 	}
+
+	private static Path resolveDeletedContentPath(String tenant, String contentId) {
+		return rootFolder
+				.resolve("%s/deleted/%s/content.bin".formatted(tenant == null ? "default" : tenant, contentId));
+	}
+
+	private static Path resolveContentPath(String tenant, String contentId) {
+		return rootFolder.resolve("%s/%s/content.bin".formatted(tenant == null ? "default" : tenant, contentId));
+	}
+
 }
