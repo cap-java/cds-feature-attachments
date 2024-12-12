@@ -18,6 +18,10 @@
     <properties>
         <!-- DEPENDENCIES VERSION -->
         <spring.boot.version>3.4.0</spring.boot.version>
+
+        <!-- CDS VERSION -->
+        <cds.services.version>2.10.5</cds.services.version>
+        <cds.cdsdk-version>7.9.9</cds.cdsdk-version>
     </properties>
 
     <modules>
