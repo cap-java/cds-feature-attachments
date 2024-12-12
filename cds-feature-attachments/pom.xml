@@ -209,16 +209,6 @@
                     </execution>
 
                     <execution>
-                        <id>cds.install-cdsdk</id>
-                        <goals>
-                            <goal>install-cdsdk</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipDuringDeploy}</skip>
-                        </configuration>
-                    </execution>
-
-                    <execution>
                         <id>cds.build</id>
                         <goals>
                             <goal>cds</goal>
