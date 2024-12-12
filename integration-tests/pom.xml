@@ -21,7 +21,7 @@
 
         <!-- CDS VERSION -->
         <cds.services.version>2.10.5</cds.services.version>
-        <cds.cdsdk-version>7.9.9</cds.cdsdk-version>
+        <cds.install-cdsdk.version>7.9.9</cds.install-cdsdk.version>
     </properties>
 
     <modules>
