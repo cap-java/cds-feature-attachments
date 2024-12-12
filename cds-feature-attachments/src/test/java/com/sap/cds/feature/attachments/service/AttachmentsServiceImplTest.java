@@ -49,10 +49,10 @@ class AttachmentsServiceImplTest {
 		when(changeSet.isEnforceTransactional()).thenReturn(true);
 
 		Persistence persistence = mock(Persistence.class);
-		doReturn(changeSet).when(persistence).getChangeSet();
+		when(persistence.getChangeSet()).thenReturn(changeSet);
 
 		CdsProperties properties = mock(CdsProperties.class);
-		doReturn(persistence).when(properties).getPersistence();
+		when(properties.getPersistence()).thenReturn(persistence);
 
 		CdsEnvironment environment = mock(CdsEnvironment.class);
 		doReturn(properties).when(environment).getCdsProperties();
