@@ -80,6 +80,12 @@
                 <artifactId>cds-feature-attachments</artifactId>
                 <version>${revision}</version>
             </dependency>
+            
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.17.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
