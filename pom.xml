@@ -81,6 +81,7 @@
                 <version>${revision}</version>
             </dependency>
             
+            <!-- Mitigate vulnerabilities in commons-codec:commons-codec:1.11 -->
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
