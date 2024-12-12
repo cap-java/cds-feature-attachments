@@ -1,7 +1,11 @@
 package com.sap.cds.feature.attachments.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 import java.time.Instant;
@@ -21,6 +25,10 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMa
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.environment.CdsEnvironment;
+import com.sap.cds.services.environment.CdsProperties;
+import com.sap.cds.services.environment.CdsProperties.Persistence;
+import com.sap.cds.services.environment.CdsProperties.Persistence.ChangeSet;
 import com.sap.cds.services.handler.Handler;
 import com.sap.cds.services.impl.ServiceSPI;
 import com.sap.cds.services.request.ModifiableUserInfo;
@@ -37,7 +45,21 @@ class AttachmentsServiceImplTest {
 	void setup() {
 		cut = new AttachmentsServiceImpl();
 
+		ChangeSet changeSet = mock(ChangeSet.class);
+		when(changeSet.isEnforceTransactional()).thenReturn(true);
+
+		Persistence persistence = mock(Persistence.class);
+		doReturn(changeSet).when(persistence).getChangeSet();
+
+		CdsProperties properties = mock(CdsProperties.class);
+		doReturn(persistence).when(properties).getPersistence();
+
+		CdsEnvironment environment = mock(CdsEnvironment.class);
+		doReturn(properties).when(environment).getCdsProperties();
+
 		CdsRuntime runtime = mock(CdsRuntime.class);
+		doReturn(environment).when(runtime).getEnvironment();
+
 		handler = mock(Handler.class);
 		serviceSpi = (ServiceSPI) cut.getDelegatedService();
 		serviceSpi.setCdsRuntime(runtime);
