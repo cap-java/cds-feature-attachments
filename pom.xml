@@ -29,8 +29,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
-        <cds.services.version>2.9.1</cds.services.version>
-        <cds.install-cdsdk.version>7.7.0</cds.install-cdsdk.version>
+        <cds.services.version>2.10.5</cds.services.version>
+        <cds.install-cdsdk.version>7.9.9</cds.install-cdsdk.version>
 
         <generation-folder>src/gen</generation-folder>
     </properties>
@@ -79,6 +79,13 @@
                 <groupId>com.sap.cds</groupId>
                 <artifactId>cds-feature-attachments</artifactId>
                 <version>${revision}</version>
+            </dependency>
+            
+            <!-- Mitigate vulnerabilities in commons-codec:commons-codec:1.11 -->
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.17.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
