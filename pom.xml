@@ -29,8 +29,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
-        <cds.services.version>2.9.1</cds.services.version>
-        <cds.install-cdsdk.version>7.7.0</cds.install-cdsdk.version>
+        <cds.services.version>2.10.5</cds.services.version>
+        <cds.install-cdsdk.version>7.9.9</cds.install-cdsdk.version>
 
         <generation-folder>src/gen</generation-folder>
     </properties>
@@ -95,6 +95,13 @@
                 <artifactId>cds-feature-attachments</artifactId>
                 <version>${revision}</version>
             </dependency>
+            
+            <!-- Mitigate vulnerabilities in commons-codec:commons-codec:1.11 -->
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.17.1</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -107,7 +114,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.11.3</version>
+            <version>5.11.4</version>
             <scope>test</scope>
         </dependency>
 
@@ -296,7 +303,7 @@
                 <plugin>
                     <groupId>org.pitest</groupId>
                     <artifactId>pitest-maven</artifactId>
-                    <version>1.17.2</version>
+                    <version>1.17.3</version>
                 </plugin>
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
