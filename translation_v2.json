@@ -1,0 +1,22 @@
+{
+  "comment": "Configuration for TEW translation delivery",
+  "collections": [
+    {
+      "collectionName": "cds-feature-attachments",
+      "folders": [
+        {
+          "startingFolderPath": "cds-feature-attachments/src/main/resources/cds/**/i18n/**",
+          "sourceFilters": [
+            "*.properties"
+          ]
+        }
+      ]
+    }
+  ],
+  "defaultConfiguration": {
+    "targetFolderPath": ".",
+    "pseudoLocFolderPath": ".",
+    "oneQFolderPath": ".",
+    "targetFileNamingConvention": "[filename]_[langCode].[extension]"
+  }
+}
