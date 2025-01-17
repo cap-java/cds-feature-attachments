@@ -29,7 +29,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
-        <cds.services.version>2.10.5</cds.services.version>
+        <cds.services.version>2.10.6</cds.services.version>
         <cds.install-cdsdk.version>7.9.9</cds.install-cdsdk.version>
 
         <generation-folder>src/gen</generation-folder>
@@ -63,7 +63,7 @@
             <dependency>
                 <groupId>com.sap.cloud.sdk</groupId>
                 <artifactId>sdk-bom</artifactId>
-                <version>5.14.0</version>
+                <version>5.15.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -71,7 +71,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-bom</artifactId>
-                <version>5.14.2</version>
+                <version>5.15.2</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -100,7 +100,7 @@
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
-                <version>1.17.1</version>
+                <version>1.17.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -121,7 +121,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.26.3</version>
+            <version>3.27.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -303,7 +303,7 @@
                 <plugin>
                     <groupId>org.pitest</groupId>
                     <artifactId>pitest-maven</artifactId>
-                    <version>1.17.3</version>
+                    <version>1.17.4</version>
                 </plugin>
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
