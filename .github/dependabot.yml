@@ -1,7 +1,9 @@
 version: 2
 updates:
   - package-ecosystem: maven
-    directory: "/"
+    directories:
+      - "/"
+      - "/integration-tests"
     schedule:
       interval: daily
     open-pull-requests-limit: 10
