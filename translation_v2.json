@@ -5,7 +5,7 @@
       "collectionName": "cds-feature-attachments",
       "folders": [
         {
-          "startingFolderPath": "cds-feature-attachments/src/main/resources/cds/**/i18n/**",
+          "startingFolderPath": "cds-feature-attachments/src/main/resources/cds/**/_i18n/**",
           "sourceFilters": [
             "*.properties"
           ]

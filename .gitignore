@@ -27,3 +27,6 @@ cds-feature-attachments/src/test/resources/schema.sql
 .env
 .secrets
 event.json
+
+# CAP Notebook
+cap-notebook/demoapp/
