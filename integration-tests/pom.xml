@@ -17,7 +17,7 @@
 
     <properties>
         <!-- DEPENDENCIES VERSION -->
-        <spring.boot.version>3.4.1</spring.boot.version>
+        <spring.boot.version>3.4.2</spring.boot.version>
     </properties>
 
     <modules>
