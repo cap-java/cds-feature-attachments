@@ -63,17 +63,20 @@ https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments
 
 ## Artifactory
 
-SAP internally, snapshots are deplyoed to SAP Artifactory:
-https://int.repositories.cloud.sap/ui/repos/tree/General/proxy-cap-java
+Snapshots are deplyoed to SAP Artifactory in DMZ:
+https://common.repositories.cloud.sap/artifactory/cap-java/com/sap/cds/cds-feature-attachments/
 
-If you have access to this repository and want to use the plugin you need to add this repository to the
-maven `settings.xml`.
+An internal copy of snapshots is also available in the SAP internal Artifactory:
+https://int.repositories.cloud.sap/artifactory/proxy-cap-java/com/sap/cds/cds-feature-attachments/
+
+If you want to test snapshot versions of this plugin, you need to configure one of these Artifactories in your `${HOME}/.m2/settings.xml`.
+See [here](https://maven.apache.org/settings.html#Repositories) for further details.
 
 ## Usage
 
 The usage of CAP Java plugins is described in
 the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project).
-Following this documentation this plugin needs to be referenced in the `pom.xml` of a CAP Java project:
+Following this documentation this plugin needs to be referenced in the `srv/pom.xml` of a CAP Java project:
 
 ```xml
 
