@@ -86,7 +86,7 @@ The usage of CAP Java plugins is described in the [CAP Java Documentation](https
 
 The latest version can be found in the [changelog](./doc/CHANGELOG.md).
 
-To be able to also use the cds models defined in this plugin the `cds-maven-plugin` needs to be used with the `resolve` goal to make the CDS models available in the project:
+To be able to also use the CDS models defined in this plugin the `cds-maven-plugin` needs to be used with the `resolve` goal to make the CDS models available in the project:
 
 ```xml
 <plugin>
@@ -104,11 +104,11 @@ To be able to also use the cds models defined in this plugin the `cds-maven-plug
 </plugin>
 ```
 
-If the cds models needs to be used in the `db` folder, the `cds-maven-plugin` needs to be included also in the `db` folder of the project. There are two different approaches to consume and use the Attachment aspect in a CAP Java application.
+If the CDS models needs to be used in the `db` folder, the `cds-maven-plugin` needs to be included also in the `db` folder of the project. There are two different approaches to consume and use the Attachments aspect in a CAP Java application.
 
 ### With a Maven artifact
 
-This means the `db` folder needs to have a `pom.xml` with the `cds-maven-plugin` included and the `cds-maven-plugin` needs to be run.
+This means the `db` folder needs to have a `db/pom.xml` with the `cds-maven-plugin` included and the `cds-maven-plugin` needs to be run.
 
 If the `cds-maven-plugin` is used correctly and executed the following lines should be visible in the build log:
 
@@ -119,10 +119,10 @@ If the `cds-maven-plugin` is used correctly and executed the following lines sho
 
 After that the models can be used.
 
-### Extend db model in srv module
+### Extend db entity in srv module
 
-To avoid making the db a Maven artifact with a `db/pom.xml`, you can alternatively extend the db entity from the CDS model in the srv module.
-The following example shows how to extends the db entity Books in a CDS file in the srv module:
+To avoid making the `db` a Maven artifact with a `db/pom.xml`, you can alternatively extend the db entity from the CDS model in the srv module.
+The following example shows how to extend the db entity Books in a CDS file in the srv module:
 
 ```cds
 using {my.bookshop as my} from '../db/index';
