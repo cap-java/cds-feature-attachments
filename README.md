@@ -122,7 +122,7 @@ After that the models can be used.
 ### Extend db entity in srv module
 
 To avoid making the `db` a Maven artifact with a `db/pom.xml`, you can alternatively extend the db entity from the CDS model in the srv module.
-The following example shows how to extend the db entity Books in a CDS file in the srv module:
+The following example shows how to extend the `db` entity `Books` in a CDS file in the `srv` module:
 
 ```cds
 using {my.bookshop as my} from '../db/index';
