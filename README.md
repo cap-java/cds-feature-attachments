@@ -63,7 +63,7 @@ https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments
 
 ## Artifactory
 
-Snapshots are deplyoed to SAP's Artifactory in DMZ:
+Snapshots are deployed to SAP's Artifactory in DMZ:
 https://common.repositories.cloud.sap/artifactory/cap-java/com/sap/cds/cds-feature-attachments/
 
 The snapshots are also replicated to SAP's internal Artifactory:
@@ -74,12 +74,9 @@ See [here](https://maven.apache.org/settings.html#Repositories) for further deta
 
 ## Usage
 
-The usage of CAP Java plugins is described in
-the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project).
-Following this documentation this plugin needs to be referenced in the `srv/pom.xml` of a CAP Java project:
+The usage of CAP Java plugins is described in the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project). Following this documentation this plugin needs to be referenced in the `srv/pom.xml` of a CAP Java project:
 
 ```xml
-
 <dependency>
     <groupId>com.sap.cds</groupId>
     <artifactId>cds-feature-attachments</artifactId>
@@ -89,11 +86,9 @@ Following this documentation this plugin needs to be referenced in the `srv/pom.
 
 The latest version can be found in the [changelog](./doc/CHANGELOG.md).
 
-To be able to also use the cds models defined in this plugin the `cds-maven-plugin` needs to be used with the
-`resolve` goal to make the cds models available in the project:
+To be able to also use the cds models defined in this plugin the `cds-maven-plugin` needs to be used with the `resolve` goal to make the CDS models available in the project:
 
 ```xml
-
 <plugin>
     <groupId>com.sap.cds</groupId>
     <artifactId>cds-maven-plugin</artifactId>
@@ -109,10 +104,11 @@ To be able to also use the cds models defined in this plugin the `cds-maven-plug
 </plugin>
 ```
 
-If the cds models needs to be used in the `db` folder the `cds-maven-plugin` needs to be included also in the
-`db` folder of the project.
-This means the `db` folder needs to have a `pom.xml` with the `cds-maven-plugin` included and the `cds-maven-plugin`
-needs to be run.
+If the cds models needs to be used in the `db` folder, the `cds-maven-plugin` needs to be included also in the `db` folder of the project. There are two different approaches to consume and use the Attachment aspect in a CAP Java application.
+
+### With a Maven artifact
+
+This means the `db` folder needs to have a `pom.xml` with the `cds-maven-plugin` included and the `cds-maven-plugin` needs to be run.
 
 If the `cds-maven-plugin` is used correctly and executed the following lines should be visible in the build log:
 
@@ -122,6 +118,21 @@ If the `cds-maven-plugin` is used correctly and executed the following lines sho
 ````
 
 After that the models can be used.
+
+### Extend db model in srv module
+
+To avoid making the db a Maven artifact with a `db/pom.xml`, you can alternatively extend the db entity from the CDS model in the srv module.
+The following example shows how to extends the db entity Books in a CDS file in the srv module:
+
+```cds
+using {my.bookshop as my} from '../db/index';
+using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
+
+// Extends the Books entity with the Attachments composition
+extend my.Books with {
+  covers : Composition of many Attachments;
+};
+```
 
 ### CDS Models
 
