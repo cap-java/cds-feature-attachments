@@ -66,10 +66,7 @@ https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments
 Snapshots are deployed to SAP's Artifactory in DMZ:
 https://common.repositories.cloud.sap/artifactory/cap-java/com/sap/cds/cds-feature-attachments/
 
-The snapshots are also replicated to SAP's internal Artifactory:
-https://int.repositories.cloud.sap/artifactory/proxy-cap-java/com/sap/cds/cds-feature-attachments/
-
-If you want to test snapshot versions of this plugin, you need to configure one of these Artifactories in your `${HOME}/.m2/settings.xml`.
+If you want to test snapshot versions of this plugin, you need to configure the Artifactory in your `${HOME}/.m2/settings.xml`.
 See [here](https://maven.apache.org/settings.html#Repositories) for further details.
 
 ## Usage
