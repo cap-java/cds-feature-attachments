@@ -101,12 +101,6 @@ To be able to also use the CDS models defined in this plugin the `cds-maven-plug
 </plugin>
 ```
 
-If the CDS models needs to be used in the `db` folder, the `cds-maven-plugin` needs to be included also in the `db` folder of the project. There are two different approaches to consume and use the Attachments aspect in a CAP Java application.
-
-### With a Maven artifact
-
-This means the `db` folder needs to have a `db/pom.xml` with the `cds-maven-plugin` included and the `cds-maven-plugin` needs to be run.
-
 If the `cds-maven-plugin` is used correctly and executed the following lines should be visible in the build log:
 
 ````log
@@ -114,11 +108,12 @@ If the `cds-maven-plugin` is used correctly and executed the following lines sho
 [INFO] CdsResolveMojo: Copying models from com.sap.cds:cds-feature-attachments:<latest-version> (<project-folder>\target\classes)
 ````
 
-After that the models can be used.
+After that, the aspect `Attachments` can be used in the application's CDS model.
 
-### Extend db entity in srv module
+### CDS Models
 
-To avoid making the `db` a Maven artifact with a `db/pom.xml`, you can alternatively extend the `db` entity from the CDS model in the `srv` module.
+Depending on the location in the application's CDS model where the aspect `Attachments` shall be used, different approaches need to be implemented.
+If the aspect `Attachments` needs to be used on an entity provided in the `db` folder, the corresponding entity needs to be extended from the `srv` module. Therefore the entity from the `db` folder needs to be imported with an `using` statement. Then the existing entity can be extended with a new field that is a `Composition of many Attachments`.
 The following example shows how to extend the `db` entity `Books` in a CDS file in the `srv` module:
 
 ```cds
@@ -131,12 +126,7 @@ extend my.Books with {
 };
 ```
 
-### CDS Models
-
-The cds models in include an aspect to add attachments to entities.
-It also includes annotations used by the FIORI UI to handle attachments.
-
-To use the aspect the following code needs to be added to the entity definition:
+To use the aspect `Attachments` in the `srv` module, the following code needs to be added to the existing entity definition:
 
 ```cds
 using {sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
@@ -149,10 +139,7 @@ entity Items : cuid {
 ```
 
 The aspect `Attachments` shall be used directly for the composition.
-It is important to use the correct from clause for the `using` statement.
-
-Only if `com.sap.cds/cds-feature-attachments` is used and not concrete files of the feature are specified in the
-from-statement also the annotations and other definitions are found and used.
+It is very important to use the correct from clause for the `using` statement. Only if `com.sap.cds/cds-feature-attachments` is used and not concrete files of the feature are specified in the from-statement also the annotations and other definitions are found and used.
 
 #### Model Texts
 
