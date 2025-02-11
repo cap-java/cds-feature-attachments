@@ -113,7 +113,7 @@ After that, the aspect `Attachments` can be used in the application's CDS model.
 ### CDS Models
 
 Depending on the location in the application's CDS model where the aspect `Attachments` shall be used, different approaches need to be implemented.
-If the aspect `Attachments` needs to be used on an entity provided in the `db` folder, the corresponding entity needs to be extended from the `srv` module. Therefore the entity from the `db` folder needs to be imported with an `using` statement. Then the existing entity can be extended with a new field that is a `Composition of many Attachments`.
+If the aspect `Attachments` shall be used on an entity provided in the `db` module, the corresponding entity needs to be extended from a CDS file in the `srv` module. Therefore the entity from the `db` folder needs to be imported with an `using` statement. Then this entity can be extended with a new field that is a `Composition of many Attachments`.
 The following example shows how to extend the `db` entity `Books` in a CDS file in the `srv` module:
 
 ```cds
