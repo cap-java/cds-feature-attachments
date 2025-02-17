@@ -6,18 +6,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.0.6 - tbd.
+## Version 1.0.6 - 2025-02-17
 
 ### Added
 
-- [Translations](https://github.com/cap-java/cds-feature-attachments/pull/353) for all model texts.
+- [Translations](https://github.com/cap-java/cds-feature-attachments/pull/353) for all [model texts](https://github.com/cap-java/cds-feature-attachments/blob/main/README.md#model-texts).
 
 ### Changed
 
 - [Removal of unneeded transitive dependencies](https://github.com/cap-java/cds-feature-attachments/pull/290) to avoid usage and further propagation.
 - [Replaced the dependency](https://github.com/cap-java/cds-feature-attachments/pull/292) on `com.sap.cds:cds-integration-cloud-sdk` with `com.sap.cloud.sdk.cloudplatform:cloudplatform-core` to use the Cloud SDK directly.
-
-### Fixed
 
 ## Version 1.0.5 - 2024-11-06
 
