@@ -143,8 +143,7 @@ It is very important to use the correct from clause for the `using` statement. O
 
 #### Model Texts
 
-In the model several fields are annotated with the `@title` annotation.
-The texts of these fields needs to be included in the consumings project UI.
+In the model several fields are annotated with the `@title` annotation. Starting with version 1.0.6 of the `cds-feature-attachments`, default texts are provided in 33 languages. If these defaults are not sufficient for an application, they can be overwritten by applications with custom texts or translations for those fields.
 
 The following table gives an overview of the fields and the i18n codes:
 
