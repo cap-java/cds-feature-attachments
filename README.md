@@ -143,7 +143,7 @@ It is very important to use the correct from clause for the `using` statement. O
 
 #### Model Texts
 
-In the model several fields are annotated with the `@title` annotation. Starting with version 1.0.6 of the `cds-feature-attachments`, default texts are provided in [33 languages](https://github.com/cap-java/cds-feature-attachments/tree/main/cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/_i18n). If these defaults are not sufficient for an application, they can be overwritten by applications with custom texts or translations.
+In the model several fields are annotated with the `@title` annotation. Starting with version 1.0.6 of the `cds-feature-attachments`, default texts are provided in [35 languages](https://github.com/cap-java/cds-feature-attachments/tree/main/cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/_i18n). If these defaults are not sufficient for an application, they can be overwritten by applications with custom texts or translations.
 
 The following table gives an overview of the fields and the i18n codes:
 
