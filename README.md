@@ -100,14 +100,6 @@ To be able to also use the CDS models defined in this plugin the `cds-maven-plug
     </executions>
 </plugin>
 ```
-
-If the `cds-maven-plugin` is used correctly and executed the following lines should be visible in the build log:
-
-````log
-[INFO] --- cds:2.8.1:resolve (cds.resolve) @ your-project-srv ---
-[INFO] CdsResolveMojo: Copying models from com.sap.cds:cds-feature-attachments:<latest-version> (<project-folder>\target\classes)
-````
-
 After that, the aspect `Attachments` can be used in the application's CDS model.
 
 ### CDS Models
