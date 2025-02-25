@@ -247,7 +247,7 @@ annotate service.Incidents with @(
         {
             $Type  : 'UI.ReferenceFacet',
             ID     : 'AttachmentsFacet',
-            Label  : '{i18n>attachmentsAndLinks}',
+            Label  : '{i18n>attachments}',
             Target : 'attachments/@UI.LineItem'
         }
     ]
