@@ -52,12 +52,13 @@ import com.sap.cds.services.utils.environment.ServiceBindingUtils;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 /**
- * The class {@link Registration} is a configuration class that registers the
- * services and event handlers for the attachments feature.
+ * The class {@link Registration} is a configuration class that registers the services and event handlers for the
+ * attachments feature.
  */
 public class Registration implements CdsRuntimeConfiguration {
 
 	private static final Logger logger = LoggerFactory.getLogger(Registration.class);
+
 	@Override
 	public void services(CdsRuntimeConfigurer configurer) {
 		configurer.service(new AttachmentsServiceImpl());
@@ -72,10 +73,15 @@ public class Registration implements CdsRuntimeConfiguration {
 		CdsEnvironment environment = runtime.getEnvironment();
 
 		// get required services from the service catalog
-		var persistenceService = serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
-		var attachmentService = serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
-		var outbox = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
-		var outboxedAttachmentService = outbox.outboxed(attachmentService);
+		PersistenceService persistenceService = serviceCatalog.getService(PersistenceService.class,
+				PersistenceService.DEFAULT_NAME);
+		AttachmentService attachmentService = serviceCatalog.getService(AttachmentService.class,
+				AttachmentService.DEFAULT_NAME);
+
+		// outbox AttachmentService if OutboxService is available
+		OutboxService outbox = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
+		AttachmentService outboxedAttachmentService = outbox != null ? outbox.outboxed(attachmentService)
+				: attachmentService;
 
 		// retrieve the service binding for the malware scanner service
 		List<ServiceBinding> bindings = environment.getServiceBindings()
@@ -95,16 +101,19 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(new DefaultAttachmentsServiceHandler(malwareScanEndTransactionListener));
 
 		var deleteContentEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
-		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);
+		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent,
+				outboxedAttachmentService);
 		var attachmentsReader = new DefaultAttachmentsReader(new DefaultAssociationCascader(), persistenceService);
 		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
 		// register event handlers for application service
 		configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
-		configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
+		configurer.eventHandler(
+				new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 		configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
 		var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
-		configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
+		configurer.eventHandler(
+				new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
 
 		// register event handlers for draft service
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
@@ -115,7 +124,8 @@ public class Registration implements CdsRuntimeConfiguration {
 
 	private DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
 			ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
-		ListenerProvider creationChangeSetListener = (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId, cdsRuntime, outboxedAttachmentService);
+		ListenerProvider creationChangeSetListener = (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId,
+				cdsRuntime, outboxedAttachmentService);
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
@@ -127,8 +137,7 @@ public class Registration implements CdsRuntimeConfiguration {
 	private static ConnectionPool getConnectionPool(CdsEnvironment env) {
 		// the common prefix for the connection pool configuration
 		final String prefix = "cds.attachments.malwareScanner.http.%s";
-		Duration timeout = Duration
-				.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, 120));
+		Duration timeout = Duration.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, 120));
 		int maxConnections = env.getProperty(prefix.formatted("maxConnections"), Integer.class, 20);
 		logger.debug("Connection pool configuration: timeout={}, maxConnections={}", timeout, maxConnections);
 		return new ConnectionPool(timeout, maxConnections, maxConnections);
