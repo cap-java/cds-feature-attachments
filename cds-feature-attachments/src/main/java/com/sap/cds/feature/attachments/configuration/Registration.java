@@ -59,6 +59,7 @@ import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 public class Registration implements CdsRuntimeConfiguration {
 
 	private static final Logger logger = LoggerFactory.getLogger(Registration.class);
+
 	@Override
 	public void services(CdsRuntimeConfigurer configurer) {
 		configurer.service(new AttachmentsServiceImpl());
@@ -73,10 +74,19 @@ public class Registration implements CdsRuntimeConfiguration {
 		CdsEnvironment environment = runtime.getEnvironment();
 
 		// get required services from the service catalog
-		var persistenceService = serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
-		var attachmentService = serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
-		var outbox = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
-		var outboxedAttachmentService = outbox.outboxed(attachmentService);
+		PersistenceService persistenceService = serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
+		AttachmentService attachmentService = serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
+
+		// outbox AttachmentService if OutboxService is available
+		OutboxService outboxService = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
+		AttachmentService outboxedAttachmentService;
+		if (outboxService != null) {
+			outboxedAttachmentService = outboxService.outboxed(attachmentService);
+		} else {
+			outboxedAttachmentService = attachmentService;
+			logger.warn("OutboxService '{}' is not available. AttachmentService will not be outboxed.",
+					OutboxService.PERSISTENT_UNORDERED_NAME);
+		}
 
 		// retrieve the service binding for the malware scanner service
 		List<ServiceBinding> bindings = environment.getServiceBindings()
@@ -131,8 +141,7 @@ public class Registration implements CdsRuntimeConfiguration {
 	private static ConnectionPool getConnectionPool(CdsEnvironment env) {
 		// the common prefix for the connection pool configuration
 		final String prefix = "cds.attachments.malwareScanner.http.%s";
-		Duration timeout = Duration
-				.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, 120));
+		Duration timeout = Duration.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, 120));
 		int maxConnections = env.getProperty(prefix.formatted("maxConnections"), Integer.class, 20);
 		logger.debug("Connection pool configuration: timeout={}, maxConnections={}", timeout, maxConnections);
 		return new ConnectionPool(timeout, maxConnections, maxConnections);
