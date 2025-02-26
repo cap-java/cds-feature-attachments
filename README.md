@@ -81,7 +81,7 @@ The usage of CAP Java plugins is described in the [CAP Java Documentation](https
 </dependency>
 ```
 
-The latest version can be found in the [changelog](./doc/CHANGELOG.md) or in [Maven Central Repository](https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments/versions).
+The latest version can be found in the [changelog](./doc/CHANGELOG.md) or in the [Maven Central Repository](https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments/versions).
 
 To be able to also use the CDS models defined in this plugin the `cds-maven-plugin` needs to be used with the `resolve` goal to make the CDS models available in the project:
 
