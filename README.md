@@ -71,7 +71,11 @@ See [here](https://maven.apache.org/settings.html#Repositories) for further deta
 
 ## Usage
 
-The usage of CAP Java plugins is described in the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project). Following this documentation this plugin needs to be referenced in the `srv/pom.xml` of a CAP Java project:
+The usage of CAP Java plugins is described in the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project).
+
+### Manual
+
+Following this documentation this plugin needs to be referenced in the `srv/pom.xml` of a CAP Java project:
 
 ```xml
 <dependency>
@@ -102,12 +106,12 @@ To be able to also use the CDS models defined in this plugin the `cds-maven-plug
 ```
 After that, the aspect `Attachments` can be used in the application's CDS model.
 
-### Use cds-maven-plugin to add
+### Use cds-maven-plugin
 
-Starting with version 3.7.0 of the `cds-maven-plugin`, the `add` goal can be used to add a CAP Java plugin dependency to a CAP Java project. For example, use this command line to add the cds-feature-attachment:
+Starting with version 3.7.0 of the [`cds-maven-plugin`](https://cap.cloud.sap/docs/java/assets/cds-maven-plugin-site/index.html), the [`add`](https://cap.cloud.sap/docs/java/assets/cds-maven-plugin-site/add-mojo.html) goal can be used to add a CAP Java plugin dependency to a CAP Java project. For example, use this command line to add the cds-feature-attachment:
 
 ```
-mvn com.sap.cds:cds-maven-plugin:3.7.0:add -Dfeature=CAP_JAVA_PLUGIN \
+mvn com.sap.cds:cds-maven-plugin:add -Dfeature=CAP_JAVA_PLUGIN \
 	-Doptions.groupId=com.sap.cds \
 	-Doptions.artifactId=cds-feature-attachments \
 	-Doptions.version=1.0.6
