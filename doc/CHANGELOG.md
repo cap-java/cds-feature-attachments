@@ -6,6 +6,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Version 1.0.7 - tbd
+
+### Added
+
+### Changed
+
+- [Register draft related event handlers](https://github.com/cap-java/cds-feature-attachments/pull/386) on DraftService, if there is at least one DraftService instance available.
+
+### Fixed
+
+- [Fixed a potentially thrown NullPointerExcpetion](https://github.com/cap-java/cds-feature-attachments/pull/385), when the cds-feature-attachments is added to an CAP Java application and the Persistent Outbox is not available.
+
 ## Version 1.0.6 - 2025-02-17
 
 ### Added
