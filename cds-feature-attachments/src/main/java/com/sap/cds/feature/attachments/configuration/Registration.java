@@ -41,6 +41,7 @@ import com.sap.cds.feature.attachments.service.malware.client.httpclient.Malware
 import com.sap.cds.feature.attachments.service.malware.client.mapper.DefaultMalwareClientStatusMapper;
 import com.sap.cds.feature.attachments.service.malware.constants.MalwareScanConstants;
 import com.sap.cds.services.ServiceCatalog;
+import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cds.services.outbox.OutboxService;
@@ -106,11 +107,14 @@ public class Registration implements CdsRuntimeConfiguration {
 		var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
 		configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
 
-		// register event handlers for draft service
-		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
-		configurer.eventHandler(
-				new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent, ActiveEntityModifier::new));
-		configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
+		// register event handlers on draft service, only if at least one draft service is available
+		boolean hasDraftServices = serviceCatalog.getServices(DraftService.class).findFirst().isPresent();
+		if (!hasDraftServices) {
+			configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
+			configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent,
+					ActiveEntityModifier::new));
+			configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
+		}
 	}
 
 	private DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
