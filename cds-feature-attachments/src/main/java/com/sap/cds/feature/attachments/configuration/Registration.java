@@ -73,10 +73,8 @@ public class Registration implements CdsRuntimeConfiguration {
 		CdsEnvironment environment = runtime.getEnvironment();
 
 		// get required services from the service catalog
-		PersistenceService persistenceService = serviceCatalog.getService(PersistenceService.class,
-				PersistenceService.DEFAULT_NAME);
-		AttachmentService attachmentService = serviceCatalog.getService(AttachmentService.class,
-				AttachmentService.DEFAULT_NAME);
+		PersistenceService persistenceService = serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
+		AttachmentService attachmentService = serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
 
 		// outbox AttachmentService if OutboxService is available
 		OutboxService outbox = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
@@ -107,19 +105,16 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(new DefaultAttachmentsServiceHandler(malwareScanEndTransactionListener));
 
 		var deleteContentEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
-		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent,
-				outboxedAttachmentService);
+		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);
 		var attachmentsReader = new DefaultAttachmentsReader(new DefaultAssociationCascader(), persistenceService);
 		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
 		// register event handlers for application service
 		configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
-		configurer.eventHandler(
-				new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
+		configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 		configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
 		var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
-		configurer.eventHandler(
-				new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
+		configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
 
 		// register event handlers for draft service
 		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
