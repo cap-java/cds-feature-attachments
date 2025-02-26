@@ -117,13 +117,15 @@ public class Registration implements CdsRuntimeConfiguration {
 		var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
 		configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
 
-		// register event handlers on draft service, only if at least one draft service is available
+		// register event handlers on draft service, if at least one draft service is available
 		boolean hasDraftServices = serviceCatalog.getServices(DraftService.class).findFirst().isPresent();
 		if (hasDraftServices) {
 			configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
 			configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent,
 					ActiveEntityModifier::new));
 			configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
+		} else {
+			logger.debug("No draft service is available. Draft event handlers will not be registered.");
 		}
 	}
 
