@@ -77,10 +77,10 @@ public class Registration implements CdsRuntimeConfiguration {
 		AttachmentService attachmentService = serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
 
 		// outbox AttachmentService if OutboxService is available
-		OutboxService outbox = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
+		OutboxService outboxService = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
 		AttachmentService outboxedAttachmentService;
-		if (outbox != null) {
-			outboxedAttachmentService = outbox.outboxed(attachmentService);
+		if (outboxService != null) {
+			outboxedAttachmentService = outboxService.outboxed(attachmentService);
 		} else {
 			outboxedAttachmentService = attachmentService;
 			logger.warn("OutboxService '{}' is not available. AttachmentService will not be outboxed.",
