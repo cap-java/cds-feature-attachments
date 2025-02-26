@@ -119,7 +119,7 @@ public class Registration implements CdsRuntimeConfiguration {
 
 		// register event handlers on draft service, only if at least one draft service is available
 		boolean hasDraftServices = serviceCatalog.getServices(DraftService.class).findFirst().isPresent();
-		if (!hasDraftServices) {
+		if (hasDraftServices) {
 			configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
 			configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent,
 					ActiveEntityModifier::new));
