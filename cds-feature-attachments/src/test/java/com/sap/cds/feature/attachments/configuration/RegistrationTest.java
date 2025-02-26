@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.services.Service;
 import com.sap.cds.services.ServiceCatalog;
+import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.outbox.OutboxService;
@@ -39,6 +41,7 @@ class RegistrationTest {
 	private PersistenceService persistenceService;
 	private AttachmentService attachmentService;
 	private OutboxService outboxService;
+	private DraftService draftService;
 	private ArgumentCaptor<Service> serviceArgumentCaptor;
 	private ArgumentCaptor<EventHandler> handlerArgumentCaptor;
 
@@ -57,6 +60,7 @@ class RegistrationTest {
 		persistenceService = mock(PersistenceService.class);
 		attachmentService = mock(AttachmentService.class);
 		outboxService = mock(OutboxService.class);
+		draftService = mock(DraftService.class);
 		serviceArgumentCaptor = ArgumentCaptor.forClass(Service.class);
 		handlerArgumentCaptor = ArgumentCaptor.forClass(EventHandler.class);
 	}
@@ -82,6 +86,7 @@ class RegistrationTest {
 				attachmentService);
 		when(serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME)).thenReturn(
 				outboxService);
+		when(serviceCatalog.getServices(DraftService.class)).thenReturn(Stream.of(draftService));
 
 		cut.eventHandlers(configurer);
 
