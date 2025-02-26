@@ -90,7 +90,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		// retrieve the service binding for the malware scanner service
 		List<ServiceBinding> bindings = environment.getServiceBindings()
 				.filter(b -> ServiceBindingUtils.matches(b, MalwareScanConstants.MALWARE_SCAN_SERVICE_LABEL)).toList();
-		ServiceBinding binding = !bindings.isEmpty() ? bindings.get(0) : null;
+		var binding = !bindings.isEmpty() ? bindings.get(0) : null;
 
 		// get HTTP connection pool configuration
 		var connectionPool = getConnectionPool(environment);
@@ -125,8 +125,7 @@ public class Registration implements CdsRuntimeConfiguration {
 
 	private DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
 			ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
-		ListenerProvider creationChangeSetListener = (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId,
-				cdsRuntime, outboxedAttachmentService);
+		ListenerProvider creationChangeSetListener = (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId, cdsRuntime, outboxedAttachmentService);
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
