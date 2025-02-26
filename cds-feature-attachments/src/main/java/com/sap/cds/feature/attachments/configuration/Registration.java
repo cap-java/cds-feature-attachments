@@ -52,8 +52,8 @@ import com.sap.cds.services.utils.environment.ServiceBindingUtils;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 /**
- * The class {@link Registration} is a configuration class that registers the services and event handlers for the
- * attachments feature.
+ * The class {@link Registration} is a configuration class that registers the
+ * services and event handlers for the attachments feature.
  */
 public class Registration implements CdsRuntimeConfiguration {
 
@@ -80,13 +80,19 @@ public class Registration implements CdsRuntimeConfiguration {
 
 		// outbox AttachmentService if OutboxService is available
 		OutboxService outbox = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
-		AttachmentService outboxedAttachmentService = outbox != null ? outbox.outboxed(attachmentService)
-				: attachmentService;
+		AttachmentService outboxedAttachmentService;
+		if (outbox != null) {
+			outboxedAttachmentService = outbox.outboxed(attachmentService);
+		} else {
+			outboxedAttachmentService = attachmentService;
+			logger.warn("OutboxService '{}' is not available. AttachmentService will not be outboxed.",
+					OutboxService.PERSISTENT_UNORDERED_NAME);
+		}
 
 		// retrieve the service binding for the malware scanner service
 		List<ServiceBinding> bindings = environment.getServiceBindings()
 				.filter(b -> ServiceBindingUtils.matches(b, MalwareScanConstants.MALWARE_SCAN_SERVICE_LABEL)).toList();
-		var binding = !bindings.isEmpty() ? bindings.get(0) : null;
+		ServiceBinding binding = !bindings.isEmpty() ? bindings.get(0) : null;
 
 		// get HTTP connection pool configuration
 		var connectionPool = getConnectionPool(environment);
