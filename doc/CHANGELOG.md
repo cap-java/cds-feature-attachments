@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
-- [Fixed a potentially thrown NullPointerExcpetion](https://github.com/cap-java/cds-feature-attachments/pull/385), when the cds-feature-attachments is added to an CAP Java application and the Persistent Outbox is not available.
+- [Fixed a potentially thrown NullPointerExcpetion](https://github.com/cap-java/cds-feature-attachments/pull/385), when the `cds-feature-attachments` is added to a CAP Java application and the Persistent Outbox is not available.
 
 ## Version 1.0.6 - 2025-02-17
 
