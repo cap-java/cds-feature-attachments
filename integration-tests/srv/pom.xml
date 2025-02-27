@@ -59,7 +59,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.maciejwalkowiak.spring</groupId>
+            <groupId>org.wiremock.integrations</groupId>
             <artifactId>wiremock-spring-boot</artifactId>
             <scope>test</scope>
         </dependency>
