@@ -110,12 +110,17 @@ public class Registration implements CdsRuntimeConfiguration {
 		var attachmentsReader = new DefaultAttachmentsReader(new DefaultAssociationCascader(), persistenceService);
 		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
-		// register event handlers for application service
-		configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
-		configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
-		configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
-		var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
-		configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
+		// register event handlers for application service, if at least one application service is available
+		boolean hasApplicationServices = serviceCatalog.getServices(AttachmentService.class).findFirst().isPresent();
+		if (hasApplicationServices) {
+			configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
+			configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
+			configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
+			var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
+			configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
+		} else {
+			logger.debug("No application service is available. Application service event handlers will not be registered.");
+		}
 
 		// register event handlers on draft service, if at least one draft service is available
 		boolean hasDraftServices = serviceCatalog.getServices(DraftService.class).findFirst().isPresent();
