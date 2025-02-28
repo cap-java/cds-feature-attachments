@@ -6,9 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.0.7 - tbd
-
-### Added
+## Version 1.0.7 - 2025-02-28
 
 ### Changed
 
@@ -16,7 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
-- [Fixed a potentially thrown NullPointerExcpetion](https://github.com/cap-java/cds-feature-attachments/pull/385), when the `cds-feature-attachments` is added to a CAP Java application and the Persistent Outbox is not available.
+- [Fixed a potentially thrown NullPointerExcpetion](https://github.com/cap-java/cds-feature-attachments/pull/385) when adding cds-feature-attachments to a CAP Java application and the persistent outbox is not available.
 
 ## Version 1.0.6 - 2025-02-17
 
