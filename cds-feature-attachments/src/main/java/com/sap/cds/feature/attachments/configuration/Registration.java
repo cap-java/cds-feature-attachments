@@ -41,6 +41,7 @@ import com.sap.cds.feature.attachments.service.malware.client.httpclient.Malware
 import com.sap.cds.feature.attachments.service.malware.client.mapper.DefaultMalwareClientStatusMapper;
 import com.sap.cds.feature.attachments.service.malware.constants.MalwareScanConstants;
 import com.sap.cds.services.ServiceCatalog;
+import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
@@ -110,12 +111,17 @@ public class Registration implements CdsRuntimeConfiguration {
 		var attachmentsReader = new DefaultAttachmentsReader(new DefaultAssociationCascader(), persistenceService);
 		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
-		// register event handlers for application service
-		configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
-		configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
-		configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
-		var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
-		configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
+		// register event handlers for application service, if at least one application service is available
+		boolean hasApplicationServices = serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
+		if (hasApplicationServices) {
+			configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
+			configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
+			configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
+			var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
+			configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
+		} else {
+			logger.debug("No application service is available. Application service event handlers will not be registered.");
+		}
 
 		// register event handlers on draft service, if at least one draft service is available
 		boolean hasDraftServices = serviceCatalog.getServices(DraftService.class).findFirst().isPresent();
