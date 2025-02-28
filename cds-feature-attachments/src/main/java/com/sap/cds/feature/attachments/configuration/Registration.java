@@ -41,6 +41,7 @@ import com.sap.cds.feature.attachments.service.malware.client.httpclient.Malware
 import com.sap.cds.feature.attachments.service.malware.client.mapper.DefaultMalwareClientStatusMapper;
 import com.sap.cds.feature.attachments.service.malware.constants.MalwareScanConstants;
 import com.sap.cds.services.ServiceCatalog;
+import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
@@ -111,7 +112,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
 		// register event handlers for application service, if at least one application service is available
-		boolean hasApplicationServices = serviceCatalog.getServices(AttachmentService.class).findFirst().isPresent();
+		boolean hasApplicationServices = serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
 		if (hasApplicationServices) {
 			configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
 			configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
