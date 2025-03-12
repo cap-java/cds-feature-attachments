@@ -70,7 +70,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-bom</artifactId>
-                <version>5.15.2</version>
+                <version>5.16.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -293,7 +293,7 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.9.1.0</version>
+                    <version>4.9.2.0</version>
                 </plugin>
                 <plugin>
                     <groupId>com.sap.cds</groupId>
