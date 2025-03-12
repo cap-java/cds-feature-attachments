@@ -5,7 +5,6 @@ package com.sap.cds.feature.attachments.configuration;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +36,8 @@ import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactio
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanRunner;
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
+import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClient;
+import com.sap.cds.feature.attachments.service.malware.client.httpclient.HttpClientProviderFactory;
 import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
 import com.sap.cds.feature.attachments.service.malware.constants.MalwareScanConstants;
 import com.sap.cds.services.ServiceCatalog;
@@ -91,13 +92,16 @@ public class Registration implements CdsRuntimeConfiguration {
 		// retrieve the service binding for the malware scanner service
 		List<ServiceBinding> bindings = environment.getServiceBindings()
 				.filter(b -> ServiceBindingUtils.matches(b, MalwareScanConstants.MALWARE_SCAN_SERVICE_LABEL)).toList();
-		var binding = !bindings.isEmpty() ? bindings.get(0) : null;
+		ServiceBinding binding = !bindings.isEmpty() ? bindings.get(0) : null;
 
-		// get HTTP connection pool configuration
-		var connectionPool = getConnectionPool(environment);
-		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, connectionPool);
-		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService,
-				new DefaultMalwareScanClient(clientProviderFactory), Objects.nonNull(binding));
+		MalwareScanClient scanClient = null;
+		if (binding != null) {
+			ConnectionPool connectionPool = getConnectionPool(environment);
+			HttpClientProviderFactory clientProviderFactory = new MalwareScanClientProviderFactory(binding,
+					connectionPool);
+			scanClient = new DefaultMalwareScanClient(clientProviderFactory);
+		}
+		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService, scanClient);
 		EndTransactionMalwareScanProvider malwareScanEndTransactionListener = (attachmentEntity,
 				contentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, contentId, malwareScanner, runtime);
 
