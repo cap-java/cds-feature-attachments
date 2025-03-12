@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
@@ -26,7 +25,6 @@ import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
-import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsAssociationType;
@@ -54,7 +52,6 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 public class ReadAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(ReadAttachmentsHandler.class);
-	private static final Marker marker = LoggingMarker.APPLICATION_HANDLER.getMarker();
 
 	private final AttachmentService attachmentService;
 	private final AttachmentStatusValidator attachmentStatusValidator;
@@ -70,7 +67,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 	@Before
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processBefore(CdsReadEventContext context) {
-		logger.debug(marker, "Processing before read event for entity {}", context.getTarget().getName());
+		logger.debug("Processing before read event for entity {}", context.getTarget().getName());
 
 		var cdsModel = context.getModel();
 		var fieldNames = getAttachmentAssociations(cdsModel, context.getTarget(), "", new ArrayList<>());
@@ -86,10 +83,10 @@ public class ReadAttachmentsHandler implements EventHandler {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
-		logger.debug(marker, "Processing after read event for entity {}", context.getTarget().getName());
+		logger.debug("Processing after read event for entity {}", context.getTarget().getName());
 
 		Converter converter = (path, element, value) -> {
-			logger.info(marker, "Processing after read event for entity {}", element.getName());
+			logger.info("Processing after read event for entity {}", element.getName());
 			var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 			var status = (String) path.target().values().get(Attachments.STATUS);
 			var content = (InputStream) path.target().values().get(Attachments.CONTENT);
@@ -136,9 +133,9 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	private void verifyStatus(Path path, String status, String contentId, boolean contentExists) {
 		if (areKeysEmpty(path.target().keys())) {
-			logger.info(marker, "In verify status for content id {} and status {}", contentId, status);
+			logger.info("In verify status for content id {} and status {}", contentId, status);
 			if ((StatusCode.UNSCANNED.equals(status) || StatusCode.SCANNING.equals(status)) && contentExists) {
-				logger.info(marker, "Scanning content with ID {} for malware, has current status {}", contentId, status);
+				logger.info("Scanning content with ID {} for malware, has current status {}", contentId, status);
 				asyncMalwareScanExecutor.scanAsync(path.target().entity(), contentId);
 			}
 			attachmentStatusValidator.verifyStatus(status);
