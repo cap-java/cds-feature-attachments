@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Filter;
@@ -18,7 +17,6 @@ import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.handler.draftservice.modifier.ActiveEntityModifierProvider;
-import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
@@ -40,7 +38,6 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 public class DraftCancelAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(DraftCancelAttachmentsHandler.class);
-	private static final Marker marker = LoggingMarker.DRAFT_HANDLER.getMarker();
 
 	private final AttachmentsReader attachmentsReader;
 	private final ModifyAttachmentEvent deleteContentAttachmentEvent;
@@ -57,7 +54,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBeforeDraftCancel(DraftCancelEventContext context) {
 		if (isWhereEmpty(context)) {
-			logger.debug(marker, "Processing before draft cancel event for entity {}", context.getTarget().getName());
+			logger.debug("Processing before draft cancel event for entity {}", context.getTarget().getName());
 
 			var activeEntity = getActiveEntity(context);
 			var draftEntity = getDraftEntity(context);
