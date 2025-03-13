@@ -63,6 +63,8 @@ class RegistrationTest {
 		when(environment.getProperty(any(), any(), any())).thenAnswer(invocation -> invocation.getArgument(2));
 		ServiceBinding binding = mock(ServiceBinding.class);
 		when(binding.getServiceName()).thenReturn(Optional.of(DefaultAttachmentMalwareScanner.MALWARE_SCAN_SERVICE_LABEL));
+		when(binding.getName()).thenReturn(Optional.of("malware-scanner"));
+		when(binding.getServicePlan()).thenReturn(Optional.of("clamav"));
 		when(environment.getServiceBindings()).thenReturn(Stream.of(binding));
 		when(cdsRuntime.getEnvironment()).thenReturn(environment);
 		persistenceService = mock(PersistenceService.class);
