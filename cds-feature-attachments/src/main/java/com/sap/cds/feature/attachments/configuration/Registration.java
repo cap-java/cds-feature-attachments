@@ -5,6 +5,7 @@ package com.sap.cds.feature.attachments.configuration;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import com.sap.cds.feature.attachments.service.AttachmentsServiceImpl;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanRunner;
+import com.sap.cds.feature.attachments.service.malware.AttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
 import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClient;
@@ -89,18 +91,20 @@ public class Registration implements CdsRuntimeConfiguration {
 		}
 
 		// retrieve the service binding for the malware scanner service
-		List<ServiceBinding> bindings = environment.getServiceBindings()
-				.filter(b -> ServiceBindingUtils.matches(b, DefaultAttachmentMalwareScanner.MALWARE_SCAN_SERVICE_LABEL)).toList();
-		ServiceBinding binding = !bindings.isEmpty() ? bindings.get(0) : null;
+		Optional<ServiceBinding> binding = environment.getServiceBindings()
+				.filter(b -> ServiceBindingUtils.matches(b, DefaultAttachmentMalwareScanner.MALWARE_SCAN_SERVICE_LABEL)).findFirst();
 
 		MalwareScanClient scanClient = null;
-		if (binding != null) {
+		if (binding.isPresent()) {
 			ConnectionPool connectionPool = getConnectionPool(environment);
-			HttpClientProviderFactory clientProviderFactory = new MalwareScanClientProviderFactory(binding,
+			HttpClientProviderFactory clientProviderFactory = new MalwareScanClientProviderFactory(binding.get(),
 					connectionPool);
 			scanClient = new DefaultMalwareScanClient(clientProviderFactory);
+		} else {
+			logger.warn("No service binding found for Malware Scanning Service with tag '{}'. Malware scanning will be disabled.",
+					DefaultAttachmentMalwareScanner.MALWARE_SCAN_SERVICE_LABEL);
 		}
-		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService, scanClient);
+		AttachmentMalwareScanner malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService, scanClient);
 		EndTransactionMalwareScanProvider malwareScanEndTransactionListener = (attachmentEntity,
 				contentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, contentId, malwareScanner, runtime);
 
