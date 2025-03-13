@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- Simplified codebase by removing some classes with just a few code.
+- Simplified codebase by removing classes with just a few lines of code that can be moved.
 
 ### Fixed
 
