@@ -39,7 +39,6 @@ import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareS
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
 import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
 import com.sap.cds.feature.attachments.service.malware.client.mapper.DefaultMalwareClientStatusMapper;
-import com.sap.cds.feature.attachments.service.malware.constants.MalwareScanConstants;
 import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.draft.DraftService;
@@ -91,7 +90,7 @@ public class Registration implements CdsRuntimeConfiguration {
 
 		// retrieve the service binding for the malware scanner service
 		List<ServiceBinding> bindings = environment.getServiceBindings()
-				.filter(b -> ServiceBindingUtils.matches(b, MalwareScanConstants.MALWARE_SCAN_SERVICE_LABEL)).toList();
+				.filter(b -> ServiceBindingUtils.matches(b, DefaultAttachmentMalwareScanner.MALWARE_SCAN_SERVICE_LABEL)).toList();
 		var binding = !bindings.isEmpty() ? bindings.get(0) : null;
 
 		// get HTTP connection pool configuration
