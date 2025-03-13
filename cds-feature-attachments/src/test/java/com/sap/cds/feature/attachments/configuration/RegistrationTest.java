@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,7 @@ import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmen
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
+import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.services.Service;
 import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.cds.ApplicationService;
@@ -33,6 +35,7 @@ import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntime;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
+import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 class RegistrationTest {
 
@@ -58,6 +61,9 @@ class RegistrationTest {
 		when(cdsRuntime.getServiceCatalog()).thenReturn(serviceCatalog);
 		CdsEnvironment environment = mock(CdsEnvironment.class);
 		when(environment.getProperty(any(), any(), any())).thenAnswer(invocation -> invocation.getArgument(2));
+		ServiceBinding binding = mock(ServiceBinding.class);
+		when(binding.getServiceName()).thenReturn(Optional.of(DefaultAttachmentMalwareScanner.MALWARE_SCAN_SERVICE_LABEL));
+		when(environment.getServiceBindings()).thenReturn(Stream.of(binding));
 		when(cdsRuntime.getEnvironment()).thenReturn(environment);
 		persistenceService = mock(PersistenceService.class);
 		attachmentService = mock(AttachmentService.class);

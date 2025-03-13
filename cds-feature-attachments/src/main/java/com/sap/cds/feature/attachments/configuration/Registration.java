@@ -99,8 +99,10 @@ public class Registration implements CdsRuntimeConfiguration {
 			HttpClientProviderFactory clientProviderFactory = new MalwareScanClientProviderFactory(binding.get(),
 					connectionPool);
 			scanClient = new DefaultMalwareScanClient(clientProviderFactory);
+			logger.info("Binding to Malware Scanning Service with name '{}' found. Malware scanning will be enabled.",
+					DefaultAttachmentMalwareScanner.MALWARE_SCAN_SERVICE_LABEL);
 		} else {
-			logger.warn("No service binding found for Malware Scanning Service with tag '{}'. Malware scanning will be disabled.",
+			logger.warn("No binding found for Malware Scanning Service with name '{}'. Malware scanning will be disabled.",
 					DefaultAttachmentMalwareScanner.MALWARE_SCAN_SERVICE_LABEL);
 		}
 		AttachmentMalwareScanner malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService, scanClient);
