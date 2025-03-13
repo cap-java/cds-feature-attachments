@@ -6,6 +6,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Version 1.0.8 - tbd.
+
+### Added
+
+### Changed
+
+- Simplified codebase by removing classes with just a few lines of code that can be moved.
+
+### Fixed
+
 ## Version 1.0.7 - 2025-02-28
 
 ### Changed
