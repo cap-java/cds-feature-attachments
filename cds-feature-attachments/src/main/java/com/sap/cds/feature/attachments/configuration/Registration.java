@@ -38,7 +38,6 @@ import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactio
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
 import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
-import com.sap.cds.feature.attachments.service.malware.client.mapper.DefaultMalwareClientStatusMapper;
 import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.draft.DraftService;
@@ -96,9 +95,8 @@ public class Registration implements CdsRuntimeConfiguration {
 		// get HTTP connection pool configuration
 		var connectionPool = getConnectionPool(environment);
 		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, connectionPool);
-		var malwareStatusMapper = new DefaultMalwareClientStatusMapper();
 		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService,
-				new DefaultMalwareScanClient(clientProviderFactory), malwareStatusMapper, Objects.nonNull(binding));
+				new DefaultMalwareScanClient(clientProviderFactory), Objects.nonNull(binding));
 		EndTransactionMalwareScanProvider malwareScanEndTransactionListener = (attachmentEntity,
 				contentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, contentId, malwareScanner, runtime);
 
