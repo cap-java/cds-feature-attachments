@@ -20,11 +20,12 @@ import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 /**
- * The class {@link DefaultAttachmentsServiceHandler} is an event handler that is called when an attachment is created,
- * marked as deleted, restored or read.
+ * The class {@link DefaultAttachmentsServiceHandler} is an event handler that
+ * is called when an attachment is created, marked as deleted, restored or read.
  * <p>
- * As the documents and content is stored in the database with this handler the handler sets the isInternalStored flag
- * to true in the create-context. Without this flag the content would be deleted in the database.
+ * As the documents and content is stored in the database with this handler the
+ * handler sets the isInternalStored flag to true in the create-context.
+ * Without this flag the content would be deleted in the database.
  */
 @ServiceName(value = "*", type = AttachmentService.class)
 public class DefaultAttachmentsServiceHandler implements EventHandler {
@@ -56,10 +57,9 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On
 	@HandlerOrder(DEFAULT_ON)
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
-		logger.debug("Default Attachment Service handler called for marking attachment as deleted with document id {}",
-				context.getContentId());
+		logger.debug("Default Attachment Service handler called for marking attachment as deleted with document id {}", context.getContentId());
 
-		// nothing to do as data are stored in the database and handled by the database
+		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
 	}
 
@@ -69,7 +69,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		logger.debug("Default Attachment Service handler called for restoring attachment for timestamp {}",
 				context.getRestoreTimestamp());
 
-		// nothing to do as data are stored in the database and handled by the database
+		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
 	}
 
@@ -79,7 +79,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		logger.debug("Default Attachment Service handler called for reading attachment with document id {}",
 				context.getContentId());
 
-		// nothing to do as data are stored in the database and handled by the database
+		//nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
 	}
 
