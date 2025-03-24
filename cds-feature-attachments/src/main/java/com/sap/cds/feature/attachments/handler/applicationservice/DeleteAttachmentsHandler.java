@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
@@ -48,7 +49,7 @@ public class DeleteAttachmentsHandler implements EventHandler {
 		Converter converter = (path, element, value) -> deleteContentAttachmentEvent.processEvent(path,
 				(InputStream) value, CdsData.create(path.target().values()), context);
 
-		ApplicationHandlerHelper.callProcessor(context.getTarget(), attachments, ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter);
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(attachments, context.getTarget());
 	}
 
 }

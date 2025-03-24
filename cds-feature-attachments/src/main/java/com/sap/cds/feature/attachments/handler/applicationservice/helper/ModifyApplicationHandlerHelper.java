@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
@@ -37,7 +38,7 @@ public final class ModifyApplicationHandlerHelper {
 		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingDataList, eventFactory,
 				eventContext, path, (InputStream) value);
 
-		ApplicationHandlerHelper.callProcessor(entity, data, ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter);
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data, entity);
 	}
 
 	public static InputStream handleAttachmentForEntity(List<CdsData> existingDataList,
