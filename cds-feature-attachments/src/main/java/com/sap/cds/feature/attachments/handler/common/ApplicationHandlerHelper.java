@@ -81,18 +81,20 @@ public final class ApplicationHandlerHelper {
 		});
 	}
 
+	/**
+	 * Removes the draft key "IsActiveEntity" from the given keys.
+	 * 
+	 * @param keys The keys to remove the draft keys from
+	 * @return The keys without the draft key "IsActiveEntity"
+	 */
 	public static Map<String, Object> removeDraftKeys(Map<String, Object> keys) {
 		var keyMap = new HashMap<>(keys);
-		keyMap.entrySet().removeIf(entry -> isDraftActiveEntityField(entry.getKey()));
+		keyMap.entrySet().removeIf(entry -> entry.getKey().equals(Drafts.IS_ACTIVE_ENTITY));
 		return keyMap;
 	}
 
 	private static boolean hasElementAnnotation(CdsElement element, String annotation) {
 		return element.findAnnotation(annotation).isPresent();
-	}
-
-	private static boolean isDraftActiveEntityField(String key) {
-		return key.equals(Drafts.IS_ACTIVE_ENTITY);
 	}
 
 	private ApplicationHandlerHelper() {
