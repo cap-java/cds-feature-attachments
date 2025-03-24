@@ -38,7 +38,8 @@ public final class ModifyApplicationHandlerHelper {
 		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingDataList, eventFactory,
 				eventContext, path, (InputStream) value);
 
-		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data, entity);
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,
+				entity);
 	}
 
 	public static InputStream handleAttachmentForEntity(List<CdsData> existingDataList,

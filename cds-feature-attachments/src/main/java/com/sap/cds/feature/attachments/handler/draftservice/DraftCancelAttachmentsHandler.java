@@ -65,8 +65,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 			var filter = buildContentIdFilter();
 			var validator = buildDeleteContentValidator(context, activeCondensedAttachments);
-			CdsDataProcessor.create().addValidator(filter, validator).process(draftAttachments,
-					context.getTarget());
+			CdsDataProcessor.create().addValidator(filter, validator).process(draftAttachments, context.getTarget());
 		}
 
 	}

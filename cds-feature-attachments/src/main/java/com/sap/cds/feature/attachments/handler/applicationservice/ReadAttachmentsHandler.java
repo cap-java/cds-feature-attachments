@@ -102,7 +102,8 @@ public class ReadAttachmentsHandler implements EventHandler {
 			}
 		};
 
-		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data, context.getTarget());
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,
+				context.getTarget());
 	}
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName,

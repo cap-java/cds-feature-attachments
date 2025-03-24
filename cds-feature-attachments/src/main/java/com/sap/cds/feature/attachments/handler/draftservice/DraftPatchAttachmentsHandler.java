@@ -59,7 +59,8 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 					context, path, (InputStream) value);
 		};
 
-		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data, context.getTarget());
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,
+				context.getTarget());
 	}
 
 }

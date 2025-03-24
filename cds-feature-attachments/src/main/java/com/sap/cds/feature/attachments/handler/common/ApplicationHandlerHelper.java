@@ -49,10 +49,6 @@ public final class ApplicationHandlerHelper {
 		return !isIncluded.get();
 	}
 
-//	public static void callValidator(CdsEntity entity, List<CdsData> data, Filter filter, Validator validator) {
-//		CdsDataProcessor.create().addValidator(filter, validator).process(data, entity);
-//	}
-
 	/**
 	 * Checks if the entity is a media entity. A media entity is an entity that is annotated with the annotation
 	 * "_is_media_data".

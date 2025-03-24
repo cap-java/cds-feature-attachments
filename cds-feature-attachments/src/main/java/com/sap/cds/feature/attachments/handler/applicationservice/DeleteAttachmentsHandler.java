@@ -49,7 +49,8 @@ public class DeleteAttachmentsHandler implements EventHandler {
 		Converter converter = (path, element, value) -> deleteContentAttachmentEvent.processEvent(path,
 				(InputStream) value, CdsData.create(path.target().values()), context);
 
-		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(attachments, context.getTarget());
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
+				.process(attachments, context.getTarget());
 	}
 
 }
