@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -20,6 +22,8 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
+import com.sap.cds.reflect.CdsAssociationType;
+import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
@@ -46,6 +50,19 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 	public void createAttachment(AttachmentCreateEventContext context) throws IOException {
 		logger.info("FS Attachment Service handler called for creating attachment for entity name: {}",
 				context.getAttachmentEntity().getQualifiedName());
+		// find association to parent entity
+		Optional<CdsElement> upAssociation = context.getAttachmentEntity().findAssociation("up_");
+
+		// if association is found, try to get foreign key to parent entity
+		if (upAssociation.isPresent()) {
+			CdsElement association = upAssociation.get();
+			// get association type
+			CdsAssociationType assocType = association.getType();
+			// get the refs of the association
+			List<String> fkElements = assocType.refs().map(ref -> "up__" + ref.path()).toList();
+			logger.info("Found association {} using foreign-key elements {}", association.getName(), fkElements);
+		}
+
 		String contentId = (String) context.getAttachmentIds().get(Attachments.ID);
 
 		MediaData data = context.getData();
