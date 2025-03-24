@@ -1,5 +1,5 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+ * (C) 2019-2025 SAP SE or an SAP affiliate company. All rights reserved. *
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
@@ -7,14 +7,12 @@ import java.io.InputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
-import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
 import com.sap.cds.services.handler.EventHandler;
@@ -30,7 +28,6 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 public class DeleteAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(DeleteAttachmentsHandler.class);
-	private static final Marker marker = LoggingMarker.APPLICATION_HANDLER.getMarker();
 
 	private final AttachmentsReader attachmentsReader;
 	private final ModifyAttachmentEvent deleteContentAttachmentEvent;
@@ -44,7 +41,7 @@ public class DeleteAttachmentsHandler implements EventHandler {
 	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBefore(CdsDeleteEventContext context) {
-		logger.debug(marker, "Processing before delete event for entity {}", context.getTarget().getName());
+		logger.debug("Processing before delete event for entity {}", context.getTarget().getName());
 
 		var attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn());
 

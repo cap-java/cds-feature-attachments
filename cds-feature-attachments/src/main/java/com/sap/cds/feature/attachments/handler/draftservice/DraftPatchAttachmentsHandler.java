@@ -1,5 +1,5 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+ * (C) 2019-2025 SAP SE or an SAP affiliate company. All rights reserved. *
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.draftservice;
 
@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor.Converter;
@@ -16,7 +15,6 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyA
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
-import com.sap.cds.feature.attachments.utilities.LoggingMarker;
 import com.sap.cds.ql.Select;
 import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
@@ -35,7 +33,6 @@ import com.sap.cds.services.persistence.PersistenceService;
 public class DraftPatchAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(DraftPatchAttachmentsHandler.class);
-	private static final Marker marker = LoggingMarker.DRAFT_HANDLER.getMarker();
 
 	private final PersistenceService persistence;
 	private final ModifyAttachmentEventFactory eventFactory;
@@ -48,7 +45,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBeforeDraftPatch(DraftPatchEventContext context, List<CdsData> data) {
-		logger.debug(marker, "Processing before draft patch event for entity {}", context.getTarget().getName());
+		logger.debug("Processing before draft patch event for entity {}", context.getTarget().getName());
 
 		Converter converter = (path, element, value) -> {
 			var draftElement = path.target().entity().getQualifiedName().endsWith(DraftConstants.DRAFT_TABLE_POSTFIX)

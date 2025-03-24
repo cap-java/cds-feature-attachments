@@ -1,5 +1,5 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+ * (C) 2019-2025 SAP SE or an SAP affiliate company. All rights reserved. *
  **************************************************************************/
 package com.sap.cds.feature.attachments.configuration;
 
@@ -38,9 +38,9 @@ import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactio
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
 import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
-import com.sap.cds.feature.attachments.service.malware.client.mapper.DefaultMalwareClientStatusMapper;
-import com.sap.cds.feature.attachments.service.malware.constants.MalwareScanConstants;
 import com.sap.cds.services.ServiceCatalog;
+import com.sap.cds.services.cds.ApplicationService;
+import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cds.services.outbox.OutboxService;
@@ -58,6 +58,7 @@ import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 public class Registration implements CdsRuntimeConfiguration {
 
 	private static final Logger logger = LoggerFactory.getLogger(Registration.class);
+
 	@Override
 	public void services(CdsRuntimeConfigurer configurer) {
 		configurer.service(new AttachmentsServiceImpl());
@@ -72,22 +73,30 @@ public class Registration implements CdsRuntimeConfiguration {
 		CdsEnvironment environment = runtime.getEnvironment();
 
 		// get required services from the service catalog
-		var persistenceService = serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
-		var attachmentService = serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
-		var outbox = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
-		var outboxedAttachmentService = outbox.outboxed(attachmentService);
+		PersistenceService persistenceService = serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
+		AttachmentService attachmentService = serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
+
+		// outbox AttachmentService if OutboxService is available
+		OutboxService outboxService = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
+		AttachmentService outboxedAttachmentService;
+		if (outboxService != null) {
+			outboxedAttachmentService = outboxService.outboxed(attachmentService);
+		} else {
+			outboxedAttachmentService = attachmentService;
+			logger.warn("OutboxService '{}' is not available. AttachmentService will not be outboxed.",
+					OutboxService.PERSISTENT_UNORDERED_NAME);
+		}
 
 		// retrieve the service binding for the malware scanner service
 		List<ServiceBinding> bindings = environment.getServiceBindings()
-				.filter(b -> ServiceBindingUtils.matches(b, MalwareScanConstants.MALWARE_SCAN_SERVICE_LABEL)).toList();
+				.filter(b -> ServiceBindingUtils.matches(b, DefaultAttachmentMalwareScanner.MALWARE_SCAN_SERVICE_LABEL)).toList();
 		var binding = !bindings.isEmpty() ? bindings.get(0) : null;
 
 		// get HTTP connection pool configuration
 		var connectionPool = getConnectionPool(environment);
 		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, connectionPool);
-		var malwareStatusMapper = new DefaultMalwareClientStatusMapper();
 		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService,
-				new DefaultMalwareScanClient(clientProviderFactory), malwareStatusMapper, Objects.nonNull(binding));
+				new DefaultMalwareScanClient(clientProviderFactory), Objects.nonNull(binding));
 		EndTransactionMalwareScanProvider malwareScanEndTransactionListener = (attachmentEntity,
 				contentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, contentId, malwareScanner, runtime);
 
@@ -99,18 +108,28 @@ public class Registration implements CdsRuntimeConfiguration {
 		var attachmentsReader = new DefaultAttachmentsReader(new DefaultAssociationCascader(), persistenceService);
 		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
-		// register event handlers for application service
-		configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
-		configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
-		configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
-		var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
-		configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
+		// register event handlers for application service, if at least one application service is available
+		boolean hasApplicationServices = serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
+		if (hasApplicationServices) {
+			configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
+			configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
+			configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
+			var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
+			configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
+		} else {
+			logger.debug("No application service is available. Application service event handlers will not be registered.");
+		}
 
-		// register event handlers for draft service
-		configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
-		configurer.eventHandler(
-				new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent, ActiveEntityModifier::new));
-		configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
+		// register event handlers on draft service, if at least one draft service is available
+		boolean hasDraftServices = serviceCatalog.getServices(DraftService.class).findFirst().isPresent();
+		if (hasDraftServices) {
+			configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
+			configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent,
+					ActiveEntityModifier::new));
+			configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
+		} else {
+			logger.debug("No draft service is available. Draft event handlers will not be registered.");
+		}
 	}
 
 	private DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
@@ -127,8 +146,7 @@ public class Registration implements CdsRuntimeConfiguration {
 	private static ConnectionPool getConnectionPool(CdsEnvironment env) {
 		// the common prefix for the connection pool configuration
 		final String prefix = "cds.attachments.malwareScanner.http.%s";
-		Duration timeout = Duration
-				.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, 120));
+		Duration timeout = Duration.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, 120));
 		int maxConnections = env.getProperty(prefix.formatted("maxConnections"), Integer.class, 20);
 		logger.debug("Connection pool configuration: timeout={}, maxConnections={}", timeout, maxConnections);
 		return new ConnectionPool(timeout, maxConnections, maxConnections);

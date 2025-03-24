@@ -17,7 +17,7 @@
 
     <properties>
         <!-- DEPENDENCIES VERSION -->
-        <spring.boot.version>3.4.2</spring.boot.version>
+        <spring.boot.version>3.4.4</spring.boot.version>
     </properties>
 
     <modules>
@@ -35,7 +35,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
+            <dependency>
+                <groupId>org.wiremock.integrations</groupId>
+                <artifactId>wiremock-spring-boot</artifactId>
+                <version>3.9.0</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

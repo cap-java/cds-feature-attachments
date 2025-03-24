@@ -1,5 +1,5 @@
 /**************************************************************************
- * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
+ * (C) 2019-2025 SAP SE or an SAP affiliate company. All rights reserved. *
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.common;
 
@@ -16,7 +16,6 @@ import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.handler.constants.ModelConstants;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
@@ -26,13 +25,15 @@ import com.sap.cds.services.draft.Drafts;
  * The class {@link ApplicationHandlerHelper} provides helper methods for the attachment application handlers.
  */
 public final class ApplicationHandlerHelper {
+	private static final String ANNOTATION_IS_MEDIA_DATA = "_is_media_data";
+	private static final String ANNOTATION_CORE_MEDIA_TYPE = "Core.MediaType";
 
 	/**
 	 * A filter for media content fields. The filter checks if the entity is a media entity and if the element has the
 	 * annotation "Core.MediaType".
 	 */
 	public static final Filter MEDIA_CONTENT_FILTER = (path, element, type) -> isMediaEntity(path.target().type())
-			&& hasElementAnnotation(element, ModelConstants.ANNOTATION_CORE_MEDIA_TYPE);
+			&& hasElementAnnotation(element, ANNOTATION_CORE_MEDIA_TYPE);
 
 	/**
 	 * Checks if the data contains a content field.
@@ -65,7 +66,7 @@ public final class ApplicationHandlerHelper {
 	 * @return <code>true</code> if the entity is a media entity, <code>false</code> otherwise
 	 */
 	public static boolean isMediaEntity(CdsStructuredType baseEntity) {
-		return baseEntity.getAnnotationValue(ModelConstants.ANNOTATION_IS_MEDIA_DATA, false);
+		return baseEntity.getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false);
 	}
 
 	public static boolean doesContentIdExistsBefore(Map<?, Object> existingData) {

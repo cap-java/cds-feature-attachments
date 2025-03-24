@@ -6,16 +6,36 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.0.6 - tbd.
+## Version 1.0.8 - tbd.
 
 ### Added
 
 ### Changed
 
-- [Removal of unneeded transitive dependencies](https://github.com/cap-java/cds-feature-attachments/pull/290)
-- [Replaced the dependency](https://github.com/cap-java/cds-feature-attachments/pull/292) on `com.sap.cds:cds-integration-cloud-sdk` with `com.sap.cloud.sdk.cloudplatform:cloudplatform-core` to use the Cloud SDK directly.
+- Simplified codebase by removing classes with just a few lines of code that can be moved.
 
 ### Fixed
+
+## Version 1.0.7 - 2025-02-28
+
+### Changed
+
+- [Register draft related event handlers](https://github.com/cap-java/cds-feature-attachments/pull/386) on DraftService, if there is at least one DraftService instance available.
+
+### Fixed
+
+- [Fixed a potentially thrown NullPointerExcpetion](https://github.com/cap-java/cds-feature-attachments/pull/385) when adding cds-feature-attachments to a CAP Java application and the persistent outbox is not available.
+
+## Version 1.0.6 - 2025-02-17
+
+### Added
+
+- [Translations](https://github.com/cap-java/cds-feature-attachments/pull/353) for all [model texts](https://github.com/cap-java/cds-feature-attachments/blob/main/README.md#model-texts).
+
+### Changed
+
+- [Removal of unneeded transitive dependencies](https://github.com/cap-java/cds-feature-attachments/pull/290) to avoid usage and further propagation.
+- [Replaced the dependency](https://github.com/cap-java/cds-feature-attachments/pull/292) on `com.sap.cds:cds-integration-cloud-sdk` with `com.sap.cloud.sdk.cloudplatform:cloudplatform-core` to use the Cloud SDK directly.
 
 ## Version 1.0.5 - 2024-11-06
 

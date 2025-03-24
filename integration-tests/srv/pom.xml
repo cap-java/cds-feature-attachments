@@ -59,9 +59,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.maciejwalkowiak.spring</groupId>
+            <groupId>org.wiremock.integrations</groupId>
             <artifactId>wiremock-spring-boot</artifactId>
-            <version>2.1.3</version>
             <scope>test</scope>
         </dependency>
 

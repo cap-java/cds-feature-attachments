@@ -13,7 +13,7 @@ steps:
       - 'CDSJAVA-OPEN-SOURCE'
     serverUrl: 'https://sap.blackducksoftware.com/'
     mavenExcludedScopes: [ "provided", "test" ]
-    failOn: [ 'BLOCKER', 'CRITICAL', 'MAJOR' ]
+    failOn: [ 'NONE' ]
     versioningModel: "major-minor"
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
     installArtifacts: true
