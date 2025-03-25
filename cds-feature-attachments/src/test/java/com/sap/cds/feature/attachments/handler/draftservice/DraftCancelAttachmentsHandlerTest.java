@@ -24,7 +24,6 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
-import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.handler.draftservice.modifier.ActiveEntityModifierProvider;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.Delete;
@@ -114,14 +113,14 @@ class DraftCancelAttachmentsHandlerTest {
 
 	@Test
 	void modifierCalledWithCorrectEntitiesIfDraftIsInContext() {
-		getEntityAndMockContext(RootTable_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
+		getEntityAndMockContext(RootTable_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX);
 		var delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 
 		cut.processBeforeDraftCancel(eventContext);
 
-		verify(modifierProvider).getModifier(false, RootTable_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
+		verify(modifierProvider).getModifier(false, RootTable_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX);
 		verify(modifierProvider).getModifier(true, RootTable_.CDS_NAME);
 	}
 
@@ -134,7 +133,7 @@ class DraftCancelAttachmentsHandlerTest {
 
 		cut.processBeforeDraftCancel(eventContext);
 
-		verify(modifierProvider).getModifier(false, RootTable_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
+		verify(modifierProvider).getModifier(false, RootTable_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX);
 		verify(modifierProvider).getModifier(true, RootTable_.CDS_NAME);
 	}
 
