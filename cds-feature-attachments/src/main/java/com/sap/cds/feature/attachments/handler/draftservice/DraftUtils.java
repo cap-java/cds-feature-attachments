@@ -8,10 +8,14 @@ import com.sap.cds.services.draft.Drafts;
  */
 public class DraftUtils {
 
+	/**
+	 * The postfix for draft entities.
+	 */
 	static final String DRAFT_TABLE_POSTFIX = "_drafts";
 
 	/**
-	 * Returns the active entity of the given entity.
+	 * Returns the active entity of the given entity. If the given entity is already the active entity, the entity
+	 * itself is returned, otherwise the sibling entity is returned.
 	 *
 	 * @param entity the {@link CdsEntity entity} to get the active entity for
 	 * @return the active entity
@@ -21,9 +25,10 @@ public class DraftUtils {
 	}
 
 	/**
-	 * Returns the draft entity of the given entity.
+	 * Returns the draft entity of the given entity. If the given entity is already a draft entity, the entity itself is
+	 * returned, otherwise the sibling entity is returned.
 	 *
-	 * @param target the {@link CdsEntity entity} to get the draft entity for
+	 * @param entity the {@link CdsEntity entity} to get the {@link CdsEntity draft entity} for
 	 * @return the draft entity
 	 */
 	static CdsEntity getDraftEntity(CdsEntity entity) {
@@ -33,8 +38,8 @@ public class DraftUtils {
 	/**
 	 * Checks if the given target entity is a draft entity.
 	 *
-	 * @param target the target entity
-	 * @return {@code true} if the given target entity is a draft entity, {@code false} otherwise
+	 * @param entity the target entity
+	 * @return {@code true} if the given entity is a draft entity, {@code false} otherwise
 	 */
 	static boolean isDraftEntity(CdsEntity entity) {
 		return entity.getQualifiedName().endsWith(DRAFT_TABLE_POSTFIX);
