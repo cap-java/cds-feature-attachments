@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -60,7 +61,7 @@ class DraftCancelAttachmentsHandlerTest {
 	@Test
 	void whereConditionIncludedNothingHappens() {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
-		var delete = Delete.from(RootTable_.class).where(root -> root.ID().eq("test"));
+		CqnDelete delete = Delete.from(RootTable_.class).where(root -> root.ID().eq("test"));
 		when(eventContext.getCqn()).thenReturn(delete);
 
 		cut.processBeforeDraftCancel(eventContext);
@@ -71,7 +72,7 @@ class DraftCancelAttachmentsHandlerTest {
 	@Test
 	void nothingSelectedNothingToDo() {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
-		var delete = Delete.from(RootTable_.class);
+		CqnDelete delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 
@@ -83,7 +84,7 @@ class DraftCancelAttachmentsHandlerTest {
 	@Test
 	void attachmentReaderCorrectCalled() {
 		getEntityAndMockContext(RootTable_.CDS_NAME);
-		var delete = Delete.from(RootTable_.class);
+		CqnDelete delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 
@@ -92,21 +93,21 @@ class DraftCancelAttachmentsHandlerTest {
 		CdsEntity target = eventContext.getTarget();
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(target),
 				deleteArgumentCaptor.capture());
-		var originDelete = deleteArgumentCaptor.getValue();
+		CqnDelete originDelete = deleteArgumentCaptor.getValue();
 		assertThat(originDelete.toJson()).isEqualTo(delete.toJson());
 
 		deleteArgumentCaptor = ArgumentCaptor.forClass(CqnDelete.class);
 		CdsEntity siblingTarget = target.getTargetOf(DraftConstants.SIBLING_ENTITY);
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(siblingTarget),
 				deleteArgumentCaptor.capture());
-		var siblingDelete = deleteArgumentCaptor.getValue();
+		CqnDelete siblingDelete = deleteArgumentCaptor.getValue();
 		assertThat(siblingDelete.toJson()).isNotEqualTo(delete.toJson());
 	}
 
 	@Test
 	void modifierCalledWithCorrectEntitiesIfDraftIsInContext() {
 		getEntityAndMockContext(RootTable_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
-		var delete = Delete.from(RootTable_.class);
+		CqnDelete delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 
@@ -118,18 +119,18 @@ class DraftCancelAttachmentsHandlerTest {
 		CdsEntity siblingTarget = target.getTargetOf(DraftConstants.SIBLING_ENTITY);
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(siblingTarget),
 				deleteArgumentCaptor.capture());
-		var siblingDelete = deleteArgumentCaptor.getValue();
+		CqnDelete siblingDelete = deleteArgumentCaptor.getValue();
 		assertThat(siblingDelete.toJson()).isEqualTo(delete.toJson());
 	}
 
 	@Test
 	void createdEntityNeedsToBeDeleted() {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
-		var delete = Delete.from(RootTable_.class);
+		CqnDelete delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
-		var attachment = buildAttachmentAndReturnByReader("test", siblingTarget, false, "");
+		Attachment attachment = buildAttachmentAndReturnByReader("test", siblingTarget, false, "");
 
 		cut.processBeforeDraftCancel(eventContext);
 
@@ -146,7 +147,7 @@ class DraftCancelAttachmentsHandlerTest {
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
 		var id = UUID.randomUUID().toString();
-		var draftAttachment = buildAttachmentAndReturnByReader("test", siblingTarget, true, id);
+		Attachment draftAttachment = buildAttachmentAndReturnByReader("test", siblingTarget, true, id);
 		buildAttachmentAndReturnByReader("test origin", eventContext.getTarget(), false, id);
 
 		cut.processBeforeDraftCancel(eventContext);
@@ -175,7 +176,7 @@ class DraftCancelAttachmentsHandlerTest {
 
 	private Attachment buildAttachmentAndReturnByReader(String contentId, CdsEntity target, boolean hasActiveEntity,
 			String id) {
-		var attachment = Attachment.create();
+		Attachment attachment = Attachment.create();
 		attachment.setId(id);
 		attachment.setContentId(contentId);
 		attachment.setHasActiveEntity(hasActiveEntity);
@@ -185,12 +186,8 @@ class DraftCancelAttachmentsHandlerTest {
 	}
 
 	private void getEntityAndMockContext(String cdsName) {
-		var serviceEntity = runtime.getCdsModel().findEntity(cdsName);
-		mockTargetInUpdateContext(serviceEntity.orElseThrow());
-	}
-
-	private void mockTargetInUpdateContext(CdsEntity serviceEntity) {
-		when(eventContext.getTarget()).thenReturn(serviceEntity);
+		Optional<CdsEntity> serviceEntity = runtime.getCdsModel().findEntity(cdsName);
+		when(eventContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
 	}
 
 }
