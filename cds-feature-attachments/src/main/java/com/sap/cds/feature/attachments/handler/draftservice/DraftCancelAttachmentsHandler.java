@@ -16,7 +16,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
-import com.sap.cds.feature.attachments.handler.draftservice.modifier.ActiveEntityModifierProvider;
+import com.sap.cds.feature.attachments.handler.draftservice.modifier.ActiveEntityModifier;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
@@ -41,13 +41,11 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 	private final AttachmentsReader attachmentsReader;
 	private final ModifyAttachmentEvent deleteContentAttachmentEvent;
-	private final ActiveEntityModifierProvider activeEntityModifierProvider;
 
 	public DraftCancelAttachmentsHandler(AttachmentsReader attachmentsReader,
-			ModifyAttachmentEvent deleteContentAttachmentEvent, ActiveEntityModifierProvider activeEntityModifierProvider) {
+			ModifyAttachmentEvent deleteContentAttachmentEvent) {
 		this.attachmentsReader = attachmentsReader;
 		this.deleteContentAttachmentEvent = deleteContentAttachmentEvent;
-		this.activeEntityModifierProvider = activeEntityModifierProvider;
 	}
 
 	@Before
@@ -105,8 +103,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 	private List<CdsData> readAttachments(DraftCancelEventContext context, CdsStructuredType entity,
 			boolean isActiveEntity) {
-		var cqnInactiveEntity = CQL.copy(context.getCqn(),
-				activeEntityModifierProvider.getModifier(isActiveEntity, entity.getQualifiedName()));
+		var cqnInactiveEntity = CQL.copy(context.getCqn(), new ActiveEntityModifier(isActiveEntity, entity.getQualifiedName()));
 		return attachmentsReader.readAttachments(context.getModel(), (CdsEntity) entity, cqnInactiveEntity);
 	}
 
