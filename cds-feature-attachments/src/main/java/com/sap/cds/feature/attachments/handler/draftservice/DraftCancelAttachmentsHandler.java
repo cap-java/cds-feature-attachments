@@ -63,7 +63,6 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			var validator = buildDeleteContentValidator(context, activeCondensedAttachments);
 			ApplicationHandlerHelper.callValidator(context.getTarget(), draftAttachments, filter, validator);
 		}
-
 	}
 
 	private Validator buildDeleteContentValidator(DraftCancelEventContext context,
