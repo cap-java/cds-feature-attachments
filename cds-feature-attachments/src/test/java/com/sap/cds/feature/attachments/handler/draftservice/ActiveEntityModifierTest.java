@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.draftservice.modifier;
+package com.sap.cds.feature.attachments.handler.draftservice;
 
 import static com.sap.cds.services.draft.Drafts.IS_ACTIVE_ENTITY;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.draftservice.ActiveEntityModifier;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;

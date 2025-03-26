@@ -1,7 +1,7 @@
 /**************************************************************************
  * (C) 2019-2025 SAP SE or an SAP affiliate company. All rights reserved. *
  **************************************************************************/
-package com.sap.cds.feature.attachments.handler.draftservice.modifier;
+package com.sap.cds.feature.attachments.handler.draftservice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +24,14 @@ import com.sap.cds.services.draft.Drafts;
  * <li>{@code fullEntityName}</li>
  * </ul>
  */
-public class ActiveEntityModifier implements Modifier {
+class ActiveEntityModifier implements Modifier {
 
 	private static final Logger logger = LoggerFactory.getLogger(ActiveEntityModifier.class);
 
 	private final boolean isActiveEntity;
 	private final String fullEntityName;
 
-	public ActiveEntityModifier(boolean isActiveEntity, String fullEntityName) {
+	ActiveEntityModifier(boolean isActiveEntity, String fullEntityName) {
 		this.isActiveEntity = isActiveEntity;
 		this.fullEntityName = fullEntityName;
 	}
@@ -46,7 +46,8 @@ public class ActiveEntityModifier implements Modifier {
 
 		for (RefSegment segment : ref.segments()) {
 			if (segment.filter().isPresent()) {
-				segment.filter(CQL.copy(segment.filter().orElseThrow(), new ActiveEntityModifier(isActiveEntity, fullEntityName)));
+				segment.filter(CQL.copy(segment.filter().orElseThrow(),
+						new ActiveEntityModifier(isActiveEntity, fullEntityName)));
 			}
 		}
 		return ref.build();
