@@ -27,7 +27,6 @@ import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.Delete;
 import com.sap.cds.ql.cqn.CqnDelete;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.DraftCancelEventContext;
 import com.sap.cds.services.runtime.CdsRuntime;
 
@@ -90,14 +89,15 @@ class DraftCancelAttachmentsHandlerTest {
 
 		cut.processBeforeDraftCancel(eventContext);
 
-		var target = eventContext.getTarget();
-		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(target), deleteArgumentCaptor.capture());
+		CdsEntity target = eventContext.getTarget();
+		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(target),
+				deleteArgumentCaptor.capture());
 		var originDelete = deleteArgumentCaptor.getValue();
 		assertThat(originDelete.toJson()).isEqualTo(delete.toJson());
 
 		deleteArgumentCaptor = ArgumentCaptor.forClass(CqnDelete.class);
-		var siblingTarget = target.getTargetOf(DraftConstants.SIBLING_ENTITY);
-		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq((CdsEntity) siblingTarget),
+		CdsEntity siblingTarget = target.getTargetOf(DraftConstants.SIBLING_ENTITY);
+		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(siblingTarget),
 				deleteArgumentCaptor.capture());
 		var siblingDelete = deleteArgumentCaptor.getValue();
 		assertThat(siblingDelete.toJson()).isNotEqualTo(delete.toJson());
@@ -112,8 +112,14 @@ class DraftCancelAttachmentsHandlerTest {
 
 		cut.processBeforeDraftCancel(eventContext);
 
-//		verify(modifierProvider).getModifier(false, RootTable_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
-//		verify(modifierProvider).getModifier(true, RootTable_.CDS_NAME);
+		CdsEntity target = eventContext.getTarget();
+		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(target),
+				deleteArgumentCaptor.capture());
+		CdsEntity siblingTarget = target.getTargetOf(DraftConstants.SIBLING_ENTITY);
+		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(siblingTarget),
+				deleteArgumentCaptor.capture());
+		var siblingDelete = deleteArgumentCaptor.getValue();
+		assertThat(siblingDelete.toJson()).isEqualTo(delete.toJson());
 	}
 
 	@Test
@@ -122,12 +128,13 @@ class DraftCancelAttachmentsHandlerTest {
 		var delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
-		var siblingTarget = eventContext.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
+		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
 		var attachment = buildAttachmentAndReturnByReader("test", siblingTarget, false, "");
 
 		cut.processBeforeDraftCancel(eventContext);
 
-		verify(deleteContentAttachmentEvent).processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext));
+		verify(deleteContentAttachmentEvent).processEvent(any(), eq(null), dataArgumentCaptor.capture(),
+				eq(eventContext));
 		assertThat(dataArgumentCaptor.getValue()).isEqualTo(attachment);
 	}
 
@@ -137,14 +144,15 @@ class DraftCancelAttachmentsHandlerTest {
 		var delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
-		var siblingTarget = eventContext.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
+		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
 		var id = UUID.randomUUID().toString();
 		var draftAttachment = buildAttachmentAndReturnByReader("test", siblingTarget, true, id);
 		buildAttachmentAndReturnByReader("test origin", eventContext.getTarget(), false, id);
 
 		cut.processBeforeDraftCancel(eventContext);
 
-		verify(deleteContentAttachmentEvent).processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext));
+		verify(deleteContentAttachmentEvent).processEvent(any(), eq(null), dataArgumentCaptor.capture(),
+				eq(eventContext));
 		assertThat(dataArgumentCaptor.getValue()).isEqualTo(draftAttachment);
 	}
 
@@ -154,7 +162,7 @@ class DraftCancelAttachmentsHandlerTest {
 		var delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
-		var siblingTarget = eventContext.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
+		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
 		var id = UUID.randomUUID().toString();
 		var contentId = UUID.randomUUID().toString();
 		buildAttachmentAndReturnByReader(contentId, siblingTarget, true, id);
@@ -165,14 +173,14 @@ class DraftCancelAttachmentsHandlerTest {
 		verifyNoInteractions(deleteContentAttachmentEvent);
 	}
 
-	private Attachment buildAttachmentAndReturnByReader(String contentId, CdsStructuredType target,
-			boolean hasActiveEntity, String id) {
+	private Attachment buildAttachmentAndReturnByReader(String contentId, CdsEntity target, boolean hasActiveEntity,
+			String id) {
 		var attachment = Attachment.create();
 		attachment.setId(id);
 		attachment.setContentId(contentId);
 		attachment.setHasActiveEntity(hasActiveEntity);
 		attachment.setContent(null);
-		when(attachmentsReader.readAttachments(any(), (CdsEntity) eq(target), any())).thenReturn(List.of(attachment));
+		when(attachmentsReader.readAttachments(any(), eq(target), any())).thenReturn(List.of(attachment));
 		return attachment;
 	}
 
