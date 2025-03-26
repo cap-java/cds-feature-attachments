@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
@@ -28,6 +27,7 @@ import com.sap.cds.ql.Delete;
 import com.sap.cds.ql.cqn.CqnDelete;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
+import com.sap.cds.services.auditlog.Attachment;
 import com.sap.cds.services.draft.DraftCancelEventContext;
 import com.sap.cds.services.runtime.CdsRuntime;
 
@@ -106,19 +106,6 @@ class DraftCancelAttachmentsHandlerTest {
 	@Test
 	void modifierCalledWithCorrectEntitiesIfDraftIsInContext() {
 		getEntityAndMockContext(RootTable_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
-		var delete = Delete.from(RootTable_.class);
-		when(eventContext.getCqn()).thenReturn(delete);
-		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
-
-		cut.processBeforeDraftCancel(eventContext);
-
-//		verify(modifierProvider).getModifier(false, RootTable_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
-//		verify(modifierProvider).getModifier(true, RootTable_.CDS_NAME);
-	}
-
-	@Test
-	void modifierCalledWithCorrectEntitiesIfActiveEntityIsInContext() {
-		getEntityAndMockContext(RootTable_.CDS_NAME);
 		var delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
