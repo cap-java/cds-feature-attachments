@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.draftservice.ActiveEntityModifier;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
