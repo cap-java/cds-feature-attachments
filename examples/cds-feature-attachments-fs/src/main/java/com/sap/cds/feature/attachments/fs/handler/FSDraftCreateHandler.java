@@ -38,11 +38,12 @@ public class FSDraftCreateHandler implements EventHandler {
 		// check if target entity contains aspect Attachments
 		if (ApplicationHandlerHelper.isMediaEntity(target)) {
 			String fileName = (String) data.get(Attachments.FILE_NAME);
+
 			// get unique identifier of attachment's parent entity, e.g. the Books entity
 			Parent parent = getParentId(target, data);
 
-			logger.info("Creating draft attachment '{}' for parent entity '{}' with ID = {}", fileName, parent.entity,
-					parent.id);
+			logger.info("Creating draft attachment '{}' for parent entity '{}' with ID = {}", fileName,
+					parent != null ? parent.entity : "unknown", parent != null ? parent.id : "unknown");
 
 			// do something with the data of the draft attachments entity
 		}
@@ -58,6 +59,7 @@ public class FSDraftCreateHandler implements EventHandler {
 			CdsAssociationType assocType = upAssociation.get().getType();
 			// get the refs of the association
 			List<String> fkElements = assocType.refs().map(ref -> "up__" + ref.path()).toList();
+			// assume there is only one foreign key element
 			return new Parent(assocType.getTarget(), data.get(fkElements.get(0)));
 		}
 		return null;
