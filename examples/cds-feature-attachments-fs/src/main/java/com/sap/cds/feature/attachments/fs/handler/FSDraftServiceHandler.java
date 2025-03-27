@@ -23,16 +23,16 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 /**
- * Event handler for draft creation events on the DraftService.
+ * Event handler for events on the DraftService.
  */
 @ServiceName(value = "*", type = DraftService.class)
-public class FSDraftCreateHandler implements EventHandler {
+public class FSDraftServiceHandler implements EventHandler {
 
-	private static final Logger logger = LoggerFactory.getLogger(FSDraftCreateHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(FSDraftServiceHandler.class);
 
 	@Before
 	@HandlerOrder(HandlerOrder.LATE)
-	void onCreateDraftAttachment(DraftCreateEventContext context, CdsData data) {
+	void createDraftAttachment(DraftCreateEventContext context, CdsData data) {
 		CdsEntity target = context.getTarget();
 
 		// check if target entity contains aspect Attachments
