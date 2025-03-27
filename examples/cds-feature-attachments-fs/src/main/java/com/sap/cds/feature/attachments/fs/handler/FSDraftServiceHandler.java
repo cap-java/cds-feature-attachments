@@ -3,6 +3,7 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.fs.handler;
 
+import java.net.URLConnection;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.DraftCreateEventContext;
+import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
@@ -39,6 +41,10 @@ public class FSDraftServiceHandler implements EventHandler {
 		if (ApplicationHandlerHelper.isMediaEntity(target)) {
 			String fileName = (String) data.get(Attachments.FILE_NAME);
 
+			// guessing the MIME type of the attachment based on the file name
+			String mimeType = URLConnection.guessContentTypeFromName(fileName);
+			data.put(Attachments.MIME_TYPE, mimeType);
+
 			// get unique identifier of attachment's parent entity, e.g. the Books entity
 			Parent parent = getParentId(target, data);
 
@@ -46,6 +52,19 @@ public class FSDraftServiceHandler implements EventHandler {
 					parent != null ? parent.entity : "unknown", parent != null ? parent.ids : "unknown");
 
 			// do something with the data of the draft attachments entity
+		}
+	}
+
+	@Before
+	@HandlerOrder(HandlerOrder.LATE)
+	void patchDraftAttachment(DraftPatchEventContext context, CdsData data) {
+		CdsEntity target = context.getTarget();
+
+		// check if target entity contains aspect Attachments
+		if (ApplicationHandlerHelper.isMediaEntity(target)) {
+			// remove wrong mime type from data
+			// TODO: remove this once the SAPUI5 sets the correct MIME type
+			data.remove(Attachments.MIME_TYPE);
 		}
 	}
 
