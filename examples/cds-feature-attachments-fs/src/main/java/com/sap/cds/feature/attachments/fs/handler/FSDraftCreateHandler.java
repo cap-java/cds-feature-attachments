@@ -42,8 +42,8 @@ public class FSDraftCreateHandler implements EventHandler {
 			// get unique identifier of attachment's parent entity, e.g. the Books entity
 			Parent parent = getParentId(target, data);
 
-			logger.info("Creating draft attachment '{}' for parent entity '{}' with ID = {}", fileName,
-					parent != null ? parent.entity : "unknown", parent != null ? parent.id : "unknown");
+			logger.info("Creating draft attachment '{}' for parent entity '{}' with ids {}", fileName,
+					parent != null ? parent.entity : "unknown", parent != null ? parent.ids : "unknown");
 
 			// do something with the data of the draft attachments entity
 		}
@@ -57,14 +57,13 @@ public class FSDraftCreateHandler implements EventHandler {
 		if (upAssociation.isPresent()) {
 			// get association type
 			CdsAssociationType assocType = upAssociation.get().getType();
-			// get the refs of the association
-			List<String> fkElements = assocType.refs().map(ref -> "up__" + ref.path()).toList();
-			// assume there is only one foreign key element
-			return new Parent(assocType.getTarget(), data.get(fkElements.get(0)));
+			// get the refs of the association and map them to the corresponding data of the entity
+			List<Object> ids = assocType.refs().map(ref -> "up__" + ref.path()).map(data::get).toList();
+			return new Parent(assocType.getTarget(), ids);
 		}
 		return null;
 	}
 
-	record Parent(CdsEntity entity, Object id) {
+	record Parent(CdsEntity entity, List<Object> ids) {
 	}
 }
