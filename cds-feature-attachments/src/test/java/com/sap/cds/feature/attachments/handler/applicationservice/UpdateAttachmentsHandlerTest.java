@@ -28,7 +28,6 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -64,7 +63,6 @@ class UpdateAttachmentsHandlerTest {
 	private ModifyAttachmentEvent event;
 	private ArgumentCaptor<CdsData> cdsDataArgumentCaptor;
 	private ArgumentCaptor<CqnSelect> selectCaptor;
-	private ThreadDataStorageReader storageReader;
 	private UserInfo userInfo;
 
 	@BeforeAll
@@ -77,8 +75,7 @@ class UpdateAttachmentsHandlerTest {
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
 		attachmentsReader = mock(AttachmentsReader.class);
 		attachmentService = mock(AttachmentService.class);
-		storageReader = mock(ThreadDataStorageReader.class);
-		cut = new UpdateAttachmentsHandler(eventFactory, attachmentsReader, attachmentService, storageReader);
+		cut = new UpdateAttachmentsHandler(eventFactory, attachmentsReader, attachmentService);
 
 		event = mock(ModifyAttachmentEvent.class);
 		updateContext = mock(CdsUpdateEventContext.class);
@@ -149,7 +146,6 @@ class UpdateAttachmentsHandlerTest {
 		updateAttachment.setStatus("Status Code");
 		updateAttachment.setScannedAt(Instant.now());
 		updateAttachment.setContent(null);
-		when(storageReader.get()).thenReturn(true);
 
 		cut.processBeforeForDraft(updateContext, List.of(updateAttachment));
 
@@ -174,7 +170,6 @@ class UpdateAttachmentsHandlerTest {
 		readonlyData.put(Attachment.CONTENT_ID, "some other document id");
 		readonlyData.put(Attachment.SCANNED_AT, Instant.EPOCH);
 		updateAttachment.put("DRAFT_READONLY_CONTEXT", readonlyData);
-		when(storageReader.get()).thenReturn(false);
 
 		cut.processBeforeForDraft(updateContext, List.of(updateAttachment));
 
@@ -192,7 +187,6 @@ class UpdateAttachmentsHandlerTest {
 		updateAttachment.setContentId("Document Id");
 		updateAttachment.setStatus("Status Code");
 		updateAttachment.setScannedAt(Instant.now());
-		when(storageReader.get()).thenReturn(false);
 
 		cut.processBeforeForDraft(updateContext, List.of(updateAttachment));
 

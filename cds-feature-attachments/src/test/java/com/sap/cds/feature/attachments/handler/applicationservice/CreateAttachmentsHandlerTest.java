@@ -28,7 +28,6 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
@@ -50,7 +49,6 @@ class CreateAttachmentsHandlerTest {
 	private ModifyAttachmentEventFactory eventFactory;
 	private CdsCreateEventContext createContext;
 	private ModifyAttachmentEvent event;
-	private ThreadDataStorageReader storageReader;
 
 	@BeforeAll
 	static void classSetup() {
@@ -60,8 +58,7 @@ class CreateAttachmentsHandlerTest {
 	@BeforeEach
 	void setup() {
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
-		storageReader = mock(ThreadDataStorageReader.class);
-		cut = new CreateAttachmentsHandler(eventFactory, storageReader);
+		cut = new CreateAttachmentsHandler(eventFactory);
 
 		createContext = mock(CdsCreateEventContext.class);
 		event = mock(ModifyAttachmentEvent.class);
@@ -118,7 +115,6 @@ class CreateAttachmentsHandlerTest {
 		attachment.setStatus("Status Code");
 		attachment.setScannedAt(Instant.now());
 		attachment.setContent(null);
-		when(storageReader.get()).thenReturn(true);
 
 		cut.processBeforeForDraft(createContext, List.of(attachment));
 
@@ -143,7 +139,6 @@ class CreateAttachmentsHandlerTest {
 		readonlyData.put(Attachment.CONTENT_ID, "some other document id");
 		readonlyData.put(Attachment.SCANNED_AT, Instant.EPOCH);
 		createAttachment.put(DRAFT_READONLY_CONTEXT, readonlyData);
-		when(storageReader.get()).thenReturn(false);
 
 		cut.processBeforeForDraft(createContext, List.of(createAttachment));
 
@@ -161,7 +156,6 @@ class CreateAttachmentsHandlerTest {
 		attachment.setContentId("Document Id");
 		attachment.setStatus("Status Code");
 		attachment.setScannedAt(Instant.now());
-		when(storageReader.get()).thenReturn(false);
 
 		cut.processBeforeForDraft(createContext, List.of(attachment));
 

@@ -14,7 +14,6 @@ import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachme
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.CreateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DefaultModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DoNothingAttachmentEvent;
@@ -106,13 +105,12 @@ public class Registration implements CdsRuntimeConfiguration {
 		var deleteContentEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
 		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);
 		var attachmentsReader = new DefaultAttachmentsReader(new DefaultAssociationCascader(), persistenceService);
-		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
 		// register event handlers for application service, if at least one application service is available
 		boolean hasApplicationServices = serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
 		if (hasApplicationServices) {
-			configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
-			configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
+			configurer.eventHandler(new CreateAttachmentsHandler(eventFactory));
+			configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService));
 			configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
 			var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
 			configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
@@ -126,7 +124,7 @@ public class Registration implements CdsRuntimeConfiguration {
 			configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
 			configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent,
 					ActiveEntityModifier::new));
-			configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
+			configurer.eventHandler(new DraftActiveAttachmentsHandler());
 		} else {
 			logger.debug("No draft service is available. Draft event handlers will not be registered.");
 		}

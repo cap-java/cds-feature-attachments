@@ -13,10 +13,10 @@ import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
@@ -47,25 +47,24 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	private final ModifyAttachmentEventFactory eventFactory;
 	private final AttachmentsReader attachmentsReader;
 	private final AttachmentService outboxedAttachmentService;
-	private final ThreadDataStorageReader storageReader;
 
 	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader,
-			AttachmentService outboxedAttachmentService, ThreadDataStorageReader storageReader) {
+			AttachmentService outboxedAttachmentService) {
 		this.eventFactory = eventFactory;
 		this.attachmentsReader = attachmentsReader;
 		this.outboxedAttachmentService = outboxedAttachmentService;
-		this.storageReader = storageReader;
-	}
+}
 
 	@Before
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
-	public void processBeforeForDraft(CdsUpdateEventContext context, List<CdsData> data) {
-		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
+	void processBeforeForDraft(CdsUpdateEventContext context, List<CdsData> data) {
+		Object isDraft = context.get(DraftActiveAttachmentsHandler.IS_DRAFT);
+		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, Boolean.TRUE.equals(isDraft));
 	}
 
 	@Before
 	@HandlerOrder(HandlerOrder.LATE)
-	public void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
+	void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
 		doUpdate(context, data);
 	}
 
