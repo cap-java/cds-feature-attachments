@@ -44,11 +44,9 @@ class ActiveEntityModifier implements Modifier {
 				fullEntityName);
 		rootSegment.id(fullEntityName);
 
+		Modifier modifier = new ActiveEntityModifier(isActiveEntity, fullEntityName);
 		for (RefSegment segment : ref.segments()) {
-			if (segment.filter().isPresent()) {
-				segment.filter(CQL.copy(segment.filter().orElseThrow(),
-						new ActiveEntityModifier(isActiveEntity, fullEntityName)));
-			}
+			segment.filter(segment.filter().map(filter -> CQL.copy(filter, modifier)).orElse(null));
 		}
 		return ref.build();
 	}
