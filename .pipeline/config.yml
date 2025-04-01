@@ -39,4 +39,4 @@ steps:
       - sonar.java.source=17
       - sonar.exclusions=**/node_modules/**,**/target/**
       - sonar.coverage.jacoco.xmlReportPaths=cds-feature-attachments/target/site/jacoco/jacoco.xml
-      - sonar.coverage.exclusions=cds-feature-attachments/src/test/**,cds-feature-attachments/src/gen/**,integration-tests/**
+      - sonar.coverage.exclusions=cds-feature-attachments/src/test/**,cds-feature-attachments/src/gen/**,integration-tests/**,examples/**
