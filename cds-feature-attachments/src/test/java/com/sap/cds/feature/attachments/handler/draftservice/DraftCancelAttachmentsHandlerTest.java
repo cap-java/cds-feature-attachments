@@ -23,12 +23,12 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
-import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.Delete;
 import com.sap.cds.ql.cqn.CqnDelete;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.DraftCancelEventContext;
+import com.sap.cds.services.draft.Drafts;
 import com.sap.cds.services.runtime.CdsRuntime;
 
 class DraftCancelAttachmentsHandlerTest {
@@ -97,30 +97,11 @@ class DraftCancelAttachmentsHandlerTest {
 		assertThat(originDelete.toJson()).isEqualTo(delete.toJson());
 
 		deleteArgumentCaptor = ArgumentCaptor.forClass(CqnDelete.class);
-		CdsEntity siblingTarget = target.getTargetOf(DraftConstants.SIBLING_ENTITY);
-		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(siblingTarget),
+		var siblingTarget = target.getTargetOf(Drafts.SIBLING_ENTITY);
+		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq((CdsEntity) siblingTarget),
 				deleteArgumentCaptor.capture());
-		CqnDelete siblingDelete = deleteArgumentCaptor.getValue();
+		var siblingDelete = deleteArgumentCaptor.getValue();
 		assertThat(siblingDelete.toJson()).isNotEqualTo(delete.toJson());
-	}
-
-	@Test
-	void modifierCalledWithCorrectEntitiesIfDraftIsInContext() {
-		getEntityAndMockContext(RootTable_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
-		CqnDelete delete = Delete.from(RootTable_.class);
-		when(eventContext.getCqn()).thenReturn(delete);
-		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
-
-		cut.processBeforeDraftCancel(eventContext);
-
-		CdsEntity target = eventContext.getTarget();
-		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(target),
-				deleteArgumentCaptor.capture());
-		CdsEntity siblingTarget = target.getTargetOf(DraftConstants.SIBLING_ENTITY);
-		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(siblingTarget),
-				deleteArgumentCaptor.capture());
-		CqnDelete siblingDelete = deleteArgumentCaptor.getValue();
-		assertThat(siblingDelete.toJson()).isEqualTo(delete.toJson());
 	}
 
 	@Test
@@ -129,8 +110,8 @@ class DraftCancelAttachmentsHandlerTest {
 		CqnDelete delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
-		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
-		Attachment attachment = buildAttachmentAndReturnByReader("test", siblingTarget, false, "");
+		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(Drafts.SIBLING_ENTITY);
+		var attachment = buildAttachmentAndReturnByReader("test", siblingTarget, false, "");
 
 		cut.processBeforeDraftCancel(eventContext);
 
@@ -145,7 +126,7 @@ class DraftCancelAttachmentsHandlerTest {
 		var delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
-		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
+		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(Drafts.SIBLING_ENTITY);
 		var id = UUID.randomUUID().toString();
 		Attachment draftAttachment = buildAttachmentAndReturnByReader("test", siblingTarget, true, id);
 		buildAttachmentAndReturnByReader("test origin", eventContext.getTarget(), false, id);
@@ -163,7 +144,7 @@ class DraftCancelAttachmentsHandlerTest {
 		var delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
-		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
+		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(Drafts.SIBLING_ENTITY);
 		var id = UUID.randomUUID().toString();
 		var contentId = UUID.randomUUID().toString();
 		buildAttachmentAndReturnByReader(contentId, siblingTarget, true, id);

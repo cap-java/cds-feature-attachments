@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
@@ -36,8 +37,8 @@ public final class ReadonlyDataContextEnhancer {
 			}
 		};
 
-		ApplicationHandlerHelper.callValidator(context.getTarget(), data, ApplicationHandlerHelper.MEDIA_CONTENT_FILTER,
-				validator);
+		CdsDataProcessor.create().addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator).process(data,
+				context.getTarget());
 	}
 
 	public static void fillReadonlyInContext(CdsData data) {

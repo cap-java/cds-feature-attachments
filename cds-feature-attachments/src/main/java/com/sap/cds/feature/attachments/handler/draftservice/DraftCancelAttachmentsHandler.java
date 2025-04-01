@@ -9,13 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
-import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
@@ -28,15 +28,18 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 /**
- * The class {@link DraftCancelAttachmentsHandler} is an event handler that is called
- * before a draft cancel event is executed.
- * The handler checks if the attachments of the draft entity are still valid and
- * deletes the content of the attachments if necessary.
+ * The class {@link DraftCancelAttachmentsHandler} is an event handler that is called before a draft cancel event is
+ * executed. The handler checks if the attachments of the draft entity are still valid and deletes the content of the
+ * attachments if necessary.
  */
 @ServiceName(value = "*", type = DraftService.class)
 public class DraftCancelAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(DraftCancelAttachmentsHandler.class);
+
+	private static final Filter contentIdFilter = (path, element,
+			type) -> ApplicationHandlerHelper.isMediaEntity(path.target().type())
+					&& element.getName().equals(Attachments.CONTENT_ID);
 
 	private final AttachmentsReader attachmentsReader;
 	private final ModifyAttachmentEvent deleteContentAttachmentEvent;
@@ -51,17 +54,17 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	@HandlerOrder(HandlerOrder.LATE)
 	public void processBeforeDraftCancel(DraftCancelEventContext context) {
 		if (isWhereEmpty(context)) {
-			logger.debug("Processing before draft cancel event for entity {}", context.getTarget().getName());
+			CdsEntity target = context.getTarget();
+			logger.debug("Processing before draft cancel event for entity {}", target.getName());
 
-			var activeEntity = getActiveEntity(context);
-			var draftEntity = getDraftEntity(context);
+			CdsEntity activeEntity = DraftUtils.getActiveEntity(target);
+			CdsEntity draftEntity = DraftUtils.getDraftEntity(target);
 
-			var draftAttachments = readAttachments(context, draftEntity, false);
-			var activeCondensedAttachments = getCondensedActiveAttachments(context, activeEntity);
+			List<CdsData> draftAttachments = readAttachments(context, draftEntity, false);
+			List<CdsData> activeCondensedAttachments = getCondensedActiveAttachments(context, activeEntity);
 
-			var filter = buildContentIdFilter();
-			var validator = buildDeleteContentValidator(context, activeCondensedAttachments);
-			ApplicationHandlerHelper.callValidator(context.getTarget(), draftAttachments, filter, validator);
+			Validator validator = buildDeleteContentValidator(context, activeCondensedAttachments);
+			CdsDataProcessor.create().addValidator(contentIdFilter, validator).process(draftAttachments, target);
 		}
 	}
 
@@ -73,11 +76,12 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 				return;
 			}
 			var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
-			var existingEntry = activeCondensedAttachments.stream().filter(
-					updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
+			var existingEntry = activeCondensedAttachments.stream()
+					.filter(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
 			existingEntry.ifPresent(entry -> {
 				if (!entry.get(Attachments.CONTENT_ID).equals(value)) {
-					deleteContentAttachmentEvent.processEvent(null, null, CdsData.create(path.target().values()), context);
+					deleteContentAttachmentEvent.processEvent(null, null, CdsData.create(path.target().values()),
+							context);
 				}
 			});
 		};
@@ -87,32 +91,17 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 		return context.getCqn().where().isEmpty();
 	}
 
-	private CdsStructuredType getActiveEntity(DraftCancelEventContext context) {
-		return isDraftEntity(context) ? context.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY) : context.getTarget();
-	}
-
-	private CdsStructuredType getDraftEntity(DraftCancelEventContext context) {
-		return isDraftEntity(context) ? context.getTarget() : context.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
-	}
-
-	private boolean isDraftEntity(DraftCancelEventContext context) {
-		return context.getTarget().getQualifiedName().endsWith(DraftConstants.DRAFT_TABLE_POSTFIX);
-	}
-
 	private List<CdsData> readAttachments(DraftCancelEventContext context, CdsStructuredType entity,
 			boolean isActiveEntity) {
-		var cqnInactiveEntity = CQL.copy(context.getCqn(), new ActiveEntityModifier(isActiveEntity, entity.getQualifiedName()));
+		var cqnInactiveEntity = CQL.copy(context.getCqn(),
+				new ActiveEntityModifier(isActiveEntity, entity.getQualifiedName()));
 		return attachmentsReader.readAttachments(context.getModel(), (CdsEntity) entity, cqnInactiveEntity);
 	}
 
-	private List<CdsData> getCondensedActiveAttachments(DraftCancelEventContext context, CdsStructuredType activeEntity) {
+	private List<CdsData> getCondensedActiveAttachments(DraftCancelEventContext context,
+			CdsStructuredType activeEntity) {
 		var attachments = readAttachments(context, activeEntity, true);
 		return ApplicationHandlerHelper.condenseData(attachments, context.getTarget());
-	}
-
-	private Filter buildContentIdFilter() {
-		return (path, element, type) -> ApplicationHandlerHelper.isMediaEntity(path.target().type()) && element.getName()
-				.equals(Attachments.CONTENT_ID);
 	}
 
 }
