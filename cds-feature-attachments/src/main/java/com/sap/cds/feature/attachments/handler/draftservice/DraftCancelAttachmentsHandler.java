@@ -88,11 +88,11 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	}
 
 	private CdsStructuredType getActiveEntity(DraftCancelEventContext context) {
-		return isDraftEntity(context) ? context.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY) : context.getTarget();
+		return isDraftEntity(context) ? context.getTarget().getTargetOf(Drafts.SIBLING_ENTITY) : context.getTarget();
 	}
 
 	private CdsStructuredType getDraftEntity(DraftCancelEventContext context) {
-		return isDraftEntity(context) ? context.getTarget() : context.getTarget().getTargetOf(DraftConstants.SIBLING_ENTITY);
+		return isDraftEntity(context) ? context.getTarget() : context.getTarget().getTargetOf(Drafts.SIBLING_ENTITY);
 	}
 
 	private boolean isDraftEntity(DraftCancelEventContext context) {
