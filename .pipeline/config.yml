@@ -33,7 +33,7 @@ steps:
     projectKey: cds-feature-attachments
     # https://www.project-piper.io/steps/sonarExecuteScan/#dockerimage
     # If empty, Docker is not used and the command is executed directly on the Jenkins system.
-    dockerImage: 'sonarsource/sonar-scanner-cli:11'
+    #dockerImage: 'sonarsource/sonar-scanner-cli:11'
     options:
       - sonar.qualitygate.wait=true
       - sonar.java.source=17
