@@ -73,14 +73,11 @@ public class Registration implements CdsRuntimeConfiguration {
 		ServiceCatalog serviceCatalog = runtime.getServiceCatalog();
 
 		// get required services from the service catalog
-		PersistenceService persistenceService = serviceCatalog.getService(PersistenceService.class,
-				PersistenceService.DEFAULT_NAME);
-		AttachmentService attachmentService = serviceCatalog.getService(AttachmentService.class,
-				AttachmentService.DEFAULT_NAME);
+		PersistenceService persistenceService = serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
+		AttachmentService attachmentService = serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
 
 		// outbox AttachmentService if OutboxService is available
-		OutboxService outboxService = serviceCatalog.getService(OutboxService.class,
-				OutboxService.PERSISTENT_UNORDERED_NAME);
+		OutboxService outboxService = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
 		AttachmentService outboxedAttachmentService;
 		if (outboxService != null) {
 			outboxedAttachmentService = outboxService.outboxed(attachmentService);
@@ -112,12 +109,10 @@ public class Registration implements CdsRuntimeConfiguration {
 		boolean hasApplicationServices = serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
 		if (hasApplicationServices) {
 			configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
-			configurer.eventHandler(
-					new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
+			configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 			configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
 			var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
-			configurer.eventHandler(
-					new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
+			configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
 		} else {
 			logger.debug(
 					"No application service is available. Application service event handlers will not be registered.");
