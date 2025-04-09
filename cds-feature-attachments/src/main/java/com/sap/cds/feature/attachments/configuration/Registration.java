@@ -28,7 +28,6 @@ import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.draftservice.modifier.ActiveEntityModifier;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.AttachmentsServiceImpl;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
@@ -136,8 +135,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		boolean hasDraftServices = serviceCatalog.getServices(DraftService.class).findFirst().isPresent();
 		if (hasDraftServices) {
 			configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
-			configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent,
-					ActiveEntityModifier::new));
+			configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent));
 			configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
 		} else {
 			logger.debug("No draft service is available. Draft event handlers will not be registered.");
