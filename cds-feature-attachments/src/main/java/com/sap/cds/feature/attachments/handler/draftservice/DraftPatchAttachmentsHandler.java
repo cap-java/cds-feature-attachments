@@ -18,6 +18,7 @@ import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConst
 import com.sap.cds.ql.Select;
 import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
+import com.sap.cds.services.draft.Drafts;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -50,7 +51,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 		Converter converter = (path, element, value) -> {
 			var draftElement = path.target().entity().getQualifiedName().endsWith(DraftConstants.DRAFT_TABLE_POSTFIX)
 					? path.target().entity()
-					: path.target().entity().getTargetOf(DraftConstants.SIBLING_ENTITY);
+					: path.target().entity().getTargetOf(Drafts.SIBLING_ENTITY);
 			var select = Select.from(draftElement.getQualifiedName()).matching(path.target().keys());
 			var result = persistence.run(select);
 
