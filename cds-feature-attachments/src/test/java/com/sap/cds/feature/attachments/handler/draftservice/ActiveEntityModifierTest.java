@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.draftservice.modifier;
+package com.sap.cds.feature.attachments.handler.draftservice;
 
 import static com.sap.cds.services.draft.Drafts.IS_ACTIVE_ENTITY;
 import static org.assertj.core.api.Assertions.assertThat;
