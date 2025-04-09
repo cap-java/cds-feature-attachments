@@ -114,8 +114,7 @@ public class Registration implements CdsRuntimeConfiguration {
 			var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
 			configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
 		} else {
-			logger.debug(
-					"No application service is available. Application service event handlers will not be registered.");
+			logger.debug("No application service is available. Application service event handlers will not be registered.");
 		}
 
 		// register event handlers on draft service, if at least one draft service is available
