@@ -159,7 +159,6 @@
                     <excludeFilterFile>/src/main/resources/spotbugs-exclusion-filter.xml</excludeFilterFile>
                     <spotbugsXmlOutputDirectory>${project.build.directory}</spotbugsXmlOutputDirectory>
                     <includeTests>true</includeTests>
-                    <skip>${skipDuringDeploy}</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -194,7 +193,6 @@
                             **/*Test**
                         </exclude>
                     </excludes>
-                    <skip>${skipDuringDeploy}</skip>
                 </configuration>
                 <!-- https://mvnrepository.com/artifact/com.sap.cloud.sdk.quality/pmd-rules -->
                 <dependencies>

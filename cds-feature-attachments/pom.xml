@@ -187,9 +187,6 @@
             <plugin>
                 <groupId>com.sap.cds</groupId>
                 <artifactId>cds-maven-plugin</artifactId>
-                <configuration>
-                    <skip>${skipDuringDeploy}</skip>
-                </configuration>
                 <executions>
                     <execution>
                         <id>cds.clean</id>
@@ -203,9 +200,6 @@
                         <goals>
                             <goal>install-node</goal>
                         </goals>
-                        <configuration>
-                            <skip>${skipDuringDeploy}</skip>
-                        </configuration>
                     </execution>
 
                     <execution>
@@ -213,9 +207,6 @@
                         <goals>
                             <goal>install-cdsdk</goal>
                         </goals>
-                        <configuration>
-                            <skip>${skipDuringDeploy}</skip>
-                        </configuration>
                     </execution>
 
                     <execution>
@@ -229,7 +220,6 @@
                             <commands>
                                 <command>build --for java --src ./ --dest ../../../../../../gen/srv</command>
                             </commands>
-                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -241,7 +231,6 @@
                         <configuration>
                             <basePackage>${generation-package}.cds4j</basePackage>
                             <csnFile>${project.basedir}/src/gen/srv/src/main/resources/edmx/csn.json</csnFile>
-                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -256,7 +245,6 @@
                                 <command>build --for java --src . --dest ../../gen</command>
                                 <command>compile index.cds -2 sql > ../schema.sql</command>
                             </commands>
-                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -272,7 +260,6 @@
                             <testSources>true</testSources>
                             <csnFile>${project.basedir}/src/test/resources/gen/src/main/resources/edmx/csn.json
                             </csnFile>
-                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -352,7 +339,6 @@
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <skip>${skipDuringDeploy}</skip>
                     <failOnError>true</failOnError>
                     <doclint>all,-missing</doclint>
                 </configuration>
