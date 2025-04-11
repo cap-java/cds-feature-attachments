@@ -136,14 +136,10 @@ The following steps are executed in the workflow:
    With this the deployment is done only for the `cds-feature-attachments` and the root project but not for the
    integration tests.
 
-Because in step 2 of the workflow the project is already build the projects does not to be build again in step 3.
-To avoid most of the plugin executions a property `skipDuringDeploy` was introduced for most of the plugins to skip
-the plugin execution.
 During deploy the following properties are used:
 
 - `maven.install.skip=true`
 - `maven.test.skip=true`
-- `skipDuringDeploy=true`
 
 #### Trigger
 
