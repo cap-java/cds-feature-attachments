@@ -121,7 +121,7 @@ This workflow is triggered if a new commit is pushed to the main branch.
 
 ### Build and Deploy
 
-The `main-build-and-deploy.yaml` and `main-build-and-deploy-oss.yaml` start a workflow to build the project, run all tests and deploy it to maven or artifactory.
+The [`main-build-and-deploy.yaml`](../.github/workflows/main-build-and-deploy.yml) and [`main-build-and-deploy-oss.yaml`](../.github/workflows/main-build-and-deploy-oss.yml) start a workflow to build the project, run all tests and deploy it to public Maven repository or SAP's Artifactory.
 The workflows are started if a new release or pre-release is created in GitHub. The tags used in the release are used as new version for the project.
 
 The following steps are executed in the workflow:
