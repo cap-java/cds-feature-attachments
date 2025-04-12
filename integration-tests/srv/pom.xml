@@ -104,23 +104,6 @@
                 </executions>
             </plugin>
 
-            <!-- SPRING BOOT PLUGIN -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>repackage</id>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>exec</classifier>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- STEPS TO BUILD CDS MODEL AND GENERATE POJOs -->
             <plugin>
                 <groupId>com.sap.cds</groupId>

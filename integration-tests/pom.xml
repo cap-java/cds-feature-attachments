@@ -14,11 +14,6 @@
 
     <name>Integration Tests</name>
 
-    <properties>
-        <!-- DEPENDENCIES VERSION -->
-        <spring.boot.version>3.4.4</spring.boot.version>
-    </properties>
-
     <modules>
         <module>db</module>
         <module>srv</module>
@@ -30,7 +25,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.boot.version}</version>
+                <version>3.4.4</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -52,15 +47,6 @@
 
     <build>
         <plugins>
-            <!-- MAKE SPRING BOOT PLUGIN RUNNABLE FROM ROOT -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <configuration>
@@ -68,15 +54,5 @@
                 </configuration>
             </plugin>
         </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${spring.boot.version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 </project>
