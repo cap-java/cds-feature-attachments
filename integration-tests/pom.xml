@@ -53,11 +53,6 @@
 
     <build>
         <plugins>
-            <!-- JAVA VERSION -->
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-
             <!-- MAKE SPRING BOOT PLUGIN RUNNABLE FROM ROOT -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
