@@ -39,6 +39,7 @@ runs:
       with:
         distribution: sapmachine
         java-version: '17'
+        cache: maven
         server-id: ${{ inputs.server-id }}
         server-username: DEPLOYMENT_USER
         server-password: DEPLOYMENT_PASS
