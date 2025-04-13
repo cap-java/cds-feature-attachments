@@ -1,7 +1,7 @@
 namespace test.data.model;
 
 using {cuid} from '@sap/cds/common';
-using {sap.attachments.Attachments} from`com.sap.cds/cds-feature-attachments`;
+using {sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
 
 entity AttachmentEntity : Attachments {
     parentKey : UUID;
