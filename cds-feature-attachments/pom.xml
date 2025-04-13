@@ -15,7 +15,6 @@
     <url>https://cap.cloud.sap/docs/plugins/#attachments</url>
 
     <properties>
-        <packageName>com.sap.cds.feature.attachments</packageName>
         <generation-package>com.sap.cds.feature.attachments.generated</generation-package>
         <test-generation-folder>src/test/gen</test-generation-folder>
     </properties>
