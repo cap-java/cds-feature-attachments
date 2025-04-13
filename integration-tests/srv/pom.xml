@@ -129,7 +129,6 @@
                         <configuration>
                             <commands>
                                 <command>build --for java</command>
-                                <command>build --for hana</command>
                                 <command>deploy --to h2 --dry &gt;
                                     "${project.basedir}/src/main/resources/schema.sql"
                                 </command>
