@@ -59,35 +59,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>src/test/resources</directory>
-                            <includes>
-                                <include>schema.sql</include>
-                            </includes>
-                        </fileset>
-                        <fileset>
-                            <directory>src/test/resources/cds</directory>
-                            <includes>
-                                <include>csn.json</include>
-                            </includes>
-                        </fileset>
-                    </filesets>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>auto-clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- STEPS TO BUILD CDS MODEL AND GENERATE POJOs -->
             <plugin>
                 <groupId>com.sap.cds</groupId>
