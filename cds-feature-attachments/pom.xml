@@ -91,9 +91,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.artifactId}</finalName>
         <plugins>
-
             <plugin>
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
