@@ -65,13 +65,6 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${generation-folder}</directory>
-                            <includes>
-                                <include>**/*</include>
-                            </includes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
                             <directory>src/test/resources</directory>
                             <includes>
                                 <include>schema.sql</include>

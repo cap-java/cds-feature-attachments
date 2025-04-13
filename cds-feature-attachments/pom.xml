@@ -133,13 +133,6 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${generation-folder}</directory>
-                            <includes>
-                                <include>**/*</include>
-                            </includes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
                             <directory>${test-generation-folder}</directory>
                             <includes>
                                 <include>**/*</include>
