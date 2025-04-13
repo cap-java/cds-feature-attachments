@@ -14,7 +14,6 @@
     <name>Integration Tests - Service</name>
 
     <properties>
-        <packageName>com.sap.cds.feature.attachments.integrationtests</packageName>
         <generation-package>com.sap.cds.feature.attachments.generated</generation-package>
     </properties>
 
