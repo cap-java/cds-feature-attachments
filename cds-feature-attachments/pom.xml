@@ -1,5 +1,5 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -51,7 +51,7 @@
                     <artifactId>tools</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency> 
+        </dependency>
 
         <!-- TESTS -->
         <dependency>
@@ -205,8 +205,7 @@
                             <goal>cds</goal>
                         </goals>
                         <configuration>
-                            <workingDirectory>./src/main/resources/cds/com.sap.cds/cds-feature-attachments
-                            </workingDirectory>
+                            <workingDirectory>./src/main/resources/cds/com.sap.cds/cds-feature-attachments</workingDirectory>
                             <commands>
                                 <command>build --for java --src ./ --dest ../../../../../../gen/srv</command>
                             </commands>
@@ -233,7 +232,7 @@
                             <workingDirectory>./src/test/resources/cds</workingDirectory>
                             <commands>
                                 <command>build --for java --src . --dest ../../gen</command>
-                                <command>compile index.cds -2 sql > ../schema.sql</command>
+                                <command>compile index.cds -2 sql &gt; ../schema.sql</command>
                             </commands>
                         </configuration>
                     </execution>
@@ -244,15 +243,12 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <codeOutputDirectory>${project.basedir}/${test-generation-folder}/cds4j
-                            </codeOutputDirectory>
+                            <codeOutputDirectory>${project.basedir}/${test-generation-folder}/cds4j</codeOutputDirectory>
                             <basePackage>${generation-package}.test.cds4j</basePackage>
                             <testSources>true</testSources>
-                            <csnFile>${project.basedir}/src/test/resources/gen/src/main/resources/edmx/csn.json
-                            </csnFile>
+                            <csnFile>${project.basedir}/src/test/resources/gen/src/main/resources/edmx/csn.json</csnFile>
                         </configuration>
                     </execution>
-
                 </executions>
             </plugin>
 
@@ -338,7 +334,7 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <excludePackageNames>com.sap.cds.feature.attachments.generated.*</excludePackageNames>
+                            <excludePackageNames>${generation-package}.*</excludePackageNames>
                         </configuration>
                     </execution>
                 </executions>
@@ -354,7 +350,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 
