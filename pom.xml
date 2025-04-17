@@ -30,7 +30,7 @@
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
         <cds.services.version>3.9.1</cds.services.version>
-        <cds.install-cdsdk.version>8.8.2</cds.install-cdsdk.version>
+        <cds.install-cdsdk.version>8.9.2</cds.install-cdsdk.version>
 
         <generation-folder>src/gen</generation-folder>
     </properties>
