@@ -56,9 +56,6 @@
             <!-- JAVA VERSION -->
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <skip>${skipDuringDeploy}</skip>
-                </configuration>
             </plugin>
 
             <!-- MAKE SPRING BOOT PLUGIN RUNNABLE FROM ROOT -->
