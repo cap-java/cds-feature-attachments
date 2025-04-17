@@ -1,6 +1,5 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -13,12 +12,7 @@
     <artifactId>cds-feature-attachments-integration-tests-parent</artifactId>
     <packaging>pom</packaging>
 
-    <name>integration tests parent</name>
-
-    <properties>
-        <!-- DEPENDENCIES VERSION -->
-        <spring.boot.version>3.4.4</spring.boot.version>
-    </properties>
+    <name>Integration Tests</name>
 
     <modules>
         <module>db</module>
@@ -31,7 +25,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring.boot.version}</version>
+                <version>3.4.4</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -53,20 +47,6 @@
 
     <build>
         <plugins>
-            <!-- JAVA VERSION -->
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-
-            <!-- MAKE SPRING BOOT PLUGIN RUNNABLE FROM ROOT -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <configuration>
@@ -74,15 +54,5 @@
                 </configuration>
             </plugin>
         </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${spring.boot.version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 </project>

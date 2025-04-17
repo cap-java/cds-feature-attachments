@@ -1,5 +1,5 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <licenses>
@@ -31,8 +31,6 @@
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
         <cds.services.version>2.10.7</cds.services.version>
         <cds.install-cdsdk.version>7.9.9</cds.install-cdsdk.version>
-
-        <generation-folder>src/gen</generation-folder>
     </properties>
 
     <groupId>com.sap.cds</groupId>
@@ -119,11 +117,6 @@
 
     <build>
         <plugins>
-
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-
             <!-- POM FLATTENING FOR CI FRIENDLY VERSIONS -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -224,7 +217,7 @@
                         </goals>
                         <configuration>
                             <rules>
-                                <banDuplicatePomDependencyVersions/>
+                                <banDuplicatePomDependencyVersions />
                                 <requireMavenVersion>
                                     <version>3.6.3</version>
                                 </requireMavenVersion>
