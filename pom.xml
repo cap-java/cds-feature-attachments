@@ -29,7 +29,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
-        <cds.services.version>2.10.7</cds.services.version>
+        <cds.services.version>3.9.1</cds.services.version>
         <cds.install-cdsdk.version>7.9.9</cds.install-cdsdk.version>
     </properties>
 
