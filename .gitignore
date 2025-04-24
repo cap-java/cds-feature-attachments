@@ -7,6 +7,9 @@
 .classpath
 .settings/
 
+## VSCode
+.vscode
+
 ## Java
 target/
 

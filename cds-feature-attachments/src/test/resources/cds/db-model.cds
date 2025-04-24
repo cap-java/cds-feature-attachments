@@ -16,11 +16,12 @@ entity Roots : cuid {
 }
 
 entity Items : cuid {
-    rootId      : UUID;
-    note        : String;
-    events      : Composition of many Events;
-    attachments : Composition of many Attachment
-                      on attachments.parentKey = $self.ID;
+    rootId          : UUID;
+    note            : String;
+    events          : Composition of many Events
+                          on events.id1 = $self.ID;
+    attachments     : Composition of many Attachment
+                          on attachments.parentKey = $self.ID;
     itemAttachments : Composition of many Attachments;
 }
 
@@ -28,12 +29,15 @@ entity Events {
     key id1        : UUID;
     key id2        : Integer;
         content    : String(100);
-        items      : Association to many Items;
-        itemsCompo : Association to many Items;
-        eventItems : Composition of many EventItems;
+        items      : Association to many Items
+                         on items.ID = $self.id1;
+        itemsCompo : Association to many Items
+                         on itemsCompo.ID = $self.id1;
+        eventItems : Composition of many EventItems
+                         on eventItems.id1 = $self.id1;
 }
 
 entity EventItems {
-    key id1         : UUID;
-        note        : String;
+    key id1  : UUID;
+        note : String;
 }
