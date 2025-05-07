@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - Simplified codebase by removing classes with just a few lines of code that can be moved.
+- [Improved initialization](https://github.com/cap-java/cds-feature-attachments/pull/403) of Malware Scanner
 
 ### Fixed
 
