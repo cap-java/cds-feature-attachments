@@ -12,7 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- Simplified codebase by removing classes with just a few lines of code that can be moved.
+- Simplified code base by removing classes with only a few lines of code that can be moved.
+- chore: [Tidy up several pom.xml](https://github.com/cap-java/cds-feature-attachments/pull/432) files to make them more manageable
 - [Improved initialization](https://github.com/cap-java/cds-feature-attachments/pull/403) of Malware Scanner Service.
 
 ### Fixed
