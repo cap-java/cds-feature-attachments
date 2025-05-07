@@ -9,7 +9,7 @@ import com.sap.cds.services.draft.Drafts;
 public class DraftUtils {
 
 	/**
-	 * The postfix for draft entities.
+	 * The suffix for draft entities.
 	 */
 	static final String DRAFT_TABLE_POSTFIX = "_drafts";
 

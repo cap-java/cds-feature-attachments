@@ -100,7 +100,7 @@ class DraftCancelAttachmentsHandlerTest {
 		CdsEntity siblingTarget = target.getTargetOf(Drafts.SIBLING_ENTITY);
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(siblingTarget),
 				deleteArgumentCaptor.capture());
-		var siblingDelete = deleteArgumentCaptor.getValue();
+		CqnDelete siblingDelete = deleteArgumentCaptor.getValue();
 		assertThat(siblingDelete.toJson()).isNotEqualTo(delete.toJson());
 	}
 
@@ -142,11 +142,11 @@ class DraftCancelAttachmentsHandlerTest {
 	@Test
 	void updatedEntityNeedsToBeDeleted() {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
-		var delete = Delete.from(RootTable_.class);
+		CqnDelete delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(Drafts.SIBLING_ENTITY);
-		var id = UUID.randomUUID().toString();
+		String id = UUID.randomUUID().toString();
 		Attachment draftAttachment = buildAttachmentAndReturnByReader("test", siblingTarget, true, id);
 		buildAttachmentAndReturnByReader("test origin", eventContext.getTarget(), false, id);
 
@@ -160,12 +160,12 @@ class DraftCancelAttachmentsHandlerTest {
 	@Test
 	void entityNotUpdatedNothingToDelete() {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
-		var delete = Delete.from(RootTable_.class);
+		CqnDelete delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(Drafts.SIBLING_ENTITY);
-		var id = UUID.randomUUID().toString();
-		var contentId = UUID.randomUUID().toString();
+		String id = UUID.randomUUID().toString();
+		String contentId = UUID.randomUUID().toString();
 		buildAttachmentAndReturnByReader(contentId, siblingTarget, true, id);
 		buildAttachmentAndReturnByReader(contentId, eventContext.getTarget(), false, id);
 
