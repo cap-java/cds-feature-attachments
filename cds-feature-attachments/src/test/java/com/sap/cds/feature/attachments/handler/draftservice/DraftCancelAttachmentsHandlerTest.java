@@ -97,11 +97,30 @@ class DraftCancelAttachmentsHandlerTest {
 		assertThat(originDelete.toJson()).isEqualTo(delete.toJson());
 
 		deleteArgumentCaptor = ArgumentCaptor.forClass(CqnDelete.class);
-		var siblingTarget = target.getTargetOf(Drafts.SIBLING_ENTITY);
-		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq((CdsEntity) siblingTarget),
+		CdsEntity siblingTarget = target.getTargetOf(Drafts.SIBLING_ENTITY);
+		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(siblingTarget),
 				deleteArgumentCaptor.capture());
 		var siblingDelete = deleteArgumentCaptor.getValue();
 		assertThat(siblingDelete.toJson()).isNotEqualTo(delete.toJson());
+	}
+
+	@Test
+	void modifierCalledWithCorrectEntitiesIfDraftIsInContext() {
+		getEntityAndMockContext(RootTable_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX);
+		CqnDelete delete = Delete.from(RootTable_.class);
+		when(eventContext.getCqn()).thenReturn(delete);
+		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+
+		cut.processBeforeDraftCancel(eventContext);
+
+		CdsEntity target = eventContext.getTarget();
+		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(target),
+				deleteArgumentCaptor.capture());
+		CdsEntity siblingTarget = target.getTargetOf(Drafts.SIBLING_ENTITY);
+		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(siblingTarget),
+				deleteArgumentCaptor.capture());
+		CqnDelete siblingDelete = deleteArgumentCaptor.getValue();
+		assertThat(siblingDelete.toJson()).isEqualTo(delete.toJson());
 	}
 
 	@Test
@@ -111,7 +130,7 @@ class DraftCancelAttachmentsHandlerTest {
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(Drafts.SIBLING_ENTITY);
-		var attachment = buildAttachmentAndReturnByReader("test", siblingTarget, false, "");
+		Attachment attachment = buildAttachmentAndReturnByReader("test", siblingTarget, false, "");
 
 		cut.processBeforeDraftCancel(eventContext);
 

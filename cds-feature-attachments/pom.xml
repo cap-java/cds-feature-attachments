@@ -1,5 +1,5 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -15,7 +15,6 @@
     <url>https://cap.cloud.sap/docs/plugins/#attachments</url>
 
     <properties>
-        <packageName>com.sap.cds.feature.attachments</packageName>
         <generation-package>com.sap.cds.feature.attachments.generated</generation-package>
         <test-generation-folder>src/test/gen</test-generation-folder>
     </properties>
@@ -52,7 +51,7 @@
                     <artifactId>tools</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency> 
+        </dependency>
 
         <!-- TESTS -->
         <dependency>
@@ -91,9 +90,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.artifactId}</finalName>
         <plugins>
-
             <plugin>
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
@@ -132,13 +129,6 @@
                 <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
                     <filesets>
-                        <fileset>
-                            <directory>${generation-folder}</directory>
-                            <includes>
-                                <include>**/*</include>
-                            </includes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
                         <fileset>
                             <directory>${test-generation-folder}</directory>
                             <includes>
@@ -187,9 +177,6 @@
             <plugin>
                 <groupId>com.sap.cds</groupId>
                 <artifactId>cds-maven-plugin</artifactId>
-                <configuration>
-                    <skip>${skipDuringDeploy}</skip>
-                </configuration>
                 <executions>
                     <execution>
                         <id>cds.clean</id>
@@ -203,9 +190,6 @@
                         <goals>
                             <goal>install-node</goal>
                         </goals>
-                        <configuration>
-                            <skip>${skipDuringDeploy}</skip>
-                        </configuration>
                     </execution>
 
                     <execution>
@@ -213,9 +197,6 @@
                         <goals>
                             <goal>install-cdsdk</goal>
                         </goals>
-                        <configuration>
-                            <skip>${skipDuringDeploy}</skip>
-                        </configuration>
                     </execution>
 
                     <execution>
@@ -224,12 +205,10 @@
                             <goal>cds</goal>
                         </goals>
                         <configuration>
-                            <workingDirectory>./src/main/resources/cds/com.sap.cds/cds-feature-attachments
-                            </workingDirectory>
+                            <workingDirectory>./src/main/resources/cds/com.sap.cds/cds-feature-attachments</workingDirectory>
                             <commands>
                                 <command>build --for java --src ./ --dest ../../../../../../gen/srv</command>
                             </commands>
-                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -241,7 +220,6 @@
                         <configuration>
                             <basePackage>${generation-package}.cds4j</basePackage>
                             <csnFile>${project.basedir}/src/gen/srv/src/main/resources/edmx/csn.json</csnFile>
-                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -254,9 +232,8 @@
                             <workingDirectory>./src/test/resources/cds</workingDirectory>
                             <commands>
                                 <command>build --for java --src . --dest ../../gen</command>
-                                <command>compile index.cds -2 sql > ../schema.sql</command>
+                                <command>compile index.cds -2 sql &gt; ../schema.sql</command>
                             </commands>
-                            <skip>${skipDuringDeploy}</skip>
                         </configuration>
                     </execution>
 
@@ -266,16 +243,12 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <codeOutputDirectory>${project.basedir}/${test-generation-folder}/cds4j
-                            </codeOutputDirectory>
+                            <codeOutputDirectory>${project.basedir}/${test-generation-folder}/cds4j</codeOutputDirectory>
                             <basePackage>${generation-package}.test.cds4j</basePackage>
                             <testSources>true</testSources>
-                            <csnFile>${project.basedir}/src/test/resources/gen/src/main/resources/edmx/csn.json
-                            </csnFile>
-                            <skip>${skipDuringDeploy}</skip>
+                            <csnFile>${project.basedir}/src/test/resources/gen/src/main/resources/edmx/csn.json</csnFile>
                         </configuration>
                     </execution>
-
                 </executions>
             </plugin>
 
@@ -352,7 +325,6 @@
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <skip>${skipDuringDeploy}</skip>
                     <failOnError>true</failOnError>
                     <doclint>all,-missing</doclint>
                 </configuration>
@@ -362,7 +334,7 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <excludePackageNames>com.sap.cds.feature.attachments.generated.*</excludePackageNames>
+                            <excludePackageNames>${generation-package}.*</excludePackageNames>
                         </configuration>
                     </execution>
                 </executions>
@@ -378,7 +350,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 

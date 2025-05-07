@@ -4,8 +4,7 @@
 package com.sap.cds.feature.attachments.configuration;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +33,12 @@ import com.sap.cds.feature.attachments.service.AttachmentsServiceImpl;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanRunner;
+import com.sap.cds.feature.attachments.service.malware.AttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
-import com.sap.cds.feature.attachments.service.malware.client.httpclient.MalwareScanClientProviderFactory;
+import com.sap.cds.feature.attachments.service.malware.client.HttpClientProviderFactory;
+import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClient;
+import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClientProviderFactory;
 import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.draft.DraftService;
@@ -51,8 +53,8 @@ import com.sap.cds.services.utils.environment.ServiceBindingUtils;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 /**
- * The class {@link Registration} is a configuration class that registers the
- * services and event handlers for the attachments feature.
+ * The class {@link Registration} is a configuration class that registers the services and event handlers for the
+ * attachments feature.
  */
 public class Registration implements CdsRuntimeConfiguration {
 
@@ -69,7 +71,6 @@ public class Registration implements CdsRuntimeConfiguration {
 
 		CdsRuntime runtime = configurer.getCdsRuntime();
 		ServiceCatalog serviceCatalog = runtime.getServiceCatalog();
-		CdsEnvironment environment = runtime.getEnvironment();
 
 		// get required services from the service catalog
 		PersistenceService persistenceService = serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
@@ -86,16 +87,12 @@ public class Registration implements CdsRuntimeConfiguration {
 					OutboxService.PERSISTENT_UNORDERED_NAME);
 		}
 
-		// retrieve the service binding for the malware scanner service
-		List<ServiceBinding> bindings = environment.getServiceBindings()
-				.filter(b -> ServiceBindingUtils.matches(b, DefaultAttachmentMalwareScanner.MALWARE_SCAN_SERVICE_LABEL)).toList();
-		var binding = !bindings.isEmpty() ? bindings.get(0) : null;
+		// build malware scanner client, could be null if no service binding is available
+		MalwareScanClient scanClient = buildMalwareScanClient(runtime.getEnvironment());
 
-		// get HTTP connection pool configuration
-		var connectionPool = getConnectionPool(environment);
-		var clientProviderFactory = new MalwareScanClientProviderFactory(binding, connectionPool);
-		var malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService, attachmentService,
-				new DefaultMalwareScanClient(clientProviderFactory), Objects.nonNull(binding));
+		AttachmentMalwareScanner malwareScanner = new DefaultAttachmentMalwareScanner(persistenceService,
+				attachmentService, scanClient);
+
 		EndTransactionMalwareScanProvider malwareScanEndTransactionListener = (attachmentEntity,
 				contentId) -> new EndTransactionMalwareScanRunner(attachmentEntity, contentId, malwareScanner, runtime);
 
@@ -103,7 +100,8 @@ public class Registration implements CdsRuntimeConfiguration {
 		configurer.eventHandler(new DefaultAttachmentsServiceHandler(malwareScanEndTransactionListener));
 
 		var deleteContentEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
-		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent, outboxedAttachmentService);
+		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent,
+				outboxedAttachmentService);
 		var attachmentsReader = new DefaultAttachmentsReader(new DefaultAssociationCascader(), persistenceService);
 		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
@@ -130,9 +128,39 @@ public class Registration implements CdsRuntimeConfiguration {
 		}
 	}
 
-	private DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
+	/**
+	 * Builds the {@link MalwareScanClient malware scanner client} based on the service binding.
+	 *
+	 * @param environment the {@link CdsEnvironment environment} to retrieve the service binding from
+	 * @return the {@link MalwareScanClient malware scanner client} or {@code null} if no service binding is available
+	 */
+	private static MalwareScanClient buildMalwareScanClient(CdsEnvironment environment) {
+		// retrieve the service binding for the malware scanner service
+		Optional<ServiceBinding> bindingOpt = environment.getServiceBindings()
+				.filter(b -> ServiceBindingUtils.matches(b, DefaultAttachmentMalwareScanner.MALWARE_SCAN_SERVICE_LABEL))
+				.findFirst();
+
+		if (bindingOpt.isPresent()) {
+			ServiceBinding binding = bindingOpt.get();
+			ConnectionPool connectionPool = getConnectionPool(environment);
+			HttpClientProviderFactory clientProviderFactory = new MalwareScanClientProviderFactory(binding,
+					connectionPool);
+			if (logger.isInfoEnabled()) {
+				logger.info(
+						"Using Malware Scanning service binding with name '{}' and plan '{}' for malware scanning of attachments.",
+						binding.getName().orElse("unknown"), binding.getServicePlan().orElse("unknown"));
+			}
+			return new DefaultMalwareScanClient(clientProviderFactory);
+		}
+
+		logger.info("No Malware Scanning service binding found, malware scanning is disabled.");
+		return null;
+	}
+
+	private static DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
 			ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
-		ListenerProvider creationChangeSetListener = (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId, cdsRuntime, outboxedAttachmentService);
+		ListenerProvider creationChangeSetListener = (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId,
+				cdsRuntime, outboxedAttachmentService);
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
@@ -149,5 +177,4 @@ public class Registration implements CdsRuntimeConfiguration {
 		logger.debug("Connection pool configuration: timeout={}, maxConnections={}", timeout, maxConnections);
 		return new ConnectionPool(timeout, maxConnections, maxConnections);
 	}
-
 }
