@@ -12,11 +12,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
-import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.Drafts;
@@ -33,7 +31,7 @@ public final class ApplicationHandlerHelper {
 	 * annotation "Core.MediaType".
 	 */
 	public static final Filter MEDIA_CONTENT_FILTER = (path, element, type) -> isMediaEntity(path.target().type())
-			&& hasElementAnnotation(element, ANNOTATION_CORE_MEDIA_TYPE);
+			&& element.findAnnotation(ANNOTATION_CORE_MEDIA_TYPE).isPresent();
 
 	/**
 	 * Checks if the data contains a content field.
@@ -46,16 +44,8 @@ public final class ApplicationHandlerHelper {
 		var isIncluded = new AtomicBoolean();
 		Validator validator = (path, element, value) -> isIncluded.set(true);
 
-		callValidator(entity, data, MEDIA_CONTENT_FILTER, validator);
+		CdsDataProcessor.create().addValidator(MEDIA_CONTENT_FILTER, validator).process(data, entity);
 		return !isIncluded.get();
-	}
-
-	public static void callProcessor(CdsEntity entity, List<CdsData> data, Filter filter, Converter converter) {
-		CdsDataProcessor.create().addConverter(filter, converter).process(data, entity);
-	}
-
-	public static void callValidator(CdsEntity entity, List<CdsData> data, Filter filter, Validator validator) {
-		CdsDataProcessor.create().addValidator(filter, validator).process(data, entity);
 	}
 
 	/**
@@ -78,7 +68,8 @@ public final class ApplicationHandlerHelper {
 
 		Validator validator = (path, element, value) -> resultList.add(CdsData.create(path.target().values()));
 
-		callValidator(entity, data, MEDIA_CONTENT_FILTER, validator);
+		CdsDataProcessor.create().addValidator(MEDIA_CONTENT_FILTER, validator).process(data, entity);
+
 		return resultList;
 	}
 
@@ -89,18 +80,16 @@ public final class ApplicationHandlerHelper {
 		});
 	}
 
+	/**
+	 * Removes the draft key "IsActiveEntity" from the given keys.
+	 * 
+	 * @param keys The keys to remove the draft keys from
+	 * @return The keys without the draft key "IsActiveEntity"
+	 */
 	public static Map<String, Object> removeDraftKeys(Map<String, Object> keys) {
-		var keyMap = new HashMap<>(keys);
-		keyMap.entrySet().removeIf(entry -> isDraftActiveEntityField(entry.getKey()));
+		Map<String, Object> keyMap = new HashMap<>(keys);
+		keyMap.entrySet().removeIf(entry -> entry.getKey().equals(Drafts.IS_ACTIVE_ENTITY));
 		return keyMap;
-	}
-
-	private static boolean hasElementAnnotation(CdsElement element, String annotation) {
-		return element.findAnnotation(annotation).isPresent();
-	}
-
-	private static boolean isDraftActiveEntityField(String key) {
-		return key.equals(Drafts.IS_ACTIVE_ENTITY);
 	}
 
 	private ApplicationHandlerHelper() {
