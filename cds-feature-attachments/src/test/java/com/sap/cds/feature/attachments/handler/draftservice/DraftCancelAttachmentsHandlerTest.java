@@ -23,7 +23,6 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
-import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.Delete;
 import com.sap.cds.ql.cqn.CqnDelete;
@@ -107,7 +106,7 @@ class DraftCancelAttachmentsHandlerTest {
 
 	@Test
 	void modifierCalledWithCorrectEntitiesIfDraftIsInContext() {
-		getEntityAndMockContext(RootTable_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
+		getEntityAndMockContext(RootTable_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX);
 		CqnDelete delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
@@ -143,11 +142,11 @@ class DraftCancelAttachmentsHandlerTest {
 	@Test
 	void updatedEntityNeedsToBeDeleted() {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
-		var delete = Delete.from(RootTable_.class);
+		CqnDelete delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(Drafts.SIBLING_ENTITY);
-		var id = UUID.randomUUID().toString();
+		String id = UUID.randomUUID().toString();
 		Attachment draftAttachment = buildAttachmentAndReturnByReader("test", siblingTarget, true, id);
 		buildAttachmentAndReturnByReader("test origin", eventContext.getTarget(), false, id);
 
@@ -161,12 +160,12 @@ class DraftCancelAttachmentsHandlerTest {
 	@Test
 	void entityNotUpdatedNothingToDelete() {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
-		var delete = Delete.from(RootTable_.class);
+		CqnDelete delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 		CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(Drafts.SIBLING_ENTITY);
-		var id = UUID.randomUUID().toString();
-		var contentId = UUID.randomUUID().toString();
+		String id = UUID.randomUUID().toString();
+		String contentId = UUID.randomUUID().toString();
 		buildAttachmentAndReturnByReader(contentId, siblingTarget, true, id);
 		buildAttachmentAndReturnByReader(contentId, eventContext.getTarget(), false, id);
 
