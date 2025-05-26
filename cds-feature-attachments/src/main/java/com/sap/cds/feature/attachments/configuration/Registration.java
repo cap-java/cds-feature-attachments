@@ -36,9 +36,9 @@ import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactio
 import com.sap.cds.feature.attachments.service.malware.AttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
-import com.sap.cds.feature.attachments.service.malware.client.HttpClientProviderFactory;
+import com.sap.cds.feature.attachments.service.malware.client.HttpClientProvider;
 import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClient;
-import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClientProviderFactory;
+import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClientProvider;
 import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.draft.DraftService;
@@ -143,7 +143,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		if (bindingOpt.isPresent()) {
 			ServiceBinding binding = bindingOpt.get();
 			ConnectionPool connectionPool = getConnectionPool(environment);
-			HttpClientProviderFactory clientProviderFactory = new MalwareScanClientProviderFactory(binding,
+			HttpClientProvider clientProviderFactory = new MalwareScanClientProvider(binding,
 					connectionPool);
 			if (logger.isInfoEnabled()) {
 				logger.info(
