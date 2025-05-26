@@ -29,8 +29,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
-        <cds.services.version>3.9.1</cds.services.version>
-        <cds.install-cdsdk.version>8.9.2</cds.install-cdsdk.version>
+        <cds.services.version>3.10.1</cds.services.version>
+        <cds.install-cdsdk.version>8.9.4</cds.install-cdsdk.version>
     </properties>
 
     <groupId>com.sap.cds</groupId>
