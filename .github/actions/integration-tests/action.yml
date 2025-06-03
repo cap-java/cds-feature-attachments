@@ -1,0 +1,39 @@
+name: Maven Build
+description: "Builds a Maven project."
+
+inputs:
+  java-version:
+    description: "The Java version the build shall run with."
+    required: true
+  maven-version:
+    description: "The Maven version the build shall run with."
+    required: true
+  maven-profile:
+    description: "The Maven profile to use for the integration-tests."
+    default: 'previous'
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Java ${{ inputs.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: sapmachine
+        cache: maven
+
+    - name: Setup Maven ${{ inputs.maven-version }}
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version: ${{ inputs.maven-version }}
+
+    - name: Piper Maven build
+      uses: SAP/project-piper-action@main
+      with:
+        step-name: mavenBuild
+
+    - name: Mutation Testing
+      if: ${{ inputs.mutation-testing == 'true' }}
+      run: mvn org.pitest:pitest-maven:mutationCoverage -f cds-feature-attachments/pom.xml -ntp -B
+      shell: bash
