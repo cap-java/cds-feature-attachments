@@ -68,7 +68,7 @@
             <dependency>
                 <groupId>com.sap.cloud.sdk</groupId>
                 <artifactId>sdk-bom</artifactId>
-                <version>5.18.0</version>
+                <version>5.19.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -105,7 +105,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.12.2</version>
+            <version>5.13.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -244,7 +244,7 @@
             <plugins>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.4.1</version>
+                    <version>3.5.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
