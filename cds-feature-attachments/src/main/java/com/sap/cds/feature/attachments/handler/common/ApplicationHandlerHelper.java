@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
-import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
@@ -48,10 +47,6 @@ public final class ApplicationHandlerHelper {
 
 		callValidator(entity, data, MEDIA_CONTENT_FILTER, validator);
 		return !isIncluded.get();
-	}
-
-	public static void callProcessor(CdsEntity entity, List<CdsData> data, Filter filter, Converter converter) {
-		CdsDataProcessor.create().addConverter(filter, converter).process(data, entity);
 	}
 
 	public static void callValidator(CdsEntity entity, List<CdsData> data, Filter filter, Validator validator) {
