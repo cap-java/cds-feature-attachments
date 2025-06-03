@@ -45,12 +45,8 @@ public final class ApplicationHandlerHelper {
 		var isIncluded = new AtomicBoolean();
 		Validator validator = (path, element, value) -> isIncluded.set(true);
 
-		callValidator(entity, data, MEDIA_CONTENT_FILTER, validator);
+		CdsDataProcessor.create().addValidator(MEDIA_CONTENT_FILTER, validator).process(data, entity);
 		return !isIncluded.get();
-	}
-
-	public static void callValidator(CdsEntity entity, List<CdsData> data, Filter filter, Validator validator) {
-		CdsDataProcessor.create().addValidator(filter, validator).process(data, entity);
 	}
 
 	/**
@@ -73,7 +69,7 @@ public final class ApplicationHandlerHelper {
 
 		Validator validator = (path, element, value) -> resultList.add(CdsData.create(path.target().values()));
 
-		callValidator(entity, data, MEDIA_CONTENT_FILTER, validator);
+		CdsDataProcessor.create().addValidator(MEDIA_CONTENT_FILTER, validator).process(data, entity);
 		return resultList;
 	}
 

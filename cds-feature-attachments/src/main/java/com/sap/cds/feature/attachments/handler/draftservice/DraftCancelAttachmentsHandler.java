@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
@@ -61,7 +62,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 			var filter = buildContentIdFilter();
 			var validator = buildDeleteContentValidator(context, activeCondensedAttachments);
-			ApplicationHandlerHelper.callValidator(context.getTarget(), draftAttachments, filter, validator);
+			CdsDataProcessor.create().addValidator(filter, validator).process(draftAttachments, context.getTarget());
 		}
 	}
 
