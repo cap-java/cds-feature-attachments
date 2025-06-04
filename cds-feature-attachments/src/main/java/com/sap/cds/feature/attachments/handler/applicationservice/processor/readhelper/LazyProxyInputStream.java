@@ -1,7 +1,7 @@
 /**************************************************************************
  * (C) 2019-2025 SAP SE or an SAP affiliate company. All rights reserved. *
  **************************************************************************/
-package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream;
+package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,8 +9,6 @@ import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
 
 /**
  * The class {@link LazyProxyInputStream} is a lazy proxy for an {@link InputStream}.
