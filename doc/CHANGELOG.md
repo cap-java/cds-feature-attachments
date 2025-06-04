@@ -6,17 +6,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.0.8 - tbd.
-
-### Added
+## Version 1.0.8 - 2025-06-04
 
 ### Changed
 
 - Simplified code base by removing classes with only a few lines of code that can be moved.
 - chore: [Tidy up several pom.xml](https://github.com/cap-java/cds-feature-attachments/pull/432) files to make them more manageable
 - [Improved initialization](https://github.com/cap-java/cds-feature-attachments/pull/403) of Malware Scanner Service.
-
-### Fixed
 
 ## Version 1.0.7 - 2025-02-28
 
