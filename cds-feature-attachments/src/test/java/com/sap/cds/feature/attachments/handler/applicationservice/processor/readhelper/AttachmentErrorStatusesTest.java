@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.utilities;
+package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

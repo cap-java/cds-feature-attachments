@@ -11,16 +11,15 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.helper.LogObserver;
-import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
 
-class DefaultAttachmentStatusValidatorTest {
+class AttachmentStatusValidatorTest {
 
-	private DefaultAttachmentStatusValidator cut;
+	private AttachmentStatusValidator cut;
 	private LogObserver observer;
 
 	@BeforeEach
 	void setup() {
-		cut = new DefaultAttachmentStatusValidator();
+		cut = new AttachmentStatusValidator();
 		observer = LogObserver.create(cut.getClass().getName());
 	}
 
