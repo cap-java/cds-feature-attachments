@@ -1,14 +1,14 @@
 /**************************************************************************
  * (C) 2019-2025 SAP SE or an SAP affiliate company. All rights reserved. *
  **************************************************************************/
-package com.sap.cds.feature.attachments.handler.draftservice.constants;
+package com.sap.cds.feature.attachments.handler.draftservice;
 
 
-public final class DraftConstants {
+final class DraftConstants {
 
-	public static final String DRAFT_TABLE_POSTFIX = "_drafts";
+	static final String DRAFT_TABLE_POSTFIX = "_drafts";
 
 	private DraftConstants() {
+		// avoid instantiation
 	}
-
 }
