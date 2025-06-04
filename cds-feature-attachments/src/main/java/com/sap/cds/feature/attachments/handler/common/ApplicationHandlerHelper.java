@@ -51,7 +51,7 @@ public final class ApplicationHandlerHelper {
 	/**
 	 * Checks if the entity is a media entity. A media entity is an entity that is annotated with the annotation
 	 * "_is_media_data".
-	 * 
+	 *
 	 * @param baseEntity The entity to check
 	 * @return <code>true</code> if the entity is a media entity, <code>false</code> otherwise
 	 */
@@ -59,7 +59,13 @@ public final class ApplicationHandlerHelper {
 		return baseEntity.getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false);
 	}
 
-	public static boolean doesContentIdExistsBefore(Map<?, Object> existingData) {
+	/**
+	 * Checks if the {@value Attachments#CONTENT_ID} exists in the existing data.
+	 *
+	 * @param existingData The existing data to check
+	 * @return <code>true</code> if the content ID exists, <code>false</code> otherwise
+	 */
+	public static boolean doesContentIdExistsBefore(Map<String, Object> existingData) {
 		return Objects.nonNull(existingData.get(Attachments.CONTENT_ID));
 	}
 
@@ -81,7 +87,7 @@ public final class ApplicationHandlerHelper {
 
 	/**
 	 * Removes the draft key "IsActiveEntity" from the given map of keys.
-	 * 
+	  
 	 * @param keys The map of keys
 	 * @return A new map without the draft key
 	 */
