@@ -13,7 +13,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCod
 import com.sap.cds.feature.attachments.helper.LogObserver;
 import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
 
-class DefaultAttachmentStatusValidatorTest {
+class AttachmentStatusValidatorTest {
 
 	private AttachmentStatusValidator cut;
 	private LogObserver observer;
