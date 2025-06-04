@@ -90,6 +90,8 @@
     </dependencies>
 
     <build>
+        <!-- The deploy requires a stable artifact name -->
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.pitest</groupId>
