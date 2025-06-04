@@ -3,7 +3,6 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper;
 
-import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
 import com.sap.cds.services.ErrorStatus;
 import com.sap.cds.services.utils.ErrorStatusException;
 

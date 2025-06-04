@@ -11,7 +11,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.helper.LogObserver;
-import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
 
 class AttachmentStatusValidatorTest {
 
