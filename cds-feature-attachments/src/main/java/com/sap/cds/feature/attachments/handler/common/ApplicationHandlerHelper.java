@@ -65,7 +65,7 @@ public final class ApplicationHandlerHelper {
 	}
 
 	public static List<CdsData> condenseData(List<CdsData> data, CdsEntity entity) {
-		var resultList = new ArrayList<CdsData>();
+		List<CdsData> resultList = new ArrayList<>();
 
 		Validator validator = (path, element, value) -> resultList.add(CdsData.create(path.target().values()));
 
@@ -81,8 +81,8 @@ public final class ApplicationHandlerHelper {
 	}
 
 	public static Map<String, Object> removeDraftKeys(Map<String, Object> keys) {
-		var keyMap = new HashMap<>(keys);
-		keyMap.entrySet().removeIf(entry -> isDraftActiveEntityField(entry.getKey()));
+		Map<String, Object> keyMap = new HashMap<>(keys);
+		keyMap.entrySet().removeIf(entry -> entry.getKey().equals(Drafts.IS_ACTIVE_ENTITY));
 		return keyMap;
 	}
 
@@ -90,12 +90,7 @@ public final class ApplicationHandlerHelper {
 		return element.findAnnotation(annotation).isPresent();
 	}
 
-	private static boolean isDraftActiveEntityField(String key) {
-		return key.equals(Drafts.IS_ACTIVE_ENTITY);
-	}
-
 	private ApplicationHandlerHelper() {
 		// avoid instantiation
 	}
-
 }

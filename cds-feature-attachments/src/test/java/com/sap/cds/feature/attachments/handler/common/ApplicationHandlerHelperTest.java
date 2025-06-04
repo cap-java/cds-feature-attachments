@@ -1,6 +1,8 @@
 package com.sap.cds.feature.attachments.handler.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 
@@ -45,4 +47,13 @@ class ApplicationHandlerHelperTest {
 		assertThat(result).isFalse();
 	}
 
+	@Test
+	void removeDraftKeys() {
+		Map<String, Object> keys = Map.of("key1", "value1", "IsActiveEntity", "true");
+		assertTrue(keys.containsKey("IsActiveEntity"));
+
+		Map<String, Object> result = ApplicationHandlerHelper.removeDraftKeys(keys);
+		assertFalse(result.containsKey("IsActiveEntity"));
+		assertTrue(result.containsKey("key1"));
+	}
 }
