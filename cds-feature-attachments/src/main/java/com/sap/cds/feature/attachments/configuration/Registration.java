@@ -20,7 +20,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.UpdateAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.DefaultAttachmentStatusValidator;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.CreationChangeSetListener;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
@@ -112,7 +112,7 @@ public class Registration implements CdsRuntimeConfiguration {
 			configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 			configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
 			var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
-			configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
+			configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new AttachmentStatusValidator(), scanRunner));
 		} else {
 			logger.debug("No application service is available. Application service event handlers will not be registered.");
 		}

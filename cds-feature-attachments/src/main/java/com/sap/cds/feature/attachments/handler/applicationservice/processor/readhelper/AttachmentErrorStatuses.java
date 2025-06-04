@@ -1,7 +1,7 @@
 /**************************************************************************
  * (C) 2019-2025 SAP SE or an SAP affiliate company. All rights reserved. *
  **************************************************************************/
-package com.sap.cds.feature.attachments.utilities;
+package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper;
 
 import com.sap.cds.services.ErrorStatus;
 import com.sap.cds.services.ErrorStatuses;
@@ -9,7 +9,7 @@ import com.sap.cds.services.ErrorStatuses;
 /**
  * Error statuses for the attachment service.
  */
-public enum AttachmentErrorStatuses implements ErrorStatus {
+enum AttachmentErrorStatuses implements ErrorStatus {
 
 	/**
 	 * The attachment is not clean.

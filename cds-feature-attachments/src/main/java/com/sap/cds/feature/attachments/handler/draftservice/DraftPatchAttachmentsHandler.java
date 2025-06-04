@@ -10,11 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.ql.Select;
 import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
@@ -59,7 +59,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 					context, path, (InputStream) value);
 		};
 
-		ApplicationHandlerHelper.callProcessor(context.getTarget(), data, ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter);
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data, context.getTarget());
 	}
 
 }

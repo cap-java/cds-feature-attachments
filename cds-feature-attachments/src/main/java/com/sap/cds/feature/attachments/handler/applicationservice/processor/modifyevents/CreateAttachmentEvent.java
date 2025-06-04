@@ -48,7 +48,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		logger.debug("Calling attachment service with create event for entity {}",
 				path.target().entity().getQualifiedName());
 		var values = path.target().values();
-		var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
+		var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 		var mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, existingData);
 		var fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, existingData);
 
