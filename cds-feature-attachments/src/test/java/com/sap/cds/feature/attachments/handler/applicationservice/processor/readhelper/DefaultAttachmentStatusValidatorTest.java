@@ -15,12 +15,12 @@ import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
 
 class DefaultAttachmentStatusValidatorTest {
 
-	private DefaultAttachmentStatusValidator cut;
+	private AttachmentStatusValidator cut;
 	private LogObserver observer;
 
 	@BeforeEach
 	void setup() {
-		cut = new DefaultAttachmentStatusValidator();
+		cut = new AttachmentStatusValidator();
 		observer = LogObserver.create(cut.getClass().getName());
 	}
 
