@@ -48,7 +48,7 @@ class ApplicationHandlerHelperTest {
 	}
 
 	@Test
-	void removeDraftKeys() {
+	void removeDraftKey() {
 		Map<String, Object> keys = Map.of("key1", "value1", "IsActiveEntity", "true");
 		assertTrue(keys.containsKey("IsActiveEntity"));
 

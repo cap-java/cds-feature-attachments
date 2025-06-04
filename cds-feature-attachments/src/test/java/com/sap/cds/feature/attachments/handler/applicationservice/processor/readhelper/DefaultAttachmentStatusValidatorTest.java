@@ -10,8 +10,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.AttachmentStatusException;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.DefaultAttachmentStatusValidator;
 import com.sap.cds.feature.attachments.helper.LogObserver;
 import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
 
