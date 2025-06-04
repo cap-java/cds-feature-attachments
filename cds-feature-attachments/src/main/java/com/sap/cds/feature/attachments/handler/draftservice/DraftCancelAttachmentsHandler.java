@@ -9,13 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
-import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
@@ -61,7 +61,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 			var filter = buildContentIdFilter();
 			var validator = buildDeleteContentValidator(context, activeCondensedAttachments);
-			ApplicationHandlerHelper.callValidator(context.getTarget(), draftAttachments, filter, validator);
+			CdsDataProcessor.create().addValidator(filter, validator).process(draftAttachments, context.getTarget());
 		}
 	}
 
@@ -72,7 +72,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 				deleteContentAttachmentEvent.processEvent(path, null, CdsData.create(path.target().values()), context);
 				return;
 			}
-			var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
+			var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 			var existingEntry = activeCondensedAttachments.stream().filter(
 					updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
 			existingEntry.ifPresent(entry -> {

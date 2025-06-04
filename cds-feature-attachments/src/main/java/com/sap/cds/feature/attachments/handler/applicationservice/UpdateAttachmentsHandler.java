@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
@@ -104,7 +105,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		var condensedUpdatedData = ApplicationHandlerHelper.condenseData(updatedDataList, entity);
 
 		Validator validator = (path, element, value) -> {
-			var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
+			var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 			var entryExists = condensedUpdatedData.stream().anyMatch(
 					updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
 			if (!entryExists) {
@@ -112,7 +113,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 				outboxedAttachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
 			}
 		};
-		ApplicationHandlerHelper.callValidator(entity, exitingDataList, ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator);
+		CdsDataProcessor.create().addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator).process(exitingDataList, entity);
 	}
 
 }

@@ -1,13 +1,15 @@
 /**************************************************************************
  * (C) 2019-2025 SAP SE or an SAP affiliate company. All rights reserved. *
  **************************************************************************/
-package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception;
+package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper;
 
 import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
 import com.sap.cds.services.ErrorStatus;
 import com.sap.cds.services.utils.ErrorStatusException;
 
 public class AttachmentStatusException extends ErrorStatusException {
+
+	private static final long serialVersionUID = 1L;
 
 	private AttachmentStatusException(ErrorStatus errorStatus) {
 		super(errorStatus);

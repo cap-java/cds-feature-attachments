@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.applicationservice.processor.applicationevents.model;
+package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,9 +14,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception.AttachmentStatusException;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.stream.LazyProxyInputStream;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
