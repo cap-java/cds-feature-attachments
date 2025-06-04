@@ -15,7 +15,6 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.Drafts;
@@ -32,7 +31,7 @@ public final class ApplicationHandlerHelper {
 	 * annotation "Core.MediaType".
 	 */
 	public static final Filter MEDIA_CONTENT_FILTER = (path, element, type) -> isMediaEntity(path.target().type())
-			&& hasElementAnnotation(element, ANNOTATION_CORE_MEDIA_TYPE);
+			&& element.findAnnotation(ANNOTATION_CORE_MEDIA_TYPE).isPresent();
 
 	/**
 	 * Checks if the data contains a content field.
@@ -80,14 +79,16 @@ public final class ApplicationHandlerHelper {
 		});
 	}
 
-	public static Map<String, Object> removeDraftKeys(Map<String, Object> keys) {
+	/**
+	 * Removes the draft key "IsActiveEntity" from the given map of keys.
+	 * 
+	 * @param keys The map of keys
+	 * @return A new map without the draft key
+	 */
+	public static Map<String, Object> removeDraftKey(Map<String, Object> keys) {
 		Map<String, Object> keyMap = new HashMap<>(keys);
 		keyMap.entrySet().removeIf(entry -> entry.getKey().equals(Drafts.IS_ACTIVE_ENTITY));
 		return keyMap;
-	}
-
-	private static boolean hasElementAnnotation(CdsElement element, String annotation) {
-		return element.findAnnotation(annotation).isPresent();
 	}
 
 	private ApplicationHandlerHelper() {

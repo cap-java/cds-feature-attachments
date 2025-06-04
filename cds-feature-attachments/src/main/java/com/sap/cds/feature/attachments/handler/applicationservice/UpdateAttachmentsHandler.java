@@ -105,7 +105,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		var condensedUpdatedData = ApplicationHandlerHelper.condenseData(updatedDataList, entity);
 
 		Validator validator = (path, element, value) -> {
-			var keys = ApplicationHandlerHelper.removeDraftKeys(path.target().keys());
+			var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 			var entryExists = condensedUpdatedData.stream().anyMatch(
 					updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
 			if (!entryExists) {
