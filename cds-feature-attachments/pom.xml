@@ -231,6 +231,7 @@
                             <goal>cds</goal>
                         </goals>
                         <configuration>
+                            <skip>${maven.test.skip}</skip>
                             <workingDirectory>./src/test/resources/cds</workingDirectory>
                             <commands>
                                 <command>build --for java --src . --dest ../../gen</command>
@@ -245,6 +246,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
+                            <skip>${maven.test.skip}</skip>
                             <codeOutputDirectory>${project.basedir}/${test-generation-folder}/cds4j</codeOutputDirectory>
                             <basePackage>${generation-package}.test.cds4j</basePackage>
                             <testSources>true</testSources>
