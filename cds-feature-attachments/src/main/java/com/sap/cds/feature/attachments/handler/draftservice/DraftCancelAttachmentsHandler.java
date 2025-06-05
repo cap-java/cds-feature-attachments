@@ -96,7 +96,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	}
 
 	private boolean isDraftEntity(DraftCancelEventContext context) {
-		return context.getTarget().getQualifiedName().endsWith(DraftConstants.DRAFT_TABLE_POSTFIX);
+		return context.getTarget().getQualifiedName().endsWith(DraftUtils.DRAFT_TABLE_POSTFIX);
 	}
 
 	private List<CdsData> readAttachments(DraftCancelEventContext context, CdsStructuredType entity,

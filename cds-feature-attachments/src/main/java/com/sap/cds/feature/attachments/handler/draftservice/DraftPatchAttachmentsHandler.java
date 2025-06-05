@@ -49,7 +49,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 		logger.debug("Processing before draft patch event for entity {}", context.getTarget().getName());
 
 		Converter converter = (path, element, value) -> {
-			var draftElement = path.target().entity().getQualifiedName().endsWith(DraftConstants.DRAFT_TABLE_POSTFIX)
+			var draftElement = path.target().entity().getQualifiedName().endsWith(DraftUtils.DRAFT_TABLE_POSTFIX)
 					? path.target().entity()
 					: path.target().entity().getTargetOf(Drafts.SIBLING_ENTITY);
 			var select = Select.from(draftElement.getQualifiedName()).matching(path.target().keys());
