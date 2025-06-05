@@ -75,13 +75,13 @@ class DraftPatchAttachmentsHandlerTest {
 
 		verify(persistence).run(selectCaptor.capture());
 		var select = selectCaptor.getValue();
-		assertThat(select.from().toString()).contains(Attachment_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
+		assertThat(select.from().toString()).contains(Attachment_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX);
 		assertThat(select.getLock()).isEmpty();
 	}
 
 	@Test
 	void draftEntityUsed() {
-		var draftAttachmentName = Attachment_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX;
+		var draftAttachmentName = Attachment_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX;
 		getEntityAndMockContext(draftAttachmentName);
 		var attachment = Attachments.create();
 		attachment.setContent(mock(InputStream.class));
