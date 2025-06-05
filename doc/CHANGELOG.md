@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- [Introduced DraftUtils](https://github.com/cap-java/cds-feature-attachments/pull/454) to handle draft related functionality in a single place.
 
 ### Fixed
 
