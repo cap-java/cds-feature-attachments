@@ -237,10 +237,28 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <excludeArtifacts>
+                        <excludeArtifact>cds-feature-attachments-integration-tests-parent</excludeArtifact>
+                        <excludeArtifact>cds-feature-attachments-integration-tests-db</excludeArtifact>
+                        <excludeArtifact>cds-feature-attachments-integration-tests-srv</excludeArtifact>
+                    </excludeArtifacts>
+                </configuration>
+            </plugin>
         </plugins>
 
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>0.7.0</version>
+                    <extensions>true</extensions>
+                </plugin>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>3.5.0</version>
@@ -309,9 +327,9 @@
             <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
         </snapshotRepository>
         <repository>
-            <id>ossrh</id>
+            <id>central</id>
             <name>MavenCentral</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <url>https://central.sonatype.com</url>
         </repository>
     </distributionManagement>
 
