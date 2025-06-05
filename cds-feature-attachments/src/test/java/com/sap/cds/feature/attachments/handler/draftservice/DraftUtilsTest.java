@@ -33,12 +33,18 @@ class DraftUtilsTest {
 		CdsEntity entity = DraftUtils.getActiveEntity(draftEntity);
 		assertNotNull(entity, "Active entity should not be null");
 		assertEquals(activeEntity, entity, "Active entity should match the expected active entity");
+
+		entity = DraftUtils.getActiveEntity(activeEntity);
+		assertEquals(activeEntity, entity, "Active entity should match the expected active entity");
 	}
 
 	@Test
 	void testGetDraftEntity() {
 		CdsEntity entity = DraftUtils.getDraftEntity(activeEntity);
 		assertNotNull(entity, "Draft entity should not be null");
+		assertEquals(draftEntity, entity, "Draft entity should match the expected draft entity");
+
+		entity = DraftUtils.getDraftEntity(draftEntity);
 		assertEquals(draftEntity, entity, "Draft entity should match the expected draft entity");
 	}
 
