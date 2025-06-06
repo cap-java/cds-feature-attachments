@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Build and Sonar Scan
     runs-on: ubuntu-latest
     strategy:
       matrix:

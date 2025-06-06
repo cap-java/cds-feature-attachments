@@ -236,32 +236,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <configuration>
-                    <publishingServerId>central</publishingServerId>
-                    <excludeArtifacts>
-                        <excludeArtifact>cds-feature-attachments-integration-tests-parent</excludeArtifact>
-                        <excludeArtifact>cds-feature-attachments-integration-tests-db</excludeArtifact>
-                        <excludeArtifact>cds-feature-attachments-integration-tests-srv</excludeArtifact>
-                    </excludeArtifacts>
-                </configuration>
-            </plugin>
         </plugins>
 
         <pluginManagement>
@@ -336,6 +310,41 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <profiles>
+        <profile>
+            <id>deploy-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <excludeArtifacts>
+                                <excludeArtifact>cds-feature-attachments-integration-tests-parent</excludeArtifact>
+                                <excludeArtifact>cds-feature-attachments-integration-tests-db</excludeArtifact>
+                                <excludeArtifact>cds-feature-attachments-integration-tests-srv</excludeArtifact>
+                            </excludeArtifacts>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <distributionManagement>
         <snapshotRepository>

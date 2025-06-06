@@ -23,7 +23,7 @@ runs:
         distribution: sapmachine
         cache: maven
 
-    - name: Setup Maven ${{ inputs.maven-version }}
+    - name: Set up Maven ${{ inputs.maven-version }}
       uses: stCarolas/setup-maven@v5
       with:
         maven-version: ${{ inputs.maven-version }}
