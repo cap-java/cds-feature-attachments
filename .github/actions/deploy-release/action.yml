@@ -57,12 +57,12 @@ runs:
 
     - name: Deploy to Maven Central
       run: >
-        mvn -B -ntp -fae --show-version
+        mvn -B -ntp --show-version
         -Dmaven.install.skip=true
         -Dmaven.test.skip=true
         -Dgpg.passphrase="$GPG_PASSPHRASE"
         -Dgpg.keyname="$GPG_PUB_KEY"
-        deploy
+        clean deploy
       shell: bash
       env:
         MAVEN_CENTRAL_USER: ${{ inputs.user }}
