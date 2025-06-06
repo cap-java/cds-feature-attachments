@@ -8,9 +8,6 @@ inputs:
   password:
     description: "The password used for the upload (technical user for maven central upload)"
     required: true
-  profile:
-    description: "The profile id"
-    required: true
   pgp-pub-key:
     description: "The public pgp key ID"
     required: true
@@ -33,7 +30,6 @@ runs:
     - name: Echo Inputs
       run: |
         echo "user: ${{ inputs.user }}"
-        echo "profile: ${{ inputs.profile }}"
         echo "revision: ${{ inputs.revision }}"
       shell: bash
 
@@ -43,7 +39,7 @@ runs:
         distribution: sapmachine
         java-version: '17'
         cache: maven
-        server-id: ossrh
+        server-id: central
         server-username: MAVEN_CENTRAL_USER
         server-password: MAVEN_CENTRAL_PASSWORD
 
@@ -59,36 +55,17 @@ runs:
       env:
         PASSPHRASE: ${{ inputs.pgp-passphrase }}
 
-    - name: Deploy Locally
+    - name: Deploy to Maven Central
       run: >
-        mvn -B -ntp -fae --show-version
-        -Durl=file:./temp_local_repo
+        mvn -B -ntp --show-version
         -Dmaven.install.skip=true
         -Dmaven.test.skip=true
         -Dgpg.passphrase="$GPG_PASSPHRASE"
         -Dgpg.keyname="$GPG_PUB_KEY"
-        -Drevision="${{ inputs.revision }}"
-        deploy
-      working-directory: ./deploy-oss
+        clean deploy
       shell: bash
       env:
         MAVEN_CENTRAL_USER: ${{ inputs.user }}
         MAVEN_CENTRAL_PASSWORD: ${{ inputs.password }}
         GPG_PASSPHRASE: ${{ inputs.pgp-passphrase }}
         GPG_PUB_KEY: ${{ inputs.pgp-pub-key }}
-
-    - name: Deploy Staging
-      run: >
-        mvn -B -ntp -fae --show-version
-        org.sonatype.plugins:nexus-staging-maven-plugin:1.6.13:deploy-staged-repository
-        -DserverId=ossrh
-        -DnexusUrl=https://oss.sonatype.org
-        -DrepositoryDirectory=./temp_local_repo
-        -DstagingProfileId="$MAVEN_CENTRAL_PROFILE_ID"
-        -Drevision="${{ inputs.revision }}"
-      working-directory: ./deploy-oss
-      shell: bash  
-      env:
-        MAVEN_CENTRAL_USER: ${{ inputs.user }}
-        MAVEN_CENTRAL_PASSWORD: ${{ inputs.password }}
-        MAVEN_CENTRAL_PROFILE_ID: ${{ inputs.profile }}
