@@ -62,7 +62,6 @@ runs:
         -Dmaven.test.skip=true
         -Dgpg.passphrase="$GPG_PASSPHRASE"
         -Dgpg.keyname="$GPG_PUB_KEY"
-        -Drevision="${{ inputs.revision }}"
         deploy
       shell: bash
       env:
