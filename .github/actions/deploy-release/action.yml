@@ -33,7 +33,7 @@ runs:
         echo "revision: ${{ inputs.revision }}"
       shell: bash
 
-    - name: Set up Java 
+    - name: Set up Java
       uses: actions/setup-java@v4
       with:
         distribution: sapmachine
