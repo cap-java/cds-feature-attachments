@@ -6,6 +6,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Version 1.0.9 - tbd.
+
+### Added
+
+
+### Changed
+
+- [Introduced DraftUtils](https://github.com/cap-java/cds-feature-attachments/pull/454) to handle draft related functionality in a single place.
+
+### Fixed
+
+
 ## Version 1.0.8 - 2025-06-04
 
 ### Changed
