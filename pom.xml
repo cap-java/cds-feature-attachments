@@ -304,7 +304,7 @@
                 <plugin>
                     <groupId>org.pitest</groupId>
                     <artifactId>pitest-maven</artifactId>
-                    <version>1.19.4</version>
+                    <version>1.19.5</version>
                 </plugin>
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
