@@ -106,7 +106,7 @@ class DraftCancelAttachmentsHandlerTest {
 
 	@Test
 	void modifierCalledWithCorrectEntitiesIfDraftIsInContext() {
-		getEntityAndMockContext(RootTable_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
+		getEntityAndMockContext(RootTable_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX);
 		CqnDelete delete = Delete.from(RootTable_.class);
 		when(eventContext.getCqn()).thenReturn(delete);
 		when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
