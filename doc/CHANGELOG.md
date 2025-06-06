@@ -6,18 +6,22 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.0.9 - tbd.
+## Version 1.0.10 - tbd.
 
 ### Added
 
 
 ### Changed
 
-- [Introduced DraftUtils](https://github.com/cap-java/cds-feature-attachments/pull/454) to handle draft related functionality in a single place.
-- Migrated deployment of `cds-feature-attachments` from [OSS](https://oss.sonatype.org) to [Central Portal](https://central.sonatype.com/).
 
 ### Fixed
 
+## Version 1.0.9 - 2025-06-06
+
+### Changed
+
+- [Introduced DraftUtils](https://github.com/cap-java/cds-feature-attachments/pull/454) to handle draft related functionality in a single place.
+- Migrated deployment of `cds-feature-attachments` from [OSS](https://oss.sonatype.org) to [Central Portal](https://central.sonatype.com/).
 
 ## Version 1.0.8 - 2025-06-04
 
