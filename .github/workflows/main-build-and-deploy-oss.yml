@@ -9,16 +9,15 @@ on:
     types: [ "released" ]
 
 jobs:
-
   blackduck:
-    name: "Blackduck Scan"
+    name: Blackduck Scan
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: "Scan With Black Duck"
+      - name: Scan With Black Duck
         uses: ./.github/actions/scan-with-blackduck
         with:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
@@ -26,6 +25,7 @@ jobs:
           maven-version: ${{ env.MAVEN_VERSION }}
 
   update-version:
+    name: Update Version
     runs-on: ubuntu-latest
     needs: blackduck
     steps:
@@ -49,6 +49,7 @@ jobs:
           retention-days: 1
 
   build:
+    name: Build and Sonar Scan
     runs-on: ubuntu-latest
     needs: update-version
     steps:
@@ -63,7 +64,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           maven-version: ${{ env.MAVEN_VERSION }}
 
-      - name: SonarQube Scan
+      - name: Sonar Scan
         uses: ./.github/actions/scan-with-sonar
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -92,9 +93,8 @@ jobs:
       - name: Deploy
         uses: ./.github/actions/deploy-release
         with:
-          user: ${{ secrets.OSSRH_SONATYPE_ORG_API_USER }}
-          password: ${{ secrets.OSSRH_SONATYPE_ORG_API_PASSWD }}
-          profile: ${{ secrets.OSSRH_SONATYPE_ORG_PROFILE_ID }}
+          user: ${{ secrets.CENTRAL_REPOSITORY_USER }}
+          password: ${{ secrets.CENTRAL_REPOSITORY_PASS }}
           pgp-pub-key: ${{ secrets.PGP_PUBKEY_ID }}
           pgp-private-key: ${{ secrets.PGP_PRIVATE_KEY }}
           pgp-passphrase: ${{ secrets.PGP_PASSPHRASE }}
