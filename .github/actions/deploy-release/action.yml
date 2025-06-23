@@ -1,5 +1,5 @@
 name: Deploy Release to Maven Central
-description: "Deploys released artifacts to Maven Central repository."
+description: Deploys released artifacts to Maven Central repository.
 
 inputs:
   user:
@@ -51,7 +51,7 @@ runs:
     - name: Import GPG Key
       run: |
         echo "${{ inputs.pgp-private-key }}" | gpg --batch --passphrase "$PASSPHRASE" --import
-      shell: bash  
+      shell: bash
       env:
         PASSPHRASE: ${{ inputs.pgp-passphrase }}
 
