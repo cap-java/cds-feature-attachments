@@ -34,11 +34,11 @@
 
         <!-- Previous versions of CAP Java and cds-dk used for build and integrations tests -->
         <cds.services.previous-version>3.10.2</cds.services.previous-version>
-        <cds.install-cdsdk.pervious-version>8.9.4</cds.install-cdsdk.pervious-version>
+        <cds.install-cdsdk.pervious-version>8.9.5</cds.install-cdsdk.pervious-version>
 
         <!-- Current versions of CAP Java and cds-dk used for integrations tests only -->
         <cds.services.current-version>4.0.2</cds.services.current-version>
-        <cds.install-cdsdk.current-version>9.0.4</cds.install-cdsdk.current-version>
+        <cds.install-cdsdk.current-version>9.0.6</cds.install-cdsdk.current-version>
     </properties>
 
     <groupId>com.sap.cds</groupId>
