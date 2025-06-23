@@ -3,13 +3,13 @@ description: Builds a Maven project.
 
 inputs:
   java-version:
-    description: "The Java version the build shall run with."
+    description: The Java version the build will run with.
     required: true
   maven-version:
-    description: "The Maven version the build shall run with."
+    description: The Maven version the build will run with.
     required: true
   mutation-testing:
-    description: "Whether to run mutation testing."
+    description: Whether to run mutation testing or not.
     default: 'true'
     required: false
 

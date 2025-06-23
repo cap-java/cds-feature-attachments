@@ -3,25 +3,25 @@ description: Deploys released artifacts to Maven Central repository.
 
 inputs:
   user:
-    description: "The user used for the upload (technical user for maven central upload)"
+    description: The user used for the upload (technical user for maven central upload)
     required: true
   password:
-    description: "The password used for the upload (technical user for maven central upload)"
+    description: The password used for the upload (technical user for maven central upload)
     required: true
   pgp-pub-key:
-    description: "The public pgp key ID"
+    description: The public pgp key ID
     required: true
   pgp-private-key:
-    description: "The private pgp key"
+    description: The private pgp key
     required: true
   pgp-passphrase:
-    description: "The passphrase for pgp"
+    description: The passphrase for pgp
     required: true
   revision:
-    description: "The revision of cds-feature-attachments"
+    description: The revision of cds-feature-attachments
     required: true
   maven-version:
-    description: "The Maven version the build shall run with."
+    description: The Maven version the build will run with.
     required: true
 
 runs:

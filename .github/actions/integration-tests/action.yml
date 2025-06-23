@@ -3,10 +3,10 @@ description: Run integration tests with the current version of CAP Java using Ma
 
 inputs:
   java-version:
-    description: "The Java version the build shall run with."
+    description: The Java version the build shall run with.
     required: true
   maven-version:
-    description: "The Maven version the build shall run with."
+    description: The Maven version the build shall run with.
     required: true
 
 runs:
@@ -24,6 +24,6 @@ runs:
       with:
         maven-version: ${{ inputs.maven-version }}
 
-    - name: Integration Tests
-      run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml -P current -Dcds.install-cdsdk.force=true
+    - name: Integration Tests with current version of CAP Java
+      run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml -P current
       shell: bash
