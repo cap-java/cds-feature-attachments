@@ -25,5 +25,5 @@ runs:
         maven-version: ${{ inputs.maven-version }}
 
     - name: Integration Tests
-      run: mvn clean verify -f ./integration-tests/pom.xml -P current -Dcds.install-cdsdk.force=true
+      run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml -P current -Dcds.install-cdsdk.force=true
       shell: bash

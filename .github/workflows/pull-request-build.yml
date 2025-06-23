@@ -25,6 +25,7 @@ jobs:
         with:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
+
       - name: Integration Tests
         uses: ./.github/actions/integration-tests
         with:
