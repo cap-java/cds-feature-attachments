@@ -30,7 +30,7 @@
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
         <cds.services.version>${cds.services.previous-version}</cds.services.version>
-        <cds.install-cdsdk.version>${cds.install-cdsdk.pervious-version}</cds.install-cdsdk.version>
+        <cds.cdsdk-version>${cds.install-cdsdk.pervious-version}</cds.cdsdk-version>
 
         <!-- Previous versions of CAP Java and cds-dk used for build and integrations tests -->
         <cds.services.previous-version>3.10.2</cds.services.previous-version>
