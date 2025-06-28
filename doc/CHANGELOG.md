@@ -6,13 +6,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.0.10 - tbd.
+## Version 1.1.0 - tbd.
 
 ### Added
 
+- Run integration tests also with CAP Java 4.x to ensure compatibility with latest available version.
 
 ### Changed
 
+- Bumped minimum required versions of CAP Java to 3.10.2
 
 ### Fixed
 

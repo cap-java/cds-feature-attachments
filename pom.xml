@@ -23,14 +23,22 @@
     </developers>
 
     <properties>
-        <revision>1.0.10-SNAPSHOT</revision>
+        <revision>1.1.0-SNAPSHOT</revision>
         <java.version>17</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
-        <cds.services.version>2.10.7</cds.services.version>
-        <cds.install-cdsdk.version>7.9.9</cds.install-cdsdk.version>
+        <cds.services.version>${cds.services.previous-version}</cds.services.version>
+        <cds.cdsdk-version>${cds.cdsdk.pervious-version}</cds.cdsdk-version>
+
+        <!-- Previous versions of CAP Java and cds-dk used for build and integrations tests -->
+        <cds.services.previous-version>3.10.2</cds.services.previous-version>
+        <cds.cdsdk.pervious-version>8.9.5</cds.cdsdk.pervious-version>
+
+        <!-- Current versions of CAP Java and cds-dk used for integrations tests only -->
+        <cds.services.current-version>4.0.2</cds.services.current-version>
+        <cds.cdsdk.current-version>9.0.6</cds.cdsdk.current-version>
     </properties>
 
     <groupId>com.sap.cds</groupId>

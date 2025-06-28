@@ -195,13 +195,6 @@
                     </execution>
 
                     <execution>
-                        <id>cds.install-cdsdk</id>
-                        <goals>
-                            <goal>install-cdsdk</goal>
-                        </goals>
-                    </execution>
-
-                    <execution>
                         <id>cds.build</id>
                         <goals>
                             <goal>cds</goal>

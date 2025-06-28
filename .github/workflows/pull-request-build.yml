@@ -26,6 +26,12 @@ jobs:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
 
+      - name: Integration Tests
+        uses: ./.github/actions/integration-tests
+        with:
+          java-version: ${{ matrix.java-version }}
+          maven-version: ${{ env.MAVEN_VERSION }}
+
       - name: SonarQube Scan
         uses: ./.github/actions/scan-with-sonar
         if: ${{ matrix.java-version == 17 }}
