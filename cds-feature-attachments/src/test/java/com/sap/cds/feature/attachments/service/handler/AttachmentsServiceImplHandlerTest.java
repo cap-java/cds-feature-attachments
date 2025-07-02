@@ -53,7 +53,7 @@ class AttachmentsServiceImplHandlerTest {
 		createContext.setAttachmentIds(Map.of(Attachments.ID, attachmentId, "OtherId", "OtherID value"));
 		createContext.setData(MediaData.create());
 		createContext.setAttachmentEntity(mock(CdsEntity.class));
-		ChangeSetContextImpl.open();
+		ChangeSetContextImpl.open(false);
 
 		cut.createAttachment(createContext);
 
@@ -147,7 +147,7 @@ class AttachmentsServiceImplHandlerTest {
 		createContext.setAttachmentIds(Map.of(Attachments.ID, "contentId"));
 		createContext.setData(MediaData.create());
 		createContext.setAttachmentEntity(entity);
-		ChangeSetContextImpl.open();
+		ChangeSetContextImpl.open(false);
 
 		cut.createAttachment(createContext);
 

@@ -55,4 +55,14 @@
             </plugin>
         </plugins>
     </build>
+    
+    <profiles>
+        <profile>
+            <id>latest-test-version</id>
+            <properties>
+                <cds.services.version>${cds.services.latest-test-version}</cds.services.version>
+                <cds.cdsdk-version>${cds.cdsdk.latest-test-version}</cds.cdsdk-version>
+            </properties>
+        </profile>
+    </profiles>
 </project>

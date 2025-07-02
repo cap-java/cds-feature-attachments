@@ -21,6 +21,8 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMa
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.environment.CdsEnvironment;
+import com.sap.cds.services.environment.CdsProperties;
 import com.sap.cds.services.handler.Handler;
 import com.sap.cds.services.impl.ServiceSPI;
 import com.sap.cds.services.request.ModifiableUserInfo;
@@ -37,7 +39,11 @@ class AttachmentsServiceImplTest {
 	void setup() {
 		cut = new AttachmentsServiceImpl();
 
+		CdsEnvironment env = mock(CdsEnvironment.class);
+		CdsProperties props = new CdsProperties();
+		when(env.getCdsProperties()).thenReturn(props);
 		CdsRuntime runtime = mock(CdsRuntime.class);
+		when(runtime.getEnvironment()).thenReturn(env);
 		handler = mock(Handler.class);
 		serviceSpi = (ServiceSPI) cut.getDelegatedService();
 		serviceSpi.setCdsRuntime(runtime);

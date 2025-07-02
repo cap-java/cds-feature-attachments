@@ -3,10 +3,10 @@ description: Updates the revision property in the POM file with the new release 
 
 inputs:
   java-version:
-    description: "The Java version the build shall run with."
+    description: The Java version the build shall run with.
     required: true
   maven-version:
-    description: "The Maven version the build shall run with."
+    description: The Maven version the build shall run with.
     required: true
 
 runs:

@@ -79,13 +79,6 @@
                     </execution>
 
                     <execution>
-                        <id>cds.install-cdsdk</id>
-                        <goals>
-                            <goal>install-cdsdk</goal>
-                        </goals>
-                    </execution>
-
-                    <execution>
                         <id>cds.resolve</id>
                         <goals>
                             <goal>resolve</goal>
