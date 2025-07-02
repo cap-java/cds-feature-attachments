@@ -29,16 +29,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
-        <cds.services.version>${cds.services.previous-version}</cds.services.version>
-        <cds.cdsdk-version>${cds.cdsdk.pervious-version}</cds.cdsdk-version>
 
-        <!-- Previous versions of CAP Java and cds-dk used for build and integrations tests -->
-        <cds.services.previous-version>3.10.2</cds.services.previous-version>
-        <cds.cdsdk.pervious-version>8.9.5</cds.cdsdk.pervious-version>
+        <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
+        <cds.services.version>3.10.2</cds.services.version>
+        <cds.cdsdk-version>8.9.5</cds.cdsdk-version>
 
-        <!-- Current versions of CAP Java and cds-dk used for integrations tests only -->
-        <cds.services.current-version>4.0.2</cds.services.current-version>
-        <cds.cdsdk.current-version>9.0.6</cds.cdsdk.current-version>
+        <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
+        <cds.services.latest-test-version>4.0.2</cds.services.latest-test-version>
+        <cds.cdsdk.latest-test-version>9.0.6</cds.cdsdk.latest-test-version>
     </properties>
 
     <groupId>com.sap.cds</groupId>

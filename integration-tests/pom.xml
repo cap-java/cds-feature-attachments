@@ -58,10 +58,10 @@
     
     <profiles>
         <profile>
-            <id>current</id>
+            <id>latest-test-version</id>
             <properties>
-                <cds.services.version>${cds.services.current-version}</cds.services.version>
-                <cds.cdsdk-version>${cds.cdsdk.current-version}</cds.cdsdk-version>
+                <cds.services.version>${cds.services.latest-test-version}</cds.services.version>
+                <cds.cdsdk-version>${cds.cdsdk.latest-test-version}</cds.cdsdk-version>
             </properties>
         </profile>
     </profiles>
