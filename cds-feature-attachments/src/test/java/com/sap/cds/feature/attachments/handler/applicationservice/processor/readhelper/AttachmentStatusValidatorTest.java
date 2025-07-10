@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator;
+package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -10,18 +10,16 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.exception.AttachmentStatusException;
 import com.sap.cds.feature.attachments.helper.LogObserver;
-import com.sap.cds.feature.attachments.utilities.AttachmentErrorStatuses;
 
-class DefaultAttachmentStatusValidatorTest {
+class AttachmentStatusValidatorTest {
 
-	private DefaultAttachmentStatusValidator cut;
+	private AttachmentStatusValidator cut;
 	private LogObserver observer;
 
 	@BeforeEach
 	void setup() {
-		cut = new DefaultAttachmentStatusValidator();
+		cut = new AttachmentStatusValidator();
 		observer = LogObserver.create(cut.getClass().getName());
 	}
 

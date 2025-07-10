@@ -6,17 +6,32 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.0.8 - tbd.
+## Version 1.1.0 - tbd.
 
 ### Added
+
+- Run integration tests also with CAP Java 4.x to ensure compatibility with latest available version.
+
+### Changed
+
+- Bumped minimum required versions of CAP Java to 3.10.2
+
+### Fixed
+
+## Version 1.0.9 - 2025-06-06
+
+### Changed
+
+- [Introduced DraftUtils](https://github.com/cap-java/cds-feature-attachments/pull/454) to handle draft related functionality in a single place.
+- Migrated deployment of `cds-feature-attachments` from [OSS](https://oss.sonatype.org) to [Central Portal](https://central.sonatype.com/).
+
+## Version 1.0.8 - 2025-06-04
 
 ### Changed
 
 - Simplified code base by removing classes with only a few lines of code that can be moved.
 - chore: [Tidy up several pom.xml](https://github.com/cap-java/cds-feature-attachments/pull/432) files to make them more manageable
 - [Improved initialization](https://github.com/cap-java/cds-feature-attachments/pull/403) of Malware Scanner Service.
-
-### Fixed
 
 ## Version 1.0.7 - 2025-02-28
 

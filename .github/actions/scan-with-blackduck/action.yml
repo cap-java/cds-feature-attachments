@@ -1,19 +1,19 @@
-name: "Scan with BlackDuck"
-description: "Scans the project with BlackDuck"
+name: Scan with BlackDuck
+description: Scans the project with BlackDuck
 
 inputs:
   blackduck_token:
-    description: "The token to use for BlackDuck authentication"
+    description: The token to use for BlackDuck authentication
     required: true
   github_token:
-    description: "The token to use for GitHub authentication"
+    description: The token to use for GitHub authentication
     required: true
   java-version:
-    description: "The version of Java to use"
+    description: The version of Java to use
     default: '17'
     required: false
   maven-version:
-    description: "The Maven version the build shall run with."
+    description: The Maven version the build shall run with.
     required: true
 
 runs:
@@ -26,7 +26,7 @@ runs:
         distribution: sapmachine
         cache: maven
 
-    - name: Setup Maven ${{ inputs.maven-version }}
+    - name: Set up Maven ${{ inputs.maven-version }}
       uses: stCarolas/setup-maven@v5
       with:
         maven-version: ${{ inputs.maven-version }}

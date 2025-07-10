@@ -20,7 +20,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.UpdateAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.validator.DefaultAttachmentStatusValidator;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.CreationChangeSetListener;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
@@ -36,9 +36,9 @@ import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactio
 import com.sap.cds.feature.attachments.service.malware.AttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
-import com.sap.cds.feature.attachments.service.malware.client.HttpClientProviderFactory;
+import com.sap.cds.feature.attachments.service.malware.client.HttpClientProvider;
 import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClient;
-import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClientProviderFactory;
+import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClientProvider;
 import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.draft.DraftService;
@@ -112,7 +112,7 @@ public class Registration implements CdsRuntimeConfiguration {
 			configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 			configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
 			var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
-			configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new DefaultAttachmentStatusValidator(), scanRunner));
+			configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new AttachmentStatusValidator(), scanRunner));
 		} else {
 			logger.debug("No application service is available. Application service event handlers will not be registered.");
 		}
@@ -143,14 +143,14 @@ public class Registration implements CdsRuntimeConfiguration {
 		if (bindingOpt.isPresent()) {
 			ServiceBinding binding = bindingOpt.get();
 			ConnectionPool connectionPool = getConnectionPool(environment);
-			HttpClientProviderFactory clientProviderFactory = new MalwareScanClientProviderFactory(binding,
+			HttpClientProvider clientProvider = new MalwareScanClientProvider(binding,
 					connectionPool);
 			if (logger.isInfoEnabled()) {
 				logger.info(
 						"Using Malware Scanning service binding with name '{}' and plan '{}' for malware scanning of attachments.",
 						binding.getName().orElse("unknown"), binding.getServicePlan().orElse("unknown"));
 			}
-			return new DefaultMalwareScanClient(clientProviderFactory);
+			return new DefaultMalwareScanClient(clientProvider);
 		}
 
 		logger.info("No Malware Scanning service binding found, malware scanning is disabled.");

@@ -27,7 +27,6 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
-import com.sap.cds.feature.attachments.handler.draftservice.constants.DraftConstants;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
@@ -76,13 +75,13 @@ class DraftPatchAttachmentsHandlerTest {
 
 		verify(persistence).run(selectCaptor.capture());
 		var select = selectCaptor.getValue();
-		assertThat(select.from().toString()).contains(Attachment_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX);
+		assertThat(select.from().toString()).contains(Attachment_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX);
 		assertThat(select.getLock()).isEmpty();
 	}
 
 	@Test
 	void draftEntityUsed() {
-		var draftAttachmentName = Attachment_.CDS_NAME + DraftConstants.DRAFT_TABLE_POSTFIX;
+		var draftAttachmentName = Attachment_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX;
 		getEntityAndMockContext(draftAttachmentName);
 		var attachment = Attachments.create();
 		attachment.setContent(mock(InputStream.class));

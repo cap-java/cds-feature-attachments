@@ -88,6 +88,8 @@
     </dependencies>
 
     <build>
+        <!-- The deploy requires a stable artifact name -->
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.pitest</groupId>
@@ -118,7 +120,7 @@
                     <dependency>
                         <groupId>org.pitest</groupId>
                         <artifactId>pitest-junit5-plugin</artifactId>
-                        <version>1.2.2</version>
+                        <version>1.2.3</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -191,13 +193,6 @@
                     </execution>
 
                     <execution>
-                        <id>cds.install-cdsdk</id>
-                        <goals>
-                            <goal>install-cdsdk</goal>
-                        </goals>
-                    </execution>
-
-                    <execution>
                         <id>cds.build</id>
                         <goals>
                             <goal>cds</goal>
@@ -227,6 +222,7 @@
                             <goal>cds</goal>
                         </goals>
                         <configuration>
+                            <skip>${maven.test.skip}</skip>
                             <workingDirectory>./src/test/resources/cds</workingDirectory>
                             <commands>
                                 <command>build --for java --src . --dest ../../gen</command>
@@ -241,6 +237,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
+                            <skip>${maven.test.skip}</skip>
                             <codeOutputDirectory>${project.basedir}/${test-generation-folder}/cds4j</codeOutputDirectory>
                             <basePackage>${generation-package}.test.cds4j</basePackage>
                             <testSources>true</testSources>

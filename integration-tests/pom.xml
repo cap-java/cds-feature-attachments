@@ -25,7 +25,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.4.5</version>
+                <version>3.5.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -55,4 +55,14 @@
             </plugin>
         </plugins>
     </build>
+    
+    <profiles>
+        <profile>
+            <id>latest-test-version</id>
+            <properties>
+                <cds.services.version>${cds.services.latest-test-version}</cds.services.version>
+                <cds.cdsdk-version>${cds.cdsdk.latest-test-version}</cds.cdsdk-version>
+            </properties>
+        </profile>
+    </profiles>
 </project>
