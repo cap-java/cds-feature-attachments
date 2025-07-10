@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.fs.handler;
+package com.sap.cds.feature.attachments.oss.handler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,7 +39,7 @@ class FSAttachmentsServiceHandlerTest {
 
 	private static final String TEST_CONTENT = "Hello World !!";
 
-	private static FSAttachmentsServiceHandler handler;
+	private static OSSAttachmentsServiceHandler handler;
 
 	@TempDir(cleanup = CleanupMode.ALWAYS)
 	private static Path rootFolder;
@@ -48,7 +48,7 @@ class FSAttachmentsServiceHandlerTest {
 
 	@BeforeAll
 	static void setUpBeforeClass() throws IOException {
-		handler = new FSAttachmentsServiceHandler(rootFolder);
+		handler = new OSSAttachmentsServiceHandler(rootFolder);
 		entity = mock(CdsEntity.class);
 		when(entity.getQualifiedName()).thenReturn("test.Attachments");
 	}

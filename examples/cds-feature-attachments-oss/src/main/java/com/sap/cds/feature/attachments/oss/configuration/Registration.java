@@ -1,11 +1,11 @@
-package com.sap.cds.feature.attachments.fs.configuration;
+package com.sap.cds.feature.attachments.oss.configuration;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
 
-import com.sap.cds.feature.attachments.fs.handler.FSAttachmentsServiceHandler;
+import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
 import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 
@@ -20,9 +20,9 @@ public class Registration implements CdsRuntimeConfiguration {
 		Path rootFolder = tmpPath.resolve("com.sap.cds.cds-feature-attachments-fs");
 
 		try {
-			configurer.eventHandler(new FSAttachmentsServiceHandler(rootFolder));
+			configurer.eventHandler(new OSSAttachmentsServiceHandler(rootFolder));
 		} catch (IOException e) {
-			throw new IllegalStateException("Error while creating the FSAttachmentsServiceHandler", e);
+			throw new IllegalStateException("Error while creating the OSSAttachmentsServiceHandler", e);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /**************************************************************************
  * (C) 2019-2024 SAP SE or an SAP affiliate company. All rights reserved. *
  **************************************************************************/
-package com.sap.cds.feature.attachments.fs.handler;
+package com.sap.cds.feature.attachments.oss.handler;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,19 +29,19 @@ import com.sap.cds.services.handler.annotations.ServiceName;
  * This class is an event handler that is called when an attachment is created, marked as deleted, restored or read.
  */
 @ServiceName(value = "*", type = AttachmentService.class)
-public class FSAttachmentsServiceHandler implements EventHandler {
+public class OSSAttachmentsServiceHandler implements EventHandler {
 
-	private static final Logger logger = LoggerFactory.getLogger(FSAttachmentsServiceHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(OSSAttachmentsServiceHandler.class);
 
 	private final Path rootFolder;
 
 	/**
-	 * Creates a new FSAttachmentsServiceHandler with the given root folder.
+	 * Creates a new OSSAttachmentsServiceHandler with the given root folder.
 	 * 
 	 * @param rootFolder the root folder where the attachments are stored
 	 * @throws IOException if the root folder cannot be created
 	 */
-	public FSAttachmentsServiceHandler(Path rootFolder) throws IOException {
+	public OSSAttachmentsServiceHandler(Path rootFolder) throws IOException {
 		this.rootFolder = rootFolder;
 		if (!Files.exists(this.rootFolder)) {
 			Files.createDirectories(this.rootFolder);
