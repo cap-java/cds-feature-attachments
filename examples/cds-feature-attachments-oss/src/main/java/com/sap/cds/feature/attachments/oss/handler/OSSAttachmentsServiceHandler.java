@@ -50,7 +50,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 
 	@On
 	void createAttachment(AttachmentCreateEventContext context) throws IOException {
-		logger.info("FS Attachment Service handler called for creating attachment for entity name: {}",
+		logger.info("OSS Attachment Service handler called for creating attachment for entity name: {}",
 				context.getAttachmentEntity().getQualifiedName());
 
 		String contentId = (String) context.getAttachmentIds().get(Attachments.ID);
@@ -83,7 +83,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 
 	@On
 	void restoreAttachment(AttachmentRestoreEventContext context) {
-		logger.info("FS Attachment Service handler called for restoring attachment for timestamp: {}",
+		logger.info("OSS Attachment Service handler called for restoring attachment for timestamp: {}",
 				context.getRestoreTimestamp());
 
 		// nothing to do as data are stored in the database and handled by the database
@@ -92,7 +92,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 
 	@On
 	void readAttachment(AttachmentReadEventContext context) throws IOException {
-		logger.info("FS Attachment Service handler called for reading attachment with document id: {}",
+		logger.info("OSS Attachment Service handler called for reading attachment with document id: {}",
 				context.getContentId());
 		InputStream fileInputStream = Files.newInputStream(getContentPath(context, context.getContentId()));
 		context.getData().setContent(fileInputStream);

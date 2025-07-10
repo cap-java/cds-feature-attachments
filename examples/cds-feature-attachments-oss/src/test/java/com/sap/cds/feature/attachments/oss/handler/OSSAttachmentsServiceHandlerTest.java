@@ -35,7 +35,7 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRe
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.request.UserInfo;
 
-class FSAttachmentsServiceHandlerTest {
+class OSSAttachmentsServiceHandlerTest {
 
 	private static final String TEST_CONTENT = "Hello World !!";
 
