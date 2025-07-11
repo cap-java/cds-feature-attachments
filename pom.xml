@@ -50,6 +50,7 @@
 
     <modules>
         <module>cds-feature-attachments</module>
+        <module>examples/cds-feature-attachments-fs</module>
         <module>integration-tests</module>
     </modules>
 
@@ -85,6 +86,20 @@
                 <version>5.18.0</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>4.3.0</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.5.18</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
