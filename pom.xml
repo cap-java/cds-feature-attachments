@@ -31,12 +31,12 @@
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
         <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
-        <cds.services.version>3.10.2</cds.services.version>
-        <cds.cdsdk-version>8.9.6</cds.cdsdk-version>
+        <cds.services.version>3.10.3</cds.services.version> <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
+        <cds.cdsdk-version>8.9.6</cds.cdsdk-version> <!-- https://www.npmjs.com/package/@sap/cds-dk?activeTab=versions -->
 
         <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
-        <cds.services.latest-test-version>4.1.0</cds.services.latest-test-version>
-        <cds.cdsdk.latest-test-version>9.1.0</cds.cdsdk.latest-test-version>
+        <cds.services.latest-test-version>4.1.1</cds.services.latest-test-version>
+        <cds.cdsdk.latest-test-version>9.1.1</cds.cdsdk.latest-test-version>
     </properties>
 
     <groupId>com.sap.cds</groupId>
@@ -91,13 +91,6 @@
                 <groupId>com.sap.cds</groupId>
                 <artifactId>cds-feature-attachments</artifactId>
                 <version>${revision}</version>
-            </dependency>
-
-            <!-- Mitigate vulnerabilities in commons-codec:commons-codec:1.11 -->
-            <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>1.18.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
