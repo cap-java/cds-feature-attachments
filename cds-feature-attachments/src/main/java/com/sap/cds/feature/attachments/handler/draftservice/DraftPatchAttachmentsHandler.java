@@ -8,7 +8,7 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DefaultModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
@@ -37,9 +37,9 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 	private static final Logger logger = LoggerFactory.getLogger(DraftPatchAttachmentsHandler.class);
 
 	private final PersistenceService persistence;
-	private final ModifyAttachmentEventFactory eventFactory;
+	private final DefaultModifyAttachmentEventFactory eventFactory;
 
-	public DraftPatchAttachmentsHandler(PersistenceService persistence, ModifyAttachmentEventFactory eventFactory) {
+	public DraftPatchAttachmentsHandler(PersistenceService persistence, DefaultModifyAttachmentEventFactory eventFactory) {
 		this.persistence = persistence;
 		this.eventFactory = eventFactory;
 	}
