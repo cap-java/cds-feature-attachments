@@ -9,6 +9,8 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.util.Objects.requireNonNull;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
@@ -26,23 +28,23 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 
 	private static final Logger logger = LoggerFactory.getLogger(MarkAsDeletedAttachmentEvent.class);
 
-	private final AttachmentService outboxedAttachmentService;
+	private final AttachmentService attachmentService;
 
-	public MarkAsDeletedAttachmentEvent(AttachmentService outboxedAttachmentService) {
-		this.outboxedAttachmentService = outboxedAttachmentService;
+	public MarkAsDeletedAttachmentEvent(AttachmentService attachmentService) {
+		this.attachmentService = requireNonNull(attachmentService, "attachmentService must not be null");
 	}
 
 	@Override
 	public InputStream processEvent(Path path, InputStream content, CdsData existingData, EventContext eventContext) {
-		var qualifiedName = eventContext.getTarget().getQualifiedName();
+		String qualifiedName = eventContext.getTarget().getQualifiedName();
 		logger.debug("Processing the event for calling attachment service with mark as delete event for entity {}",
 				qualifiedName);
 
 		if (ApplicationHandlerHelper.doesContentIdExistsBefore(existingData) && !DraftService.EVENT_DRAFT_PATCH.equals(
 				eventContext.getEvent())) {
 			logger.debug("Calling attachment service with mark as delete event for entity {}", qualifiedName);
-			var contentId = (String) existingData.get(Attachments.CONTENT_ID);
-			outboxedAttachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, eventContext.getUserInfo()));
+			String contentId = (String) existingData.get(Attachments.CONTENT_ID);
+			attachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, eventContext.getUserInfo()));
 		} else {
 			logger.debug(
 					"Do NOT call attachment service with mark as delete event for entity {} as no document id found in existing data and event is DRAFT_PATCH event",

@@ -11,6 +11,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.util.Objects.requireNonNull;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
@@ -33,14 +35,8 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 	private final ListenerProvider listenerProvider;
 
 	public CreateAttachmentEvent(AttachmentService attachmentService, ListenerProvider listenerProvider) {
-		this.attachmentService = attachmentService;
-		this.listenerProvider = listenerProvider;
-	}
-
-	private static Optional<String> getFieldValue(String fieldName, Map<String, Object> values, CdsData existingData) {
-		var annotationValue = values.get(fieldName);
-		var value = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(fieldName);
-		return Optional.ofNullable((String) value);
+		this.attachmentService = requireNonNull(attachmentService, "attachmentService must not be null");
+		this.listenerProvider = requireNonNull(listenerProvider, "listenerProvider must not be null");
 	}
 
 	@Override
@@ -63,4 +59,9 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		return result.isInternalStored() ? content : null;
 	}
 
+	private static Optional<String> getFieldValue(String fieldName, Map<String, Object> values, CdsData existingData) {
+		var annotationValue = values.get(fieldName);
+		var value = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(fieldName);
+		return Optional.ofNullable((String) value);
+	}
 }

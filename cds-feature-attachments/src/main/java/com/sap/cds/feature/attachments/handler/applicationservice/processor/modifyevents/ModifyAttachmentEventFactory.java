@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.Optional;
 
+import static java.util.Objects.requireNonNull;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -25,17 +27,17 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
  */
 public class ModifyAttachmentEventFactory {
 
-	private final ModifyAttachmentEvent createEvent;
-	private final ModifyAttachmentEvent updateEvent;
-	private final ModifyAttachmentEvent deleteContentEvent;
-	private final ModifyAttachmentEvent doNothingEvent;
+	private final CreateAttachmentEvent createEvent;
+	private final UpdateAttachmentEvent updateEvent;
+	private final MarkAsDeletedAttachmentEvent deleteContentEvent;
+	private final DoNothingAttachmentEvent doNothingEvent;
 
-	public ModifyAttachmentEventFactory(ModifyAttachmentEvent createEvent, ModifyAttachmentEvent updateEvent,
-			ModifyAttachmentEvent deleteContentEvent, ModifyAttachmentEvent doNothingEvent) {
-		this.createEvent = createEvent;
-		this.updateEvent = updateEvent;
-		this.deleteContentEvent = deleteContentEvent;
-		this.doNothingEvent = doNothingEvent;
+	public ModifyAttachmentEventFactory(CreateAttachmentEvent createEvent, UpdateAttachmentEvent updateEvent,
+			MarkAsDeletedAttachmentEvent deleteContentEvent, DoNothingAttachmentEvent doNothingEvent) {
+		this.createEvent = requireNonNull(createEvent, "createEvent must not be null");
+		this.updateEvent = requireNonNull(updateEvent, "updateEvent must not be null");
+		this.deleteContentEvent = requireNonNull(deleteContentEvent, "deleteContentEvent must not be null");
+		this.doNothingEvent = requireNonNull(doNothingEvent, "doNothingEvent must not be null");
 	}
 
 	/**
