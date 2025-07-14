@@ -3,10 +3,7 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
-import java.io.InputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
@@ -20,6 +17,9 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import java.io.InputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class {@link DeleteAttachmentsHandler} is an event handler that is responsible for deleting attachments for
@@ -33,10 +33,9 @@ public class DeleteAttachmentsHandler implements EventHandler {
 	private final AttachmentsReader attachmentsReader;
 	private final MarkAsDeletedAttachmentEvent deleteEvent;
 
-	public DeleteAttachmentsHandler(AttachmentsReader attachmentsReader,
-			MarkAsDeletedAttachmentEvent deleteEvent) {
-		this.attachmentsReader = attachmentsReader;
-		this.deleteEvent = deleteEvent;
+	public DeleteAttachmentsHandler(AttachmentsReader attachmentsReader, MarkAsDeletedAttachmentEvent deleteEvent) {
+		this.attachmentsReader = requireNonNull(attachmentsReader, "attachmentsReader must not be null");
+		this.deleteEvent = requireNonNull(deleteEvent, "deleteEvent must not be null");
 	}
 
 	@Before
@@ -46,10 +45,11 @@ public class DeleteAttachmentsHandler implements EventHandler {
 
 		var attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn());
 
-		Converter converter = (path, element, value) -> deleteEvent.processEvent(path,
-				(InputStream) value, CdsData.create(path.target().values()), context);
+		Converter converter = (path, element, value) -> deleteEvent.processEvent(path, (InputStream) value,
+				CdsData.create(path.target().values()), context);
 
-		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(attachments, context.getTarget());
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
+				.process(attachments, context.getTarget());
 	}
 
 }
