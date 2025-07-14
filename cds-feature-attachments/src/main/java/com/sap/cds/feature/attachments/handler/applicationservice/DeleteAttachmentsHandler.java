@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.services.cds.ApplicationService;
@@ -31,12 +31,12 @@ public class DeleteAttachmentsHandler implements EventHandler {
 	private static final Logger logger = LoggerFactory.getLogger(DeleteAttachmentsHandler.class);
 
 	private final AttachmentsReader attachmentsReader;
-	private final ModifyAttachmentEvent deleteContentAttachmentEvent;
+	private final MarkAsDeletedAttachmentEvent deleteEvent;
 
 	public DeleteAttachmentsHandler(AttachmentsReader attachmentsReader,
-			ModifyAttachmentEvent deleteContentAttachmentEvent) {
+			MarkAsDeletedAttachmentEvent deleteEvent) {
 		this.attachmentsReader = attachmentsReader;
-		this.deleteContentAttachmentEvent = deleteContentAttachmentEvent;
+		this.deleteEvent = deleteEvent;
 	}
 
 	@Before
@@ -46,7 +46,7 @@ public class DeleteAttachmentsHandler implements EventHandler {
 
 		var attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn());
 
-		Converter converter = (path, element, value) -> deleteContentAttachmentEvent.processEvent(path,
+		Converter converter = (path, element, value) -> deleteEvent.processEvent(path,
 				(InputStream) value, CdsData.create(path.target().values()), context);
 
 		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(attachments, context.getTarget());

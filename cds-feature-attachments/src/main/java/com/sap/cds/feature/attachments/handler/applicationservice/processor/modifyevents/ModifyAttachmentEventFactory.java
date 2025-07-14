@@ -29,14 +29,14 @@ public class ModifyAttachmentEventFactory {
 
 	private final CreateAttachmentEvent createEvent;
 	private final UpdateAttachmentEvent updateEvent;
-	private final MarkAsDeletedAttachmentEvent deleteContentEvent;
+	private final MarkAsDeletedAttachmentEvent deleteEvent;
 	private final DoNothingAttachmentEvent doNothingEvent;
 
 	public ModifyAttachmentEventFactory(CreateAttachmentEvent createEvent, UpdateAttachmentEvent updateEvent,
-			MarkAsDeletedAttachmentEvent deleteContentEvent, DoNothingAttachmentEvent doNothingEvent) {
+			MarkAsDeletedAttachmentEvent deleteEvent, DoNothingAttachmentEvent doNothingEvent) {
 		this.createEvent = requireNonNull(createEvent, "createEvent must not be null");
 		this.updateEvent = requireNonNull(updateEvent, "updateEvent must not be null");
-		this.deleteContentEvent = requireNonNull(deleteContentEvent, "deleteContentEvent must not be null");
+		this.deleteEvent = requireNonNull(deleteEvent, "deleteEvent must not be null");
 		this.doNothingEvent = requireNonNull(doNothingEvent, "doNothingEvent must not be null");
 	}
 
@@ -62,7 +62,7 @@ public class ModifyAttachmentEventFactory {
 			event = updateEvent;
 		}
 		if (Objects.nonNull(existingContentId) && !contentId.equals(existingContentId) && Objects.isNull(content)) {
-			event = deleteContentEvent;
+			event = deleteEvent;
 		}
 		if (Objects.nonNull(existingContentId) && !contentId.equals(existingContentId) && Objects.nonNull(content)) {
 			event = updateEvent;
@@ -77,7 +77,7 @@ public class ModifyAttachmentEventFactory {
 			if (Objects.nonNull(content)) {
 				event = updateEvent;
 			} else {
-				event = deleteContentEvent;
+				event = deleteEvent;
 			}
 		} else {
 			if (Objects.nonNull(content)) {

@@ -47,14 +47,14 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
 	private final ModifyAttachmentEventFactory eventFactory;
 	private final AttachmentsReader attachmentsReader;
-	private final AttachmentService outboxedAttachmentService;
+	private final AttachmentService attachmentService;
 	private final ThreadDataStorageReader storageReader;
 
 	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader,
-			AttachmentService outboxedAttachmentService, ThreadDataStorageReader storageReader) {
+			AttachmentService attachmentService, ThreadDataStorageReader storageReader) {
 		this.eventFactory = eventFactory;
 		this.attachmentsReader = attachmentsReader;
-		this.outboxedAttachmentService = outboxedAttachmentService;
+		this.attachmentService = attachmentService;
 		this.storageReader = storageReader;
 	}
 
@@ -110,7 +110,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 					updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
 			if (!entryExists) {
 				var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
-				outboxedAttachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
+				attachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
 			}
 		};
 		CdsDataProcessor.create().addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator).process(exitingDataList, entity);

@@ -24,12 +24,12 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
 	private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentEvent.class);
 
-	private final CreateAttachmentEvent createAttachmentEvent;
+	private final CreateAttachmentEvent createEvent;
 	private final MarkAsDeletedAttachmentEvent deleteAttachmentEvent;
 
-	public UpdateAttachmentEvent(CreateAttachmentEvent createAttachmentEvent,
+	public UpdateAttachmentEvent(CreateAttachmentEvent createEvent,
 			MarkAsDeletedAttachmentEvent deleteAttachmentEvent) {
-		this.createAttachmentEvent = requireNonNull(createAttachmentEvent, "createAttachmentEvent must not be null");
+		this.createEvent = requireNonNull(createEvent, "createEvent must not be null");
 		this.deleteAttachmentEvent = requireNonNull(deleteAttachmentEvent, "deleteAttachmentEvent must not be null");
 	}
 
@@ -39,7 +39,7 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 				path.target().entity().getQualifiedName());
 
 		deleteAttachmentEvent.processEvent(path, content, existingData, eventContext);
-		return createAttachmentEvent.processEvent(path, content, existingData, eventContext);
+		return createEvent.processEvent(path, content, existingData, eventContext);
 	}
 
 }

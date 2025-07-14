@@ -43,13 +43,12 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 					&& element.getName().equals(Attachments.CONTENT_ID);
 
 	private final AttachmentsReader attachmentsReader;
-	private final MarkAsDeletedAttachmentEvent deleteContentAttachmentEvent;
+	private final MarkAsDeletedAttachmentEvent deleteEvent;
 
 	public DraftCancelAttachmentsHandler(AttachmentsReader attachmentsReader,
-			MarkAsDeletedAttachmentEvent deleteContentAttachmentEvent) {
+			MarkAsDeletedAttachmentEvent deleteEvent) {
 		this.attachmentsReader = requireNonNull(attachmentsReader, "attachmentsReader must not be null");
-		this.deleteContentAttachmentEvent = requireNonNull(deleteContentAttachmentEvent,
-				"deleteContentAttachmentEvent must not be null");
+		this.deleteEvent = requireNonNull(deleteEvent, "deleteEvent must not be null");
 	}
 
 	@Before
@@ -74,7 +73,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			List<CdsData> activeCondensedAttachments) {
 		return (path, element, value) -> {
 			if (Boolean.FALSE.equals(path.target().values().get(Drafts.HAS_ACTIVE_ENTITY))) {
-				deleteContentAttachmentEvent.processEvent(path, null, CdsData.create(path.target().values()), context);
+				deleteEvent.processEvent(path, null, CdsData.create(path.target().values()), context);
 				return;
 			}
 			var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
@@ -82,8 +81,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 					.filter(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
 			existingEntry.ifPresent(entry -> {
 				if (!entry.get(Attachments.CONTENT_ID).equals(value)) {
-					deleteContentAttachmentEvent.processEvent(null, null, CdsData.create(path.target().values()),
-							context);
+					deleteEvent.processEvent(null, null, CdsData.create(path.target().values()), context);
 				}
 			});
 		};
