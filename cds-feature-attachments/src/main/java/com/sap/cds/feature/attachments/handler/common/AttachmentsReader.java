@@ -21,21 +21,21 @@ import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.persistence.PersistenceService;
 
 /**
- * The class {@link DefaultAttachmentsReader} is used to deep read attachments
+ * The class {@link AttachmentsReader} is used to deep read attachments
  * from the database for a determined path from the given entity to the media
  * entity. The class uses the {@link AssociationCascader} to find the entity
  * path.
  * <p>
  * The returned data is deep including the path structure to the media entity.
  */
-public class DefaultAttachmentsReader {
+public class AttachmentsReader {
 
-	private static final Logger logger = LoggerFactory.getLogger(DefaultAttachmentsReader.class);
+	private static final Logger logger = LoggerFactory.getLogger(AttachmentsReader.class);
 
 	private final AssociationCascader cascader;
 	private final PersistenceService persistence;
 
-	public DefaultAttachmentsReader(AssociationCascader cascader, PersistenceService persistence) {
+	public AttachmentsReader(AssociationCascader cascader, PersistenceService persistence) {
 		this.cascader = cascader;
 		this.persistence = persistence;
 	}

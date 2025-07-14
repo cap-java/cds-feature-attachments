@@ -31,7 +31,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
@@ -58,7 +58,7 @@ class UpdateAttachmentsHandlerTest {
 
 	private UpdateAttachmentsHandler cut;
 	private ModifyAttachmentEventFactory eventFactory;
-	private DefaultAttachmentsReader attachmentsReader;
+	private AttachmentsReader attachmentsReader;
 	private AttachmentService attachmentService;
 	private CdsUpdateEventContext updateContext;
 	private ModifyAttachmentEvent event;
@@ -75,7 +75,7 @@ class UpdateAttachmentsHandlerTest {
 	@BeforeEach
 	void setup() {
 		eventFactory = mock(ModifyAttachmentEventFactory.class);
-		attachmentsReader = mock(DefaultAttachmentsReader.class);
+		attachmentsReader = mock(AttachmentsReader.class);
 		attachmentService = mock(AttachmentService.class);
 		storageReader = mock(ThreadDataStorageReader.class);
 		cut = new UpdateAttachmentsHandler(eventFactory, attachmentsReader, attachmentService, storageReader);

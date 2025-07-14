@@ -38,7 +38,7 @@ import ch.qos.logback.classic.Level;
 
 class DefaultAttachmentsReaderTest {
 
-	private DefaultAttachmentsReader cut;
+	private AttachmentsReader cut;
 	private AssociationCascader cascader;
 	private PersistenceService persistenceService;
 	private CdsEntity entity;
@@ -52,7 +52,7 @@ class DefaultAttachmentsReaderTest {
 		cascader = mock(AssociationCascader.class);
 		persistenceService = mock(PersistenceService.class);
 
-		cut = new DefaultAttachmentsReader(cascader, persistenceService);
+		cut = new AttachmentsReader(cascader, persistenceService);
 
 		entity = mock(CdsEntity.class);
 		model = mock(CdsModel.class);
