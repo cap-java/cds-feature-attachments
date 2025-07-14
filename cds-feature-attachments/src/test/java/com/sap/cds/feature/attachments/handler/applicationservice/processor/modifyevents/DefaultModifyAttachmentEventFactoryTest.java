@@ -17,7 +17,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 
 class DefaultModifyAttachmentEventFactoryTest {
 
-	private DefaultModifyAttachmentEventFactory cut;
+	private ModifyAttachmentEventFactory cut;
 	private ModifyAttachmentEvent createEvent;
 	private ModifyAttachmentEvent updateEvent;
 	private ModifyAttachmentEvent deleteContentEvent;
@@ -30,7 +30,7 @@ class DefaultModifyAttachmentEventFactoryTest {
 		deleteContentEvent = mock(ModifyAttachmentEvent.class);
 		doNothingEvent = mock(ModifyAttachmentEvent.class);
 
-		cut = new DefaultModifyAttachmentEventFactory(createEvent, updateEvent, deleteContentEvent, doNothingEvent);
+		cut = new ModifyAttachmentEventFactory(createEvent, updateEvent, deleteContentEvent, doNothingEvent);
 	}
 
 	@Test

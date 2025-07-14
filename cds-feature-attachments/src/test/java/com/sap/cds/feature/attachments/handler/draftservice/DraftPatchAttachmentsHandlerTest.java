@@ -25,7 +25,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DefaultModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.CqnSelect;
@@ -45,7 +45,7 @@ class DraftPatchAttachmentsHandlerTest {
 	private DraftPatchAttachmentsHandler cut;
 	private DraftPatchEventContext eventContext;
 	private PersistenceService persistence;
-	private DefaultModifyAttachmentEventFactory eventFactory;
+	private ModifyAttachmentEventFactory eventFactory;
 	private ModifyAttachmentEvent event;
 	private ArgumentCaptor<CqnSelect> selectCaptor;
 
@@ -57,7 +57,7 @@ class DraftPatchAttachmentsHandlerTest {
 	@BeforeEach
 	void setup() {
 		persistence = mock(PersistenceService.class);
-		eventFactory = mock(DefaultModifyAttachmentEventFactory.class);
+		eventFactory = mock(ModifyAttachmentEventFactory.class);
 		cut = new DraftPatchAttachmentsHandler(persistence, eventFactory);
 		eventContext = mock(DraftPatchEventContext.class);
 		event = mock(ModifyAttachmentEvent.class);

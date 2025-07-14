@@ -15,7 +15,7 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DefaultModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.reflect.CdsBaseType;
 import com.sap.cds.reflect.CdsEntity;
@@ -37,11 +37,11 @@ public class CreateAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(CreateAttachmentsHandler.class);
 
-	private final DefaultModifyAttachmentEventFactory eventFactory;
+	private final ModifyAttachmentEventFactory eventFactory;
 	private final ThreadDataStorageReader storageReader;
 	private final CdsDataProcessor processor = CdsDataProcessor.create();
 
-	public CreateAttachmentsHandler(DefaultModifyAttachmentEventFactory eventFactory, ThreadDataStorageReader storageReader) {
+	public CreateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, ThreadDataStorageReader storageReader) {
 		this.eventFactory = eventFactory;
 		this.storageReader = storageReader;
 	}
