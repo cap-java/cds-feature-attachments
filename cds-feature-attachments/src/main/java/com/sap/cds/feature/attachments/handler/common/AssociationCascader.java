@@ -12,9 +12,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sap.cds.feature.attachments.handler.common.model.AssociationIdentifier;
-import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;

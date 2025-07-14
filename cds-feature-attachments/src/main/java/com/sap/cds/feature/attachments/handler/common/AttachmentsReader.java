@@ -12,7 +12,6 @@ import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.Result;
-import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Expand;
 import com.sap.cds.ql.Select;

@@ -22,8 +22,6 @@ import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.common.model.AssociationIdentifier;
-import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
 import com.sap.cds.feature.attachments.helper.LogObserver;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Delete;
