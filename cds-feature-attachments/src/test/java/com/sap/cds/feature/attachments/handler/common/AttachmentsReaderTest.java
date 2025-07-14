@@ -36,10 +36,10 @@ import com.sap.cds.services.persistence.PersistenceService;
 import ch.qos.logback.classic.Level;
 
 
-class DefaultAttachmentsReaderTest {
+class AttachmentsReaderTest {
 
 	private AttachmentsReader cut;
-	private AssociationCascader cascader;
+	private DefaultAssociationCascader cascader;
 	private PersistenceService persistenceService;
 	private CdsEntity entity;
 	private CdsModel model;
@@ -49,7 +49,7 @@ class DefaultAttachmentsReaderTest {
 
 	@BeforeEach
 	void setup() {
-		cascader = mock(AssociationCascader.class);
+		cascader = mock(DefaultAssociationCascader.class);
 		persistenceService = mock(PersistenceService.class);
 
 		cut = new AttachmentsReader(cascader, persistenceService);

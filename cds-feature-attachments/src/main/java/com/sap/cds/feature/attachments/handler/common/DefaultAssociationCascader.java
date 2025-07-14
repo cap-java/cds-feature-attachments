@@ -26,11 +26,10 @@ import com.sap.cds.reflect.CdsModel;
  * The path information is returned in a node tree which starts from the given entity.
  * Only composition associations are considered.
  */
-public class DefaultAssociationCascader implements AssociationCascader {
+public class DefaultAssociationCascader {
 
 	private static final Logger logger = LoggerFactory.getLogger(DefaultAssociationCascader.class);
 
-	@Override
 	public NodeTree findEntityPath(CdsModel model, CdsEntity entity) {
 		logger.debug("Start finding path to attachments for entity {}", entity.getQualifiedName());
 		var firstList = new LinkedList<AssociationIdentifier>();

@@ -18,7 +18,7 @@ import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.services.runtime.CdsRuntime;
 
-class DefaultAssociationCascaderTest {
+class AssociationCascaderTest {
 
 	private static CdsRuntime runtime;
 	private DefaultAssociationCascader cut;
