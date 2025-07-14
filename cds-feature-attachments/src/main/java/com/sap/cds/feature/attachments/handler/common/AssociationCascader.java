@@ -21,14 +21,14 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 
 /**
- * The class {@link DefaultAssociationCascader} is used to find entity paths
+ * The class {@link AssociationCascader} is used to find entity paths
  * to all media resource entities for a given data model.
  * The path information is returned in a node tree which starts from the given entity.
  * Only composition associations are considered.
  */
-public class DefaultAssociationCascader {
+public class AssociationCascader {
 
-	private static final Logger logger = LoggerFactory.getLogger(DefaultAssociationCascader.class);
+	private static final Logger logger = LoggerFactory.getLogger(AssociationCascader.class);
 
 	public NodeTree findEntityPath(CdsModel model, CdsEntity entity) {
 		logger.debug("Start finding path to attachments for entity {}", entity.getQualifiedName());

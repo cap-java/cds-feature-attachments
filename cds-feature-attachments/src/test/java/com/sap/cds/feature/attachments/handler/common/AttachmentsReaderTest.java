@@ -39,7 +39,7 @@ import ch.qos.logback.classic.Level;
 class AttachmentsReaderTest {
 
 	private AttachmentsReader cut;
-	private DefaultAssociationCascader cascader;
+	private AssociationCascader cascader;
 	private PersistenceService persistenceService;
 	private CdsEntity entity;
 	private CdsModel model;
@@ -49,7 +49,7 @@ class AttachmentsReaderTest {
 
 	@BeforeEach
 	void setup() {
-		cascader = mock(DefaultAssociationCascader.class);
+		cascader = mock(AssociationCascader.class);
 		persistenceService = mock(PersistenceService.class);
 
 		cut = new AttachmentsReader(cascader, persistenceService);

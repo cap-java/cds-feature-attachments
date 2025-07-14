@@ -21,7 +21,7 @@ import com.sap.cds.services.runtime.CdsRuntime;
 class AssociationCascaderTest {
 
 	private static CdsRuntime runtime;
-	private DefaultAssociationCascader cut;
+	private AssociationCascader cut;
 
 	@BeforeAll
 	static void classSetup() {
@@ -30,7 +30,7 @@ class AssociationCascaderTest {
 
 	@BeforeEach
 	void setup() {
-		cut = new DefaultAssociationCascader();
+		cut = new AssociationCascader();
 	}
 
 	@Test

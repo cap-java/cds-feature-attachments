@@ -22,7 +22,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.CreationChangeSetListener;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.ListenerProvider;
-import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
+import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
@@ -101,7 +101,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		var deleteContentEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
 		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent,
 				outboxedAttachmentService);
-		var attachmentsReader = new AttachmentsReader(new DefaultAssociationCascader(), persistenceService);
+		var attachmentsReader = new AttachmentsReader(new AssociationCascader(), persistenceService);
 		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
 		// register event handlers for application service, if at least one application service is available
