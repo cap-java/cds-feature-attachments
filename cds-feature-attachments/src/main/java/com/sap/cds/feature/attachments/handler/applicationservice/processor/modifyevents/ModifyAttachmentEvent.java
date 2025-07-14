@@ -3,12 +3,11 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
-import java.io.InputStream;
-
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
+import java.io.InputStream;
 
 /**
  * The interface {@link ModifyAttachmentEvent} provides a method to process an event on the {@link AttachmentService}.

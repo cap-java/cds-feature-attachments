@@ -3,15 +3,14 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
-import java.io.InputStream;
-import java.util.Objects;
-import java.util.Optional;
-
 import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import java.io.InputStream;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The class {@link ModifyAttachmentEventFactory} is a factory class that creates the corresponding event for the
@@ -43,9 +42,9 @@ public class ModifyAttachmentEventFactory {
 	/**
 	 * Returns the event that should be executed based on the given parameters.
 	 * 
-	 * @param content        the optional content as {@link InputStream}
-	 * @param contentId      the optional content id
-	 * @param existingData   the existing {@link CdsData data}
+	 * @param content      the optional content as {@link InputStream}
+	 * @param contentId    the optional content id
+	 * @param existingData the existing {@link CdsData data}
 	 * @return the corresponding {@link ModifyAttachmentEvent} that should be executed
 	 */
 	public ModifyAttachmentEvent getEvent(InputStream content, String contentId, CdsData existingData) {
