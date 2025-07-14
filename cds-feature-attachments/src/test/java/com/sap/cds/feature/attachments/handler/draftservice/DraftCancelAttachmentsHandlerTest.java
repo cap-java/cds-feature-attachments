@@ -22,7 +22,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.Delete;
 import com.sap.cds.ql.cqn.CqnDelete;
@@ -36,7 +36,7 @@ class DraftCancelAttachmentsHandlerTest {
 	private static CdsRuntime runtime;
 
 	private DraftCancelAttachmentsHandler cut;
-	private AttachmentsReader attachmentsReader;
+	private DefaultAttachmentsReader attachmentsReader;
 	private MarkAsDeletedAttachmentEvent deleteContentAttachmentEvent;
 	private DraftCancelEventContext eventContext;
 	private ArgumentCaptor<CqnDelete> deleteArgumentCaptor;
@@ -49,7 +49,7 @@ class DraftCancelAttachmentsHandlerTest {
 
 	@BeforeEach
 	void setup() {
-		attachmentsReader = mock(AttachmentsReader.class);
+		attachmentsReader = mock(DefaultAttachmentsReader.class);
 		deleteContentAttachmentEvent = mock(MarkAsDeletedAttachmentEvent.class);
 		cut = new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentAttachmentEvent);
 

@@ -13,7 +13,7 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
 import com.sap.cds.services.handler.EventHandler;
@@ -30,10 +30,10 @@ public class DeleteAttachmentsHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(DeleteAttachmentsHandler.class);
 
-	private final AttachmentsReader attachmentsReader;
+	private final DefaultAttachmentsReader attachmentsReader;
 	private final ModifyAttachmentEvent deleteContentAttachmentEvent;
 
-	public DeleteAttachmentsHandler(AttachmentsReader attachmentsReader,
+	public DeleteAttachmentsHandler(DefaultAttachmentsReader attachmentsReader,
 			ModifyAttachmentEvent deleteContentAttachmentEvent) {
 		this.attachmentsReader = attachmentsReader;
 		this.deleteContentAttachmentEvent = deleteContentAttachmentEvent;

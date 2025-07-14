@@ -21,13 +21,14 @@ import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.persistence.PersistenceService;
 
 /**
- * The class {@link DefaultAttachmentsReader} is used to deep read attachments from the database
- * for a determined path from the given entity to the media entity.
- * The class uses the {@link AssociationCascader} to find the entity path.
+ * The class {@link DefaultAttachmentsReader} is used to deep read attachments
+ * from the database for a determined path from the given entity to the media
+ * entity. The class uses the {@link AssociationCascader} to find the entity
+ * path.
  * <p>
  * The returned data is deep including the path structure to the media entity.
  */
-public class DefaultAttachmentsReader implements AttachmentsReader {
+public class DefaultAttachmentsReader {
 
 	private static final Logger logger = LoggerFactory.getLogger(DefaultAttachmentsReader.class);
 
@@ -39,7 +40,6 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 		this.persistence = persistence;
 	}
 
-	@Override
 	public List<CdsData> readAttachments(CdsModel model, CdsEntity entity, CqnFilterableStatement statement) {
 		logger.debug("Start reading attachments for entity {}", entity.getQualifiedName());
 
@@ -64,8 +64,9 @@ public class DefaultAttachmentsReader implements AttachmentsReader {
 	}
 
 	private Expand<?> buildExpandFromTree(NodeTree node) {
-		return node.getChildren().isEmpty() ? CQL.to(node.getIdentifier().associationName()).expand() : CQL.to(
-				node.getIdentifier().associationName()).expand(node.getChildren().stream().map(this::buildExpandFromTree).toList());
+		return node.getChildren().isEmpty() ? CQL.to(node.getIdentifier().associationName()).expand()
+				: CQL.to(node.getIdentifier().associationName())
+						.expand(node.getChildren().stream().map(this::buildExpandFromTree).toList());
 	}
 
 	private void logResultData(CdsEntity entity, List<CdsData> cdsData) {

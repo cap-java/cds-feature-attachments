@@ -12,7 +12,7 @@ import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
@@ -42,10 +42,10 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			type) -> ApplicationHandlerHelper.isMediaEntity(path.target().type())
 					&& element.getName().equals(Attachments.CONTENT_ID);
 
-	private final AttachmentsReader attachmentsReader;
+	private final DefaultAttachmentsReader attachmentsReader;
 	private final MarkAsDeletedAttachmentEvent deleteContentAttachmentEvent;
 
-	public DraftCancelAttachmentsHandler(AttachmentsReader attachmentsReader,
+	public DraftCancelAttachmentsHandler(DefaultAttachmentsReader attachmentsReader,
 			MarkAsDeletedAttachmentEvent deleteContentAttachmentEvent) {
 		this.attachmentsReader = requireNonNull(attachmentsReader, "attachmentsReader must not be null");
 		this.deleteContentAttachmentEvent = requireNonNull(deleteContentAttachmentEvent,

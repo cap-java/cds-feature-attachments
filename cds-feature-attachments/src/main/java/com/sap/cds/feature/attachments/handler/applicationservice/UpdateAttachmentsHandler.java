@@ -17,7 +17,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.Readonl
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
@@ -46,11 +46,11 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
 
 	private final ModifyAttachmentEventFactory eventFactory;
-	private final AttachmentsReader attachmentsReader;
+	private final DefaultAttachmentsReader attachmentsReader;
 	private final AttachmentService outboxedAttachmentService;
 	private final ThreadDataStorageReader storageReader;
 
-	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader,
+	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, DefaultAttachmentsReader attachmentsReader,
 			AttachmentService outboxedAttachmentService, ThreadDataStorageReader storageReader) {
 		this.eventFactory = eventFactory;
 		this.attachmentsReader = attachmentsReader;

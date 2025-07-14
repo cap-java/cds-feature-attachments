@@ -22,7 +22,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.cds.ApplicationService;
@@ -37,7 +37,7 @@ class DeleteAttachmentsHandlerTest {
 	private static CdsRuntime runtime;
 
 	private DeleteAttachmentsHandler cut;
-	private AttachmentsReader attachmentsReader;
+	private DefaultAttachmentsReader attachmentsReader;
 	private ModifyAttachmentEvent modifyAttachmentEvent;
 	private CdsDeleteEventContext context;
 
@@ -48,7 +48,7 @@ class DeleteAttachmentsHandlerTest {
 
 	@BeforeEach
 	void setup() {
-		attachmentsReader = mock(AttachmentsReader.class);
+		attachmentsReader = mock(DefaultAttachmentsReader.class);
 		modifyAttachmentEvent = mock(ModifyAttachmentEvent.class);
 		cut = new DeleteAttachmentsHandler(attachmentsReader, modifyAttachmentEvent);
 
