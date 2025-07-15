@@ -213,6 +213,13 @@
                         <configuration>
                             <basePackage>${generation-package}.cds4j</basePackage>
                             <csnFile>${project.basedir}/src/gen/srv/src/main/resources/edmx/csn.json</csnFile>
+                            <includes>
+                                <include>sap.attachments.**</include>
+                            </includes>
+                            <excludes>
+                                <exclude>cds.outbox.**</exclude>
+                                <exclude>sap.common.**</exclude>
+                            </excludes>
                         </configuration>
                     </execution>
 
