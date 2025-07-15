@@ -16,14 +16,14 @@ import com.sap.cds.services.EventContext;
 class UpdateAttachmentEventTest {
 
 	private UpdateAttachmentEvent cut;
-	private ModifyAttachmentEvent createEvent;
-	private ModifyAttachmentEvent deleteEvent;
+	private CreateAttachmentEvent createEvent;
+	private MarkAsDeletedAttachmentEvent deleteEvent;
 	private Path path;
 
 	@BeforeEach
 	void setup() {
-		createEvent = mock(ModifyAttachmentEvent.class);
-		deleteEvent = mock(ModifyAttachmentEvent.class);
+		createEvent = mock(CreateAttachmentEvent.class);
+		deleteEvent = mock(MarkAsDeletedAttachmentEvent.class);
 
 		cut = new UpdateAttachmentEvent(createEvent, deleteEvent);
 

@@ -3,12 +3,14 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.draftservice;
 
+import static java.util.Objects.requireNonNull;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.ql.CQL;
@@ -41,12 +43,12 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 					&& element.getName().equals(Attachments.CONTENT_ID);
 
 	private final AttachmentsReader attachmentsReader;
-	private final ModifyAttachmentEvent deleteContentAttachmentEvent;
+	private final MarkAsDeletedAttachmentEvent deleteEvent;
 
 	public DraftCancelAttachmentsHandler(AttachmentsReader attachmentsReader,
-			ModifyAttachmentEvent deleteContentAttachmentEvent) {
-		this.attachmentsReader = attachmentsReader;
-		this.deleteContentAttachmentEvent = deleteContentAttachmentEvent;
+			MarkAsDeletedAttachmentEvent deleteEvent) {
+		this.attachmentsReader = requireNonNull(attachmentsReader, "attachmentsReader must not be null");
+		this.deleteEvent = requireNonNull(deleteEvent, "deleteEvent must not be null");
 	}
 
 	@Before
@@ -55,14 +57,15 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 		if (isWhereEmpty(context)) {
 			logger.debug("Processing before draft cancel event for entity {}", context.getTarget().getName());
 
-			var activeEntity = DraftUtils.getActiveEntity(context.getTarget());
-			var draftEntity = DraftUtils.getDraftEntity(context.getTarget());
+			CdsEntity activeEntity = DraftUtils.getActiveEntity(context.getTarget());
+			CdsEntity draftEntity = DraftUtils.getDraftEntity(context.getTarget());
 
-			var draftAttachments = readAttachments(context, draftEntity, false);
-			var activeCondensedAttachments = getCondensedActiveAttachments(context, activeEntity);
+			List<CdsData> draftAttachments = readAttachments(context, draftEntity, false);
+			List<CdsData> activeCondensedAttachments = getCondensedActiveAttachments(context, activeEntity);
 
-			var validator = buildDeleteContentValidator(context, activeCondensedAttachments);
-			CdsDataProcessor.create().addValidator(contentIdFilter, validator).process(draftAttachments, context.getTarget());
+			Validator validator = buildDeleteContentValidator(context, activeCondensedAttachments);
+			CdsDataProcessor.create().addValidator(contentIdFilter, validator).process(draftAttachments,
+					context.getTarget());
 		}
 	}
 
@@ -70,7 +73,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			List<CdsData> activeCondensedAttachments) {
 		return (path, element, value) -> {
 			if (Boolean.FALSE.equals(path.target().values().get(Drafts.HAS_ACTIVE_ENTITY))) {
-				deleteContentAttachmentEvent.processEvent(path, null, CdsData.create(path.target().values()), context);
+				deleteEvent.processEvent(path, null, CdsData.create(path.target().values()), context);
 				return;
 			}
 			var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
@@ -78,8 +81,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 					.filter(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
 			existingEntry.ifPresent(entry -> {
 				if (!entry.get(Attachments.CONTENT_ID).equals(value)) {
-					deleteContentAttachmentEvent.processEvent(null, null, CdsData.create(path.target().values()),
-							context);
+					deleteEvent.processEvent(null, null, CdsData.create(path.target().values()), context);
 				}
 			});
 		};

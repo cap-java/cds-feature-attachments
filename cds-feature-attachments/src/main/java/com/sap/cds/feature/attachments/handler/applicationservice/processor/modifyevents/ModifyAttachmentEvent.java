@@ -22,7 +22,7 @@ public interface ModifyAttachmentEvent {
 	 * @param content      the content of the attachment
 	 * @param existingData existing data
 	 * @param eventContext the current event context
-	 * @return
+	 * @return the processed content
 	 */
 	InputStream processEvent(Path path, InputStream content, CdsData existingData, EventContext eventContext);
 
