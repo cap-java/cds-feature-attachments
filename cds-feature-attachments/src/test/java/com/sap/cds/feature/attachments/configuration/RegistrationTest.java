@@ -2,6 +2,7 @@ package com.sap.cds.feature.attachments.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -70,6 +71,7 @@ class RegistrationTest {
 		persistenceService = mock(PersistenceService.class);
 		attachmentService = mock(AttachmentService.class);
 		outboxService = mock(OutboxService.class);
+		doReturn(attachmentService).when(outboxService).outboxed(any(AttachmentService.class));
 		draftService = mock(DraftService.class);
 		applicationService = mock(ApplicationService.class);
 		serviceArgumentCaptor = ArgumentCaptor.forClass(Service.class);

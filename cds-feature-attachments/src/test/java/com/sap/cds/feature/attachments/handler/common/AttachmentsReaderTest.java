@@ -22,8 +22,6 @@ import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.common.model.AssociationIdentifier;
-import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
 import com.sap.cds.feature.attachments.helper.LogObserver;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Delete;
@@ -36,9 +34,9 @@ import com.sap.cds.services.persistence.PersistenceService;
 import ch.qos.logback.classic.Level;
 
 
-class DefaultAttachmentsReaderTest {
+class AttachmentsReaderTest {
 
-	private DefaultAttachmentsReader cut;
+	private AttachmentsReader cut;
 	private AssociationCascader cascader;
 	private PersistenceService persistenceService;
 	private CdsEntity entity;
@@ -52,7 +50,7 @@ class DefaultAttachmentsReaderTest {
 		cascader = mock(AssociationCascader.class);
 		persistenceService = mock(PersistenceService.class);
 
-		cut = new DefaultAttachmentsReader(cascader, persistenceService);
+		cut = new AttachmentsReader(cascader, persistenceService);
 
 		entity = mock(CdsEntity.class);
 		model = mock(CdsModel.class);

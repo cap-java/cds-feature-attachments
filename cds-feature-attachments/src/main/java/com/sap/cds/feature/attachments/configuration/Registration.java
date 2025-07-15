@@ -15,16 +15,15 @@ import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachment
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.CreateAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DefaultModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DoNothingAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.UpdateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.CreationChangeSetListener;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.ListenerProvider;
-import com.sap.cds.feature.attachments.handler.common.DefaultAssociationCascader;
-import com.sap.cds.feature.attachments.handler.common.DefaultAttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
+import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
@@ -102,7 +101,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		var deleteContentEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
 		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent,
 				outboxedAttachmentService);
-		var attachmentsReader = new DefaultAttachmentsReader(new DefaultAssociationCascader(), persistenceService);
+		var attachmentsReader = new AttachmentsReader(new AssociationCascader(), persistenceService);
 		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
 		// register event handlers for application service, if at least one application service is available
@@ -157,15 +156,15 @@ public class Registration implements CdsRuntimeConfiguration {
 		return null;
 	}
 
-	private static DefaultModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
-			ModifyAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
+	private static ModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
+			MarkAsDeletedAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
 		ListenerProvider creationChangeSetListener = (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId,
 				cdsRuntime, outboxedAttachmentService);
 		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
 		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
 
 		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();
-		return new DefaultModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent,
+		return new ModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent,
 				doNothingAttachmentEvent);
 	}
 

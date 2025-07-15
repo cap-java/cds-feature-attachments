@@ -15,22 +15,22 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 
-class DefaultModifyAttachmentEventFactoryTest {
+class ModifyAttachmentEventFactoryTest {
 
-	private DefaultModifyAttachmentEventFactory cut;
-	private ModifyAttachmentEvent createEvent;
-	private ModifyAttachmentEvent updateEvent;
-	private ModifyAttachmentEvent deleteContentEvent;
-	private ModifyAttachmentEvent doNothingEvent;
+	private ModifyAttachmentEventFactory cut;
+	private CreateAttachmentEvent createEvent;
+	private UpdateAttachmentEvent updateEvent;
+	private MarkAsDeletedAttachmentEvent deleteContentEvent;
+	private DoNothingAttachmentEvent doNothingEvent;
 
 	@BeforeEach
 	void setup() {
-		createEvent = mock(ModifyAttachmentEvent.class);
-		updateEvent = mock(ModifyAttachmentEvent.class);
-		deleteContentEvent = mock(ModifyAttachmentEvent.class);
-		doNothingEvent = mock(ModifyAttachmentEvent.class);
+		createEvent = mock(CreateAttachmentEvent.class);
+		updateEvent = mock(UpdateAttachmentEvent.class);
+		deleteContentEvent = mock(MarkAsDeletedAttachmentEvent.class);
+		doNothingEvent = mock(DoNothingAttachmentEvent.class);
 
-		cut = new DefaultModifyAttachmentEventFactory(createEvent, updateEvent, deleteContentEvent, doNothingEvent);
+		cut = new ModifyAttachmentEventFactory(createEvent, updateEvent, deleteContentEvent, doNothingEvent);
 	}
 
 	@Test

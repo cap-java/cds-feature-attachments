@@ -3,6 +3,8 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.InputStream;
 
 import org.slf4j.Logger;
@@ -14,22 +16,22 @@ import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 
 /**
- * The class {@link UpdateAttachmentEvent} is an implementation of the {@link ModifyAttachmentEvent}.
- * The class is used to update an attachment by calling the mark as deleted and create method
- * of the attachment service {@link AttachmentService}.
- * To call these attachment service events the class calls the delete and create event implementation.
+ * The class {@link UpdateAttachmentEvent} is an implementation of the {@link ModifyAttachmentEvent}. The class is used
+ * to update an attachment by calling the mark as deleted and create method of the attachment service
+ * {@link AttachmentService}. To call these attachment service events the class calls the delete and create event
+ * implementation.
  */
 public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
 	private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentEvent.class);
 
-	private final ModifyAttachmentEvent createAttachmentEvent;
-	private final ModifyAttachmentEvent deleteAttachmentEvent;
+	private final CreateAttachmentEvent createEvent;
+	private final MarkAsDeletedAttachmentEvent deleteEvent;
 
-	public UpdateAttachmentEvent(ModifyAttachmentEvent createAttachmentEvent,
-			ModifyAttachmentEvent deleteAttachmentEvent) {
-		this.createAttachmentEvent = createAttachmentEvent;
-		this.deleteAttachmentEvent = deleteAttachmentEvent;
+	public UpdateAttachmentEvent(CreateAttachmentEvent createEvent,
+			MarkAsDeletedAttachmentEvent deleteAttachmentEvent) {
+		this.createEvent = requireNonNull(createEvent, "createEvent must not be null");
+		this.deleteEvent = requireNonNull(deleteAttachmentEvent, "deleteAttachmentEvent must not be null");
 	}
 
 	@Override
@@ -37,8 +39,8 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 		logger.debug("Processing UPDATE event by calling attachment service with create and delete event for entity {}",
 				path.target().entity().getQualifiedName());
 
-		deleteAttachmentEvent.processEvent(path, content, existingData, eventContext);
-		return createAttachmentEvent.processEvent(path, content, existingData, eventContext);
+		deleteEvent.processEvent(path, content, existingData, eventContext);
+		return createEvent.processEvent(path, content, existingData, eventContext);
 	}
 
 }

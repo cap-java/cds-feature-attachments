@@ -3,6 +3,8 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.draftservice;
 
+import static java.util.Objects.requireNonNull;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
@@ -40,8 +42,8 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 	private final ModifyAttachmentEventFactory eventFactory;
 
 	public DraftPatchAttachmentsHandler(PersistenceService persistence, ModifyAttachmentEventFactory eventFactory) {
-		this.persistence = persistence;
-		this.eventFactory = eventFactory;
+		this.persistence = requireNonNull(persistence, "persistence must not be null");
+		this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
 	}
 
 	@Before
