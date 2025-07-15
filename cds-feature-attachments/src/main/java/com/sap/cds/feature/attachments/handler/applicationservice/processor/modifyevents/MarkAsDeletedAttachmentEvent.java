@@ -5,6 +5,12 @@ package com.sap.cds.feature.attachments.handler.applicationservice.processor.mod
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.InputStream;
+import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
@@ -13,10 +19,6 @@ import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.draft.DraftService;
-import java.io.InputStream;
-import java.util.Objects;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The class {@link MarkAsDeletedAttachmentEvent} handles the mark of deletion of an attachment. It calls the

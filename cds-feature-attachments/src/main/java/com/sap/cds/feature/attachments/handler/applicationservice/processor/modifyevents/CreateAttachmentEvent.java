@@ -5,6 +5,14 @@ package com.sap.cds.feature.attachments.handler.applicationservice.processor.mod
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.InputStream;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
@@ -14,12 +22,6 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
-import java.io.InputStream;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The class {@link CreateAttachmentEvent} handles the creation of an attachment. It calls the {@link AttachmentService}

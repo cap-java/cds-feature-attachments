@@ -5,13 +5,15 @@ package com.sap.cds.feature.attachments.handler.applicationservice.processor.mod
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.InputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
-import java.io.InputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The class {@link UpdateAttachmentEvent} is an implementation of the {@link ModifyAttachmentEvent}. The class is used

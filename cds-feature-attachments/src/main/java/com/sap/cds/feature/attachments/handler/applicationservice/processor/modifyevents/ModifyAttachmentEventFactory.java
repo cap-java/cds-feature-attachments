@@ -5,12 +5,13 @@ package com.sap.cds.feature.attachments.handler.applicationservice.processor.mod
 
 import static java.util.Objects.requireNonNull;
 
-import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.service.AttachmentService;
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.Optional;
+
+import com.sap.cds.CdsData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.service.AttachmentService;
 
 /**
  * The class {@link ModifyAttachmentEventFactory} is a factory class that creates the corresponding event for the
