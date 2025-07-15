@@ -216,10 +216,6 @@
                             <includes>
                                 <include>sap.attachments.**</include>
                             </includes>
-                            <excludes>
-                                <exclude>cds.outbox.**</exclude>
-                                <exclude>sap.common.**</exclude>
-                            </excludes>
                         </configuration>
                     </execution>
 
