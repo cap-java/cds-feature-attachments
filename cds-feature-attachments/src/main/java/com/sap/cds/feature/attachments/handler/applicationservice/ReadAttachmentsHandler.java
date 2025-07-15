@@ -26,6 +26,7 @@ import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.CQL;
+import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElementDefinition;
@@ -41,13 +42,11 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 /**
- * The class {@link ReadAttachmentsHandler} is an event handler that is
- * responsible for reading attachments for entities.
- * In the before read event, it modifies the CQN to include the content ID and status.
- * In the after read event, it adds a proxy for the stream of the attachments service to the data.
- * Only if the data are read the proxy forwards the request to the attachment service to read the attachment.
- * This is needed to have a filled stream in the data to enable the OData V4 adapter to enrich the data that
- * a link to the content can be shown on the UI.
+ * The class {@link ReadAttachmentsHandler} is an event handler that is responsible for reading attachments for
+ * entities. In the before read event, it modifies the CQN to include the content ID and status. In the after read
+ * event, it adds a proxy for the stream of the attachments service to the data. Only if the data are read the proxy
+ * forwards the request to the attachment service to read the attachment. This is needed to have a filled stream in the
+ * data to enable the OData V4 adapter to enrich the data that a link to the content can be shown on the UI.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class ReadAttachmentsHandler implements EventHandler {
@@ -58,7 +57,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private final AttachmentStatusValidator attachmentStatusValidator;
 	private final AsyncMalwareScanExecutor asyncMalwareScanExecutor;
 
-	public ReadAttachmentsHandler(AttachmentService attachmentService, 
+	public ReadAttachmentsHandler(AttachmentService attachmentService,
 			AttachmentStatusValidator attachmentStatusValidator, AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
 		this.attachmentService = attachmentService;
 		this.attachmentStatusValidator = attachmentStatusValidator;
@@ -70,10 +69,10 @@ public class ReadAttachmentsHandler implements EventHandler {
 	public void processBefore(CdsReadEventContext context) {
 		logger.debug("Processing before read event for entity {}", context.getTarget().getName());
 
-		var cdsModel = context.getModel();
-		var fieldNames = getAttachmentAssociations(cdsModel, context.getTarget(), "", new ArrayList<>());
+		CdsModel cdsModel = context.getModel();
+		List<String> fieldNames = getAttachmentAssociations(cdsModel, context.getTarget(), "", new ArrayList<>());
 		if (!fieldNames.isEmpty()) {
-			var resultCqn = CQL.copy(context.getCqn(), new BeforeReadItemsModifier(fieldNames));
+			CqnSelect resultCqn = CQL.copy(context.getCqn(), new BeforeReadItemsModifier(fieldNames));
 			context.setCqn(resultCqn);
 		}
 	}
@@ -88,41 +87,42 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 		Converter converter = (path, element, value) -> {
 			logger.info("Processing after read event for entity {}", element.getName());
-			var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
-			var status = (String) path.target().values().get(Attachments.STATUS);
-			var content = (InputStream) path.target().values().get(Attachments.CONTENT);
-			var contentExists = Objects.nonNull(content);
+			String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+			String status = (String) path.target().values().get(Attachments.STATUS);
+			InputStream content = (InputStream) path.target().values().get(Attachments.CONTENT);
+			boolean contentExists = Objects.nonNull(content);
 			if (Objects.nonNull(contentId) || contentExists) {
 				verifyStatus(path, status, contentId, contentExists);
-				Supplier<InputStream> supplier = Objects.nonNull(content) ? () -> content : () -> attachmentService.readAttachment(
-						contentId);
+				Supplier<InputStream> supplier = Objects.nonNull(content) ? () -> content
+						: () -> attachmentService.readAttachment(contentId);
 				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
 			} else {
 				return value;
 			}
 		};
 
-		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data, context.getTarget());
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,
+				context.getTarget());
 	}
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName,
 			List<String> processedEntities) {
-		var associationNames = new ArrayList<String>();
+		List<String> associationNames = new ArrayList<String>();
 		if (ApplicationHandlerHelper.isMediaEntity(entity)) {
 			associationNames.add(associationName);
 		}
 
-		Map<String, CdsEntity> annotatedEntitiesMap = entity.associations()
-				.collect(Collectors.toMap(CdsElementDefinition::getName,
-						element -> element.getType().as(CdsAssociationType.class).getTarget()));
+		Map<String, CdsEntity> annotatedEntitiesMap = entity.associations().collect(Collectors.toMap(
+				CdsElementDefinition::getName, element -> element.getType().as(CdsAssociationType.class).getTarget()));
 
 		if (annotatedEntitiesMap.isEmpty()) {
 			return associationNames;
 		}
 
 		for (var associatedElement : annotatedEntitiesMap.entrySet()) {
-			if (!associationNames.contains(associatedElement.getKey()) && !processedEntities.contains(
-					associatedElement.getKey()) && !Drafts.SIBLING_ENTITY.equals(associatedElement.getKey())) {
+			if (!associationNames.contains(associatedElement.getKey())
+					&& !processedEntities.contains(associatedElement.getKey())
+					&& !Drafts.SIBLING_ENTITY.equals(associatedElement.getKey())) {
 				processedEntities.add(associatedElement.getKey());
 				var result = getAttachmentAssociations(model, associatedElement.getValue(), associatedElement.getKey(),
 						processedEntities);
