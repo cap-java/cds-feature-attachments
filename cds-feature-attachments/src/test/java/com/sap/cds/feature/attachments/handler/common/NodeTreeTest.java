@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.common.model;
+package com.sap.cds.feature.attachments.handler.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

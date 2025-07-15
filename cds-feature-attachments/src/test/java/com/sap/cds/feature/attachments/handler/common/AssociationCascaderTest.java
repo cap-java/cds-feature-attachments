@@ -14,14 +14,13 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.common.model.NodeTree;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.services.runtime.CdsRuntime;
 
-class DefaultAssociationCascaderTest {
+class AssociationCascaderTest {
 
 	private static CdsRuntime runtime;
-	private DefaultAssociationCascader cut;
+	private AssociationCascader cut;
 
 	@BeforeAll
 	static void classSetup() {
@@ -30,7 +29,7 @@ class DefaultAssociationCascaderTest {
 
 	@BeforeEach
 	void setup() {
-		cut = new DefaultAssociationCascader();
+		cut = new AssociationCascader();
 	}
 
 	@Test

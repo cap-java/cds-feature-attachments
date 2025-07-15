@@ -3,6 +3,8 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -28,9 +30,8 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.utils.OrderConstants;
 
 /**
- * The class {@link CreateAttachmentsHandler} is an event handler that is
- * responsible for creating attachments for entities.
- * It is called before a create event is executed.
+ * The class {@link CreateAttachmentsHandler} is an event handler that is responsible for creating attachments for
+ * entities. It is called before a create event is executed.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class CreateAttachmentsHandler implements EventHandler {
@@ -42,8 +43,8 @@ public class CreateAttachmentsHandler implements EventHandler {
 	private final CdsDataProcessor processor = CdsDataProcessor.create();
 
 	public CreateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, ThreadDataStorageReader storageReader) {
-		this.eventFactory = eventFactory;
-		this.storageReader = storageReader;
+		this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
+		this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
 	}
 
 	@Before
@@ -61,12 +62,13 @@ public class CreateAttachmentsHandler implements EventHandler {
 
 		logger.debug("Processing before create event for entity {}", context.getTarget().getName());
 		setKeysInData(context.getTarget(), data);
-		ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(), eventFactory,
-				context);
+		ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(),
+				eventFactory, context);
 	}
 
 	private void setKeysInData(CdsEntity entity, List<CdsData> data) {
-		processor.addGenerator((path, element, type) -> element.isKey() && element.getType().isSimpleType(CdsBaseType.UUID),
+		processor.addGenerator(
+				(path, element, type) -> element.isKey() && element.getType().isSimpleType(CdsBaseType.UUID),
 				(path, element, isNull) -> UUID.randomUUID().toString()).process(data, entity);
 	}
 

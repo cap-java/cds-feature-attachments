@@ -1,27 +1,28 @@
 /**************************************************************************
  * (C) 2019-2025 SAP SE or an SAP affiliate company. All rights reserved. *
  **************************************************************************/
-package com.sap.cds.feature.attachments.handler.common.model;
+package com.sap.cds.feature.attachments.handler.common;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * The class {@link NodeTree} is a tree data structure that holds the association identifier and its children.
+ * The class {@link NodeTree} is a tree data structure that holds the
+ * association identifier and its children.
  */
-public class NodeTree {
+class NodeTree {
 
 	private final AssociationIdentifier identifier;
 	private final List<NodeTree> children = new ArrayList<>();
 
-	public NodeTree(AssociationIdentifier identifier) {
+	NodeTree(AssociationIdentifier identifier) {
 		this.identifier = identifier;
 	}
 
-	public void addPath(List<AssociationIdentifier> path) {
-		var currentIdentifierOptional = path.stream().filter(
-				entry -> entry.fullEntityName().equals(identifier.fullEntityName())).findAny();
+	void addPath(List<AssociationIdentifier> path) {
+		var currentIdentifierOptional = path.stream()
+				.filter(entry -> entry.fullEntityName().equals(identifier.fullEntityName())).findAny();
 		if (currentIdentifierOptional.isEmpty()) {
 			return;
 		}
@@ -36,9 +37,9 @@ public class NodeTree {
 		}
 	}
 
-	public NodeTree getChildOrNew(AssociationIdentifier identifier) {
-		var childOptional = children.stream().filter(
-				child -> child.identifier.fullEntityName().equals(identifier.fullEntityName())).findAny();
+	private NodeTree getChildOrNew(AssociationIdentifier identifier) {
+		var childOptional = children.stream()
+				.filter(child -> child.identifier.fullEntityName().equals(identifier.fullEntityName())).findAny();
 		if (childOptional.isPresent()) {
 			return childOptional.get();
 		} else {
@@ -48,11 +49,11 @@ public class NodeTree {
 		}
 	}
 
-	public AssociationIdentifier getIdentifier() {
+	AssociationIdentifier getIdentifier() {
 		return identifier;
 	}
 
-	public List<NodeTree> getChildren() {
+	List<NodeTree> getChildren() {
 		return Collections.unmodifiableList(children);
 	}
 
