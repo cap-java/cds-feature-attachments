@@ -10,11 +10,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- Run integration tests also with CAP Java 4.x to ensure compatibility with latest available version.
+- Run integration tests also with CAP Java 4.x and @sap/cds-dk@^9 to ensure compatibility with latest available version.
 
 ### Changed
 
-- Bumped minimum required versions of CAP Java to 3.10.2
+- Bumped minimum required versions of CAP Java to 3.10.3.
+- Avoid the generation of POJOs for cds.outbox and sap.common contexts.
 
 ### Fixed
 
