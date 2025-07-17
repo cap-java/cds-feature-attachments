@@ -24,7 +24,6 @@ import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -120,9 +119,9 @@ class UpdateAttachmentsHandlerTest {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 
 		var readonlyUpdateFields = CdsData.create();
-		readonlyUpdateFields.put(Attachment.CONTENT_ID, "Document Id");
-		readonlyUpdateFields.put(Attachment.STATUS, "Status Code");
-		readonlyUpdateFields.put(Attachment.SCANNED_AT, Instant.now());
+		readonlyUpdateFields.put(Attachments.CONTENT_ID, "Document Id");
+		readonlyUpdateFields.put(Attachments.STATUS, "Status Code");
+		readonlyUpdateFields.put(Attachments.SCANNED_AT, Instant.now());
 		var testStream = mock(InputStream.class);
 		var attachment = Attachments.create();
 		attachment.setContent(testStream);
@@ -132,12 +131,12 @@ class UpdateAttachmentsHandlerTest {
 
 		cut.processBefore(updateContext, List.of(attachment));
 
-		verify(eventFactory).getEvent(testStream, (String) readonlyUpdateFields.get(Attachment.CONTENT_ID), 
+		verify(eventFactory).getEvent(testStream, (String) readonlyUpdateFields.get(Attachments.CONTENT_ID), 
 				CdsData.create());
 		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
-		assertThat(attachment.getContentId()).isEqualTo(readonlyUpdateFields.get(Attachment.CONTENT_ID));
-		assertThat(attachment.getStatus()).isEqualTo(readonlyUpdateFields.get(Attachment.STATUS));
-		assertThat(attachment.getScannedAt()).isEqualTo(readonlyUpdateFields.get(Attachment.SCANNED_AT));
+		assertThat(attachment.getContentId()).isEqualTo(readonlyUpdateFields.get(Attachments.CONTENT_ID));
+		assertThat(attachment.getStatus()).isEqualTo(readonlyUpdateFields.get(Attachments.STATUS));
+		assertThat(attachment.getScannedAt()).isEqualTo(readonlyUpdateFields.get(Attachments.SCANNED_AT));
 	}
 
 	@Test
@@ -156,9 +155,9 @@ class UpdateAttachmentsHandlerTest {
 		verifyNoInteractions(eventFactory, event);
 		assertThat(updateAttachment.get(DRAFT_READONLY_CONTEXT)).isNotNull();
 		var readOnlyUpdateData = (CdsData) updateAttachment.get(DRAFT_READONLY_CONTEXT);
-		assertThat(readOnlyUpdateData).containsEntry(Attachment.CONTENT_ID, updateAttachment.getContentId())
-				.containsEntry(Attachment.STATUS, updateAttachment.getStatus())
-				.containsEntry(Attachment.SCANNED_AT, updateAttachment.getScannedAt());
+		assertThat(readOnlyUpdateData).containsEntry(Attachments.CONTENT_ID, updateAttachment.getContentId())
+				.containsEntry(Attachments.STATUS, updateAttachment.getStatus())
+				.containsEntry(Attachments.SCANNED_AT, updateAttachment.getScannedAt());
 	}
 
 	@Test
@@ -170,9 +169,9 @@ class UpdateAttachmentsHandlerTest {
 		updateAttachment.setContentId(contentId);
 		updateAttachment.setContent(null);
 		var readonlyData = CdsData.create();
-		readonlyData.put(Attachment.STATUS, "some wrong status code");
-		readonlyData.put(Attachment.CONTENT_ID, "some other document id");
-		readonlyData.put(Attachment.SCANNED_AT, Instant.EPOCH);
+		readonlyData.put(Attachments.STATUS, "some wrong status code");
+		readonlyData.put(Attachments.CONTENT_ID, "some other document id");
+		readonlyData.put(Attachments.SCANNED_AT, Instant.EPOCH);
 		updateAttachment.put("DRAFT_READONLY_CONTEXT", readonlyData);
 		when(storageReader.get()).thenReturn(false);
 
@@ -180,8 +179,8 @@ class UpdateAttachmentsHandlerTest {
 
 		verifyNoInteractions(eventFactory, event);
 		assertThat(updateAttachment.get(DRAFT_READONLY_CONTEXT)).isNull();
-		assertThat(updateAttachment).containsEntry(Attachment.CONTENT_ID, contentId)
-				.doesNotContainKey(Attachment.STATUS).doesNotContainKey(Attachment.SCANNED_AT);
+		assertThat(updateAttachment).containsEntry(Attachments.CONTENT_ID, contentId)
+				.doesNotContainKey(Attachments.STATUS).doesNotContainKey(Attachments.SCANNED_AT);
 	}
 
 	@Test
@@ -291,7 +290,7 @@ class UpdateAttachmentsHandlerTest {
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
 		var select = selectCaptor.getValue();
 		assertThat(select.toString()).contains(getRefString("$key", "test"));
-		assertThat(select.toString()).contains(getRefString(Attachment.ID, attachment.getId()));
+		assertThat(select.toString()).contains(getRefString(Attachments.ID, attachment.getId()));
 		assertThat(select.toString()).contains(getRefString(UP_ID, (String) attachment.get(UP_ID)));
 	}
 
@@ -310,7 +309,7 @@ class UpdateAttachmentsHandlerTest {
 
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
 		var select = selectCaptor.getValue();
-		assertThat(select.toString()).contains(getRefString(Attachment.ID, attachment.getId()));
+		assertThat(select.toString()).contains(getRefString(Attachments.ID, attachment.getId()));
 		assertThat(select.toString()).contains(getRefString(UP_ID, (String) attachment.get(UP_ID)));
 	}
 
@@ -328,7 +327,7 @@ class UpdateAttachmentsHandlerTest {
 
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
 		var select = selectCaptor.getValue();
-		assertThat(select.toString()).doesNotContain(Attachment.ID);
+		assertThat(select.toString()).doesNotContain(Attachments.ID);
 		assertThat(select.toString()).doesNotContain(UP_ID);
 		assertThat(select.toString()).contains(getRefString("$key", "test"));
 	}
@@ -347,7 +346,7 @@ class UpdateAttachmentsHandlerTest {
 
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
 		var select = selectCaptor.getValue();
-		assertThat(select.toString()).contains(getRefString(Attachment.ID, attachment.getId()));
+		assertThat(select.toString()).contains(getRefString(Attachments.ID, attachment.getId()));
 		assertThat(select.toString()).doesNotContain(UP_ID);
 	}
 
@@ -465,7 +464,7 @@ class UpdateAttachmentsHandlerTest {
 	}
 
 	private Map<String, Object> getAttachmentKeyMap(Attachments attachment) {
-		return Map.of(Attachment.ID, attachment.getId(), "up__ID", attachment.get(UP_ID));
+		return Map.of(Attachments.ID, attachment.getId(), "up__ID", attachment.get(UP_ID));
 	}
 
 	private String getRefString(String key, String value) {
