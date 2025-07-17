@@ -40,7 +40,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 	}
 
 	@Override
-	public InputStream processEvent(Path path, InputStream content, CdsData existingData, EventContext eventContext) {
+	public InputStream processEvent(Path path, InputStream content, Attachments existingData, EventContext eventContext) {
 		logger.debug("Calling attachment service with create event for entity {}",
 				path.target().entity().getQualifiedName());
 		var values = path.target().values();

@@ -16,10 +16,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots_;
-import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -71,7 +71,7 @@ class DeleteAttachmentsHandlerTest {
 		var entity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
 		when(context.getTarget()).thenReturn(entity);
 		when(context.getModel()).thenReturn(runtime.getCdsModel());
-		var data = Attachment.create();
+		var data = Attachments.create();
 		data.setId("test");
 		data.setContentId("test");
 		var inputStream = mock(InputStream.class);
@@ -127,8 +127,8 @@ class DeleteAttachmentsHandlerTest {
 		assertThat(deleteHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 
-	private Attachment buildAttachment(String id, InputStream inputStream) {
-		var attachment = Attachment.create();
+	private Attachments buildAttachment(String id, InputStream inputStream) {
+		var attachment = Attachments.create();
 		attachment.setId(id);
 		attachment.setContentId("doc_" + id);
 		attachment.setContent(inputStream);

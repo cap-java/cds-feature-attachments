@@ -13,7 +13,7 @@ import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.sap.cds.CdsData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsElement;
@@ -36,7 +36,7 @@ class DoNothingAttachmentEventTest {
 		var streamInput = Objects.nonNull(input) ? new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)) : null;
 		var path = mock(Path.class);
 		var element = mock(CdsElement.class);
-		var data = mock(CdsData.class);
+		var data = mock(Attachments.class);
 		var target = mock(ResolvedSegment.class);
 		when(path.target()).thenReturn(target);
 		var entity = mock(CdsEntity.class);

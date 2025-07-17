@@ -33,7 +33,7 @@ public final class ModifyApplicationHandlerHelper {
 	 * @param eventFactory     the {@link ModifyAttachmentEventFactory} to create the corresponding event
 	 * @param eventContext     the current {@link EventContext}
 	 */
-	public static void handleAttachmentForEntities(CdsEntity entity, List<CdsData> data, List<CdsData> existingDataList,
+	public static void handleAttachmentForEntities(CdsEntity entity, List<CdsData> data, List<Attachments> existingDataList,
 			ModifyAttachmentEventFactory eventFactory, EventContext eventContext) {
 		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingDataList, eventFactory,
 				eventContext, path, (InputStream) value);
@@ -41,7 +41,7 @@ public final class ModifyApplicationHandlerHelper {
 		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data, entity);
 	}
 
-	public static InputStream handleAttachmentForEntity(List<CdsData> existingDataList,
+	public static InputStream handleAttachmentForEntity(List<Attachments> existingDataList,
 			ModifyAttachmentEventFactory eventFactory, EventContext eventContext, Path path, InputStream content) {
 		var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 		ReadonlyDataContextEnhancer.fillReadonlyInContext((CdsData) path.target().values());
@@ -55,10 +55,10 @@ public final class ModifyApplicationHandlerHelper {
 		return eventToProcess.processEvent(path, content, existingData, eventContext);
 	}
 
-	private static CdsData getExistingData(Map<String, Object> keys, List<CdsData> existingDataList) {
+	private static Attachments getExistingData(Map<String, Object> keys, List<Attachments> existingDataList) {
 		return existingDataList.stream()
 				.filter(existingData -> ApplicationHandlerHelper.areKeysInData(keys, existingData)).findAny()
-				.orElse(CdsData.create());
+				.orElse(Attachments.create());
 	}
 
 }

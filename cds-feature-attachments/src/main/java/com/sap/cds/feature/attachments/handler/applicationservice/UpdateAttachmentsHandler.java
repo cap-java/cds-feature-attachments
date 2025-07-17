@@ -81,7 +81,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		CqnSelect select = getSelect(context.getCqn(), context.getTarget());
 		List<CdsData> attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
-		List<CdsData> condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
+		List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
 		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory,
 				context);
 

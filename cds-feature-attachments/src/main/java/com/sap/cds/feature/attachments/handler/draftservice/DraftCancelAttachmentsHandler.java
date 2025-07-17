@@ -61,7 +61,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			CdsEntity draftEntity = DraftUtils.getDraftEntity(context.getTarget());
 
 			List<CdsData> draftAttachments = readAttachments(context, draftEntity, false);
-			List<CdsData> activeCondensedAttachments = getCondensedActiveAttachments(context, activeEntity);
+			List<Attachments> activeCondensedAttachments = getCondensedActiveAttachments(context, activeEntity);
 
 			Validator validator = buildDeleteContentValidator(context, activeCondensedAttachments);
 			CdsDataProcessor.create().addValidator(contentIdFilter, validator).process(draftAttachments,
@@ -70,10 +70,10 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	}
 
 	private Validator buildDeleteContentValidator(DraftCancelEventContext context,
-			List<CdsData> activeCondensedAttachments) {
+			List<? extends CdsData> activeCondensedAttachments) {
 		return (path, element, value) -> {
 			if (Boolean.FALSE.equals(path.target().values().get(Drafts.HAS_ACTIVE_ENTITY))) {
-				deleteEvent.processEvent(path, null, CdsData.create(path.target().values()), context);
+				deleteEvent.processEvent(path, null, Attachments.of(path.target().values()), context);
 				return;
 			}
 			var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
@@ -81,7 +81,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 					.filter(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
 			existingEntry.ifPresent(entry -> {
 				if (!entry.get(Attachments.CONTENT_ID).equals(value)) {
-					deleteEvent.processEvent(null, null, CdsData.create(path.target().values()), context);
+					deleteEvent.processEvent(null, null, Attachments.of(path.target().values()), context);
 				}
 			});
 		};
@@ -98,7 +98,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 		return attachmentsReader.readAttachments(context.getModel(), (CdsEntity) entity, cqnInactiveEntity);
 	}
 
-	private List<CdsData> getCondensedActiveAttachments(DraftCancelEventContext context,
+	private List<Attachments> getCondensedActiveAttachments(DraftCancelEventContext context,
 			CdsStructuredType activeEntity) {
 		var attachments = readAttachments(context, activeEntity, true);
 		return ApplicationHandlerHelper.condenseData(attachments, context.getTarget());

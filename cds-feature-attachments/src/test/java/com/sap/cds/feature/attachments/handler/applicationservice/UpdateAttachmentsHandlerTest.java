@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
@@ -62,7 +62,7 @@ class UpdateAttachmentsHandlerTest {
 	private AttachmentService attachmentService;
 	private CdsUpdateEventContext updateContext;
 	private ModifyAttachmentEvent event;
-	private ArgumentCaptor<CdsData> cdsDataArgumentCaptor;
+	private ArgumentCaptor<Attachments> cdsDataArgumentCaptor;
 	private ArgumentCaptor<CqnSelect> selectCaptor;
 	private ThreadDataStorageReader storageReader;
 	private UserInfo userInfo;
@@ -82,7 +82,7 @@ class UpdateAttachmentsHandlerTest {
 
 		event = mock(ModifyAttachmentEvent.class);
 		updateContext = mock(CdsUpdateEventContext.class);
-		cdsDataArgumentCaptor = ArgumentCaptor.forClass(CdsData.class);
+		cdsDataArgumentCaptor = ArgumentCaptor.forClass(Attachments.class);
 		selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
 		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 		userInfo = mock(UserInfo.class);

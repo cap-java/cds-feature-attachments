@@ -17,7 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.sap.cds.CdsData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -40,7 +40,7 @@ class DraftCancelAttachmentsHandlerTest {
 	private MarkAsDeletedAttachmentEvent deleteContentAttachmentEvent;
 	private DraftCancelEventContext eventContext;
 	private ArgumentCaptor<CqnDelete> deleteArgumentCaptor;
-	private ArgumentCaptor<CdsData> dataArgumentCaptor;
+	private ArgumentCaptor<Attachments> dataArgumentCaptor;
 
 	@BeforeAll
 	static void classSetup() {
@@ -55,7 +55,7 @@ class DraftCancelAttachmentsHandlerTest {
 
 		eventContext = mock(DraftCancelEventContext.class);
 		deleteArgumentCaptor = ArgumentCaptor.forClass(CqnDelete.class);
-		dataArgumentCaptor = ArgumentCaptor.forClass(CdsData.class);
+		dataArgumentCaptor = ArgumentCaptor.forClass(Attachments.class);
 	}
 
 	@Test

@@ -69,10 +69,10 @@ public final class ApplicationHandlerHelper {
 		return Objects.nonNull(existingData.get(Attachments.CONTENT_ID));
 	}
 
-	public static List<CdsData> condenseData(List<CdsData> data, CdsEntity entity) {
-		List<CdsData> resultList = new ArrayList<>();
+	public static List<Attachments> condenseData(List<CdsData> data, CdsEntity entity) {
+		List<Attachments> resultList = new ArrayList<>();
 
-		Validator validator = (path, element, value) -> resultList.add(CdsData.create(path.target().values()));
+		Validator validator = (path, element, value) -> resultList.add(Attachments.of(path.target().values()));
 
 		CdsDataProcessor.create().addValidator(MEDIA_CONTENT_FILTER, validator).process(data, entity);
 		return resultList;

@@ -16,9 +16,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.sap.cds.CdsData;
 import com.sap.cds.Result;
-import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
@@ -102,7 +101,7 @@ class DraftPatchAttachmentsHandlerTest {
 		var content = attachment.getContent();
 		var result = mock(Result.class);
 		when(persistence.run(any(CqnSelect.class))).thenReturn(result);
-		when(result.listOf(CdsData.class)).thenReturn(List.of(attachment));
+		when(result.listOf(Attachments.class)).thenReturn(List.of(attachment));
 
 		cut.processBeforeDraftPatch(eventContext, List.of(root));
 
@@ -118,7 +117,7 @@ class DraftPatchAttachmentsHandlerTest {
 		var content = attachment.getContent();
 		var result = mock(Result.class);
 		when(persistence.run(any(CqnSelect.class))).thenReturn(result);
-		when(result.listOf(CdsData.class)).thenReturn(List.of(attachment));
+		when(result.listOf(Attachments.class)).thenReturn(List.of(attachment));
 
 		cut.processBeforeDraftPatch(eventContext, List.of(root));
 
