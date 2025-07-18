@@ -83,10 +83,9 @@ public class ReadAttachmentsHandler implements EventHandler {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
-		logger.debug("Processing after read event for entity {}", context.getTarget().getName());
+		logger.debug("Processing after read event for entity {}", context.getTarget().getQualifiedName());
 
 		Converter converter = (path, element, value) -> {
-			logger.info("Processing after read event for entity {}", element.getName());
 			String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 			String status = (String) path.target().values().get(Attachments.STATUS);
 			InputStream content = (InputStream) path.target().values().get(Attachments.CONTENT);
@@ -107,7 +106,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName,
 			List<String> processedEntities) {
-		List<String> associationNames = new ArrayList<String>();
+		List<String> associationNames = new ArrayList<>();
 		if (ApplicationHandlerHelper.isMediaEntity(entity)) {
 			associationNames.add(associationName);
 		}
