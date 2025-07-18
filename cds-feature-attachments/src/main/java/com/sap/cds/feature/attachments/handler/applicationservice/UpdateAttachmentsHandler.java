@@ -66,9 +66,9 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	@HandlerOrder(HandlerOrder.LATE)
 	void processBefore(CdsUpdateEventContext context, List<? extends CdsData> data) {
 		CdsEntity target = context.getTarget();
-		boolean noContentInData = ApplicationHandlerHelper.noContentFieldInData(target, data);
 		boolean associationsAreUnchanged = associationsAreUnchanged(target, data);
-		if (noContentInData && associationsAreUnchanged) {
+
+		if (ApplicationHandlerHelper.noContentFieldInData(target, data) && associationsAreUnchanged) {
 			return;
 		}
 
@@ -86,10 +86,10 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		}
 	}
 
-	private boolean associationsAreUnchanged(CdsEntity entity, List<? extends CdsData> attachments) {
+	private boolean associationsAreUnchanged(CdsEntity entity, List<? extends CdsData> data) {
 		// TODO: check if this should be replaced with entity.assocations().noneMatch(...)
 		return entity.compositions()
-				.noneMatch(association -> attachments.stream().anyMatch(d -> d.containsKey(association.getName())));
+				.noneMatch(association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
 	}
 
 	private void deleteRemovedAttachments(List<Attachments> existingAttachments, List<? extends CdsData> data,
