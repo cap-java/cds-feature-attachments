@@ -66,7 +66,7 @@ public class CreateAttachmentsHandler implements EventHandler {
 				eventFactory, context);
 	}
 
-	private void setKeysInData(CdsEntity entity, List<? extends CdsData> data) {
+	private void setKeysInData(CdsEntity entity, List<CdsData> data) {
 		processor.addGenerator(
 				(path, element, type) -> element.isKey() && element.getType().isSimpleType(CdsBaseType.UUID),
 				(path, element, isNull) -> UUID.randomUUID().toString()).process(data, entity);
