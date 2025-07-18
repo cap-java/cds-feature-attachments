@@ -28,14 +28,14 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 	private final CreateAttachmentEvent createEvent;
 	private final MarkAsDeletedAttachmentEvent deleteEvent;
 
-	public UpdateAttachmentEvent(CreateAttachmentEvent createEvent,
-			MarkAsDeletedAttachmentEvent deleteAttachmentEvent) {
+	public UpdateAttachmentEvent(CreateAttachmentEvent createEvent, MarkAsDeletedAttachmentEvent deleteEvent) {
 		this.createEvent = requireNonNull(createEvent, "createEvent must not be null");
-		this.deleteEvent = requireNonNull(deleteAttachmentEvent, "deleteAttachmentEvent must not be null");
+		this.deleteEvent = requireNonNull(deleteEvent, "deleteEvent must not be null");
 	}
 
 	@Override
-	public InputStream processEvent(Path path, InputStream content, Attachments existingData, EventContext eventContext) {
+	public InputStream processEvent(Path path, InputStream content, Attachments existingData,
+			EventContext eventContext) {
 		logger.debug("Processing UPDATE event by calling attachment service with create and delete event for entity {}",
 				path.target().entity().getQualifiedName());
 
