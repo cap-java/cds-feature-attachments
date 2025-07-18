@@ -3,6 +3,8 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
+import static java.util.Objects.nonNull;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +16,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
@@ -77,10 +78,10 @@ public class ReadAttachmentsHandler implements EventHandler {
 		}
 	}
 
-	@After
+	@After(entity = "*")
 	@HandlerOrder(HandlerOrder.EARLY)
-	public void processAfter(CdsReadEventContext context, List<CdsData> data) {
-		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
+	public void processAfter(CdsReadEventContext context, List<Attachments> attachments) {
+		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), attachments)) {
 			return;
 		}
 		logger.debug("Processing after read event for entity {}", context.getTarget().getQualifiedName());
@@ -89,10 +90,10 @@ public class ReadAttachmentsHandler implements EventHandler {
 			String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 			String status = (String) path.target().values().get(Attachments.STATUS);
 			InputStream content = (InputStream) path.target().values().get(Attachments.CONTENT);
-			boolean contentExists = Objects.nonNull(content);
-			if (Objects.nonNull(contentId) || contentExists) {
+			boolean contentExists = nonNull(content);
+			if (nonNull(contentId) || contentExists) {
 				verifyStatus(path, status, contentId, contentExists);
-				Supplier<InputStream> supplier = Objects.nonNull(content) ? () -> content
+				Supplier<InputStream> supplier = nonNull(content) ? () -> content
 						: () -> attachmentService.readAttachment(contentId);
 				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
 			} else {
@@ -100,7 +101,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 			}
 		};
 
-		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(attachments,
 				context.getTarget());
 	}
 

@@ -87,7 +87,7 @@ class CreateAttachmentsHandlerTest {
 		roots.setAttachments(List.of(attachment));
 		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-		cut.processBefore(createContext, List.of(roots));
+		cut.processBefore(createContext, List.of(Attachments.of(roots)));
 
 		assertThat(roots.getId()).isNotEmpty();
 		assertThat(attachment.getId()).isNotEmpty();
@@ -193,7 +193,7 @@ class CreateAttachmentsHandlerTest {
 		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 		when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));
 
-		List<CdsData> input = List.of(attachment);
+		List<Attachments> input = List.of(attachment);
 		assertThrows(ServiceException.class, () -> cut.processBefore(createContext, input));
 	}
 
@@ -209,7 +209,7 @@ class CreateAttachmentsHandlerTest {
 		events.setItems(List.of(items));
 		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-		List<CdsData> input = List.of(events);
+		List<Attachments> input = List.of(Attachments.of(events));
 		cut.processBefore(createContext, input);
 
 		assertThat(events.getId1()).isNotEmpty();
@@ -252,7 +252,7 @@ class CreateAttachmentsHandlerTest {
 		events.setEventItems(List.of(eventItems));
 		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-		List<CdsData> input = List.of(events);
+		List<Attachments> input = List.of(Attachments.of(events));
 		cut.processBefore(createContext, input);
 
 		verifyNoInteractions(eventFactory);

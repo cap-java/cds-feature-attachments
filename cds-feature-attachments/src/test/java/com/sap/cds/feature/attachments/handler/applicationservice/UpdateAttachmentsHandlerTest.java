@@ -223,7 +223,7 @@ class UpdateAttachmentsHandlerTest {
 		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
 				List.of(attachment));
 
-		List<CdsData> input = List.of(attachment);
+		List<Attachments> input = List.of(attachment);
 		assertThrows(ServiceException.class, () -> cut.processBefore(updateContext, input));
 	}
 
@@ -237,7 +237,7 @@ class UpdateAttachmentsHandlerTest {
 		when(attachmentsReader.readAttachments(eq(model), eq(target), any(CqnFilterableStatement.class))).thenReturn(
 				List.of(root));
 
-		cut.processBefore(updateContext, List.of(root));
+		cut.processBefore(updateContext, List.of(Attachments.of(root)));
 
 		verify(eventFactory).getEvent(eq(testStream), eq(null), cdsDataArgumentCaptor.capture());
 		assertThat(cdsDataArgumentCaptor.getValue()).isEqualTo(root.getAttachments().get(0));
@@ -254,7 +254,7 @@ class UpdateAttachmentsHandlerTest {
 		var testStream = mock(InputStream.class);
 		var root = fillRootData(testStream, id);
 
-		cut.processBefore(updateContext, List.of(root));
+		cut.processBefore(updateContext, List.of(Attachments.of(root)));
 
 		verify(eventFactory).getEvent(testStream, null, Attachments.create());
 	}
@@ -270,7 +270,7 @@ class UpdateAttachmentsHandlerTest {
 		attachment.setContent(testStream);
 		root.setAttachments(List.of(attachment));
 
-		List<CdsData> roots = List.of(root);
+		List<Attachments> roots = List.of(Attachments.of(root));
 		assertDoesNotThrow(() -> cut.processBefore(updateContext, roots));
 	}
 
@@ -380,7 +380,7 @@ class UpdateAttachmentsHandlerTest {
 		root.setId(id);
 		root.setAttachments(Collections.emptyList());
 
-		cut.processBefore(updateContext, List.of(root));
+		cut.processBefore(updateContext, List.of(Attachments.of(root)));
 
 		verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
 		verifyNoInteractions(eventFactory);
@@ -405,7 +405,7 @@ class UpdateAttachmentsHandlerTest {
 				List.of(existingRoot));
 		when(updateContext.getUserInfo()).thenReturn(userInfo);
 
-		cut.processBefore(updateContext, List.of(root));
+		cut.processBefore(updateContext, List.of(Attachments.of(root)));
 
 		verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
 		verifyNoInteractions(eventFactory);

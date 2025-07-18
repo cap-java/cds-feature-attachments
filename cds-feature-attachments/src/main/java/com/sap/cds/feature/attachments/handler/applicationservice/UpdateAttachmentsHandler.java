@@ -21,7 +21,6 @@ import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.CqnSelect;
-import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
@@ -56,51 +55,43 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		this.storageReader = storageReader;
 	}
 
-	@Before
+	@Before(entity = "*")
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
-	public void processBeforeForDraft(CdsUpdateEventContext context, List<CdsData> data) {
-		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
+	public void processBeforeForDraft(CdsUpdateEventContext context, List<Attachments> attachments) {
+		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, attachments, storageReader.get());
 	}
 
-	@Before
+	@Before(entity = "*")
 	@HandlerOrder(HandlerOrder.LATE)
-	public void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
-		doUpdate(context, data);
-	}
-
-	private void doUpdate(CdsUpdateEventContext context, List<CdsData> data) {
+	public void processBefore(CdsUpdateEventContext context, List<Attachments> attachments) {
 		CdsEntity target = context.getTarget();
-		boolean noContentInData = ApplicationHandlerHelper.noContentFieldInData(target, data);
-		boolean associationsAreUnchanged = associationsAreUnchanged(target, data);
+		boolean noContentInData = ApplicationHandlerHelper.noContentFieldInData(target, attachments);
+		boolean associationsAreUnchanged = associationsAreUnchanged(target, attachments);
 		if (noContentInData && associationsAreUnchanged) {
 			return;
 		}
 
 		logger.debug("Processing before update event for entity {}", target.getName());
 
-		CqnSelect select = getSelect(context.getCqn(), context.getTarget());
-		List<CdsData> attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
+		CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());
+		List<CdsData> existingAttachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
-		List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseData(attachments, target);
-		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory,
-				context);
+		List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseData(existingAttachments, target);
+		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, attachments, condensedAttachments,
+				eventFactory, context);
 
 		if (!associationsAreUnchanged) {
-			deleteRemovedAttachments(attachments, data, target, context.getUserInfo());
+			deleteRemovedAttachments(existingAttachments, attachments, target, context.getUserInfo());
 		}
 	}
 
-	private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
+	private boolean associationsAreUnchanged(CdsEntity entity, List<Attachments> data) {
 		// TODO: check if this should be replaced with entity.assocations().noneMatch(...)
 		return entity.compositions()
 				.noneMatch(association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
 	}
 
-	private CqnSelect getSelect(CqnUpdate update, CdsEntity target) {
-		return CqnUtils.toSelect(update, target);
-	}
-
-	private void deleteRemovedAttachments(List<CdsData> exitingDataList, List<CdsData> updatedDataList,
+	private void deleteRemovedAttachments(List<CdsData> exitingDataList, List<Attachments> updatedDataList,
 			CdsEntity entity, UserInfo userInfo) {
 		var condensedUpdatedData = ApplicationHandlerHelper.condenseData(updatedDataList, entity);
 

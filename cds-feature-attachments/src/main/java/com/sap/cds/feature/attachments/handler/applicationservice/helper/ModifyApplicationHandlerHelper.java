@@ -33,7 +33,7 @@ public final class ModifyApplicationHandlerHelper {
 	 * @param eventFactory     the {@link ModifyAttachmentEventFactory} to create the corresponding event
 	 * @param eventContext     the current {@link EventContext}
 	 */
-	public static void handleAttachmentForEntities(CdsEntity entity, List<CdsData> data, List<Attachments> existingDataList,
+	public static void handleAttachmentForEntities(CdsEntity entity, List<Attachments> data, List<Attachments> existingDataList,
 			ModifyAttachmentEventFactory eventFactory, EventContext eventContext) {
 		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingDataList, eventFactory,
 				eventContext, path, (InputStream) value);

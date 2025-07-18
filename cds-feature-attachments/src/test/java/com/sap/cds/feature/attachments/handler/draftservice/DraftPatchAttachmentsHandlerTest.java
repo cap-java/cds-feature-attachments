@@ -70,7 +70,7 @@ class DraftPatchAttachmentsHandlerTest {
 		var root = buildRooWithAttachment(Attachments.create());
 		when(persistence.run(any(CqnSelect.class))).thenReturn(mock(Result.class));
 
-		cut.processBeforeDraftPatch(eventContext, List.of(root));
+		cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
 
 		verify(persistence).run(selectCaptor.capture());
 		var select = selectCaptor.getValue();
@@ -103,7 +103,7 @@ class DraftPatchAttachmentsHandlerTest {
 		when(persistence.run(any(CqnSelect.class))).thenReturn(result);
 		when(result.listOf(Attachments.class)).thenReturn(List.of(attachment));
 
-		cut.processBeforeDraftPatch(eventContext, List.of(root));
+		cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
 
 		verify(eventFactory).getEvent(content, attachment.getContentId(), attachment);
 	}
@@ -119,7 +119,7 @@ class DraftPatchAttachmentsHandlerTest {
 		when(persistence.run(any(CqnSelect.class))).thenReturn(result);
 		when(result.listOf(Attachments.class)).thenReturn(List.of(attachment));
 
-		cut.processBeforeDraftPatch(eventContext, List.of(root));
+		cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
 
 		verify(eventFactory).getEvent(content, attachment.getContentId(), attachment);
 		verify(event).processEvent(any(), eq(content), eq(attachment), eq(eventContext));
@@ -131,7 +131,7 @@ class DraftPatchAttachmentsHandlerTest {
 		var events = Events.create();
 		events.setContent("test");
 
-		cut.processBeforeDraftPatch(eventContext, List.of(events));
+		cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(events)));
 
 		assertThat(events).doesNotContainKey(Attachments.CONTENT_ID);
 	}

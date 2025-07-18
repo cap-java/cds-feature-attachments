@@ -12,8 +12,8 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
@@ -47,26 +47,26 @@ public class CreateAttachmentsHandler implements EventHandler {
 		this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
 	}
 
-	@Before
+	@Before(entity = "*")
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
-	public void processBeforeForDraft(CdsCreateEventContext context, List<CdsData> data) {
-		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
+	void processBeforeForDraft(CdsCreateEventContext context, List<Attachments> attachments) {
+		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, attachments, storageReader.get());
 	}
 
-	@Before
+	@Before(entity = "*")
 	@HandlerOrder(HandlerOrder.LATE)
-	public void processBefore(CdsCreateEventContext context, List<CdsData> data) {
-		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
+	public void processBefore(CdsCreateEventContext context, List<Attachments> attachments) {
+		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), attachments)) {
 			return;
 		}
 
 		logger.debug("Processing before create event for entity {}", context.getTarget().getName());
-		setKeysInData(context.getTarget(), data);
-		ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(),
+		setKeysInData(context.getTarget(), attachments);
+		ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), attachments, new ArrayList<>(),
 				eventFactory, context);
 	}
 
-	private void setKeysInData(CdsEntity entity, List<CdsData> data) {
+	private void setKeysInData(CdsEntity entity, List<Attachments> data) {
 		processor.addGenerator(
 				(path, element, type) -> element.isKey() && element.getType().isSimpleType(CdsBaseType.UUID),
 				(path, element, isNull) -> UUID.randomUUID().toString()).process(data, entity);

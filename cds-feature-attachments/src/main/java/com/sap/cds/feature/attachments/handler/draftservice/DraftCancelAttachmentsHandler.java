@@ -5,6 +5,11 @@ package com.sap.cds.feature.attachments.handler.draftservice;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
@@ -23,15 +28,11 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * The class {@link DraftCancelAttachmentsHandler} is an event handler that is
- * called before a draft cancel event is executed. The handler checks if the
- * attachments of the draft entity are still valid and deletes the content of
- * the attachments if necessary.
+ * The class {@link DraftCancelAttachmentsHandler} is an event handler that is called before a draft cancel event is
+ * executed. The handler checks if the attachments of the draft entity are still valid and deletes the content of the
+ * attachments if necessary.
  */
 @ServiceName(value = "*", type = DraftService.class)
 public class DraftCancelAttachmentsHandler implements EventHandler {
@@ -72,8 +73,9 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	private Validator buildDeleteContentValidator(DraftCancelEventContext context,
 			List<? extends CdsData> activeCondensedAttachments) {
 		return (path, element, value) -> {
-			if (Boolean.FALSE.equals(path.target().values().get(Drafts.HAS_ACTIVE_ENTITY))) {
-				deleteEvent.processEvent(path, null, Attachments.of(path.target().values()), context);
+			Attachments attachment = Attachments.of(path.target().values());
+			if (Boolean.FALSE.equals(attachment.get(Drafts.HAS_ACTIVE_ENTITY))) {
+				deleteEvent.processEvent(path, null, attachment, context);
 				return;
 			}
 			var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
@@ -81,7 +83,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 					.filter(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
 			existingEntry.ifPresent(entry -> {
 				if (!entry.get(Attachments.CONTENT_ID).equals(value)) {
-					deleteEvent.processEvent(null, null, Attachments.of(path.target().values()), context);
+					deleteEvent.processEvent(null, null, attachment, context);
 				}
 			});
 		};

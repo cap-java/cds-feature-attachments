@@ -25,9 +25,8 @@ import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.sap.cds.CdsData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
@@ -137,7 +136,7 @@ class ReadAttachmentsHandlerTest {
 			var select = Select.from(RootTable_.class);
 			mockEventContext(RootTable_.CDS_NAME, select);
 
-			cut.processAfter(readEventContext, List.of(root1, root2));
+			cut.processAfter(readEventContext, List.of(Attachments.of(root1), Attachments.of(root2)));
 
 			assertThat(attachmentWithNullValueContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
 			assertThat(attachmentWithoutContentField.getContent()).isNull();
@@ -181,7 +180,7 @@ class ReadAttachmentsHandlerTest {
 		attachment.setStatus(status);
 		doThrow(AttachmentStatusException.class).when(attachmentStatusValidator).verifyStatus(status);
 
-		List<CdsData> attachments = List.of(attachment);
+		List<Attachments> attachments = List.of(attachment);
 		assertThrows(AttachmentStatusException.class, () -> cut.processAfter(readEventContext, attachments));
 	}
 
@@ -251,7 +250,7 @@ class ReadAttachmentsHandlerTest {
 		eventItem.setId1("test");
 		mockEventContext(EventItems_.CDS_NAME, mock(CqnSelect.class));
 
-		cut.processAfter(readEventContext, List.of(eventItem));
+		cut.processAfter(readEventContext, List.of(Attachments.of(eventItem)));
 
 		verifyNoInteractions(attachmentService);
 	}
