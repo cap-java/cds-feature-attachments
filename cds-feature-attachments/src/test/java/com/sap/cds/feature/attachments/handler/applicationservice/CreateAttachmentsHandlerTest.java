@@ -20,7 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
@@ -104,7 +104,7 @@ class CreateAttachmentsHandlerTest {
 
 			cut.processBefore(createContext, List.of(attachment));
 
-			verify(eventFactory).getEvent(testStream, null, CdsData.create());
+			verify(eventFactory).getEvent(testStream, null, Attachments.create());
 		}
 	}
 
@@ -233,7 +233,7 @@ class CreateAttachmentsHandlerTest {
 
 		cut.processBefore(createContext, List.of(attachment));
 
-		verify(eventFactory).getEvent(testStream, (String) readonlyFields.get(Attachments.CONTENT_ID), CdsData.create());
+		verify(eventFactory).getEvent(testStream, (String) readonlyFields.get(Attachments.CONTENT_ID), Attachments.create());
 		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
 		assertThat(attachment.getContentId()).isEqualTo(readonlyFields.get(Attachments.CONTENT_ID));
 		assertThat(attachment.getStatus()).isEqualTo(readonlyFields.get(Attachments.STATUS));

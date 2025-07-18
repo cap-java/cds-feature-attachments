@@ -13,15 +13,16 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
+import com.sap.cds.services.changeset.ChangeSetListener;
 
 /**
  * The class {@link CreateAttachmentEvent} handles the creation of an attachment. It calls the {@link AttachmentService}
@@ -40,28 +41,30 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 	}
 
 	@Override
-	public InputStream processEvent(Path path, InputStream content, Attachments existingData, EventContext eventContext) {
+	public InputStream processEvent(Path path, InputStream content, Attachments attachment, EventContext eventContext) {
 		logger.debug("Calling attachment service with create event for entity {}",
 				path.target().entity().getQualifiedName());
-		var values = path.target().values();
-		var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-		var mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, existingData);
-		var fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, existingData);
+		Map<String, Object> values = path.target().values();
+		Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
+		Optional<String> mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, attachment);
+		Optional<String> fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, attachment);
 
 		var createEventInput = new CreateAttachmentInput(keys, path.target().entity(), fileNameOptional.orElse(null),
 				mimeTypeOptional.orElse(null), content);
-		var result = attachmentService.createAttachment(createEventInput);
-		var createListener = listenerProvider.provideListener(result.contentId(), eventContext.getCdsRuntime());
-		var context = eventContext.getChangeSetContext();
-		context.register(createListener);
+		AttachmentModificationResult result = attachmentService.createAttachment(createEventInput);
+		ChangeSetListener createListener = listenerProvider.provideListener(result.contentId(),
+				eventContext.getCdsRuntime());
+
+		eventContext.getChangeSetContext().register(createListener);
 		path.target().values().put(Attachments.CONTENT_ID, result.contentId());
 		path.target().values().put(Attachments.STATUS, result.status());
 		return result.isInternalStored() ? content : null;
 	}
 
-	private static Optional<String> getFieldValue(String fieldName, Map<String, Object> values, CdsData existingData) {
+	private static Optional<String> getFieldValue(String fieldName, Map<String, Object> values,
+			Attachments attachment) {
 		var annotationValue = values.get(fieldName);
-		var value = Objects.nonNull(annotationValue) ? annotationValue : existingData.get(fieldName);
+		var value = Objects.nonNull(annotationValue) ? annotationValue : attachment.get(fieldName);
 		return Optional.ofNullable((String) value);
 	}
 }

@@ -132,7 +132,7 @@ class UpdateAttachmentsHandlerTest {
 		cut.processBefore(updateContext, List.of(attachment));
 
 		verify(eventFactory).getEvent(testStream, (String) readonlyUpdateFields.get(Attachments.CONTENT_ID), 
-				CdsData.create());
+				Attachments.create());
 		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
 		assertThat(attachment.getContentId()).isEqualTo(readonlyUpdateFields.get(Attachments.CONTENT_ID));
 		assertThat(attachment.getStatus()).isEqualTo(readonlyUpdateFields.get(Attachments.STATUS));
@@ -256,7 +256,7 @@ class UpdateAttachmentsHandlerTest {
 
 		cut.processBefore(updateContext, List.of(root));
 
-		verify(eventFactory).getEvent(testStream, null, CdsData.create());
+		verify(eventFactory).getEvent(testStream, null, Attachments.create());
 	}
 
 	@Test

@@ -20,10 +20,10 @@ public interface ModifyAttachmentEvent {
 	 * 
 	 * @param path         the path of the attachment
 	 * @param content      the content of the attachment
-	 * @param existingData existing data
+	 * @param attachment   existing attachment data
 	 * @param eventContext the current event context
 	 * @return the processed content
 	 */
-	InputStream processEvent(Path path, InputStream content, Attachments existingData, EventContext eventContext);
+	InputStream processEvent(Path path, InputStream content, Attachments attachment, EventContext eventContext);
 
 }

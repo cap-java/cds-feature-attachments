@@ -34,17 +34,17 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 	}
 
 	@Override
-	public InputStream processEvent(Path path, InputStream content, Attachments existingData,
+	public InputStream processEvent(Path path, InputStream content, Attachments attachment,
 			EventContext eventContext) {
 		String qualifiedName = eventContext.getTarget().getQualifiedName();
 		logger.debug("Processing the event for calling attachment service with mark as delete event for entity {}",
 				qualifiedName);
 
-		if (ApplicationHandlerHelper.doesContentIdExistsBefore(existingData)
+		if (ApplicationHandlerHelper.doesContentIdExistsBefore(attachment)
 				&& !DraftService.EVENT_DRAFT_PATCH.equals(eventContext.getEvent())) {
 			logger.debug("Calling attachment service with mark as delete event for entity {}", qualifiedName);
 			attachmentService.markAttachmentAsDeleted(
-					new MarkAsDeletedInput(existingData.getContentId(), eventContext.getUserInfo()));
+					new MarkAsDeletedInput(attachment.getContentId(), eventContext.getUserInfo()));
 		} else {
 			logger.debug(
 					"Do NOT call attachment service with mark as delete event for entity {} as no document id found in existing data and event is DRAFT_PATCH event",
@@ -52,7 +52,7 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 		}
 		if (Objects.nonNull(path)) {
 			var newContentId = path.target().values().get(Attachments.CONTENT_ID);
-			if (Objects.nonNull(newContentId) && newContentId.equals(existingData.getContentId())
+			if (Objects.nonNull(newContentId) && newContentId.equals(attachment.getContentId())
 					|| !path.target().values().containsKey(Attachments.CONTENT_ID)) {
 				path.target().values().put(Attachments.CONTENT_ID, null);
 				path.target().values().put(Attachments.STATUS, null);

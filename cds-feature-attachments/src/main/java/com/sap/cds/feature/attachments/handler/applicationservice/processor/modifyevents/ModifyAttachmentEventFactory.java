@@ -43,14 +43,14 @@ public class ModifyAttachmentEventFactory {
 	/**
 	 * Returns the event that should be executed based on the given parameters.
 	 * 
-	 * @param content      the optional content as {@link InputStream}
-	 * @param contentId    the optional content id
-	 * @param existingData the existing {@link CdsData data}
+	 * @param content            the optional content as {@link InputStream}
+	 * @param contentId          the optional content id
+	 * @param existingAttachment the existing {@link CdsData data}
 	 * @return the corresponding {@link ModifyAttachmentEvent} that should be executed
 	 */
-	public ModifyAttachmentEvent getEvent(InputStream content, String contentId, CdsData existingData) {
-		var existingContentId = existingData.get(Attachments.CONTENT_ID);
-		var event = contentId != null ? handleExistingContentId(content, contentId, (String) existingContentId)
+	public ModifyAttachmentEvent getEvent(InputStream content, String contentId, Attachments existingAttachment) {
+		String existingContentId = existingAttachment.getContentId();
+		var event = contentId != null ? handleExistingContentId(content, contentId, existingContentId)
 				: handleNonExistingContentId(content, existingContentId);
 		return event.orElse(doNothingEvent);
 	}

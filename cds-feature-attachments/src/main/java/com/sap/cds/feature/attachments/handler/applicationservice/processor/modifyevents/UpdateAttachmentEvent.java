@@ -34,13 +34,12 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 	}
 
 	@Override
-	public InputStream processEvent(Path path, InputStream content, Attachments existingData,
-			EventContext eventContext) {
+	public InputStream processEvent(Path path, InputStream content, Attachments attachment, EventContext eventContext) {
 		logger.debug("Processing UPDATE event by calling attachment service with create and delete event for entity {}",
 				path.target().entity().getQualifiedName());
 
-		deleteEvent.processEvent(path, content, existingData, eventContext);
-		return createEvent.processEvent(path, content, existingData, eventContext);
+		deleteEvent.processEvent(path, content, attachment, eventContext);
+		return createEvent.processEvent(path, content, attachment, eventContext);
 	}
 
 }
