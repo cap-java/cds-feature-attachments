@@ -11,7 +11,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
@@ -47,7 +46,7 @@ public class DeleteAttachmentsHandler implements EventHandler {
 	public void processBefore(CdsDeleteEventContext context) {
 		logger.debug("Processing before delete event for entity {}", context.getTarget().getName());
 
-		List<CdsData> attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(),
+		List<Attachments> attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(),
 				context.getCqn());
 
 		Converter converter = (path, element, value) -> deleteEvent.processEvent(path, (InputStream) value,

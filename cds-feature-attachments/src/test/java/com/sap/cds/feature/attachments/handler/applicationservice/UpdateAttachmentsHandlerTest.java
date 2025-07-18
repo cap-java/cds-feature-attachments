@@ -235,7 +235,7 @@ class UpdateAttachmentsHandlerTest {
 		var model = runtime.getCdsModel();
 		var target = updateContext.getTarget();
 		when(attachmentsReader.readAttachments(eq(model), eq(target), any(CqnFilterableStatement.class))).thenReturn(
-				List.of(root));
+				List.of(Attachments.of(root)));
 
 		cut.processBefore(updateContext, List.of(Attachments.of(root)));
 
@@ -249,7 +249,7 @@ class UpdateAttachmentsHandlerTest {
 	void noExistingDataFound() {
 		var id = getEntityAndMockContext(RootTable_.CDS_NAME);
 		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
-				List.of(CdsData.create()));
+				List.of(Attachments.create()));
 
 		var testStream = mock(InputStream.class);
 		var root = fillRootData(testStream, id);
@@ -402,7 +402,7 @@ class UpdateAttachmentsHandlerTest {
 		var existingRoot = RootTable.create();
 		existingRoot.setAttachments(List.of(attachment));
 		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
-				List.of(existingRoot));
+				List.of(Attachments.of(existingRoot)));
 		when(updateContext.getUserInfo()).thenReturn(userInfo);
 
 		cut.processBefore(updateContext, List.of(Attachments.of(root)));

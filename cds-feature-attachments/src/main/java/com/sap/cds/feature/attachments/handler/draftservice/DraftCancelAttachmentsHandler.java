@@ -61,7 +61,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 			CdsEntity activeEntity = DraftUtils.getActiveEntity(context.getTarget());
 			CdsEntity draftEntity = DraftUtils.getDraftEntity(context.getTarget());
 
-			List<CdsData> draftAttachments = readAttachments(context, draftEntity, false);
+			List<Attachments> draftAttachments = readAttachments(context, draftEntity, false);
 			List<Attachments> activeCondensedAttachments = getCondensedActiveAttachments(context, activeEntity);
 
 			Validator validator = buildDeleteContentValidator(context, activeCondensedAttachments);
@@ -93,7 +93,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 		return context.getCqn().where().isEmpty();
 	}
 
-	private List<CdsData> readAttachments(DraftCancelEventContext context, CdsStructuredType entity,
+	private List<Attachments> readAttachments(DraftCancelEventContext context, CdsStructuredType entity,
 			boolean isActiveEntity) {
 		var cqnInactiveEntity = CQL.copy(context.getCqn(),
 				new ActiveEntityModifier(isActiveEntity, entity.getQualifiedName()));

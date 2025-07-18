@@ -8,7 +8,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
@@ -74,7 +73,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		logger.debug("Processing before update event for entity {}", target.getName());
 
 		CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());
-		List<CdsData> existingAttachments = attachmentsReader.readAttachments(context.getModel(), target, select);
+		List<Attachments> existingAttachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
 		List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseData(existingAttachments, target);
 		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, attachments, condensedAttachments,
@@ -91,7 +90,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 				.noneMatch(association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
 	}
 
-	private void deleteRemovedAttachments(List<CdsData> exitingDataList, List<Attachments> updatedDataList,
+	private void deleteRemovedAttachments(List<Attachments> existingDataList, List<Attachments> updatedDataList,
 			CdsEntity entity, UserInfo userInfo) {
 		var condensedUpdatedData = ApplicationHandlerHelper.condenseData(updatedDataList, entity);
 
@@ -105,7 +104,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 			}
 		};
 		CdsDataProcessor.create().addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator)
-				.process(exitingDataList, entity);
+				.process(existingDataList, entity);
 	}
 
 }

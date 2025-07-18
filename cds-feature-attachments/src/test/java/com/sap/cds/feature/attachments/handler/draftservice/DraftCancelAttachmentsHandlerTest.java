@@ -181,7 +181,7 @@ class DraftCancelAttachmentsHandlerTest {
 		attachment.setContentId(contentId);
 		attachment.setHasActiveEntity(hasActiveEntity);
 		attachment.setContent(null);
-		when(attachmentsReader.readAttachments(any(), eq(target), any())).thenReturn(List.of(attachment));
+		when(attachmentsReader.readAttachments(any(), eq(target), any())).thenReturn(List.of(Attachments.of(attachment)));
 		return attachment;
 	}
 

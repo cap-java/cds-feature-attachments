@@ -98,7 +98,7 @@ class DeleteAttachmentsHandlerTest {
 		root.setItemTable(List.of(items));
 		items.setAttachments(List.of(attachment1, attachment2));
 		when(attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn())).thenReturn(
-				List.of(root));
+				List.of(Attachments.of(root)));
 
 		cut.processBefore(context);
 
