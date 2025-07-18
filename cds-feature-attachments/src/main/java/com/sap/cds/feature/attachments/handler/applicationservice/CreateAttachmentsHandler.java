@@ -55,7 +55,7 @@ public class CreateAttachmentsHandler implements EventHandler {
 
 	@Before(entity = "*")
 	@HandlerOrder(HandlerOrder.LATE)
-	public void processBefore(CdsCreateEventContext context, List<? extends CdsData> data) {
+	void processBefore(CdsCreateEventContext context, List<? extends CdsData> data) {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}

@@ -118,7 +118,7 @@ class DeleteAttachmentsHandlerTest {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBefore", CdsDeleteEventContext.class);
+		var method = cut.getClass().getDeclaredMethod("processBefore", CdsDeleteEventContext.class);
 
 		var deleteBeforeAnnotation = method.getAnnotation(Before.class);
 		var deleteHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);

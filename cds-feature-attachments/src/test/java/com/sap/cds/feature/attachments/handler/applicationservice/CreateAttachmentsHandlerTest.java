@@ -270,7 +270,7 @@ class CreateAttachmentsHandlerTest {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBefore", CdsCreateEventContext.class, List.class);
+		var method = cut.getClass().getDeclaredMethod("processBefore", CdsCreateEventContext.class, List.class);
 
 		var createBeforeAnnotation = method.getAnnotation(Before.class);
 		var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);

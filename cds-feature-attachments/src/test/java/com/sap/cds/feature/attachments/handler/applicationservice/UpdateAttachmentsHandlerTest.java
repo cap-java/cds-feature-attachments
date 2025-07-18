@@ -425,7 +425,7 @@ class UpdateAttachmentsHandlerTest {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBefore", CdsUpdateEventContext.class, List.class);
+		var method = cut.getClass().getDeclaredMethod("processBefore", CdsUpdateEventContext.class, List.class);
 
 		var updateBeforeAnnotation = method.getAnnotation(Before.class);
 		var updateHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);

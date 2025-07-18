@@ -265,7 +265,7 @@ class ReadAttachmentsHandlerTest {
 
 	@Test
 	void afterMethodAfterHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processAfter", CdsReadEventContext.class, List.class);
+		var method = cut.getClass().getDeclaredMethod("processAfter", CdsReadEventContext.class, List.class);
 
 		var readAfterAnnotation = method.getAnnotation(After.class);
 		var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
@@ -276,7 +276,7 @@ class ReadAttachmentsHandlerTest {
 
 	@Test
 	void beforeMethodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBefore", CdsReadEventContext.class);
+		var method = cut.getClass().getDeclaredMethod("processBefore", CdsReadEventContext.class);
 
 		var readBeforeAnnotation = method.getAnnotation(Before.class);
 		var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);

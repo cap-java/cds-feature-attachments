@@ -68,7 +68,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	@Before(entity = "*")
 	@HandlerOrder(HandlerOrder.EARLY)
-	public void processBefore(CdsReadEventContext context) {
+	void processBefore(CdsReadEventContext context) {
 		logger.debug("Processing before read event for entity {}", context.getTarget().getName());
 
 		CdsModel cdsModel = context.getModel();
@@ -81,7 +81,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	@After(entity = "*")
 	@HandlerOrder(HandlerOrder.EARLY)
-	public void processAfter(CdsReadEventContext context, List<? extends CdsData> data) {
+	void processAfter(CdsReadEventContext context, List<? extends CdsData> data) {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}

@@ -103,6 +103,6 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	private List<Attachments> getCondensedActiveAttachments(DraftCancelEventContext context,
 			CdsStructuredType activeEntity) {
 		var attachments = readAttachments(context, activeEntity, true);
-		return ApplicationHandlerHelper.condenseData(attachments, context.getTarget());
+		return ApplicationHandlerHelper.condenseAttachments(attachments, context.getTarget());
 	}
 }

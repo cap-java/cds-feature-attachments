@@ -58,16 +58,16 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
 	@Before(entity = "*")
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
-	public void processBeforeForDraft(CdsUpdateEventContext context, List<? extends CdsData> attachments) {
-		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, attachments, storageReader.get());
+	void processBeforeForDraft(CdsUpdateEventContext context, List<? extends CdsData> data) {
+		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
 	}
 
 	@Before(entity = "*")
 	@HandlerOrder(HandlerOrder.LATE)
-	public void processBefore(CdsUpdateEventContext context, List<Attachments> attachments) {
+	void processBefore(CdsUpdateEventContext context, List<? extends CdsData> data) {
 		CdsEntity target = context.getTarget();
-		boolean noContentInData = ApplicationHandlerHelper.noContentFieldInData(target, attachments);
-		boolean associationsAreUnchanged = associationsAreUnchanged(target, attachments);
+		boolean noContentInData = ApplicationHandlerHelper.noContentFieldInData(target, data);
+		boolean associationsAreUnchanged = associationsAreUnchanged(target, data);
 		if (noContentInData && associationsAreUnchanged) {
 			return;
 		}
@@ -77,29 +77,29 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());
 		List<Attachments> existingAttachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
-		List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseData(existingAttachments, target);
-		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, attachments, condensedAttachments,
-				eventFactory, context);
+		List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseAttachments(existingAttachments,
+				target);
+		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory,
+				context);
 
 		if (!associationsAreUnchanged) {
-			deleteRemovedAttachments(existingAttachments, attachments, target, context.getUserInfo());
+			deleteRemovedAttachments(existingAttachments, data, target, context.getUserInfo());
 		}
 	}
 
-	private boolean associationsAreUnchanged(CdsEntity entity, List<Attachments> attachments) {
+	private boolean associationsAreUnchanged(CdsEntity entity, List<? extends CdsData> attachments) {
 		// TODO: check if this should be replaced with entity.assocations().noneMatch(...)
 		return entity.compositions()
 				.noneMatch(association -> attachments.stream().anyMatch(d -> d.containsKey(association.getName())));
 	}
 
-	private void deleteRemovedAttachments(List<Attachments> existingAttachments, List<Attachments> updatedAttachments,
+	private void deleteRemovedAttachments(List<Attachments> existingAttachments, List<? extends CdsData> data,
 			CdsEntity entity, UserInfo userInfo) {
-		List<Attachments> condensedUpdatedAttachments = ApplicationHandlerHelper.condenseData(updatedAttachments,
-				entity);
+		List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseAttachments(data, entity);
 
 		Validator validator = (path, element, value) -> {
 			Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-			boolean entryExists = condensedUpdatedAttachments.stream()
+			boolean entryExists = condensedAttachments.stream()
 					.anyMatch(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
 			if (!entryExists) {
 				String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);

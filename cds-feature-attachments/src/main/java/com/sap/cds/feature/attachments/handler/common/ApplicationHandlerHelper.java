@@ -36,7 +36,7 @@ public final class ApplicationHandlerHelper {
 	/**
 	 * Checks if the data contains a content field.
 	 * 
-	 * @param entity      The {@link CdsEntity} to check
+	 * @param entity      The {@link CdsEntity entity} type of the given the data to check
 	 * @param attachments The data to check
 	 * @return <code>true</code> if the data contains a content field, <code>false</code> otherwise
 	 */
@@ -59,7 +59,14 @@ public final class ApplicationHandlerHelper {
 		return baseEntity.getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false);
 	}
 
-	public static List<Attachments> condenseData(List<? extends CdsData> data, CdsEntity entity) {
+	/**
+	 * Condenses the attachments from the given data into a list of {@link Attachments attachments}.
+	 * 
+	 * @param data   the list of {@link CdsData} to process
+	 * @param entity the {@link CdsEntity entity} type of the given data
+	 * @return a list of {@link Attachments attachments} condensed from the data
+	 */
+	public static List<Attachments> condenseAttachments(List<? extends CdsData> data, CdsEntity entity) {
 		List<Attachments> resultList = new ArrayList<>();
 
 		Validator validator = (path, element, value) -> resultList.add(Attachments.of(path.target().values()));
