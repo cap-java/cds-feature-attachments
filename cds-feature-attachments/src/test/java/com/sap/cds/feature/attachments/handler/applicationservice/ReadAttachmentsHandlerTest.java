@@ -136,7 +136,7 @@ class ReadAttachmentsHandlerTest {
 			var select = Select.from(RootTable_.class);
 			mockEventContext(RootTable_.CDS_NAME, select);
 
-			cut.processAfter(readEventContext, List.of(Attachments.of(root1), Attachments.of(root2)));
+			cut.processAfter(readEventContext, List.of(root1, root2));
 
 			assertThat(attachmentWithNullValueContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
 			assertThat(attachmentWithoutContentField.getContent()).isNull();
@@ -250,7 +250,7 @@ class ReadAttachmentsHandlerTest {
 		eventItem.setId1("test");
 		mockEventContext(EventItems_.CDS_NAME, mock(CqnSelect.class));
 
-		cut.processAfter(readEventContext, List.of(Attachments.of(eventItem)));
+		cut.processAfter(readEventContext, List.of(eventItem));
 
 		verifyNoInteractions(attachmentService);
 	}

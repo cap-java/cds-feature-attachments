@@ -20,8 +20,8 @@ public final class ReadonlyDataContextEnhancer {
 	private ReadonlyDataContextEnhancer() {
 	}
 
-	public static void enhanceReadonlyDataInContext(EventContext context,
-			List<Attachments> attachments, boolean isDraft) {
+	public static void enhanceReadonlyDataInContext(EventContext context, List<? extends CdsData> data,
+			boolean isDraft) {
 
 		Validator validator = (path, element, value) -> {
 			if (isDraft) {
@@ -36,7 +36,7 @@ public final class ReadonlyDataContextEnhancer {
 			}
 		};
 
-		CdsDataProcessor.create().addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator).process(attachments,
+		CdsDataProcessor.create().addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator).process(data,
 				context.getTarget());
 	}
 

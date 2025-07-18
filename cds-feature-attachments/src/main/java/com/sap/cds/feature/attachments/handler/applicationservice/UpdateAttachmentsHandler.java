@@ -9,6 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
@@ -57,7 +58,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
 	@Before(entity = "*")
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
-	public void processBeforeForDraft(CdsUpdateEventContext context, List<Attachments> attachments) {
+	public void processBeforeForDraft(CdsUpdateEventContext context, List<? extends CdsData> attachments) {
 		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, attachments, storageReader.get());
 	}
 

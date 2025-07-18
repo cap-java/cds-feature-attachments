@@ -11,6 +11,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.Result;
@@ -49,7 +50,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 
 	@Before(entity = "*")
 	@HandlerOrder(HandlerOrder.LATE)
-	public void processBeforeDraftPatch(DraftPatchEventContext context, List<Attachments> attachments) {
+	public void processBeforeDraftPatch(DraftPatchEventContext context, List<? extends CdsData> data) {
 		logger.debug("Processing before draft patch event for entity {}", context.getTarget().getName());
 
 		Converter converter = (path, element, value) -> {
@@ -61,8 +62,8 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 					eventFactory, context, path, (InputStream) value);
 		};
 
-		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
-				.process(attachments, context.getTarget());
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,
+				context.getTarget());
 	}
 
 }

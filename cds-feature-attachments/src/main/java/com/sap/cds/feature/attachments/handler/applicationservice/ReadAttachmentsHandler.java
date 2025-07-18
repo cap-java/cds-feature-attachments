@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
@@ -65,7 +66,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 		this.asyncMalwareScanExecutor = asyncMalwareScanExecutor;
 	}
 
-	@Before
+	@Before(entity = "*")
 	@HandlerOrder(HandlerOrder.EARLY)
 	public void processBefore(CdsReadEventContext context) {
 		logger.debug("Processing before read event for entity {}", context.getTarget().getName());
@@ -80,8 +81,8 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	@After(entity = "*")
 	@HandlerOrder(HandlerOrder.EARLY)
-	public void processAfter(CdsReadEventContext context, List<Attachments> attachments) {
-		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), attachments)) {
+	public void processAfter(CdsReadEventContext context, List<? extends CdsData> data) {
+		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
 		logger.debug("Processing after read event for entity {}", context.getTarget().getQualifiedName());
@@ -101,7 +102,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 			}
 		};
 
-		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(attachments,
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,
 				context.getTarget());
 	}
 

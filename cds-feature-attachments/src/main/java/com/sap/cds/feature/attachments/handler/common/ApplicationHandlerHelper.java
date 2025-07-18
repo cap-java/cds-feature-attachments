@@ -40,7 +40,7 @@ public final class ApplicationHandlerHelper {
 	 * @param attachments The data to check
 	 * @return <code>true</code> if the data contains a content field, <code>false</code> otherwise
 	 */
-	public static boolean noContentFieldInData(CdsEntity entity, List<Attachments> attachments) {
+	public static boolean noContentFieldInData(CdsEntity entity, List<? extends CdsData> attachments) {
 		var isIncluded = new AtomicBoolean();
 		Validator validator = (path, element, value) -> isIncluded.set(true);
 
