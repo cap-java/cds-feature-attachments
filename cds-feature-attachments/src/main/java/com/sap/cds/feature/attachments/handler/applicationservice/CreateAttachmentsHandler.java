@@ -49,13 +49,13 @@ public class CreateAttachmentsHandler implements EventHandler {
 
 	@Before
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
-	void processBeforeForDraft(CdsCreateEventContext context, List<? extends CdsData> data) {
+	void processBeforeForDraft(CdsCreateEventContext context, List<CdsData> data) {
 		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
 	}
 
 	@Before
 	@HandlerOrder(HandlerOrder.LATE)
-	void processBefore(CdsCreateEventContext context, List<? extends CdsData> data) {
+	void processBefore(CdsCreateEventContext context, List<CdsData> data) {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}

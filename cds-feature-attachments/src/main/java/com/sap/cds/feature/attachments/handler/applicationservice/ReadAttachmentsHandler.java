@@ -82,22 +82,21 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	@After
 	@HandlerOrder(HandlerOrder.EARLY)
-	void processAfter(CdsReadEventContext context, List<? extends CdsData> data) {
+	void processAfter(CdsReadEventContext context, List<CdsData> data) {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
 		logger.debug("Processing after read event for entity {}", context.getTarget().getQualifiedName());
 
 		Converter converter = (path, element, value) -> {
-			String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
-			String status = (String) path.target().values().get(Attachments.STATUS);
-			InputStream content = (InputStream) path.target().values().get(Attachments.CONTENT);
+			Attachments attachment = Attachments.of(path.target().values());
+			InputStream content = attachment.getContent();
 			boolean contentExists = nonNull(content);
-			if (nonNull(contentId) || contentExists) {
-				verifyStatus(path, status, contentId, contentExists);
+			if (nonNull(attachment.getContentId()) || contentExists) {
+				verifyStatus(path, attachment.getStatus(), attachment.getContentId(), contentExists);
 				Supplier<InputStream> supplier = nonNull(content) ? () -> content
-						: () -> attachmentService.readAttachment(contentId);
-				return new LazyProxyInputStream(supplier, statusValidator, status);
+						: () -> attachmentService.readAttachment(attachment.getContentId());
+				return new LazyProxyInputStream(supplier, statusValidator, attachment.getStatus());
 			} else {
 				return value;
 			}

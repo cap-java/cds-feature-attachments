@@ -223,7 +223,7 @@ class UpdateAttachmentsHandlerTest {
 		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
 				List.of(attachment));
 
-		List<Attachments> input = List.of(attachment);
+		List<CdsData> input = List.of(attachment);
 		assertThrows(ServiceException.class, () -> cut.processBefore(updateContext, input));
 	}
 
@@ -237,7 +237,7 @@ class UpdateAttachmentsHandlerTest {
 		when(attachmentsReader.readAttachments(eq(model), eq(target), any(CqnFilterableStatement.class))).thenReturn(
 				List.of(Attachments.of(root)));
 
-		cut.processBefore(updateContext, List.of(Attachments.of(root)));
+		cut.processBefore(updateContext, List.of(root));
 
 		verify(eventFactory).getEvent(eq(testStream), eq(null), cdsDataArgumentCaptor.capture());
 		assertThat(cdsDataArgumentCaptor.getValue()).isEqualTo(root.getAttachments().get(0));
@@ -270,7 +270,7 @@ class UpdateAttachmentsHandlerTest {
 		attachment.setContent(testStream);
 		root.setAttachments(List.of(attachment));
 
-		List<Attachments> roots = List.of(Attachments.of(root));
+		List<CdsData> roots = List.of(Attachments.of(root));
 		assertDoesNotThrow(() -> cut.processBefore(updateContext, roots));
 	}
 

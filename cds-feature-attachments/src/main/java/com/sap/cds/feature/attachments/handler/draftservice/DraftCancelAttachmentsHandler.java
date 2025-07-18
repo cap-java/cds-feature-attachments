@@ -19,6 +19,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.processor.modi
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.ql.CQL;
+import com.sap.cds.ql.cqn.CqnDelete;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.DraftCancelEventContext;
@@ -95,14 +96,14 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 	private List<Attachments> readAttachments(DraftCancelEventContext context, CdsStructuredType entity,
 			boolean isActiveEntity) {
-		var cqnInactiveEntity = CQL.copy(context.getCqn(),
+		CqnDelete cqnInactiveEntity = CQL.copy(context.getCqn(),
 				new ActiveEntityModifier(isActiveEntity, entity.getQualifiedName()));
 		return attachmentsReader.readAttachments(context.getModel(), (CdsEntity) entity, cqnInactiveEntity);
 	}
 
 	private List<Attachments> getCondensedActiveAttachments(DraftCancelEventContext context,
 			CdsStructuredType activeEntity) {
-		var attachments = readAttachments(context, activeEntity, true);
+		List<Attachments> attachments = readAttachments(context, activeEntity, true);
 		return ApplicationHandlerHelper.condenseAttachments(attachments, context.getTarget());
 	}
 }

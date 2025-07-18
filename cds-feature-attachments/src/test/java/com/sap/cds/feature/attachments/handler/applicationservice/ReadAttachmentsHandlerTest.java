@@ -25,6 +25,7 @@ import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems;
@@ -180,7 +181,7 @@ class ReadAttachmentsHandlerTest {
 		attachment.setStatus(status);
 		doThrow(AttachmentStatusException.class).when(attachmentStatusValidator).verifyStatus(status);
 
-		List<Attachments> attachments = List.of(attachment);
+		List<CdsData> attachments = List.of(attachment);
 		assertThrows(AttachmentStatusException.class, () -> cut.processAfter(readEventContext, attachments));
 	}
 
