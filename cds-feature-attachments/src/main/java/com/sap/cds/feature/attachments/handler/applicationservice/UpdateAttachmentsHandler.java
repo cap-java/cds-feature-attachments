@@ -77,10 +77,8 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());
 		List<Attachments> existingAttachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
-		List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseAttachments(existingAttachments,
-				target);
-		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory,
-				context);
+		List<Attachments> attachments = ApplicationHandlerHelper.condenseAttachments(existingAttachments, target);
+		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, attachments, eventFactory, context);
 
 		if (!associationsAreUnchanged) {
 			deleteRemovedAttachments(existingAttachments, data, target, context.getUserInfo());
