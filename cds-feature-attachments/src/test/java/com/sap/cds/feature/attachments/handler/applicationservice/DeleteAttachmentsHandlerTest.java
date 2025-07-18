@@ -16,10 +16,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots_;
-import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -71,7 +71,7 @@ class DeleteAttachmentsHandlerTest {
 		var entity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
 		when(context.getTarget()).thenReturn(entity);
 		when(context.getModel()).thenReturn(runtime.getCdsModel());
-		var data = Attachment.create();
+		var data = Attachments.create();
 		data.setId("test");
 		data.setContentId("test");
 		var inputStream = mock(InputStream.class);
@@ -98,7 +98,7 @@ class DeleteAttachmentsHandlerTest {
 		root.setItemTable(List.of(items));
 		items.setAttachments(List.of(attachment1, attachment2));
 		when(attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn())).thenReturn(
-				List.of(root));
+				List.of(Attachments.of(root)));
 
 		cut.processBefore(context);
 
@@ -118,7 +118,7 @@ class DeleteAttachmentsHandlerTest {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBefore", CdsDeleteEventContext.class);
+		var method = cut.getClass().getDeclaredMethod("processBefore", CdsDeleteEventContext.class);
 
 		var deleteBeforeAnnotation = method.getAnnotation(Before.class);
 		var deleteHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
@@ -127,8 +127,8 @@ class DeleteAttachmentsHandlerTest {
 		assertThat(deleteHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 
-	private Attachment buildAttachment(String id, InputStream inputStream) {
-		var attachment = Attachment.create();
+	private Attachments buildAttachment(String id, InputStream inputStream) {
+		var attachment = Attachments.create();
 		attachment.setId(id);
 		attachment.setContentId("doc_" + id);
 		attachment.setContent(inputStream);

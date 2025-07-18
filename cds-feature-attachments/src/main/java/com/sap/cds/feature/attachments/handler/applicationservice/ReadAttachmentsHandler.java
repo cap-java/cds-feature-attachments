@@ -3,6 +3,9 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,19 +57,19 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private static final Logger logger = LoggerFactory.getLogger(ReadAttachmentsHandler.class);
 
 	private final AttachmentService attachmentService;
-	private final AttachmentStatusValidator attachmentStatusValidator;
-	private final AsyncMalwareScanExecutor asyncMalwareScanExecutor;
+	private final AttachmentStatusValidator statusValidator;
+	private final AsyncMalwareScanExecutor scanExecutor;
 
-	public ReadAttachmentsHandler(AttachmentService attachmentService,
-			AttachmentStatusValidator attachmentStatusValidator, AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
-		this.attachmentService = attachmentService;
-		this.attachmentStatusValidator = attachmentStatusValidator;
-		this.asyncMalwareScanExecutor = asyncMalwareScanExecutor;
+	public ReadAttachmentsHandler(AttachmentService attachmentService, AttachmentStatusValidator statusValidator,
+			AsyncMalwareScanExecutor scanExecutor) {
+		this.attachmentService = requireNonNull(attachmentService, "attachmentService must not be null");
+		this.statusValidator = requireNonNull(statusValidator, "statusValidator must not be null");
+		this.scanExecutor = requireNonNull(scanExecutor, "scanExecutor must not be null");
 	}
 
 	@Before
 	@HandlerOrder(HandlerOrder.EARLY)
-	public void processBefore(CdsReadEventContext context) {
+	void processBefore(CdsReadEventContext context) {
 		logger.debug("Processing before read event for entity {}", context.getTarget().getName());
 
 		CdsModel cdsModel = context.getModel();
@@ -79,22 +82,21 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	@After
 	@HandlerOrder(HandlerOrder.EARLY)
-	public void processAfter(CdsReadEventContext context, List<CdsData> data) {
+	void processAfter(CdsReadEventContext context, List<CdsData> data) {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
 		logger.debug("Processing after read event for entity {}", context.getTarget().getQualifiedName());
 
 		Converter converter = (path, element, value) -> {
-			String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
-			String status = (String) path.target().values().get(Attachments.STATUS);
-			InputStream content = (InputStream) path.target().values().get(Attachments.CONTENT);
-			boolean contentExists = Objects.nonNull(content);
-			if (Objects.nonNull(contentId) || contentExists) {
-				verifyStatus(path, status, contentId, contentExists);
-				Supplier<InputStream> supplier = Objects.nonNull(content) ? () -> content
-						: () -> attachmentService.readAttachment(contentId);
-				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
+			Attachments attachment = Attachments.of(path.target().values());
+			InputStream content = attachment.getContent();
+			boolean contentExists = nonNull(content);
+			if (nonNull(attachment.getContentId()) || contentExists) {
+				verifyStatus(path, attachment, contentExists);
+				Supplier<InputStream> supplier = nonNull(content) ? () -> content
+						: () -> attachmentService.readAttachment(attachment.getContentId());
+				return new LazyProxyInputStream(supplier, statusValidator, attachment.getStatus());
 			} else {
 				return value;
 			}
@@ -131,14 +133,17 @@ public class ReadAttachmentsHandler implements EventHandler {
 		return associationNames;
 	}
 
-	private void verifyStatus(Path path, String status, String contentId, boolean contentExists) {
+	private void verifyStatus(Path path, Attachments attachment, boolean contentExists) {
 		if (areKeysEmpty(path.target().keys())) {
-			logger.info("In verify status for content id {} and status {}", contentId, status);
-			if ((StatusCode.UNSCANNED.equals(status) || StatusCode.SCANNING.equals(status)) && contentExists) {
-				logger.info("Scanning content with ID {} for malware, has current status {}", contentId, status);
-				asyncMalwareScanExecutor.scanAsync(path.target().entity(), contentId);
+			logger.debug("In verify status for content id {} and status {}", attachment.getContentId(),
+					attachment.getStatus());
+			if ((StatusCode.UNSCANNED.equals(attachment.getStatus())
+					|| StatusCode.SCANNING.equals(attachment.getStatus())) && contentExists) {
+				logger.debug("Scanning content with ID {} for malware, has current status {}",
+						attachment.getContentId(), attachment.getStatus());
+				scanExecutor.scanAsync(path.target().entity(), attachment.getContentId());
 			}
-			attachmentStatusValidator.verifyStatus(status);
+			statusValidator.verifyStatus(attachment.getStatus());
 		}
 	}
 

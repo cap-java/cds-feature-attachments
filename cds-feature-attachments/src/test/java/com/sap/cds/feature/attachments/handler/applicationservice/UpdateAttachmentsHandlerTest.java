@@ -23,8 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -62,7 +61,7 @@ class UpdateAttachmentsHandlerTest {
 	private AttachmentService attachmentService;
 	private CdsUpdateEventContext updateContext;
 	private ModifyAttachmentEvent event;
-	private ArgumentCaptor<CdsData> cdsDataArgumentCaptor;
+	private ArgumentCaptor<Attachments> cdsDataArgumentCaptor;
 	private ArgumentCaptor<CqnSelect> selectCaptor;
 	private ThreadDataStorageReader storageReader;
 	private UserInfo userInfo;
@@ -82,7 +81,7 @@ class UpdateAttachmentsHandlerTest {
 
 		event = mock(ModifyAttachmentEvent.class);
 		updateContext = mock(CdsUpdateEventContext.class);
-		cdsDataArgumentCaptor = ArgumentCaptor.forClass(CdsData.class);
+		cdsDataArgumentCaptor = ArgumentCaptor.forClass(Attachments.class);
 		selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
 		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 		userInfo = mock(UserInfo.class);
@@ -120,9 +119,9 @@ class UpdateAttachmentsHandlerTest {
 		getEntityAndMockContext(Attachment_.CDS_NAME);
 
 		var readonlyUpdateFields = CdsData.create();
-		readonlyUpdateFields.put(Attachment.CONTENT_ID, "Document Id");
-		readonlyUpdateFields.put(Attachment.STATUS, "Status Code");
-		readonlyUpdateFields.put(Attachment.SCANNED_AT, Instant.now());
+		readonlyUpdateFields.put(Attachments.CONTENT_ID, "Document Id");
+		readonlyUpdateFields.put(Attachments.STATUS, "Status Code");
+		readonlyUpdateFields.put(Attachments.SCANNED_AT, Instant.now());
 		var testStream = mock(InputStream.class);
 		var attachment = Attachments.create();
 		attachment.setContent(testStream);
@@ -132,12 +131,12 @@ class UpdateAttachmentsHandlerTest {
 
 		cut.processBefore(updateContext, List.of(attachment));
 
-		verify(eventFactory).getEvent(testStream, (String) readonlyUpdateFields.get(Attachment.CONTENT_ID), 
-				CdsData.create());
+		verify(eventFactory).getEvent(testStream, (String) readonlyUpdateFields.get(Attachments.CONTENT_ID), 
+				Attachments.create());
 		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
-		assertThat(attachment.getContentId()).isEqualTo(readonlyUpdateFields.get(Attachment.CONTENT_ID));
-		assertThat(attachment.getStatus()).isEqualTo(readonlyUpdateFields.get(Attachment.STATUS));
-		assertThat(attachment.getScannedAt()).isEqualTo(readonlyUpdateFields.get(Attachment.SCANNED_AT));
+		assertThat(attachment.getContentId()).isEqualTo(readonlyUpdateFields.get(Attachments.CONTENT_ID));
+		assertThat(attachment.getStatus()).isEqualTo(readonlyUpdateFields.get(Attachments.STATUS));
+		assertThat(attachment.getScannedAt()).isEqualTo(readonlyUpdateFields.get(Attachments.SCANNED_AT));
 	}
 
 	@Test
@@ -156,9 +155,9 @@ class UpdateAttachmentsHandlerTest {
 		verifyNoInteractions(eventFactory, event);
 		assertThat(updateAttachment.get(DRAFT_READONLY_CONTEXT)).isNotNull();
 		var readOnlyUpdateData = (CdsData) updateAttachment.get(DRAFT_READONLY_CONTEXT);
-		assertThat(readOnlyUpdateData).containsEntry(Attachment.CONTENT_ID, updateAttachment.getContentId())
-				.containsEntry(Attachment.STATUS, updateAttachment.getStatus())
-				.containsEntry(Attachment.SCANNED_AT, updateAttachment.getScannedAt());
+		assertThat(readOnlyUpdateData).containsEntry(Attachments.CONTENT_ID, updateAttachment.getContentId())
+				.containsEntry(Attachments.STATUS, updateAttachment.getStatus())
+				.containsEntry(Attachments.SCANNED_AT, updateAttachment.getScannedAt());
 	}
 
 	@Test
@@ -170,9 +169,9 @@ class UpdateAttachmentsHandlerTest {
 		updateAttachment.setContentId(contentId);
 		updateAttachment.setContent(null);
 		var readonlyData = CdsData.create();
-		readonlyData.put(Attachment.STATUS, "some wrong status code");
-		readonlyData.put(Attachment.CONTENT_ID, "some other document id");
-		readonlyData.put(Attachment.SCANNED_AT, Instant.EPOCH);
+		readonlyData.put(Attachments.STATUS, "some wrong status code");
+		readonlyData.put(Attachments.CONTENT_ID, "some other document id");
+		readonlyData.put(Attachments.SCANNED_AT, Instant.EPOCH);
 		updateAttachment.put("DRAFT_READONLY_CONTEXT", readonlyData);
 		when(storageReader.get()).thenReturn(false);
 
@@ -180,8 +179,8 @@ class UpdateAttachmentsHandlerTest {
 
 		verifyNoInteractions(eventFactory, event);
 		assertThat(updateAttachment.get(DRAFT_READONLY_CONTEXT)).isNull();
-		assertThat(updateAttachment).containsEntry(Attachment.CONTENT_ID, contentId)
-				.doesNotContainKey(Attachment.STATUS).doesNotContainKey(Attachment.SCANNED_AT);
+		assertThat(updateAttachment).containsEntry(Attachments.CONTENT_ID, contentId)
+				.doesNotContainKey(Attachments.STATUS).doesNotContainKey(Attachments.SCANNED_AT);
 	}
 
 	@Test
@@ -236,7 +235,7 @@ class UpdateAttachmentsHandlerTest {
 		var model = runtime.getCdsModel();
 		var target = updateContext.getTarget();
 		when(attachmentsReader.readAttachments(eq(model), eq(target), any(CqnFilterableStatement.class))).thenReturn(
-				List.of(root));
+				List.of(Attachments.of(root)));
 
 		cut.processBefore(updateContext, List.of(root));
 
@@ -250,14 +249,14 @@ class UpdateAttachmentsHandlerTest {
 	void noExistingDataFound() {
 		var id = getEntityAndMockContext(RootTable_.CDS_NAME);
 		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
-				List.of(CdsData.create()));
+				List.of(Attachments.create()));
 
 		var testStream = mock(InputStream.class);
 		var root = fillRootData(testStream, id);
 
-		cut.processBefore(updateContext, List.of(root));
+		cut.processBefore(updateContext, List.of(Attachments.of(root)));
 
-		verify(eventFactory).getEvent(testStream, null, CdsData.create());
+		verify(eventFactory).getEvent(testStream, null, Attachments.create());
 	}
 
 	@Test
@@ -271,7 +270,7 @@ class UpdateAttachmentsHandlerTest {
 		attachment.setContent(testStream);
 		root.setAttachments(List.of(attachment));
 
-		List<CdsData> roots = List.of(root);
+		List<CdsData> roots = List.of(Attachments.of(root));
 		assertDoesNotThrow(() -> cut.processBefore(updateContext, roots));
 	}
 
@@ -291,7 +290,7 @@ class UpdateAttachmentsHandlerTest {
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
 		var select = selectCaptor.getValue();
 		assertThat(select.toString()).contains(getRefString("$key", "test"));
-		assertThat(select.toString()).contains(getRefString(Attachment.ID, attachment.getId()));
+		assertThat(select.toString()).contains(getRefString(Attachments.ID, attachment.getId()));
 		assertThat(select.toString()).contains(getRefString(UP_ID, (String) attachment.get(UP_ID)));
 	}
 
@@ -310,7 +309,7 @@ class UpdateAttachmentsHandlerTest {
 
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
 		var select = selectCaptor.getValue();
-		assertThat(select.toString()).contains(getRefString(Attachment.ID, attachment.getId()));
+		assertThat(select.toString()).contains(getRefString(Attachments.ID, attachment.getId()));
 		assertThat(select.toString()).contains(getRefString(UP_ID, (String) attachment.get(UP_ID)));
 	}
 
@@ -328,7 +327,7 @@ class UpdateAttachmentsHandlerTest {
 
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
 		var select = selectCaptor.getValue();
-		assertThat(select.toString()).doesNotContain(Attachment.ID);
+		assertThat(select.toString()).doesNotContain(Attachments.ID);
 		assertThat(select.toString()).doesNotContain(UP_ID);
 		assertThat(select.toString()).contains(getRefString("$key", "test"));
 	}
@@ -347,7 +346,7 @@ class UpdateAttachmentsHandlerTest {
 
 		verify(attachmentsReader).readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
 		var select = selectCaptor.getValue();
-		assertThat(select.toString()).contains(getRefString(Attachment.ID, attachment.getId()));
+		assertThat(select.toString()).contains(getRefString(Attachments.ID, attachment.getId()));
 		assertThat(select.toString()).doesNotContain(UP_ID);
 	}
 
@@ -381,7 +380,7 @@ class UpdateAttachmentsHandlerTest {
 		root.setId(id);
 		root.setAttachments(Collections.emptyList());
 
-		cut.processBefore(updateContext, List.of(root));
+		cut.processBefore(updateContext, List.of(Attachments.of(root)));
 
 		verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
 		verifyNoInteractions(eventFactory);
@@ -403,10 +402,10 @@ class UpdateAttachmentsHandlerTest {
 		var existingRoot = RootTable.create();
 		existingRoot.setAttachments(List.of(attachment));
 		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
-				List.of(existingRoot));
+				List.of(Attachments.of(existingRoot)));
 		when(updateContext.getUserInfo()).thenReturn(userInfo);
 
-		cut.processBefore(updateContext, List.of(root));
+		cut.processBefore(updateContext, List.of(Attachments.of(root)));
 
 		verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
 		verifyNoInteractions(eventFactory);
@@ -426,7 +425,7 @@ class UpdateAttachmentsHandlerTest {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBefore", CdsUpdateEventContext.class, List.class);
+		var method = cut.getClass().getDeclaredMethod("processBefore", CdsUpdateEventContext.class, List.class);
 
 		var updateBeforeAnnotation = method.getAnnotation(Before.class);
 		var updateHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
@@ -465,7 +464,7 @@ class UpdateAttachmentsHandlerTest {
 	}
 
 	private Map<String, Object> getAttachmentKeyMap(Attachments attachment) {
-		return Map.of(Attachment.ID, attachment.getId(), "up__ID", attachment.get(UP_ID));
+		return Map.of(Attachments.ID, attachment.getId(), "up__ID", attachment.get(UP_ID));
 	}
 
 	private String getRefString(String key, String value) {

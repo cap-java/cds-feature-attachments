@@ -5,10 +5,17 @@ package com.sap.cds.feature.attachments.handler.draftservice;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.InputStream;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.Result;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
@@ -22,15 +29,10 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
-import java.io.InputStream;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * The class {@link DraftPatchAttachmentsHandler} is an event handler that is
- * called before a draft patch event is executed. The handler checks the
- * attachments of the draft entity and calls the event factory and corresponding
+ * The class {@link DraftPatchAttachmentsHandler} is an event handler that is called before a draft patch event is
+ * executed. The handler checks the attachments of the draft entity and calls the event factory and corresponding
  * events.
  */
 @ServiceName(value = "*", type = DraftService.class)
@@ -48,7 +50,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 
 	@Before
 	@HandlerOrder(HandlerOrder.LATE)
-	public void processBeforeDraftPatch(DraftPatchEventContext context, List<CdsData> data) {
+	void processBeforeDraftPatch(DraftPatchEventContext context, List<? extends CdsData> data) {
 		logger.debug("Processing before draft patch event for entity {}", context.getTarget().getName());
 
 		Converter converter = (path, element, value) -> {
@@ -56,8 +58,8 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 			CqnSelect select = Select.from(draftEntity).matching(path.target().keys());
 			Result result = persistence.run(select);
 
-			return ModifyApplicationHandlerHelper.handleAttachmentForEntity(result.listOf(CdsData.class), eventFactory,
-					context, path, (InputStream) value);
+			return ModifyApplicationHandlerHelper.handleAttachmentForEntity(result.listOf(Attachments.class),
+					eventFactory, context, path, (InputStream) value);
 		};
 
 		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,

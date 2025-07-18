@@ -16,9 +16,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.sap.cds.CdsData;
 import com.sap.cds.Result;
-import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
@@ -71,7 +70,7 @@ class DraftPatchAttachmentsHandlerTest {
 		var root = buildRooWithAttachment(Attachments.create());
 		when(persistence.run(any(CqnSelect.class))).thenReturn(mock(Result.class));
 
-		cut.processBeforeDraftPatch(eventContext, List.of(root));
+		cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
 
 		verify(persistence).run(selectCaptor.capture());
 		var select = selectCaptor.getValue();
@@ -102,9 +101,9 @@ class DraftPatchAttachmentsHandlerTest {
 		var content = attachment.getContent();
 		var result = mock(Result.class);
 		when(persistence.run(any(CqnSelect.class))).thenReturn(result);
-		when(result.listOf(CdsData.class)).thenReturn(List.of(attachment));
+		when(result.listOf(Attachments.class)).thenReturn(List.of(attachment));
 
-		cut.processBeforeDraftPatch(eventContext, List.of(root));
+		cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
 
 		verify(eventFactory).getEvent(content, attachment.getContentId(), attachment);
 	}
@@ -118,9 +117,9 @@ class DraftPatchAttachmentsHandlerTest {
 		var content = attachment.getContent();
 		var result = mock(Result.class);
 		when(persistence.run(any(CqnSelect.class))).thenReturn(result);
-		when(result.listOf(CdsData.class)).thenReturn(List.of(attachment));
+		when(result.listOf(Attachments.class)).thenReturn(List.of(attachment));
 
-		cut.processBeforeDraftPatch(eventContext, List.of(root));
+		cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
 
 		verify(eventFactory).getEvent(content, attachment.getContentId(), attachment);
 		verify(event).processEvent(any(), eq(content), eq(attachment), eq(eventContext));
@@ -132,7 +131,7 @@ class DraftPatchAttachmentsHandlerTest {
 		var events = Events.create();
 		events.setContent("test");
 
-		cut.processBeforeDraftPatch(eventContext, List.of(events));
+		cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(events)));
 
 		assertThat(events).doesNotContainKey(Attachments.CONTENT_ID);
 	}
@@ -147,7 +146,7 @@ class DraftPatchAttachmentsHandlerTest {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBeforeDraftPatch", DraftPatchEventContext.class, List.class);
+		var method = cut.getClass().getDeclaredMethod("processBeforeDraftPatch", DraftPatchEventContext.class, List.class);
 		var beforeAnnotation = method.getAnnotation(Before.class);
 		var handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 

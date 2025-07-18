@@ -26,8 +26,8 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
@@ -266,7 +266,7 @@ class ReadAttachmentsHandlerTest {
 
 	@Test
 	void afterMethodAfterHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processAfter", CdsReadEventContext.class, List.class);
+		var method = cut.getClass().getDeclaredMethod("processAfter", CdsReadEventContext.class, List.class);
 
 		var readAfterAnnotation = method.getAnnotation(After.class);
 		var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
@@ -277,7 +277,7 @@ class ReadAttachmentsHandlerTest {
 
 	@Test
 	void beforeMethodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBefore", CdsReadEventContext.class);
+		var method = cut.getClass().getDeclaredMethod("processBefore", CdsReadEventContext.class);
 
 		var readBeforeAnnotation = method.getAnnotation(Before.class);
 		var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
