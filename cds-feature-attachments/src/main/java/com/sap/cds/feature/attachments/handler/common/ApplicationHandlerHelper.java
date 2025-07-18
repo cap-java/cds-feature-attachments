@@ -59,16 +59,6 @@ public final class ApplicationHandlerHelper {
 		return baseEntity.getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false);
 	}
 
-	/**
-	 * Checks if the {@value Attachments#CONTENT_ID} exists in the existing data.
-	 *
-	 * @param existingData The existing data to check
-	 * @return <code>true</code> if the content ID exists, <code>false</code> otherwise
-	 */
-	public static boolean doesContentIdExistsBefore(Map<String, Object> existingData) {
-		return Objects.nonNull(existingData.get(Attachments.CONTENT_ID));
-	}
-
 	public static List<Attachments> condenseData(List<CdsData> data, CdsEntity entity) {
 		List<Attachments> resultList = new ArrayList<>();
 
