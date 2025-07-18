@@ -41,7 +41,7 @@ public class DeleteAttachmentsHandler implements EventHandler {
 		this.deleteEvent = requireNonNull(deleteEvent, "deleteEvent must not be null");
 	}
 
-	@Before(entity = "*")
+	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	void processBefore(CdsDeleteEventContext context) {
 		logger.debug("Processing before delete event for entity {}", context.getTarget().getName());

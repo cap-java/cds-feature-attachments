@@ -3,6 +3,8 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.List;
 import java.util.Map;
 
@@ -50,19 +52,19 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
 	public UpdateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, AttachmentsReader attachmentsReader,
 			AttachmentService attachmentService, ThreadDataStorageReader storageReader) {
-		this.eventFactory = eventFactory;
-		this.attachmentsReader = attachmentsReader;
-		this.attachmentService = attachmentService;
-		this.storageReader = storageReader;
+		this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
+		this.attachmentsReader = requireNonNull(attachmentsReader, "attachmentsReader must not be null");
+		this.attachmentService = requireNonNull(attachmentService, "attachmentService must not be null");
+		this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
 	}
 
-	@Before(entity = "*")
+	@Before
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
 	void processBeforeForDraft(CdsUpdateEventContext context, List<? extends CdsData> data) {
 		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
 	}
 
-	@Before(entity = "*")
+	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	void processBefore(CdsUpdateEventContext context, List<? extends CdsData> data) {
 		CdsEntity target = context.getTarget();

@@ -54,7 +54,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
 	@Before
 	@HandlerOrder(HandlerOrder.LATE)
-	public void processBeforeDraftCancel(DraftCancelEventContext context) {
+	void processBeforeDraftCancel(DraftCancelEventContext context) {
 		if (isWhereEmpty(context)) {
 			logger.debug("Processing before draft cancel event for entity {}", context.getTarget().getName());
 

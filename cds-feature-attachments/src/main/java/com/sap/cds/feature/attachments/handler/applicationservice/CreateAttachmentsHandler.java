@@ -47,13 +47,13 @@ public class CreateAttachmentsHandler implements EventHandler {
 		this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
 	}
 
-	@Before(entity = "*")
+	@Before
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
 	void processBeforeForDraft(CdsCreateEventContext context, List<? extends CdsData> data) {
 		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
 	}
 
-	@Before(entity = "*")
+	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	void processBefore(CdsCreateEventContext context, List<? extends CdsData> data) {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {

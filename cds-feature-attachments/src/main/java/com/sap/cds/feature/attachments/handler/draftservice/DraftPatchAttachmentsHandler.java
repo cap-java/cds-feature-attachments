@@ -48,9 +48,9 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 		this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
 	}
 
-	@Before(entity = "*")
+	@Before
 	@HandlerOrder(HandlerOrder.LATE)
-	public void processBeforeDraftPatch(DraftPatchEventContext context, List<? extends CdsData> data) {
+	void processBeforeDraftPatch(DraftPatchEventContext context, List<? extends CdsData> data) {
 		logger.debug("Processing before draft patch event for entity {}", context.getTarget().getName());
 
 		Converter converter = (path, element, value) -> {

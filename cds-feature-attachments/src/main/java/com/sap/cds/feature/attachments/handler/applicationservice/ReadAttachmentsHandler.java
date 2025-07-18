@@ -4,6 +4,7 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -56,17 +57,17 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private static final Logger logger = LoggerFactory.getLogger(ReadAttachmentsHandler.class);
 
 	private final AttachmentService attachmentService;
-	private final AttachmentStatusValidator attachmentStatusValidator;
-	private final AsyncMalwareScanExecutor asyncMalwareScanExecutor;
+	private final AttachmentStatusValidator statusValidator;
+	private final AsyncMalwareScanExecutor scanExecutor;
 
-	public ReadAttachmentsHandler(AttachmentService attachmentService,
-			AttachmentStatusValidator attachmentStatusValidator, AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
-		this.attachmentService = attachmentService;
-		this.attachmentStatusValidator = attachmentStatusValidator;
-		this.asyncMalwareScanExecutor = asyncMalwareScanExecutor;
+	public ReadAttachmentsHandler(AttachmentService attachmentService, AttachmentStatusValidator statusValidator,
+			AsyncMalwareScanExecutor scanExecutor) {
+		this.attachmentService = requireNonNull(attachmentService, "attachmentService must not be null");
+		this.statusValidator = requireNonNull(statusValidator, "statusValidator must not be null");
+		this.scanExecutor = requireNonNull(scanExecutor, "scanExecutor must not be null");
 	}
 
-	@Before(entity = "*")
+	@Before
 	@HandlerOrder(HandlerOrder.EARLY)
 	void processBefore(CdsReadEventContext context) {
 		logger.debug("Processing before read event for entity {}", context.getTarget().getName());
@@ -79,7 +80,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 		}
 	}
 
-	@After(entity = "*")
+	@After
 	@HandlerOrder(HandlerOrder.EARLY)
 	void processAfter(CdsReadEventContext context, List<? extends CdsData> data) {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
@@ -96,7 +97,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 				verifyStatus(path, status, contentId, contentExists);
 				Supplier<InputStream> supplier = nonNull(content) ? () -> content
 						: () -> attachmentService.readAttachment(contentId);
-				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
+				return new LazyProxyInputStream(supplier, statusValidator, status);
 			} else {
 				return value;
 			}
@@ -138,9 +139,9 @@ public class ReadAttachmentsHandler implements EventHandler {
 			logger.info("In verify status for content id {} and status {}", contentId, status);
 			if ((StatusCode.UNSCANNED.equals(status) || StatusCode.SCANNING.equals(status)) && contentExists) {
 				logger.info("Scanning content with ID {} for malware, has current status {}", contentId, status);
-				asyncMalwareScanExecutor.scanAsync(path.target().entity(), contentId);
+				scanExecutor.scanAsync(path.target().entity(), contentId);
 			}
-			attachmentStatusValidator.verifyStatus(status);
+			statusValidator.verifyStatus(status);
 		}
 	}
 

@@ -146,7 +146,7 @@ class DraftPatchAttachmentsHandlerTest {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBeforeDraftPatch", DraftPatchEventContext.class, List.class);
+		var method = cut.getClass().getDeclaredMethod("processBeforeDraftPatch", DraftPatchEventContext.class, List.class);
 		var beforeAnnotation = method.getAnnotation(Before.class);
 		var handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
