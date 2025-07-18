@@ -4,6 +4,7 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,27 +85,28 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		}
 	}
 
-	private boolean associationsAreUnchanged(CdsEntity entity, List<Attachments> data) {
+	private boolean associationsAreUnchanged(CdsEntity entity, List<Attachments> attachments) {
 		// TODO: check if this should be replaced with entity.assocations().noneMatch(...)
 		return entity.compositions()
-				.noneMatch(association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
+				.noneMatch(association -> attachments.stream().anyMatch(d -> d.containsKey(association.getName())));
 	}
 
-	private void deleteRemovedAttachments(List<Attachments> existingDataList, List<Attachments> updatedDataList,
+	private void deleteRemovedAttachments(List<Attachments> existingAttachments, List<Attachments> updatedAttachments,
 			CdsEntity entity, UserInfo userInfo) {
-		var condensedUpdatedData = ApplicationHandlerHelper.condenseData(updatedDataList, entity);
+		List<Attachments> condensedUpdatedAttachments = ApplicationHandlerHelper.condenseData(updatedAttachments,
+				entity);
 
 		Validator validator = (path, element, value) -> {
-			var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-			var entryExists = condensedUpdatedData.stream()
+			Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
+			boolean entryExists = condensedUpdatedAttachments.stream()
 					.anyMatch(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
 			if (!entryExists) {
-				var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+				String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 				attachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
 			}
 		};
 		CdsDataProcessor.create().addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator)
-				.process(existingDataList, entity);
+				.process(existingAttachments, entity);
 	}
 
 }
