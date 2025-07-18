@@ -93,7 +93,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 			InputStream content = attachment.getContent();
 			boolean contentExists = nonNull(content);
 			if (nonNull(attachment.getContentId()) || contentExists) {
-				verifyStatus(path, attachment.getStatus(), attachment.getContentId(), contentExists);
+				verifyStatus(path, attachment, contentExists);
 				Supplier<InputStream> supplier = nonNull(content) ? () -> content
 						: () -> attachmentService.readAttachment(attachment.getContentId());
 				return new LazyProxyInputStream(supplier, statusValidator, attachment.getStatus());
@@ -133,14 +133,17 @@ public class ReadAttachmentsHandler implements EventHandler {
 		return associationNames;
 	}
 
-	private void verifyStatus(Path path, String status, String contentId, boolean contentExists) {
+	private void verifyStatus(Path path, Attachments attachment, boolean contentExists) {
 		if (areKeysEmpty(path.target().keys())) {
-			logger.debug("In verify status for content id {} and status {}", contentId, status);
-			if ((StatusCode.UNSCANNED.equals(status) || StatusCode.SCANNING.equals(status)) && contentExists) {
-				logger.debug("Scanning content with ID {} for malware, has current status {}", contentId, status);
-				scanExecutor.scanAsync(path.target().entity(), contentId);
+			logger.debug("In verify status for content id {} and status {}", attachment.getContentId(),
+					attachment.getStatus());
+			if ((StatusCode.UNSCANNED.equals(attachment.getStatus())
+					|| StatusCode.SCANNING.equals(attachment.getStatus())) && contentExists) {
+				logger.debug("Scanning content with ID {} for malware, has current status {}",
+						attachment.getContentId(), attachment.getStatus());
+				scanExecutor.scanAsync(path.target().entity(), attachment.getContentId());
 			}
-			statusValidator.verifyStatus(status);
+			statusValidator.verifyStatus(attachment.getStatus());
 		}
 	}
 
