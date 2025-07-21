@@ -30,6 +30,8 @@
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
+        <software.amazon.awssdk-version>2.32.4</software.amazon.awssdk-version>
+
         <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
         <cds.services.version>3.10.3</cds.services.version> <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
         <cds.cdsdk-version>8.9.8</cds.cdsdk-version> <!-- https://www.npmjs.com/package/@sap/cds-dk?activeTab=versions -->
@@ -50,6 +52,7 @@
 
     <modules>
         <module>cds-feature-attachments</module>
+        <module>examples/cds-feature-attachments-oss</module>
         <module>examples/cds-feature-attachments-fs</module>
         <module>integration-tests</module>
     </modules>
