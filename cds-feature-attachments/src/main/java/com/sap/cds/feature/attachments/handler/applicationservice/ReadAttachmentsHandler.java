@@ -91,11 +91,10 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 		Converter converter = (path, element, value) -> {
 			Attachments attachment = Attachments.of(path.target().values());
-			InputStream content = attachment.getContent();
-			boolean contentExists = nonNull(content);
+			boolean contentExists = nonNull(attachment.getContent());
 			if (nonNull(attachment.getContentId()) || contentExists) {
 				verifyStatus(path, attachment, contentExists);
-				Supplier<InputStream> supplier = contentExists ? () -> content
+				Supplier<InputStream> supplier = contentExists ? attachment::getContent
 						: () -> attachmentService.readAttachment(attachment.getContentId());
 				return new LazyProxyInputStream(supplier, statusValidator, attachment.getStatus());
 			} else {
