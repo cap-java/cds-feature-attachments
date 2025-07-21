@@ -5,13 +5,11 @@ package com.sap.cds.feature.attachments.oss.handler;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sap.cds.OSService;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
@@ -20,7 +18,6 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
-import com.sap.cds.services.EventContext;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -32,20 +29,15 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 public class OSSAttachmentsServiceHandler implements EventHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(OSSAttachmentsServiceHandler.class);
-
-	private final Path rootFolder;
-
+	private final OSService osService;
 	/**
 	 * Creates a new OSSAttachmentsServiceHandler with the given root folder.
 	 * 
 	 * @param rootFolder the root folder where the attachments are stored
 	 * @throws IOException if the root folder cannot be created
 	 */
-	public OSSAttachmentsServiceHandler(Path rootFolder) throws IOException {
-		this.rootFolder = rootFolder;
-		if (!Files.exists(this.rootFolder)) {
-			Files.createDirectories(this.rootFolder);
-		}
+	public OSSAttachmentsServiceHandler(OSService osService) {
+		this.osService = osService;
 	}
 
 	@On
@@ -59,60 +51,36 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 		data.setStatus(StatusCode.CLEAN);
 
 		try (InputStream input = data.getContent()) {
-			Path contentPath = getContentPath(context, contentId);
-			Files.createDirectories(contentPath.getParent());
-			Files.copy(input, contentPath);
-
 			context.setIsInternalStored(false);
 			context.setContentId(contentId);
 			context.setCompleted();
+			osService.createAttachment(input);
 		}
 	}
 
 	@On
 	void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) throws IOException {
 		logger.info("Marking attachment as deleted with document id: {}", context.getContentId());
-
-		Path contenPath = getContentPath(context, context.getContentId());
-		Path parent = contenPath.getParent();
-		Path destPath = getDeletedFolder(context).resolve(parent.getFileName());
-
-		FileUtils.moveDirectory(parent.toFile(), destPath.toFile());
-		context.setCompleted();
 	}
 
 	@On
 	void restoreAttachment(AttachmentRestoreEventContext context) {
 		logger.info("OSS Attachment Service handler called for restoring attachment for timestamp: {}",
 				context.getRestoreTimestamp());
-
-		// nothing to do as data are stored in the database and handled by the database
-		context.setCompleted();
 	}
 
 	@On
 	void readAttachment(AttachmentReadEventContext context) throws IOException {
 		logger.info("OSS Attachment Service handler called for reading attachment with document id: {}",
 				context.getContentId());
-		InputStream fileInputStream = Files.newInputStream(getContentPath(context, context.getContentId()));
-		context.getData().setContent(fileInputStream);
-		context.setCompleted();
 	}
 
-	private Path getContentPath(EventContext context, String contentId) {
-		return this.rootFolder.resolve("%s/%s/content.bin".formatted(getTenant(context), contentId));
-	}
-
-	private Path getDeletedFolder(EventContext context) {
-		return this.rootFolder.resolve("%s/deleted".formatted(getTenant(context)));
-	}
-
-	private static String getTenant(EventContext context) {
+	/*private static String getTenant(EventContext context) {
 		String tenant = context.getUserInfo().getTenant();
 		if (tenant == null) {
 			tenant = "default";
 		}
 		return tenant;
-	}
+	}*/
 
 }

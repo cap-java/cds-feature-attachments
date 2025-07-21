@@ -16,8 +16,13 @@ import com.sap.cds.services.ServiceDelegator;
  */
 public class OSServiceImpl extends ServiceDelegator implements OSService {
 
+	//private final TokenHandler tokenHandler;
+
 	public OSServiceImpl() {
 		super(DEFAULT_NAME);
+      	//TokenHandler tokenHandler
+		//) {
+		//this.tokenHandler = tokenHandler;
 	}
 
 	@Override
