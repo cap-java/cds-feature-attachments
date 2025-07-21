@@ -6,6 +6,8 @@ package com.sap.cds.feature.attachments.handler.draftservice;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,8 +81,8 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 				deleteEvent.processEvent(path, null, attachment, context);
 				return;
 			}
-			var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-			var existingEntry = activeCondensedAttachments.stream()
+			Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
+			Optional<? extends CdsData> existingEntry = activeCondensedAttachments.stream()
 					.filter(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData)).findAny();
 			existingEntry.ifPresent(entry -> {
 				if (!entry.get(Attachments.CONTENT_ID).equals(value)) {

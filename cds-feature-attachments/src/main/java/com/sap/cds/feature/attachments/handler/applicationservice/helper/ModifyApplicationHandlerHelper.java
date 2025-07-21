@@ -44,10 +44,10 @@ public final class ModifyApplicationHandlerHelper {
 
 	public static InputStream handleAttachmentForEntity(List<Attachments> existingDataList,
 			ModifyAttachmentEventFactory eventFactory, EventContext eventContext, Path path, InputStream content) {
-		var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
+		Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 		ReadonlyDataContextEnhancer.fillReadonlyInContext((CdsData) path.target().values());
-		var existingData = getExistingData(keys, existingDataList);
-		var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+		Attachments existingData = getExistingData(keys, existingDataList);
+		String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 
 		// for the current request find the event to process
 		ModifyAttachmentEvent eventToProcess = eventFactory.getEvent(content, contentId, existingData);
