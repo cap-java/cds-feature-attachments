@@ -3,11 +3,11 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -49,8 +49,8 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		Optional<String> mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, attachment);
 		Optional<String> fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, attachment);
 
-		var createEventInput = new CreateAttachmentInput(keys, path.target().entity(), fileNameOptional.orElse(null),
-				mimeTypeOptional.orElse(null), content);
+		CreateAttachmentInput createEventInput = new CreateAttachmentInput(keys, path.target().entity(),
+				fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), content);
 		AttachmentModificationResult result = attachmentService.createAttachment(createEventInput);
 		ChangeSetListener createListener = listenerProvider.provideListener(result.contentId(),
 				eventContext.getCdsRuntime());
@@ -63,8 +63,8 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
 	private static Optional<String> getFieldValue(String fieldName, Map<String, Object> values,
 			Attachments attachment) {
-		var annotationValue = values.get(fieldName);
-		var value = Objects.nonNull(annotationValue) ? annotationValue : attachment.get(fieldName);
+		Object annotationValue = values.get(fieldName);
+		Object value = nonNull(annotationValue) ? annotationValue : attachment.get(fieldName);
 		return Optional.ofNullable((String) value);
 	}
 }

@@ -3,11 +3,12 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.common;
 
+import static java.util.Objects.nonNull;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.sap.cds.CdsData;
@@ -76,8 +77,8 @@ public final class ApplicationHandlerHelper {
 
 	public static boolean areKeysInData(Map<String, Object> keys, CdsData data) {
 		return keys.entrySet().stream().allMatch(entry -> {
-			var keyInData = data.get(entry.getKey());
-			return Objects.nonNull(keyInData) && keyInData.equals(entry.getValue());
+			Object keyInData = data.get(entry.getKey());
+			return nonNull(keyInData) && keyInData.equals(entry.getValue());
 		});
 	}
 

@@ -48,7 +48,7 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 					qualifiedName);
 		}
 		if (nonNull(path)) {
-			var newContentId = path.target().values().get(Attachments.CONTENT_ID);
+			String newContentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 			if (nonNull(newContentId) && newContentId.equals(attachment.getContentId())
 					|| !path.target().values().containsKey(Attachments.CONTENT_ID)) {
 				path.target().values().put(Attachments.CONTENT_ID, null);

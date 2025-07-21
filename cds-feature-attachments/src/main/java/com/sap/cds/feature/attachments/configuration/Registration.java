@@ -114,7 +114,8 @@ public class Registration implements CdsRuntimeConfiguration {
 			configurer.eventHandler(
 					new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
 			configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteEvent));
-			var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
+			EndTransactionMalwareScanRunner scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner,
+					runtime);
 			configurer.eventHandler(
 					new ReadAttachmentsHandler(attachmentService, new AttachmentStatusValidator(), scanRunner));
 		} else {
