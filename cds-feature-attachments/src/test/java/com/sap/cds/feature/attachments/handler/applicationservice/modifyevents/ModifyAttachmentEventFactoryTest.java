@@ -1,4 +1,4 @@
-package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
+package com.sap.cds.feature.attachments.handler.applicationservice.modifyevents;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;

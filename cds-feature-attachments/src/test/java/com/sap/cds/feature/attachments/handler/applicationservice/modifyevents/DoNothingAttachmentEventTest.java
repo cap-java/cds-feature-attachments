@@ -1,7 +1,9 @@
-package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
+package com.sap.cds.feature.attachments.handler.applicationservice.modifyevents;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
