@@ -3,10 +3,14 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -19,9 +23,9 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.AttachmentStatusValidator;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.BeforeReadItemsModifier;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.LazyProxyInputStream;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusValidator;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.BeforeReadItemsModifier;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
@@ -54,19 +58,19 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private static final Logger logger = LoggerFactory.getLogger(ReadAttachmentsHandler.class);
 
 	private final AttachmentService attachmentService;
-	private final AttachmentStatusValidator attachmentStatusValidator;
-	private final AsyncMalwareScanExecutor asyncMalwareScanExecutor;
+	private final AttachmentStatusValidator statusValidator;
+	private final AsyncMalwareScanExecutor scanExecutor;
 
-	public ReadAttachmentsHandler(AttachmentService attachmentService,
-			AttachmentStatusValidator attachmentStatusValidator, AsyncMalwareScanExecutor asyncMalwareScanExecutor) {
-		this.attachmentService = attachmentService;
-		this.attachmentStatusValidator = attachmentStatusValidator;
-		this.asyncMalwareScanExecutor = asyncMalwareScanExecutor;
+	public ReadAttachmentsHandler(AttachmentService attachmentService, AttachmentStatusValidator statusValidator,
+			AsyncMalwareScanExecutor scanExecutor) {
+		this.attachmentService = requireNonNull(attachmentService, "attachmentService must not be null");
+		this.statusValidator = requireNonNull(statusValidator, "statusValidator must not be null");
+		this.scanExecutor = requireNonNull(scanExecutor, "scanExecutor must not be null");
 	}
 
 	@Before
 	@HandlerOrder(HandlerOrder.EARLY)
-	public void processBefore(CdsReadEventContext context) {
+	void processBefore(CdsReadEventContext context) {
 		logger.debug("Processing before read event for entity {}", context.getTarget().getName());
 
 		CdsModel cdsModel = context.getModel();
@@ -79,23 +83,21 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	@After
 	@HandlerOrder(HandlerOrder.EARLY)
-	public void processAfter(CdsReadEventContext context, List<CdsData> data) {
+	void processAfter(CdsReadEventContext context, List<CdsData> data) {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
-		logger.debug("Processing after read event for entity {}", context.getTarget().getName());
+		logger.debug("Processing after read event for entity {}", context.getTarget().getQualifiedName());
 
 		Converter converter = (path, element, value) -> {
-			logger.info("Processing after read event for entity {}", element.getName());
-			String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
-			String status = (String) path.target().values().get(Attachments.STATUS);
-			InputStream content = (InputStream) path.target().values().get(Attachments.CONTENT);
-			boolean contentExists = Objects.nonNull(content);
-			if (Objects.nonNull(contentId) || contentExists) {
-				verifyStatus(path, status, contentId, contentExists);
-				Supplier<InputStream> supplier = Objects.nonNull(content) ? () -> content
-						: () -> attachmentService.readAttachment(contentId);
-				return new LazyProxyInputStream(supplier, attachmentStatusValidator, status);
+			Attachments attachment = Attachments.of(path.target().values());
+			InputStream content = attachment.getContent();
+			boolean contentExists = nonNull(content);
+			if (nonNull(attachment.getContentId()) || contentExists) {
+				verifyStatus(path, attachment, contentExists);
+				Supplier<InputStream> supplier = contentExists ? () -> content
+						: () -> attachmentService.readAttachment(attachment.getContentId());
+				return new LazyProxyInputStream(supplier, statusValidator, attachment.getStatus());
 			} else {
 				return value;
 			}
@@ -107,39 +109,42 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName,
 			List<String> processedEntities) {
-		List<String> associationNames = new ArrayList<String>();
+		List<String> associationNames = new ArrayList<>();
 		if (ApplicationHandlerHelper.isMediaEntity(entity)) {
 			associationNames.add(associationName);
 		}
 
-		Map<String, CdsEntity> annotatedEntitiesMap = entity.associations().collect(Collectors.toMap(
+		Map<String, CdsEntity> annotatedEntities = entity.associations().collect(Collectors.toMap(
 				CdsElementDefinition::getName, element -> element.getType().as(CdsAssociationType.class).getTarget()));
 
-		if (annotatedEntitiesMap.isEmpty()) {
+		if (annotatedEntities.isEmpty()) {
 			return associationNames;
 		}
 
-		for (var associatedElement : annotatedEntitiesMap.entrySet()) {
+		for (Entry<String, CdsEntity> associatedElement : annotatedEntities.entrySet()) {
 			if (!associationNames.contains(associatedElement.getKey())
 					&& !processedEntities.contains(associatedElement.getKey())
 					&& !Drafts.SIBLING_ENTITY.equals(associatedElement.getKey())) {
 				processedEntities.add(associatedElement.getKey());
-				var result = getAttachmentAssociations(model, associatedElement.getValue(), associatedElement.getKey(),
-						processedEntities);
+				List<String> result = getAttachmentAssociations(model, associatedElement.getValue(),
+						associatedElement.getKey(), processedEntities);
 				associationNames.addAll(result);
 			}
 		}
 		return associationNames;
 	}
 
-	private void verifyStatus(Path path, String status, String contentId, boolean contentExists) {
+	private void verifyStatus(Path path, Attachments attachment, boolean contentExists) {
 		if (areKeysEmpty(path.target().keys())) {
-			logger.info("In verify status for content id {} and status {}", contentId, status);
-			if ((StatusCode.UNSCANNED.equals(status) || StatusCode.SCANNING.equals(status)) && contentExists) {
-				logger.info("Scanning content with ID {} for malware, has current status {}", contentId, status);
-				asyncMalwareScanExecutor.scanAsync(path.target().entity(), contentId);
+			logger.debug("In verify status for content id {} and status {}", attachment.getContentId(),
+					attachment.getStatus());
+			if ((StatusCode.UNSCANNED.equals(attachment.getStatus())
+					|| StatusCode.SCANNING.equals(attachment.getStatus())) && contentExists) {
+				logger.debug("Scanning content with ID {} for malware, has current status {}",
+						attachment.getContentId(), attachment.getStatus());
+				scanExecutor.scanAsync(path.target().entity(), attachment.getContentId());
 			}
-			attachmentStatusValidator.verifyStatus(status);
+			statusValidator.verifyStatus(attachment.getStatus());
 		}
 	}
 

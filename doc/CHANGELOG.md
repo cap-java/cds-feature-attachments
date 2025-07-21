@@ -15,7 +15,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - Bumped minimum required versions of CAP Java to 3.10.3.
-- Avoid the generation of POJOs for cds.outbox and sap.common contexts.
+- Avoid the generation of POJOs for `cds.outbox` and `sap.common` contexts.
+- Replaced usage of generic interface `CdsData` with specific interface `Attachments` to improve type safety.
 
 ### Fixed
 

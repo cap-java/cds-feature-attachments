@@ -17,7 +17,7 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.reflect.CdsBaseType;
 import com.sap.cds.reflect.CdsEntity;
@@ -49,13 +49,13 @@ public class CreateAttachmentsHandler implements EventHandler {
 
 	@Before
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
-	public void processBeforeForDraft(CdsCreateEventContext context, List<CdsData> data) {
+	void processBeforeForDraft(CdsCreateEventContext context, List<CdsData> data) {
 		ReadonlyDataContextEnhancer.enhanceReadonlyDataInContext(context, data, storageReader.get());
 	}
 
 	@Before
 	@HandlerOrder(HandlerOrder.LATE)
-	public void processBefore(CdsCreateEventContext context, List<CdsData> data) {
+	void processBefore(CdsCreateEventContext context, List<CdsData> data) {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}

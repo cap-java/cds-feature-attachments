@@ -1,13 +1,15 @@
-package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
+package com.sap.cds.feature.attachments.handler.applicationservice.modifyevents;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.sap.cds.CdsData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsEntity;
@@ -38,7 +40,7 @@ class UpdateAttachmentEventTest {
 	@Test
 	void eventsCorrectCalled() {
 		var testContentStream = mock(InputStream.class);
-		var existingData = CdsData.create();
+		var existingData = Attachments.create();
 		var eventContext = mock(EventContext.class);
 
 		cut.processEvent(path, testContentStream, existingData, eventContext);

@@ -34,9 +34,9 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.AttachmentStatusException;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.AttachmentStatusValidator;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.LazyProxyInputStream;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusException;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusValidator;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
@@ -266,7 +266,7 @@ class ReadAttachmentsHandlerTest {
 
 	@Test
 	void afterMethodAfterHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processAfter", CdsReadEventContext.class, List.class);
+		var method = cut.getClass().getDeclaredMethod("processAfter", CdsReadEventContext.class, List.class);
 
 		var readAfterAnnotation = method.getAnnotation(After.class);
 		var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
@@ -277,7 +277,7 @@ class ReadAttachmentsHandlerTest {
 
 	@Test
 	void beforeMethodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBefore", CdsReadEventContext.class);
+		var method = cut.getClass().getDeclaredMethod("processBefore", CdsReadEventContext.class);
 
 		var readBeforeAnnotation = method.getAnnotation(Before.class);
 		var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);

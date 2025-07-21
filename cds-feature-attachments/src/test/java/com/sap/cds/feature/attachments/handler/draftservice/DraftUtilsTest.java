@@ -5,10 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.services.draft.Drafts;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.draft.Drafts;
 
 class DraftUtilsTest {
 

@@ -3,11 +3,12 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.common;
 
+import static java.util.Objects.nonNull;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.sap.cds.CdsData;
@@ -36,14 +37,13 @@ public final class ApplicationHandlerHelper {
 	/**
 	 * Checks if the data contains a content field.
 	 * 
-	 * @param entity The {@link CdsEntity} to check
+	 * @param entity The {@link CdsEntity entity} type of the given the data to check
 	 * @param data   The data to check
 	 * @return <code>true</code> if the data contains a content field, <code>false</code> otherwise
 	 */
-	public static boolean noContentFieldInData(CdsEntity entity, List<CdsData> data) {
-		var isIncluded = new AtomicBoolean();
+	public static boolean noContentFieldInData(CdsEntity entity, List<? extends CdsData> data) {
+		AtomicBoolean isIncluded = new AtomicBoolean();
 		Validator validator = (path, element, value) -> isIncluded.set(true);
-
 		CdsDataProcessor.create().addValidator(MEDIA_CONTENT_FILTER, validator).process(data, entity);
 		return !isIncluded.get();
 	}
@@ -60,19 +60,16 @@ public final class ApplicationHandlerHelper {
 	}
 
 	/**
-	 * Checks if the {@value Attachments#CONTENT_ID} exists in the existing data.
-	 *
-	 * @param existingData The existing data to check
-	 * @return <code>true</code> if the content ID exists, <code>false</code> otherwise
+	 * Condenses the attachments from the given data into a list of {@link Attachments attachments}.
+	 * 
+	 * @param data   the list of {@link CdsData} to process
+	 * @param entity the {@link CdsEntity entity} type of the given data
+	 * @return a list of {@link Attachments attachments} condensed from the data
 	 */
-	public static boolean doesContentIdExistsBefore(Map<String, Object> existingData) {
-		return Objects.nonNull(existingData.get(Attachments.CONTENT_ID));
-	}
+	public static List<Attachments> condenseAttachments(List<? extends CdsData> data, CdsEntity entity) {
+		List<Attachments> resultList = new ArrayList<>();
 
-	public static List<CdsData> condenseData(List<CdsData> data, CdsEntity entity) {
-		List<CdsData> resultList = new ArrayList<>();
-
-		Validator validator = (path, element, value) -> resultList.add(CdsData.create(path.target().values()));
+		Validator validator = (path, element, value) -> resultList.add(Attachments.of(path.target().values()));
 
 		CdsDataProcessor.create().addValidator(MEDIA_CONTENT_FILTER, validator).process(data, entity);
 		return resultList;
@@ -80,14 +77,14 @@ public final class ApplicationHandlerHelper {
 
 	public static boolean areKeysInData(Map<String, Object> keys, CdsData data) {
 		return keys.entrySet().stream().allMatch(entry -> {
-			var keyInData = data.get(entry.getKey());
-			return Objects.nonNull(keyInData) && keyInData.equals(entry.getValue());
+			Object keyInData = data.get(entry.getKey());
+			return nonNull(keyInData) && keyInData.equals(entry.getValue());
 		});
 	}
 
 	/**
 	 * Removes the draft key "IsActiveEntity" from the given map of keys.
-	  
+	 * 
 	 * @param keys The map of keys
 	 * @return A new map without the draft key
 	 */

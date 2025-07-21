@@ -14,18 +14,18 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
+import com.sap.cds.services.changeset.ChangeSetListener;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 /**
- * The class {@link DefaultAttachmentsServiceHandler} is an event handler that
- * is called when an attachment is created, marked as deleted, restored or read.
+ * The class {@link DefaultAttachmentsServiceHandler} is an event handler that is called when an attachment is created,
+ * marked as deleted, restored or read.
  * <p>
- * As the documents and content is stored in the database with this handler the
- * handler sets the isInternalStored flag to true in the create-context.
- * Without this flag the content would be deleted in the database.
+ * As the documents and content is stored in the database with this handler the handler sets the isInternalStored flag
+ * to true in the create-context. Without this flag the content would be deleted in the database.
  */
 @ServiceName(value = "*", type = AttachmentService.class)
 public class DefaultAttachmentsServiceHandler implements EventHandler {
@@ -45,9 +45,10 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	public void createAttachment(AttachmentCreateEventContext context) {
 		logger.debug("Default Attachment Service handler called for creating attachment for entity '{}'",
 				context.getAttachmentEntity().getQualifiedName());
-		var contentId = (String) context.getAttachmentIds().get(Attachments.ID);
+		String contentId = (String) context.getAttachmentIds().get(Attachments.ID);
 		context.getData().setStatus(StatusCode.SCANNING);
-		var listener = endTransactionMalwareScanProvider.getChangeSetListener(context.getAttachmentEntity(), contentId);
+		ChangeSetListener listener = endTransactionMalwareScanProvider
+				.getChangeSetListener(context.getAttachmentEntity(), contentId);
 		context.getChangeSetContext().register(listener);
 		context.setIsInternalStored(true);
 		context.setContentId(contentId);
@@ -57,9 +58,10 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 	@On
 	@HandlerOrder(DEFAULT_ON)
 	public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
-		logger.debug("Default Attachment Service handler called for marking attachment as deleted with document id {}", context.getContentId());
+		logger.debug("Default Attachment Service handler called for marking attachment as deleted with document id {}",
+				context.getContentId());
 
-		//nothing to do as data are stored in the database and handled by the database
+		// nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
 	}
 
@@ -69,7 +71,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		logger.debug("Default Attachment Service handler called for restoring attachment for timestamp {}",
 				context.getRestoreTimestamp());
 
-		//nothing to do as data are stored in the database and handled by the database
+		// nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
 	}
 
@@ -79,7 +81,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 		logger.debug("Default Attachment Service handler called for reading attachment with document id {}",
 				context.getContentId());
 
-		//nothing to do as data are stored in the database and handled by the database
+		// nothing to do as data are stored in the database and handled by the database
 		context.setCompleted();
 	}
 
