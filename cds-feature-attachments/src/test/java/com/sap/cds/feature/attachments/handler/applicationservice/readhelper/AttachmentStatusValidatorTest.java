@@ -1,7 +1,8 @@
-package com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper;
+package com.sap.cds.feature.attachments.handler.applicationservice.readhelper;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
