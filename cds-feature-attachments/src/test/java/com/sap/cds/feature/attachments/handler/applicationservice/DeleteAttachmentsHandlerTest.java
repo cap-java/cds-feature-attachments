@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots_;
@@ -71,7 +72,7 @@ class DeleteAttachmentsHandlerTest {
 		var entity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
 		when(context.getTarget()).thenReturn(entity);
 		when(context.getModel()).thenReturn(runtime.getCdsModel());
-		var data = Attachment.create();
+		var data = Attachments.create();
 		data.setId("test");
 		data.setContentId("test");
 		var inputStream = mock(InputStream.class);
@@ -98,12 +99,12 @@ class DeleteAttachmentsHandlerTest {
 		root.setItemTable(List.of(items));
 		items.setAttachments(List.of(attachment1, attachment2));
 		when(attachmentsReader.readAttachments(context.getModel(), context.getTarget(), context.getCqn())).thenReturn(
-				List.of(root));
+				List.of(Attachments.of(root)));
 
 		cut.processBefore(context);
 
-		verify(modifyAttachmentEvent).processEvent(any(Path.class), eq(inputStream), eq(attachment1), eq(context));
-		verify(modifyAttachmentEvent).processEvent(any(Path.class), eq(inputStream), eq(attachment2), eq(context));
+		verify(modifyAttachmentEvent).processEvent(any(Path.class), eq(inputStream), eq(Attachments.of(attachment1)), eq(context));
+		verify(modifyAttachmentEvent).processEvent(any(Path.class), eq(inputStream), eq(Attachments.of(attachment2)), eq(context));
 		assertThat(attachment1.getContent()).isNull();
 		assertThat(attachment2.getContent()).isNull();
 	}
@@ -118,7 +119,7 @@ class DeleteAttachmentsHandlerTest {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBefore", CdsDeleteEventContext.class);
+		var method = cut.getClass().getDeclaredMethod("processBefore", CdsDeleteEventContext.class);
 
 		var deleteBeforeAnnotation = method.getAnnotation(Before.class);
 		var deleteHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);

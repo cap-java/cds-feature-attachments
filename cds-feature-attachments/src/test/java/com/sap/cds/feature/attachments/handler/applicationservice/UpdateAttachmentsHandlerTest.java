@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
@@ -62,7 +62,7 @@ class UpdateAttachmentsHandlerTest {
 	private AttachmentService attachmentService;
 	private CdsUpdateEventContext updateContext;
 	private ModifyAttachmentEvent event;
-	private ArgumentCaptor<CdsData> cdsDataArgumentCaptor;
+	private ArgumentCaptor<Attachments> cdsDataArgumentCaptor;
 	private ArgumentCaptor<CqnSelect> selectCaptor;
 	private ThreadDataStorageReader storageReader;
 	private UserInfo userInfo;
@@ -82,7 +82,7 @@ class UpdateAttachmentsHandlerTest {
 
 		event = mock(ModifyAttachmentEvent.class);
 		updateContext = mock(CdsUpdateEventContext.class);
-		cdsDataArgumentCaptor = ArgumentCaptor.forClass(CdsData.class);
+		cdsDataArgumentCaptor = ArgumentCaptor.forClass(Attachments.class);
 		selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
 		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 		userInfo = mock(UserInfo.class);
@@ -133,7 +133,7 @@ class UpdateAttachmentsHandlerTest {
 		cut.processBefore(updateContext, List.of(attachment));
 
 		verify(eventFactory).getEvent(testStream, (String) readonlyUpdateFields.get(Attachment.CONTENT_ID), 
-				CdsData.create());
+				Attachments.create());
 		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
 		assertThat(attachment.getContentId()).isEqualTo(readonlyUpdateFields.get(Attachment.CONTENT_ID));
 		assertThat(attachment.getStatus()).isEqualTo(readonlyUpdateFields.get(Attachment.STATUS));
@@ -236,7 +236,7 @@ class UpdateAttachmentsHandlerTest {
 		var model = runtime.getCdsModel();
 		var target = updateContext.getTarget();
 		when(attachmentsReader.readAttachments(eq(model), eq(target), any(CqnFilterableStatement.class))).thenReturn(
-				List.of(root));
+				List.of(Attachments.of(root)));
 
 		cut.processBefore(updateContext, List.of(root));
 
@@ -250,14 +250,14 @@ class UpdateAttachmentsHandlerTest {
 	void noExistingDataFound() {
 		var id = getEntityAndMockContext(RootTable_.CDS_NAME);
 		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
-				List.of(CdsData.create()));
+				List.of(Attachments.create()));
 
 		var testStream = mock(InputStream.class);
 		var root = fillRootData(testStream, id);
 
 		cut.processBefore(updateContext, List.of(root));
 
-		verify(eventFactory).getEvent(testStream, null, CdsData.create());
+		verify(eventFactory).getEvent(testStream, null, Attachments.create());
 	}
 
 	@Test
@@ -403,7 +403,7 @@ class UpdateAttachmentsHandlerTest {
 		var existingRoot = RootTable.create();
 		existingRoot.setAttachments(List.of(attachment));
 		when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class))).thenReturn(
-				List.of(existingRoot));
+				List.of(Attachments.of(existingRoot)));
 		when(updateContext.getUserInfo()).thenReturn(userInfo);
 
 		cut.processBefore(updateContext, List.of(root));
@@ -426,7 +426,7 @@ class UpdateAttachmentsHandlerTest {
 
 	@Test
 	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getMethod("processBefore", CdsUpdateEventContext.class, List.class);
+		var method = cut.getClass().getDeclaredMethod("processBefore", CdsUpdateEventContext.class, List.class);
 
 		var updateBeforeAnnotation = method.getAnnotation(Before.class);
 		var updateHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);

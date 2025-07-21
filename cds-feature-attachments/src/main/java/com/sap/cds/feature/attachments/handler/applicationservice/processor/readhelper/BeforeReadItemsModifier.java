@@ -12,12 +12,13 @@ import org.slf4j.LoggerFactory;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.ql.CQL;
+import com.sap.cds.ql.Expand;
 import com.sap.cds.ql.cqn.CqnSelectListItem;
 import com.sap.cds.ql.cqn.Modifier;
 
 /**
- * The class {@link BeforeReadItemsModifier} is a modifier that adds the content id field
- * and status code to the select items.
+ * The class {@link BeforeReadItemsModifier} is a modifier that adds the content id field and status code to the select
+ * items.
  */
 public class BeforeReadItemsModifier implements Modifier {
 
@@ -34,7 +35,7 @@ public class BeforeReadItemsModifier implements Modifier {
 	@Override
 	public List<CqnSelectListItem> items(List<CqnSelectListItem> items) {
 		List<CqnSelectListItem> newItems = new ArrayList<>(items.stream().filter(item -> !item.isExpand()).toList());
-		var result = addContentIdItem(items);
+		List<CqnSelectListItem> result = addContentIdItem(items);
 		newItems.addAll(result);
 
 		return newItems;
@@ -55,12 +56,13 @@ public class BeforeReadItemsModifier implements Modifier {
 		expandedItems.forEach(item -> {
 			List<CqnSelectListItem> newItemsFromExpand = new ArrayList<>(
 					item.asExpand().items().stream().filter(i -> !i.isExpand()).toList());
-			enhanceWithNewFieldForMediaAssociation(item.asExpand().displayName(), newItemsFromExpand, newItemsFromExpand);
-			List<CqnSelectListItem> expandedSubItems = item.asExpand().items().stream().filter(CqnSelectListItem::isExpand)
-					.toList();
-			var result = processExpandedEntities(expandedSubItems);
+			enhanceWithNewFieldForMediaAssociation(item.asExpand().displayName(), newItemsFromExpand,
+					newItemsFromExpand);
+			List<CqnSelectListItem> expandedSubItems = item.asExpand().items().stream()
+					.filter(CqnSelectListItem::isExpand).toList();
+			List<CqnSelectListItem> result = processExpandedEntities(expandedSubItems);
 			newItemsFromExpand.addAll(result);
-			var copy = CQL.copy(item.asExpand());
+			Expand<?> copy = CQL.copy(item.asExpand());
 			copy.items(newItemsFromExpand);
 			newItems.add(copy);
 		});
@@ -78,9 +80,9 @@ public class BeforeReadItemsModifier implements Modifier {
 	}
 
 	private boolean isMediaAssociationAndNeedNewContentIdField(String association, List<CqnSelectListItem> list) {
-		return mediaAssociations.contains(association) && list.stream().anyMatch(
-				item -> isItemRefFieldWithName(item, MediaData.CONTENT)) && list.stream().noneMatch(
-				item -> isItemRefFieldWithName(item, Attachments.CONTENT_ID));
+		return mediaAssociations.contains(association)
+				&& list.stream().anyMatch(item -> isItemRefFieldWithName(item, MediaData.CONTENT))
+				&& list.stream().noneMatch(item -> isItemRefFieldWithName(item, Attachments.CONTENT_ID));
 	}
 
 	private boolean isItemRefFieldWithName(CqnSelectListItem item, String fieldName) {

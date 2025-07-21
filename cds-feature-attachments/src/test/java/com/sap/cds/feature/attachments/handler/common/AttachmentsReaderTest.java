@@ -17,8 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.sap.cds.CdsData;
 import com.sap.cds.Result;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -71,8 +71,8 @@ class AttachmentsReaderTest {
 		var keys = buildDefaultKeyMap();
 		var entityWithKeys = CQL.entity(RootTable_.CDS_NAME).matching(keys);
 		CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
-		List<CdsData> data = List.of(CdsData.create());
-		when(result.listOf(CdsData.class)).thenReturn(data);
+		List<Attachments> data = List.of(Attachments.create());
+		when(result.listOf(Attachments.class)).thenReturn(data);
 
 		var resultData = cut.readAttachments(model, entity, deleteFromEntity);
 
@@ -91,8 +91,8 @@ class AttachmentsReaderTest {
 
 		var entityWithKeys = CQL.entity(RootTable_.CDS_NAME).matching(keys);
 		CqnDelete deleteFromEntityWithoutWhere = Delete.from(entityWithKeys);
-		List<CdsData> data = List.of(CdsData.create());
-		when(result.listOf(CdsData.class)).thenReturn(data);
+		List<Attachments> data = List.of(Attachments.create());
+		when(result.listOf(Attachments.class)).thenReturn(data);
 
 		var resultData = cut.readAttachments(model, entity, deleteFromEntityWithoutWhere);
 
@@ -106,8 +106,8 @@ class AttachmentsReaderTest {
 	void selectCorrectWithoutFilter() {
 		mockPathListAndEntity();
 		CqnDelete deleteFromEntityWithoutFilter = Delete.from(RootTable_.CDS_NAME).byId("test");
-		List<CdsData> data = List.of(CdsData.create());
-		when(result.listOf(CdsData.class)).thenReturn(data);
+		List<Attachments> data = List.of(Attachments.create());
+		when(result.listOf(Attachments.class)).thenReturn(data);
 
 		var resultData = cut.readAttachments(model, entity, deleteFromEntityWithoutFilter);
 
@@ -120,8 +120,8 @@ class AttachmentsReaderTest {
 	void selectCorrectWithoutWhereAndFilter() {
 		mockPathListAndEntity();
 		CqnDelete deleteFromEntityWithoutWhereAndFilter = Delete.from(RootTable_.CDS_NAME);
-		List<CdsData> data = List.of(CdsData.create());
-		when(result.listOf(CdsData.class)).thenReturn(data);
+		List<Attachments> data = List.of(Attachments.create());
+		when(result.listOf(Attachments.class)).thenReturn(data);
 
 		var resultData = cut.readAttachments(model, entity, deleteFromEntityWithoutWhereAndFilter);
 
@@ -136,8 +136,8 @@ class AttachmentsReaderTest {
 		var keys = buildDefaultKeyMap();
 		var entityWithKeys = CQL.entity(Items_.CDS_NAME).matching(keys);
 		CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
-		List<CdsData> data = List.of(CdsData.create());
-		when(result.listOf(CdsData.class)).thenReturn(data);
+		List<Attachments> data = List.of(Attachments.create());
+		when(result.listOf(Attachments.class)).thenReturn(data);
 
 		var resultData = cut.readAttachments(model, entity, deleteFromEntity);
 
@@ -153,8 +153,8 @@ class AttachmentsReaderTest {
 		var keys = buildDefaultKeyMap();
 		var entityWithKeys = CQL.entity(Attachment_.CDS_NAME).matching(keys);
 		CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
-		List<CdsData> data = List.of(CdsData.create());
-		when(result.listOf(CdsData.class)).thenReturn(data);
+		List<Attachments> data = List.of(Attachments.create());
+		when(result.listOf(Attachments.class)).thenReturn(data);
 
 		var resultData = cut.readAttachments(model, entity, deleteFromEntity);
 
@@ -170,11 +170,11 @@ class AttachmentsReaderTest {
 		var keys = buildDefaultKeyMap();
 		var entityWithKeys = CQL.entity(Attachment_.CDS_NAME).matching(keys);
 		CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
-		var dataEntry = CdsData.create();
+		var dataEntry = Attachments.create();
 		dataEntry.put("ID", UUID.randomUUID().toString());
 		dataEntry.put("IsActiveEntity", true);
 		var data = List.of(dataEntry);
-		when(result.listOf(CdsData.class)).thenReturn(data);
+		when(result.listOf(Attachments.class)).thenReturn(data);
 		observer.setLevel(Level.TRACE);
 		observer.start();
 

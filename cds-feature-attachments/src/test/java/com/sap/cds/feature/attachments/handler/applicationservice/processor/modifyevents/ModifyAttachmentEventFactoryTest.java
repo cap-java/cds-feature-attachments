@@ -12,7 +12,6 @@ import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 
 class ModifyAttachmentEventFactoryTest {
@@ -35,21 +34,21 @@ class ModifyAttachmentEventFactoryTest {
 
 	@Test
 	void allNullNothingToDo() {
-		var event = cut.getEvent(null, null, CdsData.create());
+		var event = cut.getEvent(null, null, Attachments.create());
 
 		assertThat(event).isEqualTo(doNothingEvent);
 	}
 
 	@Test
 	void contentIdsNullContentFilledReturnedCreateEvent() {
-		var event = cut.getEvent(mock(InputStream.class), null, CdsData.create());
+		var event = cut.getEvent(mock(InputStream.class), null, Attachments.create());
 
 		assertThat(event).isEqualTo(createEvent);
 	}
 
 	@Test
 	void contentIdNullButtExistingNotNullReturnsDelete() {
-		var data = CdsData.create();
+		var data = Attachments.create();
 		data.put(Attachments.CONTENT_ID, "someValue");
 
 		var event = cut.getEvent(null, null, data);
@@ -60,7 +59,7 @@ class ModifyAttachmentEventFactoryTest {
 	@Test
 	void contentIdsSameContentFillReturnsUpdate() {
 		var contentId = "test ID";
-		var data = CdsData.create();
+		var data = Attachments.create();
 		data.put(Attachments.CONTENT_ID, contentId);
 
 		var event = cut.getEvent(mock(InputStream.class), contentId, data);
@@ -73,7 +72,7 @@ class ModifyAttachmentEventFactoryTest {
 	@NullSource
 	@EmptySource
 	void contentIdNotPresentAndExistingNotNullReturnsUpdateEvent(String contentId) {
-		var data = CdsData.create();
+		var data = Attachments.create();
 		data.put(Attachments.CONTENT_ID, "someValue");
 
 		var event = cut.getEvent(mock(InputStream.class), contentId, data);
@@ -84,7 +83,7 @@ class ModifyAttachmentEventFactoryTest {
 	@Test
 	void contentIdsSameContentNullReturnsNothingToDo() {
 		var contentId = "test ID";
-		var data = CdsData.create();
+		var data = Attachments.create();
 		data.put(Attachments.CONTENT_ID, contentId);
 
 		var event = cut.getEvent(null, contentId, data);
@@ -97,7 +96,7 @@ class ModifyAttachmentEventFactoryTest {
 	@NullSource
 	@EmptySource
 	void contentIdNotPresentAndExistingNotNullReturnsDeleteEvent(String contentId) {
-		var data = CdsData.create();
+		var data = Attachments.create();
 		data.put(Attachments.CONTENT_ID, "someValue");
 
 		var event = cut.getEvent(null, contentId, data);
@@ -107,7 +106,7 @@ class ModifyAttachmentEventFactoryTest {
 
 	@Test
 	void contentIdPresentAndExistingIdIsNullReturnsNothingToDo() {
-		var event = cut.getEvent(mock(InputStream.class), "test", CdsData.create());
+		var event = cut.getEvent(mock(InputStream.class), "test", Attachments.create());
 
 		assertThat(event).isEqualTo(doNothingEvent);
 	}
@@ -117,7 +116,7 @@ class ModifyAttachmentEventFactoryTest {
 	@NullSource
 //	@EmptySource
 	void contentIdNotPresentAndExistingNullReturnsCreateEvent(String contentId) {
-		var event = cut.getEvent(mock(InputStream.class), contentId, CdsData.create());
+		var event = cut.getEvent(mock(InputStream.class), contentId, Attachments.create());
 
 		assertThat(event).isEqualTo(createEvent);
 	}
@@ -127,14 +126,14 @@ class ModifyAttachmentEventFactoryTest {
 	@NullSource
 	@EmptySource
 	void contentIdNotPresentAndExistingNullReturnsDoNothingEvent(String contentId) {
-		var event = cut.getEvent(null, contentId, CdsData.create());
+		var event = cut.getEvent(null, contentId, Attachments.create());
 
 		assertThat(event).isEqualTo(doNothingEvent);
 	}
 
 	@Test
 	void contentIdPresentButNullAndExistingNotNullReturnsUpdateEvent() {
-		var data = CdsData.create();
+		var data = Attachments.create();
 		data.put(Attachments.CONTENT_ID, "someValue");
 
 		var event = cut.getEvent(mock(InputStream.class), null,  data);
@@ -144,7 +143,7 @@ class ModifyAttachmentEventFactoryTest {
 
 	@Test
 	void updateIfContentIdDifferentButContentProvided() {
-		var data = CdsData.create();
+		var data = Attachments.create();
 		data.put(Attachments.CONTENT_ID, "existing");
 
 		var event = cut.getEvent(mock(InputStream.class), "someValue", data);

@@ -11,8 +11,8 @@ import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsEntity;
@@ -33,20 +33,21 @@ public final class ModifyApplicationHandlerHelper {
 	 * @param eventFactory     the {@link ModifyAttachmentEventFactory} to create the corresponding event
 	 * @param eventContext     the current {@link EventContext}
 	 */
-	public static void handleAttachmentForEntities(CdsEntity entity, List<CdsData> data, List<CdsData> existingDataList,
-			ModifyAttachmentEventFactory eventFactory, EventContext eventContext) {
+	public static void handleAttachmentForEntities(CdsEntity entity, List<? extends CdsData> data,
+			List<Attachments> existingDataList, ModifyAttachmentEventFactory eventFactory, EventContext eventContext) {
 		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingDataList, eventFactory,
 				eventContext, path, (InputStream) value);
 
-		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data, entity);
+		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,
+				entity);
 	}
 
-	public static InputStream handleAttachmentForEntity(List<CdsData> existingDataList,
+	public static InputStream handleAttachmentForEntity(List<Attachments> existingDataList,
 			ModifyAttachmentEventFactory eventFactory, EventContext eventContext, Path path, InputStream content) {
-		var keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
+		Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 		ReadonlyDataContextEnhancer.fillReadonlyInContext((CdsData) path.target().values());
-		var existingData = getExistingData(keys, existingDataList);
-		var contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+		Attachments existingData = getExistingData(keys, existingDataList);
+		String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 
 		// for the current request find the event to process
 		ModifyAttachmentEvent eventToProcess = eventFactory.getEvent(content, contentId, existingData);
@@ -55,10 +56,10 @@ public final class ModifyApplicationHandlerHelper {
 		return eventToProcess.processEvent(path, content, existingData, eventContext);
 	}
 
-	private static CdsData getExistingData(Map<String, Object> keys, List<CdsData> existingDataList) {
+	private static Attachments getExistingData(Map<String, Object> keys, List<Attachments> existingDataList) {
 		return existingDataList.stream()
 				.filter(existingData -> ApplicationHandlerHelper.areKeysInData(keys, existingData)).findAny()
-				.orElse(CdsData.create());
+				.orElse(Attachments.create());
 	}
 
 }
