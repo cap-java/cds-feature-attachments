@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -113,20 +114,20 @@ public class ReadAttachmentsHandler implements EventHandler {
 			associationNames.add(associationName);
 		}
 
-		Map<String, CdsEntity> annotatedEntitiesMap = entity.associations().collect(Collectors.toMap(
+		Map<String, CdsEntity> annotatedEntities = entity.associations().collect(Collectors.toMap(
 				CdsElementDefinition::getName, element -> element.getType().as(CdsAssociationType.class).getTarget()));
 
-		if (annotatedEntitiesMap.isEmpty()) {
+		if (annotatedEntities.isEmpty()) {
 			return associationNames;
 		}
 
-		for (var associatedElement : annotatedEntitiesMap.entrySet()) {
+		for (Entry<String, CdsEntity> associatedElement : annotatedEntities.entrySet()) {
 			if (!associationNames.contains(associatedElement.getKey())
 					&& !processedEntities.contains(associatedElement.getKey())
 					&& !Drafts.SIBLING_ENTITY.equals(associatedElement.getKey())) {
 				processedEntities.add(associatedElement.getKey());
-				var result = getAttachmentAssociations(model, associatedElement.getValue(), associatedElement.getKey(),
-						processedEntities);
+				List<String> result = getAttachmentAssociations(model, associatedElement.getValue(),
+						associatedElement.getKey(), processedEntities);
 				associationNames.addAll(result);
 			}
 		}
