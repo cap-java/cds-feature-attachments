@@ -20,6 +20,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -102,8 +103,8 @@ class DeleteAttachmentsHandlerTest {
 
 		cut.processBefore(context);
 
-		verify(modifyAttachmentEvent).processEvent(any(Path.class), eq(inputStream), eq(attachment1), eq(context));
-		verify(modifyAttachmentEvent).processEvent(any(Path.class), eq(inputStream), eq(attachment2), eq(context));
+		verify(modifyAttachmentEvent).processEvent(any(Path.class), eq(inputStream), eq(Attachments.of(attachment1)), eq(context));
+		verify(modifyAttachmentEvent).processEvent(any(Path.class), eq(inputStream), eq(Attachments.of(attachment2)), eq(context));
 		assertThat(attachment1.getContent()).isNull();
 		assertThat(attachment2.getContent()).isNull();
 	}
@@ -127,8 +128,8 @@ class DeleteAttachmentsHandlerTest {
 		assertThat(deleteHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
 	}
 
-	private Attachments buildAttachment(String id, InputStream inputStream) {
-		var attachment = Attachments.create();
+	private Attachment buildAttachment(String id, InputStream inputStream) {
+		var attachment = Attachment.create();
 		attachment.setId(id);
 		attachment.setContentId("doc_" + id);
 		attachment.setContent(inputStream);
