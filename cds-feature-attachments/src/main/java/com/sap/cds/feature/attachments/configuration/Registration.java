@@ -15,9 +15,9 @@ import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachment
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.CreateAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.DoNothingAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.UpdateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.transaction.CreationChangeSetListener;
@@ -72,11 +72,14 @@ public class Registration implements CdsRuntimeConfiguration {
 		ServiceCatalog serviceCatalog = runtime.getServiceCatalog();
 
 		// get required services from the service catalog
-		PersistenceService persistenceService = serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME);
-		AttachmentService attachmentService = serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME);
+		PersistenceService persistenceService = serviceCatalog.getService(PersistenceService.class,
+				PersistenceService.DEFAULT_NAME);
+		AttachmentService attachmentService = serviceCatalog.getService(AttachmentService.class,
+				AttachmentService.DEFAULT_NAME);
 
 		// outbox AttachmentService if OutboxService is available
-		OutboxService outboxService = serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME);
+		OutboxService outboxService = serviceCatalog.getService(OutboxService.class,
+				OutboxService.PERSISTENT_UNORDERED_NAME);
 		AttachmentService outboxedAttachmentService;
 		if (outboxService != null) {
 			outboxedAttachmentService = outboxService.outboxed(attachmentService);
@@ -98,29 +101,32 @@ public class Registration implements CdsRuntimeConfiguration {
 		// register event handlers for attachment service
 		configurer.eventHandler(new DefaultAttachmentsServiceHandler(malwareScanEndTransactionListener));
 
-		var deleteContentEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
-		var eventFactory = buildAttachmentEventFactory(attachmentService, deleteContentEvent,
+		MarkAsDeletedAttachmentEvent deleteEvent = new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
+		ModifyAttachmentEventFactory eventFactory = buildAttachmentEventFactory(attachmentService, deleteEvent,
 				outboxedAttachmentService);
-		var attachmentsReader = new AttachmentsReader(new AssociationCascader(), persistenceService);
+		AttachmentsReader attachmentsReader = new AttachmentsReader(new AssociationCascader(), persistenceService);
 		ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
 		// register event handlers for application service, if at least one application service is available
 		boolean hasApplicationServices = serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
 		if (hasApplicationServices) {
 			configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
-			configurer.eventHandler(new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
-			configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteContentEvent));
+			configurer.eventHandler(
+					new UpdateAttachmentsHandler(eventFactory, attachmentsReader, outboxedAttachmentService, storage));
+			configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteEvent));
 			var scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
-			configurer.eventHandler(new ReadAttachmentsHandler(attachmentService, new AttachmentStatusValidator(), scanRunner));
+			configurer.eventHandler(
+					new ReadAttachmentsHandler(attachmentService, new AttachmentStatusValidator(), scanRunner));
 		} else {
-			logger.debug("No application service is available. Application service event handlers will not be registered.");
+			logger.debug(
+					"No application service is available. Application service event handlers will not be registered.");
 		}
 
 		// register event handlers on draft service, if at least one draft service is available
 		boolean hasDraftServices = serviceCatalog.getServices(DraftService.class).findFirst().isPresent();
 		if (hasDraftServices) {
 			configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
-			configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentEvent));
+			configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteEvent));
 			configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
 		} else {
 			logger.debug("No draft service is available. Draft event handlers will not be registered.");
@@ -142,8 +148,7 @@ public class Registration implements CdsRuntimeConfiguration {
 		if (bindingOpt.isPresent()) {
 			ServiceBinding binding = bindingOpt.get();
 			ConnectionPool connectionPool = getConnectionPool(environment);
-			HttpClientProvider clientProvider = new MalwareScanClientProvider(binding,
-					connectionPool);
+			HttpClientProvider clientProvider = new MalwareScanClientProvider(binding, connectionPool);
 			if (logger.isInfoEnabled()) {
 				logger.info(
 						"Using Malware Scanning service binding with name '{}' and plan '{}' for malware scanning of attachments.",
@@ -157,15 +162,13 @@ public class Registration implements CdsRuntimeConfiguration {
 	}
 
 	private static ModifyAttachmentEventFactory buildAttachmentEventFactory(AttachmentService attachmentService,
-			MarkAsDeletedAttachmentEvent deleteContentEvent, AttachmentService outboxedAttachmentService) {
-		ListenerProvider creationChangeSetListener = (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId,
+			MarkAsDeletedAttachmentEvent deleteEvent, AttachmentService outboxedAttachmentService) {
+		ListenerProvider listenerProvider = (contentId, cdsRuntime) -> new CreationChangeSetListener(contentId,
 				cdsRuntime, outboxedAttachmentService);
-		var createAttachmentEvent = new CreateAttachmentEvent(attachmentService, creationChangeSetListener);
-		var updateAttachmentEvent = new UpdateAttachmentEvent(createAttachmentEvent, deleteContentEvent);
-
-		var doNothingAttachmentEvent = new DoNothingAttachmentEvent();
-		return new ModifyAttachmentEventFactory(createAttachmentEvent, updateAttachmentEvent, deleteContentEvent,
-				doNothingAttachmentEvent);
+		CreateAttachmentEvent createEvent = new CreateAttachmentEvent(attachmentService, listenerProvider);
+		UpdateAttachmentEvent updateEvent = new UpdateAttachmentEvent(createEvent, deleteEvent);
+		DoNothingAttachmentEvent doNothingEvent = new DoNothingAttachmentEvent();
+		return new ModifyAttachmentEventFactory(createEvent, updateEvent, deleteEvent, doNothingEvent);
 	}
 
 	private static ConnectionPool getConnectionPool(CdsEnvironment env) {
