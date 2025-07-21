@@ -22,7 +22,7 @@ public class DraftActiveAttachmentsHandler implements EventHandler {
 	}
 
 	@On
-	public void processDraftSave(DraftSaveEventContext context) {
+	void processDraftSave(DraftSaveEventContext context) {
 		threadLocalSetter.set(true, context::proceed);
 	}
 

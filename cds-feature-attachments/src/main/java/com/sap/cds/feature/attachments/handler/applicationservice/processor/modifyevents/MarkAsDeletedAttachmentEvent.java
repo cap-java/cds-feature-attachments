@@ -3,17 +3,15 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents;
 
+import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 
 import java.io.InputStream;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.Path;
@@ -35,24 +33,23 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 	}
 
 	@Override
-	public InputStream processEvent(Path path, InputStream content, CdsData existingData, EventContext eventContext) {
+	public InputStream processEvent(Path path, InputStream content, Attachments attachment, EventContext eventContext) {
 		String qualifiedName = eventContext.getTarget().getQualifiedName();
 		logger.debug("Processing the event for calling attachment service with mark as delete event for entity {}",
 				qualifiedName);
 
-		if (ApplicationHandlerHelper.doesContentIdExistsBefore(existingData)
-				&& !DraftService.EVENT_DRAFT_PATCH.equals(eventContext.getEvent())) {
+		if (nonNull(attachment.getContentId()) && !DraftService.EVENT_DRAFT_PATCH.equals(eventContext.getEvent())) {
 			logger.debug("Calling attachment service with mark as delete event for entity {}", qualifiedName);
-			String contentId = (String) existingData.get(Attachments.CONTENT_ID);
-			attachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, eventContext.getUserInfo()));
+			attachmentService.markAttachmentAsDeleted(
+					new MarkAsDeletedInput(attachment.getContentId(), eventContext.getUserInfo()));
 		} else {
 			logger.debug(
 					"Do NOT call attachment service with mark as delete event for entity {} as no document id found in existing data and event is DRAFT_PATCH event",
 					qualifiedName);
 		}
-		if (Objects.nonNull(path)) {
-			var newContentId = path.target().values().get(Attachments.CONTENT_ID);
-			if (Objects.nonNull(newContentId) && newContentId.equals(existingData.get(Attachments.CONTENT_ID))
+		if (nonNull(path)) {
+			String newContentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+			if (nonNull(newContentId) && newContentId.equals(attachment.getContentId())
 					|| !path.target().values().containsKey(Attachments.CONTENT_ID)) {
 				path.target().values().put(Attachments.CONTENT_ID, null);
 				path.target().values().put(Attachments.STATUS, null);

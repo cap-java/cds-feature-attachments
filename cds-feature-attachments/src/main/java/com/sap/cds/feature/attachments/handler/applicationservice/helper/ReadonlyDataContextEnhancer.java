@@ -20,28 +20,28 @@ public final class ReadonlyDataContextEnhancer {
 	private ReadonlyDataContextEnhancer() {
 	}
 
-	public static void enhanceReadonlyDataInContext(EventContext context, List<CdsData> data, boolean isDraft) {
+	public static void enhanceReadonlyDataInContext(EventContext context, List<? extends CdsData> data,
+			boolean isDraft) {
 
 		Validator validator = (path, element, value) -> {
 			if (isDraft) {
-				var contentId = path.target().values().get(Attachments.CONTENT_ID);
-				var statusCode = path.target().values().get(Attachments.STATUS);
-				var scannedAt = path.target().values().get(Attachments.SCANNED_AT);
-				var cdsData = CdsData.create();
-				cdsData.put(Attachments.CONTENT_ID, contentId);
-				cdsData.put(Attachments.STATUS, statusCode);
-				cdsData.put(Attachments.SCANNED_AT, scannedAt);
+				Attachments values = Attachments.of(path.target().values());
+				Attachments cdsData = Attachments.create();
+				cdsData.setContentId(values.getContentId());
+				cdsData.setStatus(values.getStatus());
+				cdsData.setScannedAt(values.getScannedAt());
 				path.target().values().put(DRAFT_READONLY_CONTEXT, cdsData);
 			} else {
 				path.target().values().remove(DRAFT_READONLY_CONTEXT);
 			}
 		};
 
-		CdsDataProcessor.create().addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator).process(data, context.getTarget());
+		CdsDataProcessor.create().addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator).process(data,
+				context.getTarget());
 	}
 
 	public static void fillReadonlyInContext(CdsData data) {
-		var readOnlyData = (CdsData) data.get(DRAFT_READONLY_CONTEXT);
+		CdsData readOnlyData = (CdsData) data.get(DRAFT_READONLY_CONTEXT);
 		if (Objects.nonNull(readOnlyData)) {
 			data.put(Attachments.CONTENT_ID, readOnlyData.get(Attachments.CONTENT_ID));
 			data.put(Attachments.STATUS, readOnlyData.get(Attachments.STATUS));

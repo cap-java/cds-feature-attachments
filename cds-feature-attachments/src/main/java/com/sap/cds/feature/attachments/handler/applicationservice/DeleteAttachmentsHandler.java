@@ -11,9 +11,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.processor.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -43,14 +43,14 @@ public class DeleteAttachmentsHandler implements EventHandler {
 
 	@Before
 	@HandlerOrder(HandlerOrder.LATE)
-	public void processBefore(CdsDeleteEventContext context) {
+	void processBefore(CdsDeleteEventContext context) {
 		logger.debug("Processing before delete event for entity {}", context.getTarget().getName());
 
-		List<CdsData> attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(),
+		List<Attachments> attachments = attachmentsReader.readAttachments(context.getModel(), context.getTarget(),
 				context.getCqn());
 
 		Converter converter = (path, element, value) -> deleteEvent.processEvent(path, (InputStream) value,
-				CdsData.create(path.target().values()), context);
+				Attachments.of(path.target().values()), context);
 
 		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
 				.process(attachments, context.getTarget());
