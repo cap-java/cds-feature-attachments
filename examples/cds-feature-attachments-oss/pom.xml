@@ -26,6 +26,20 @@
             <artifactId>cds-services-api</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${software.amazon.awssdk-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sap.cloud.sdk</groupId>
+            <artifactId>sdk-bom</artifactId>
+            <version>5.20.0</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+
         <!-- TESTS -->
         <dependency>
             <groupId>com.sap.cds</groupId>

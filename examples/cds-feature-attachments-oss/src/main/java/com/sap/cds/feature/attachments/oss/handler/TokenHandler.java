@@ -6,8 +6,8 @@ import java.util.Map;
 
 import org.apache.http.client.HttpClient;
 
-import com.sap.cds.OSCredentials;
-import com.sap.cds.OSSConstants;
+import com.sap.cds.feature.attachments.oss.client.OSCredentials;
+import com.sap.cds.feature.attachments.oss.client.OSSConstants;
 import com.sap.cds.services.environment.CdsProperties;
 import com.sap.cloud.environment.servicebinding.api.DefaultServiceBindingAccessor;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;

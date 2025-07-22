@@ -1,4 +1,4 @@
-package com.sap.cds;
+package com.sap.cds.feature.attachments.oss.client;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /*import lombok.AllArgsConstructor;
