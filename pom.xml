@@ -23,7 +23,7 @@
     </developers>
 
     <properties>
-        <revision>1.1.0</revision>
+        <revision>1.1.0-SNAPSHOT</revision>
         <java.version>17</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -352,6 +352,7 @@
                                 <excludeArtifact>cds-feature-attachments-integration-tests-parent</excludeArtifact>
                                 <excludeArtifact>cds-feature-attachments-integration-tests-db</excludeArtifact>
                                 <excludeArtifact>cds-feature-attachments-integration-tests-srv</excludeArtifact>
+                                <excludeArtifact>cds-feature-attachments-fs</excludeArtifact>
                             </excludeArtifacts>
                         </configuration>
                     </plugin>
