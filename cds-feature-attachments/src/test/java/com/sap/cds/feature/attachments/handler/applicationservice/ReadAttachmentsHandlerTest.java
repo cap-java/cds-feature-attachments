@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -40,6 +41,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Laz
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
+import com.sap.cds.impl.ResultImpl;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.services.cds.ApplicationService;
@@ -48,6 +50,7 @@ import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntime;
 
 class ReadAttachmentsHandlerTest {
@@ -60,6 +63,7 @@ class ReadAttachmentsHandlerTest {
 	private AttachmentStatusValidator attachmentStatusValidator;
 	private CdsReadEventContext readEventContext;
 	private AsyncMalwareScanExecutor asyncMalwareScanExecutor;
+	private PersistenceService persistenceService;
 
 	@BeforeAll
 	static void classSetup() {
@@ -71,7 +75,9 @@ class ReadAttachmentsHandlerTest {
 		attachmentService = mock(AttachmentService.class);
 		attachmentStatusValidator = mock(AttachmentStatusValidator.class);
 		asyncMalwareScanExecutor = mock(AsyncMalwareScanExecutor.class);
-		cut = new ReadAttachmentsHandler(attachmentService, attachmentStatusValidator, asyncMalwareScanExecutor);
+		persistenceService = mock(PersistenceService.class);
+		doReturn(new ResultImpl().result()).when(persistenceService).run(any(CqnSelect.class));
+		cut = new ReadAttachmentsHandler(attachmentService, attachmentStatusValidator, asyncMalwareScanExecutor, persistenceService);
 
 		readEventContext = mock(CdsReadEventContext.class);
 	}

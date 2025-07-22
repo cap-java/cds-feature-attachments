@@ -104,7 +104,7 @@ class RegistrationTest {
 
 		cut.eventHandlers(configurer);
 
-		var handlerSize = 8;
+		var handlerSize = 9;
 		verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
 		var handlers = handlerArgumentCaptor.getAllValues();
 		assertThat(handlers).hasSize(handlerSize);

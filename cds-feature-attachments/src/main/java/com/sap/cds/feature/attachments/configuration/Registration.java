@@ -26,6 +26,7 @@ import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftCreateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.AttachmentsServiceImpl;
@@ -117,7 +118,7 @@ public class Registration implements CdsRuntimeConfiguration {
 			EndTransactionMalwareScanRunner scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner,
 					runtime);
 			configurer.eventHandler(
-					new ReadAttachmentsHandler(attachmentService, new AttachmentStatusValidator(), scanRunner));
+					new ReadAttachmentsHandler(attachmentService, new AttachmentStatusValidator(), scanRunner, persistenceService));
 		} else {
 			logger.debug(
 					"No application service is available. Application service event handlers will not be registered.");
@@ -129,7 +130,7 @@ public class Registration implements CdsRuntimeConfiguration {
 			configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
 			configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteEvent));
 			configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
-		} else {
+			configurer.eventHandler(new DraftCreateAttachmentsHandler());
 			logger.debug("No draft service is available. Draft event handlers will not be registered.");
 		}
 	}
