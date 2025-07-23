@@ -15,9 +15,8 @@ import software.amazon.awssdk.services.s3.S3Client;
  * The default provider for getting a {@link HttpClient} for the Object Store Service.
  */
 public final class AWSClientProvider {
-    private S3Client s3Client;
-    private String bucketName;
-	//private static final String OS_SERVICE_LABEL = "object-store-attachments";
+    private final S3Client s3Client;
+    private final String bucketName;
 
 	/**
 	 * Creates a new instance of {@link AWSClientProvider}.
@@ -27,12 +26,10 @@ public final class AWSClientProvider {
 	public AWSClientProvider(ServiceBinding binding) {
 		Map<String, Object> credentials = binding.getCredentials();
 		System.out.println("credentials.size(): " + credentials.size());
-		this.bucketName = "x";
-		String accesKeyId = "x";
-		String secretAccessKey = "x";
-    	Region region = Region.EU_CENTRAL_1;
+		this.bucketName = (String) credentials.get("bucket");
+		Region region = Region.of((String) credentials.get("region"));
 
-		AwsBasicCredentials awsCreds = AwsBasicCredentials.create(accesKeyId, secretAccessKey);
+		AwsBasicCredentials awsCreds = AwsBasicCredentials.create((String) credentials.get("access_key_id"), (String) credentials.get("secret_access_key"));
         this.s3Client = S3Client.builder()
                 .region(region)
                 .credentialsProvider(StaticCredentialsProvider.create(awsCreds))

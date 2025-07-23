@@ -1,6 +1,9 @@
 package com.sap.cds.feature.attachments.oss.configuration;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +15,6 @@ import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
-import com.sap.cds.services.utils.environment.ServiceBindingUtils;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 /**
@@ -34,19 +36,34 @@ public class Registration implements CdsRuntimeConfiguration {
 	 * @return the {@link OSService object store service} or {@code null} if no service binding is available
 	 */
 	public static OSService buildOSService(CdsEnvironment environment) {
-		// retrieve the service binding for the malware scanner service
-		Optional<ServiceBinding> bindingOpt = environment.getServiceBindings()
-				.filter(b -> ServiceBindingUtils.matches(b, "object-store-attachments"))
-				.findFirst();
+		List<ServiceBinding> allBindings = environment.getServiceBindings()
+			.collect(Collectors.toList());
+
+		if (!allBindings.isEmpty()) {
+			System.out.println("***************************In Registration of CDS-FEATURE-ATTACHMENTS-OSS: " + allBindings.size());
+			ServiceBinding firstBinding = allBindings.get(0);
+			System.out.println("Name: " + firstBinding.getName());
+			System.out.println("ServiceName: " + firstBinding.getServiceName());
+			Map<String, Object> credentials = firstBinding.getCredentials();
+			System.out.println("Credentials size: " + credentials.size());
+			System.out.println("Credentials: " + credentials);
+			List<String> tags = firstBinding.getTags();
+			System.err.println("Tags: " + tags);
+		}
+		// Filter afterward
+		Optional<ServiceBinding> bindingOpt = allBindings.stream()
+		.filter(b -> b.getServiceName().map(name -> name.equals("objectstore")).orElse(false))
+		.findFirst();
 		ServiceBinding binding;
 		if (bindingOpt.isPresent()) {
 			binding = bindingOpt.get();
+			Map<String, Object> credentials = binding.getCredentials();
+			System.out.println("***************************In Registration: " + credentials.size());
 		} else {
+			System.out.println("***************************In Registration: no binding found");
 			logger.info("bindingOpt not there.");
-			// Mock the ServiceBinding interface
 			binding = new MockServiceBinding();
 		}
-
 		return new OSServiceImpl(binding);
 	}
 }
