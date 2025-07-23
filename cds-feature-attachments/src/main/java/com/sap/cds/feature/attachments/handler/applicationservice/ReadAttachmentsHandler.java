@@ -68,12 +68,12 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private final AsyncMalwareScanExecutor scanExecutor;
 	private final PersistenceService persistenceService;
 
-	public ReadAttachmentsHandler(AttachmentService attachmentService, AttachmentStatusValidator statusValidator,
-			AsyncMalwareScanExecutor scanExecutor, PersistenceService persistenceService) {
+	public ReadAttachmentsHandler(PersistenceService persistenceService, AttachmentService attachmentService,
+			AttachmentStatusValidator statusValidator, AsyncMalwareScanExecutor scanExecutor) {
+		this.persistenceService = requireNonNull(persistenceService, "persistenceService must not be null");
 		this.attachmentService = requireNonNull(attachmentService, "attachmentService must not be null");
 		this.statusValidator = requireNonNull(statusValidator, "statusValidator must not be null");
 		this.scanExecutor = requireNonNull(scanExecutor, "scanExecutor must not be null");
-		this.persistenceService = requireNonNull(persistenceService, "persistenceService must not be null");
 	}
 
 	@Before

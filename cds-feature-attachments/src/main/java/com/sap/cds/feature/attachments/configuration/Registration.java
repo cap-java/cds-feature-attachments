@@ -117,8 +117,8 @@ public class Registration implements CdsRuntimeConfiguration {
 			configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteEvent));
 			EndTransactionMalwareScanRunner scanRunner = new EndTransactionMalwareScanRunner(null, null, malwareScanner,
 					runtime);
-			configurer.eventHandler(
-					new ReadAttachmentsHandler(attachmentService, new AttachmentStatusValidator(), scanRunner, persistenceService));
+			configurer.eventHandler(new ReadAttachmentsHandler(persistenceService, attachmentService,
+					new AttachmentStatusValidator(), scanRunner));
 		} else {
 			logger.debug(
 					"No application service is available. Application service event handlers will not be registered.");
