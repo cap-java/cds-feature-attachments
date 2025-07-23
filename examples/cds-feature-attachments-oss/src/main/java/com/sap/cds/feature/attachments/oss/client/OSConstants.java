@@ -3,8 +3,8 @@ package com.sap.cds.feature.attachments.oss.client;
 import java.util.List;
 import java.util.Map;
 
-public class OSSConstants {
-  private OSSConstants() {
+public class OSConstants {
+  private OSConstants() {
     // Doesn't do anything
   }
 

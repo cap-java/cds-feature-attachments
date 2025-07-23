@@ -31,7 +31,6 @@ public class Registration implements CdsRuntimeConfiguration {
 		// build object store client, could be null if no service binding is available
 		//CdsRuntime runtime = configurer.getCdsRuntime();
 		//OSClient osClient = buildOSClient(runtime.getEnvironment());
-
 		configurer.eventHandler(new OSSAttachmentsServiceHandler(osService));
 	}
 

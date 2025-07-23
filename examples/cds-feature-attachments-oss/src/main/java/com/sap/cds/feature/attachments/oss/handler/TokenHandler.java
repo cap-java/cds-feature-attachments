@@ -6,8 +6,8 @@ import java.util.Map;
 
 import org.apache.http.client.HttpClient;
 
+import com.sap.cds.feature.attachments.oss.client.OSConstants;
 import com.sap.cds.feature.attachments.oss.client.OSCredentials;
-import com.sap.cds.feature.attachments.oss.client.OSSConstants;
 import com.sap.cds.services.environment.CdsProperties;
 import com.sap.cloud.environment.servicebinding.api.DefaultServiceBindingAccessor;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
@@ -104,8 +104,8 @@ public class TokenHandler {
                 .withTokenEndpoint(baseTokenUrl)
                 .withClient(clientCredentials, OnBehalfOf.TECHNICAL_USER_CURRENT_TENANT)
                 .property(
-                    OSSConstants.SDM_DESTINATION_KEY,
-                    OSSConstants.SDM_TECHNICAL_CREDENTIALS_FLOW_DESTINATION)
+                    OSConstants.SDM_DESTINATION_KEY,
+                    OSConstants.SDM_TECHNICAL_CREDENTIALS_FLOW_DESTINATION)
                 .build();
       }
   
@@ -113,10 +113,10 @@ public class TokenHandler {
           DefaultHttpClientFactory.builder();
   
       if (connectionPoolConfig == null) {
-        Duration timeout = Duration.ofSeconds(OSSConstants.CONNECTION_TIMEOUT);
+        Duration timeout = Duration.ofSeconds(OSConstants.CONNECTION_TIMEOUT);
         builder.timeoutMilliseconds((int) timeout.toMillis());
-        builder.maxConnectionsPerRoute(OSSConstants.MAX_CONNECTIONS);
-        builder.maxConnectionsTotal(OSSConstants.MAX_CONNECTIONS);
+        builder.maxConnectionsPerRoute(OSConstants.MAX_CONNECTIONS);
+        builder.maxConnectionsTotal(OSConstants.MAX_CONNECTIONS);
       } else {
         builder.timeoutMilliseconds((int) connectionPoolConfig.getTimeout().toMillis());
         builder.maxConnectionsPerRoute(connectionPoolConfig.getMaxConnectionsPerRoute());
