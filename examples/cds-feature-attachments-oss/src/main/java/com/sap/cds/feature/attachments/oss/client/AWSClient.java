@@ -1,9 +1,14 @@
 package com.sap.cds.feature.attachments.oss.client;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
+
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 public class AWSClient implements OSClient {
     public final AWSClientProvider clientProvider;
@@ -13,7 +18,29 @@ public class AWSClient implements OSClient {
     }
 
     public void uploadContent(InputStream content){
-        System.out.println("Upload content");
+        // todo change this later to use the actualy stream and not copy it over to a byte array :)
+        byte[] bytes;
+        try {
+            bytes = content.readAllBytes();
+        } catch (Exception e) {
+            System.out.println("Error reading all bytes from the input stream: " + e.getMessage());
+            return;
+        }
+        
+        InputStream newStream = new ByteArrayInputStream(bytes);
+        long contentLength = bytes.length;
+        S3Client s3Client = clientProvider.getS3Client();
+
+        String key = "test-file-" + System.currentTimeMillis() + ".txt";
+
+        PutObjectRequest putReq = PutObjectRequest.builder()
+                .bucket(clientProvider.getBucketName())
+                .key(key)
+                .contentType("text/plain")
+                .build();
+
+        s3Client.putObject(putReq, RequestBody.fromInputStream(newStream, contentLength));
+        System.out.println("Uploaded test file with key: " + key);
     }
 
     public void deleteContent(String identifier) {

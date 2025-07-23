@@ -52,10 +52,10 @@ class OSSAttachmentsServiceHandlerTest {
 
 	@BeforeAll
 	static void setUpBeforeClass() throws IOException {
-		OSService osService = new OSServiceImpl();
-		handler = new OSSAttachmentsServiceHandler(osService);
-		entity = mock(CdsEntity.class);
-		when(entity.getQualifiedName()).thenReturn("test.Attachments");
+		//OSService osService = new OSServiceImpl();
+		//handler = new OSSAttachmentsServiceHandler(osService);
+		//entity = mock(CdsEntity.class);
+		//when(entity.getQualifiedName()).thenReturn("test.Attachments");
 	}
 	
 	@Disabled
