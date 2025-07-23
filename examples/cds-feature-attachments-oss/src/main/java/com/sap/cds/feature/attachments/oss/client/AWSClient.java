@@ -3,7 +3,6 @@ package com.sap.cds.feature.attachments.oss.client;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -13,8 +12,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 public class AWSClient implements OSClient {
     public final AWSClientProvider clientProvider;
 
-    public AWSClient(ServiceBinding binding, ConnectionPool configuration) {
-        this.clientProvider = new AWSClientProvider(binding, configuration);
+    public AWSClient(ServiceBinding binding) {
+        this.clientProvider = new AWSClientProvider(binding);
     }
 
     public void uploadContent(InputStream content){

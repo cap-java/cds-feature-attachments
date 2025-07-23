@@ -7,7 +7,6 @@ import java.time.Instant;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.services.ServiceDelegator;
-import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 /**
@@ -20,10 +19,10 @@ public class OSServiceImpl extends ServiceDelegator implements OSService {
 
 	private static OSClient osClient;
 
-	public OSServiceImpl(ServiceBinding binding, ConnectionPool configuration) {
+	public OSServiceImpl(ServiceBinding binding) {
 		super(DEFAULT_NAME);
 		// possibly select the right client based on the service binding
-		osClient = new AWSClient(binding, configuration);
+		osClient = new AWSClient(binding);
 	}
 
 	@Override

@@ -1,6 +1,5 @@
 package com.sap.cds.feature.attachments.oss.configuration;
 
-import java.time.Duration;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -11,7 +10,6 @@ import com.sap.cds.feature.attachments.oss.client.OSService;
 import com.sap.cds.feature.attachments.oss.client.OSServiceImpl;
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
 import com.sap.cds.services.environment.CdsEnvironment;
-import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 import com.sap.cds.services.utils.environment.ServiceBindingUtils;
@@ -41,27 +39,14 @@ public class Registration implements CdsRuntimeConfiguration {
 				.filter(b -> ServiceBindingUtils.matches(b, "object-store-attachments"))
 				.findFirst();
 		ServiceBinding binding;
-		ConnectionPool connectionPool;
 		if (bindingOpt.isPresent()) {
 			binding = bindingOpt.get();
-			connectionPool = getConnectionPool(environment);
 		} else {
 			logger.info("bindingOpt not there.");
 			// Mock the ServiceBinding interface
 			binding = new MockServiceBinding();
-
-			connectionPool = new ConnectionPool();
 		}
 
-		return new OSServiceImpl(binding, connectionPool);
-	}
-	private static ConnectionPool getConnectionPool(CdsEnvironment env) {
-		// the common prefix for the connection pool configuration
-		// todo: change this to the correct prefix
-		final String prefix = "cds.attachments.objectStore.http.%s";
-		Duration timeout = Duration.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, 120));
-		int maxConnections = env.getProperty(prefix.formatted("maxConnections"), Integer.class, 20);
-		logger.debug("Connection pool configuration: timeout={}, maxConnections={}", timeout, maxConnections);
-		return new ConnectionPool(timeout, maxConnections, maxConnections);
+		return new OSServiceImpl(binding);
 	}
 }
