@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sap.cds.feature.attachments.oss.client.MockServiceBinding;
 import com.sap.cds.feature.attachments.oss.client.OSService;
 import com.sap.cds.feature.attachments.oss.client.OSServiceImpl;
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
@@ -39,18 +40,20 @@ public class Registration implements CdsRuntimeConfiguration {
 		Optional<ServiceBinding> bindingOpt = environment.getServiceBindings()
 				.filter(b -> ServiceBindingUtils.matches(b, "object-store-attachments"))
 				.findFirst();
-
+		ServiceBinding binding;
+		ConnectionPool connectionPool;
 		if (bindingOpt.isPresent()) {
-			ServiceBinding binding = bindingOpt.get();
-			ConnectionPool connectionPool = getConnectionPool(environment);
-			if (logger.isInfoEnabled()) {
-				logger.info("Using Object Store Service binding: " + binding.getName());
-			}
-			return new OSServiceImpl(binding, connectionPool);
+			binding = bindingOpt.get();
+			connectionPool = getConnectionPool(environment);
+		} else {
+			logger.info("bindingOpt not there.");
+			// Mock the ServiceBinding interface
+			binding = new MockServiceBinding();
+
+			connectionPool = new ConnectionPool();
 		}
 
-		logger.info("No OS Service enabled, using HANA to store large objects.");
-		return null;
+		return new OSServiceImpl(binding, connectionPool);
 	}
 	private static ConnectionPool getConnectionPool(CdsEnvironment env) {
 		// the common prefix for the connection pool configuration
