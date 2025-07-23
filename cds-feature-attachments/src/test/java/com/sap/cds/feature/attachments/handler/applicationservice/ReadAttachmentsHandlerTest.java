@@ -80,7 +80,8 @@ class ReadAttachmentsHandlerTest {
 		asyncMalwareScanExecutor = mock(AsyncMalwareScanExecutor.class);
 		persistenceService = mock(PersistenceService.class);
 		doReturn(new ResultImpl().result()).when(persistenceService).run(any(CqnSelect.class));
-		cut = new ReadAttachmentsHandler(attachmentService, attachmentStatusValidator, asyncMalwareScanExecutor, persistenceService);
+		cut = new ReadAttachmentsHandler(persistenceService, attachmentService, attachmentStatusValidator,
+				asyncMalwareScanExecutor);
 
 		readEventContext = mock(CdsReadEventContext.class);
 	}
@@ -151,7 +152,8 @@ class ReadAttachmentsHandlerTest {
 			assertThat(attachmentWithNullValueContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
 			assertThat(attachmentWithoutContentField.getContent()).isNull();
 			assertThat(attachmentWithStreamAsContent.getContent()).isInstanceOf(LazyProxyInputStream.class);
-			assertThat(attachmentWithStreamContentButWithoutContentId.getContent()).isInstanceOf(LazyProxyInputStream.class);
+			assertThat(attachmentWithStreamContentButWithoutContentId.getContent())
+					.isInstanceOf(LazyProxyInputStream.class);
 			verifyNoInteractions(attachmentService);
 		}
 	}
@@ -179,7 +181,7 @@ class ReadAttachmentsHandlerTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {StatusCode.INFECTED, StatusCode.UNSCANNED})
+	@ValueSource(strings = { StatusCode.INFECTED, StatusCode.UNSCANNED })
 	@EmptySource
 	@NullSource
 	void wrongStatusThrowsException(String status) {
@@ -195,7 +197,7 @@ class ReadAttachmentsHandlerTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {StatusCode.INFECTED, StatusCode.UNSCANNED})
+	@ValueSource(strings = { StatusCode.INFECTED, StatusCode.UNSCANNED })
 	@EmptySource
 	@NullSource
 	void wrongStatusThrowsExceptionDuringContentRead(String status) {
@@ -239,7 +241,6 @@ class ReadAttachmentsHandlerTest {
 
 		verifyNoInteractions(asyncMalwareScanExecutor);
 	}
-
 
 	@Test
 	void scannerNotCalledForInfectedAttachments() {
