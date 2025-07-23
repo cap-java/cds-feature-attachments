@@ -33,6 +33,7 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Select;
+import com.sap.cds.ql.cqn.CqnAnalyzer;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.CqnStructuredTypeRef;
 import com.sap.cds.ql.cqn.Path;
@@ -94,8 +95,9 @@ public class ReadAttachmentsHandler implements EventHandler {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
-		var cqnRef = context.getCqn().ref();
-		logger.info("CQN ref {}", cqnRef);
+
+		// Ensure that the keys of the target entity are present in the data.
+		ensureKeysInData(context, data);
 
 		Converter converter = (path, element, value) -> {
 			Attachments attachment = Attachments.of(path.target().values());
@@ -123,12 +125,30 @@ public class ReadAttachmentsHandler implements EventHandler {
 				context.getTarget());
 	}
 
+	/**
+	 * This method ensures that the keys of the target entity are present in the data. This is necessary because the
+	 * CdsDataProcessor operates on the data and the keys are needed to identify the attachment.
+	 * 
+	 * @param context the {@link CdsReadEventContext context} containing the model and CQN statement
+	 * @param data    the list of CdsData items to be processed
+	 */
+	private static void ensureKeysInData(CdsReadEventContext context, List<CdsData> data) {
+		Map<String, Object> targetKeys = CqnAnalyzer.create(context.getModel()).analyze(context.getCqn()).targetKeys();
+		for (CdsData item : data) {
+			targetKeys.forEach((key, value) -> {
+				if (value != null && !item.containsKey(key)) {
+					item.put(key, value);
+				}
+			});
+		}
+	}
+
 	private Optional<LazyProxyInputStream> getContentFromActiveEntity(CdsReadEventContext context, Path path) {
 		// modify existing CqnStructuredTypeRef to filter for active entities
 		CqnStructuredTypeRef ref = (CqnStructuredTypeRef) path.toRef();
 
-		// build a CqnSelect to read the content from the active entity
-		CqnSelect select = CQL.copy(Select.from(ref).columns(Attachments.CONTENT),
+		// build a CqnSelect to read the content + status from the active entity
+		CqnSelect select = CQL.copy(Select.from(ref).columns(Attachments.CONTENT, Attachments.STATUS),
 				new ActiveEntityModifier(true, context.getTarget().getQualifiedName()));
 
 		// read content from the active entity
