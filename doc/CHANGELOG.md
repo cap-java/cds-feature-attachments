@@ -6,20 +6,32 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.1.0 - tbd.
+## Version 1.1.1 - tbd
 
 ### Added
 
-- Run integration tests also with CAP Java 4.x and @sap/cds-dk@^9 to ensure compatibility with latest available version.
 - Provide the attachment's parent entity keys in the `AttachmentCreateEventContext`.
 
 ### Changed
 
-- Bumped minimum required versions of CAP Java to 3.10.3.
+### Fixed
+
+## Version 1.1.0 - 2025-07-24
+
+### Added
+
+- Run integration tests also with CAP Java 4.x and @sap/cds-dk@^9 to ensure compatibility with latest available versions.
+>>>>>>> main
+
+### Changed
+
+- Bumped minimum required version of CAP Java to 3.10.3.
 - Avoid the generation of POJOs for `cds.outbox` and `sap.common` contexts.
 - Replaced usage of generic interface `CdsData` with specific interface `Attachments` to improve type safety.
 
 ### Fixed
+
+- [Avoid unnessary malware scans](https://github.com/cap-java/cds-feature-attachments/pull/486) of attachments.
 
 ## Version 1.0.9 - 2025-06-06
 
