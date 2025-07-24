@@ -61,7 +61,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 	@Before
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
 	void processBeforeForDraft(CdsUpdateEventContext context, List<CdsData> data) {
-		ReadonlyDataContextEnhancer.backupReadonlyFields(context.getTarget(), data, storageReader.get());
+		ReadonlyDataContextEnhancer.preserveReadonlyFields(context.getTarget(), data, storageReader.get());
 	}
 
 	@Before
