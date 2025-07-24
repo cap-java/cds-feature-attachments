@@ -15,6 +15,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
@@ -69,7 +70,8 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		return result.isInternalStored() ? content : null;
 	}
 
-	private static Map<String, Object> getParentId(CdsEntity target, CdsData data) {
+	@VisibleForTesting
+	static Map<String, Object> getParentId(CdsEntity target, CdsData data) {
 		// find association to parent entity
 		Optional<CdsElement> upAssociation = target.findAssociation("up_");
 
