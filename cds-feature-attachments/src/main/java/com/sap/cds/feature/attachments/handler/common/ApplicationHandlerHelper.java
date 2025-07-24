@@ -41,22 +41,11 @@ public final class ApplicationHandlerHelper {
 	 * @param data   The data to check
 	 * @return <code>true</code> if the data contains a content field, <code>false</code> otherwise
 	 */
-	public static boolean noContentFieldInData(CdsEntity entity, List<? extends CdsData> data) {
-		AtomicBoolean isIncluded = new AtomicBoolean();
-		Validator validator = (path, element, value) -> isIncluded.set(true);
-		CdsDataProcessor.create().addValidator(MEDIA_CONTENT_FILTER, validator).process(data, entity);
-		return !isIncluded.get();
-	}
-
-	/**
-	 * Checks if the data contains a content field.
-	 * 
-	 * @param entity The {@link CdsEntity entity} type of the given the data to check
-	 * @param data   The data to check
-	 * @return <code>true</code> if the data contains a content field, <code>false</code> otherwise
-	 */
 	public static boolean containsContentField(CdsEntity entity, List<? extends CdsData> data) {
-		return !noContentFieldInData(entity, data);
+		AtomicBoolean isIncluded = new AtomicBoolean();
+		CdsDataProcessor.create().addValidator(MEDIA_CONTENT_FILTER, (path, element, value) -> isIncluded.set(true))
+				.process(data, entity);
+		return isIncluded.get();
 	}
 
 	/**

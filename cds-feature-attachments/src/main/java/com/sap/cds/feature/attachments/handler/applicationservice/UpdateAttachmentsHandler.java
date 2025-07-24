@@ -70,21 +70,19 @@ public class UpdateAttachmentsHandler implements EventHandler {
 		CdsEntity target = context.getTarget();
 		boolean associationsAreUnchanged = associationsAreUnchanged(target, data);
 
-		if (ApplicationHandlerHelper.noContentFieldInData(target, data) && associationsAreUnchanged) {
-			return;
-		}
+		if (ApplicationHandlerHelper.containsContentField(target, data) || !associationsAreUnchanged) {
+			logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
 
-		logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
+			CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());
+			List<Attachments> attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
-		CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());
-		List<Attachments> attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
+			List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseAttachments(attachments, target);
+			ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory,
+					context);
 
-		List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseAttachments(attachments, target);
-		ModifyApplicationHandlerHelper.handleAttachmentForEntities(target, data, condensedAttachments, eventFactory,
-				context);
-
-		if (!associationsAreUnchanged) {
-			deleteRemovedAttachments(attachments, data, target, context.getUserInfo());
+			if (!associationsAreUnchanged) {
+				deleteRemovedAttachments(attachments, data, target, context.getUserInfo());
+			}
 		}
 	}
 
