@@ -49,6 +49,17 @@ public final class ApplicationHandlerHelper {
 	}
 
 	/**
+	 * Checks if the data contains a content field.
+	 * 
+	 * @param entity The {@link CdsEntity entity} type of the given the data to check
+	 * @param data   The data to check
+	 * @return <code>true</code> if the data contains a content field, <code>false</code> otherwise
+	 */
+	public static boolean containsContentField(CdsEntity entity, List<? extends CdsData> data) {
+		return !noContentFieldInData(entity, data);
+	}
+
+	/**
 	 * Checks if the entity is a media entity. A media entity is an entity that is annotated with the annotation
 	 * "_is_media_data".
 	 *

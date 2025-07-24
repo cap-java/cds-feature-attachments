@@ -74,7 +74,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 			return;
 		}
 
-		logger.debug("Processing before update event for entity {}", target.getName());
+		logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
 
 		CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());
 		List<Attachments> attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
