@@ -90,7 +90,7 @@ class AttachmentsServiceImplTest {
 		serviceSpi.on(AttachmentService.EVENT_CREATE_ATTACHMENT, "", handler);
 		var stream = mock(InputStream.class);
 		Map<String, Object> ids = Map.of("ID1", "value1", "id2", "Value2");
-		var input = new CreateAttachmentInput(ids, mock(CdsEntity.class), "fileName", "mimeType", stream);
+		var input = new CreateAttachmentInput(ids, mock(CdsEntity.class), "fileName", "mimeType", stream, Map.of());
 
 		var result = cut.createAttachment(input);
 
@@ -113,7 +113,7 @@ class AttachmentsServiceImplTest {
 		}).when(handler).process(any());
 		serviceSpi.on(AttachmentService.EVENT_CREATE_ATTACHMENT, "", handler);
 		Map<String, Object> ids = Map.of("ID1", "value1", "id2", "Value2");
-		var input = new CreateAttachmentInput(ids, mock(CdsEntity.class), "fileName", "mimeType", mock(InputStream.class));
+		var input = new CreateAttachmentInput(ids, mock(CdsEntity.class), "fileName", "mimeType", mock(InputStream.class), Map.of());
 
 		var result = cut.createAttachment(input);
 

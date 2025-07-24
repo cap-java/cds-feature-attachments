@@ -92,4 +92,15 @@ public interface AttachmentCreateEventContext extends EventContext {
 	 */
 	void setIsInternalStored(Boolean isInternalStored);
 
+	/**
+	 * @return The IDs of the attachment's parent entity or {@code Collections.emptyMap}
+	 */
+	Map<String, Object> getParentIds();
+
+	/**
+	 * Sets the IDs of the attachment's parent entity.
+	 *
+	 * @param ids The key of the attachment's parent entity
+	 */
+	void setParentIds(Map<String, Object> ids);
 }

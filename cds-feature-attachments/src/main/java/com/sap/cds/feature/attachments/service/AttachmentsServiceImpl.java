@@ -19,9 +19,8 @@ import com.sap.cds.services.ServiceDelegator;
 import com.sap.cds.services.request.UserInfo;
 
 /**
- * Implementation of the {@link AttachmentService} interface.
- * The main	purpose of this class is to set data in the corresponding context and
- * to call the emit method for the AttachmentService.
+ * Implementation of the {@link AttachmentService} interface. The main purpose of this class is to set data in the
+ * corresponding context and to call the emit method for the AttachmentService.
  */
 public class AttachmentsServiceImpl extends ServiceDelegator implements AttachmentService {
 
@@ -47,6 +46,7 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
 		var createContext = AttachmentCreateEventContext.create();
 		createContext.setAttachmentIds(input.attachmentIds());
 		createContext.setAttachmentEntity(input.attachmentEntity());
+		createContext.setParentIds(input.parentIds());
 		var mediaData = MediaData.create();
 		mediaData.setFileName(input.fileName());
 		mediaData.setMimeType(input.mimeType());
