@@ -59,7 +59,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 	@HandlerOrder(HandlerOrder.LATE)
 	void processBeforeDraftCancel(DraftCancelEventContext context) {
 		if (isWhereEmpty(context)) {
-			logger.debug("Processing before draft cancel event for entity {}", context.getTarget().getName());
+			logger.debug("Processing before {} event for entity {}", context.getEvent(), context.getTarget());
 
 			CdsEntity activeEntity = DraftUtils.getActiveEntity(context.getTarget());
 			CdsEntity draftEntity = DraftUtils.getDraftEntity(context.getTarget());

@@ -7,20 +7,16 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.reflect.CdsBaseType;
-import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.handler.EventHandler;
@@ -40,7 +36,6 @@ public class CreateAttachmentsHandler implements EventHandler {
 
 	private final ModifyAttachmentEventFactory eventFactory;
 	private final ThreadDataStorageReader storageReader;
-	private final CdsDataProcessor processor = CdsDataProcessor.create();
 
 	public CreateAttachmentsHandler(ModifyAttachmentEventFactory eventFactory, ThreadDataStorageReader storageReader) {
 		this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
@@ -57,20 +52,10 @@ public class CreateAttachmentsHandler implements EventHandler {
 	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	void processBefore(CdsCreateEventContext context, List<CdsData> data) {
-		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
-			return;
+		if (ApplicationHandlerHelper.containsContentField(context.getTarget(), data)) {
+			logger.debug("Processing before {} event for entity {}", context.getEvent(), context.getTarget());
+			ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(),
+					eventFactory, context);
 		}
-
-		logger.debug("Processing before create event for entity {}", context.getTarget().getName());
-		setKeysInData(context.getTarget(), data);
-		ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(),
-				eventFactory, context);
 	}
-
-	private void setKeysInData(CdsEntity entity, List<CdsData> data) {
-		processor.addGenerator(
-				(path, element, type) -> element.isKey() && element.getType().isSimpleType(CdsBaseType.UUID),
-				(path, element, isNull) -> UUID.randomUUID().toString()).process(data, entity);
-	}
-
 }
