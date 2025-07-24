@@ -45,7 +45,7 @@ public class CreateAttachmentsHandler implements EventHandler {
 	@Before
 	@HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
 	void processBeforeForDraft(CdsCreateEventContext context, List<CdsData> data) {
-		// before the readonly fields are removed by the runtime, store them in the data in a custom field
+		// before the attachment's readonly fields are removed by the runtime, preserve them in a custom field in data
 		ReadonlyDataContextEnhancer.preserveReadonlyFields(context.getTarget(), data, storageReader.get());
 	}
 
