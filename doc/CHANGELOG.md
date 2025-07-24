@@ -21,7 +21,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - Run integration tests also with CAP Java 4.x and @sap/cds-dk@^9 to ensure compatibility with latest available versions.
->>>>>>> main
 
 ### Changed
 
