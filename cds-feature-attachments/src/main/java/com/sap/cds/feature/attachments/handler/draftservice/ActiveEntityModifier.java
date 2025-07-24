@@ -24,14 +24,14 @@ import com.sap.cds.services.draft.Drafts;
  * <li>{@code fullEntityName}</li>
  * </ul>
  */
-class ActiveEntityModifier implements Modifier {
+public class ActiveEntityModifier implements Modifier {
 
 	private static final Logger logger = LoggerFactory.getLogger(ActiveEntityModifier.class);
 
 	private final boolean isActiveEntity;
 	private final String fullEntityName;
 
-	ActiveEntityModifier(boolean isActiveEntity, String fullEntityName) {
+	public ActiveEntityModifier(boolean isActiveEntity, String fullEntityName) {
 		this.isActiveEntity = isActiveEntity;
 		this.fullEntityName = fullEntityName;
 	}

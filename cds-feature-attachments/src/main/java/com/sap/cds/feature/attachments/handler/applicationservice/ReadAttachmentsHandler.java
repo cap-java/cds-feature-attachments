@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -27,10 +28,14 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Att
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.BeforeReadItemsModifier;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.draftservice.ActiveEntityModifier;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.CQL;
+import com.sap.cds.ql.Select;
+import com.sap.cds.ql.cqn.CqnAnalyzer;
 import com.sap.cds.ql.cqn.CqnSelect;
+import com.sap.cds.ql.cqn.CqnStructuredTypeRef;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElementDefinition;
@@ -44,6 +49,7 @@ import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.persistence.PersistenceService;
 
 /**
  * The class {@link ReadAttachmentsHandler} is an event handler that is responsible for reading attachments for
@@ -60,9 +66,11 @@ public class ReadAttachmentsHandler implements EventHandler {
 	private final AttachmentService attachmentService;
 	private final AttachmentStatusValidator statusValidator;
 	private final AsyncMalwareScanExecutor scanExecutor;
+	private final PersistenceService persistenceService;
 
-	public ReadAttachmentsHandler(AttachmentService attachmentService, AttachmentStatusValidator statusValidator,
-			AsyncMalwareScanExecutor scanExecutor) {
+	public ReadAttachmentsHandler(PersistenceService persistenceService, AttachmentService attachmentService,
+			AttachmentStatusValidator statusValidator, AsyncMalwareScanExecutor scanExecutor) {
+		this.persistenceService = requireNonNull(persistenceService, "persistenceService must not be null");
 		this.attachmentService = requireNonNull(attachmentService, "attachmentService must not be null");
 		this.statusValidator = requireNonNull(statusValidator, "statusValidator must not be null");
 		this.scanExecutor = requireNonNull(scanExecutor, "scanExecutor must not be null");
@@ -87,12 +95,22 @@ public class ReadAttachmentsHandler implements EventHandler {
 		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
 			return;
 		}
-		logger.debug("Processing after read event for entity {}", context.getTarget().getQualifiedName());
+
+		// Ensure that the keys of the target entity are present in the data.
+		ensureKeysInData(context, data);
 
 		Converter converter = (path, element, value) -> {
 			Attachments attachment = Attachments.of(path.target().values());
 			InputStream content = attachment.getContent();
 			boolean contentExists = nonNull(content);
+
+			if (!contentExists) {
+				Optional<LazyProxyInputStream> stream = getContentFromActiveEntity(context, path);
+				if (stream.isPresent()) {
+					return stream.get();
+				}
+			}
+
 			if (nonNull(attachment.getContentId()) || contentExists) {
 				verifyStatus(path, attachment, contentExists);
 				Supplier<InputStream> supplier = contentExists ? () -> content
@@ -105,6 +123,42 @@ public class ReadAttachmentsHandler implements EventHandler {
 
 		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,
 				context.getTarget());
+	}
+
+	/**
+	 * This method ensures that the keys of the target entity are present in the data. This is necessary because the
+	 * CdsDataProcessor operates on the data and the keys are needed to identify the attachment.
+	 * 
+	 * @param context the {@link CdsReadEventContext context} containing the model and CQN statement
+	 * @param data    the list of CdsData items to be processed
+	 */
+	private static void ensureKeysInData(CdsReadEventContext context, List<CdsData> data) {
+		Map<String, Object> targetKeys = CqnAnalyzer.create(context.getModel()).analyze(context.getCqn()).targetKeys();
+		for (CdsData item : data) {
+			targetKeys.forEach((key, value) -> {
+				if (value != null && !item.containsKey(key)) {
+					item.put(key, value);
+				}
+			});
+		}
+	}
+
+	private Optional<LazyProxyInputStream> getContentFromActiveEntity(CdsReadEventContext context, Path path) {
+		// modify existing CqnStructuredTypeRef to filter for active entities
+		CqnStructuredTypeRef ref = (CqnStructuredTypeRef) path.toRef();
+
+		// build a CqnSelect to read the content + status from the active entity
+		CqnSelect select = CQL.copy(Select.from(ref).columns(Attachments.CONTENT, Attachments.STATUS),
+				new ActiveEntityModifier(true, context.getTarget().getQualifiedName()));
+
+		// read content from the active entity
+		Attachments activeAttachment = persistenceService.run(select).first(Attachments.class).orElse(null);
+		InputStream activeContent = activeAttachment != null ? activeAttachment.getContent() : null;
+		if (activeContent != null) {
+			return Optional
+					.of(new LazyProxyInputStream(() -> activeContent, statusValidator, activeAttachment.getStatus()));
+		}
+		return Optional.empty();
 	}
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName,
