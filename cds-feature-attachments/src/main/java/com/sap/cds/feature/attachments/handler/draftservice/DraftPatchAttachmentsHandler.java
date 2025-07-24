@@ -51,7 +51,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 	@Before
 	@HandlerOrder(HandlerOrder.LATE)
 	void processBeforeDraftPatch(DraftPatchEventContext context, List<? extends CdsData> data) {
-		logger.debug("Processing before draft patch event for entity {}", context.getTarget().getName());
+		logger.debug("Processing before {} event for entity {}", context.getEvent(), context.getTarget());
 
 		Converter converter = (path, element, value) -> {
 			CdsEntity draftEntity = DraftUtils.getDraftEntity(path.target().entity());

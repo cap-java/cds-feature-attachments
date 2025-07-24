@@ -71,7 +71,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 	@Before
 	@HandlerOrder(HandlerOrder.EARLY)
 	void processBefore(CdsReadEventContext context) {
-		logger.debug("Processing before read event for entity {}", context.getTarget().getName());
+		logger.debug("Processing before {} for entity {}.", context.getEvent(), context.getTarget());
 
 		CdsModel cdsModel = context.getModel();
 		List<String> fieldNames = getAttachmentAssociations(cdsModel, context.getTarget(), "", new ArrayList<>());
@@ -84,27 +84,26 @@ public class ReadAttachmentsHandler implements EventHandler {
 	@After
 	@HandlerOrder(HandlerOrder.EARLY)
 	void processAfter(CdsReadEventContext context, List<CdsData> data) {
-		if (ApplicationHandlerHelper.noContentFieldInData(context.getTarget(), data)) {
-			return;
+		if (ApplicationHandlerHelper.containsContentField(context.getTarget(), data)) {
+			logger.debug("Processing after {} event for entity {}", context.getEvent(), context.getTarget());
+
+			Converter converter = (path, element, value) -> {
+				Attachments attachment = Attachments.of(path.target().values());
+				InputStream content = attachment.getContent();
+				boolean contentExists = nonNull(content);
+				if (nonNull(attachment.getContentId()) || contentExists) {
+					verifyStatus(path, attachment, contentExists);
+					Supplier<InputStream> supplier = contentExists ? () -> content
+							: () -> attachmentService.readAttachment(attachment.getContentId());
+					return new LazyProxyInputStream(supplier, statusValidator, attachment.getStatus());
+				} else {
+					return value;
+				}
+			};
+
+			CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
+					.process(data, context.getTarget());
 		}
-		logger.debug("Processing after read event for entity {}", context.getTarget().getQualifiedName());
-
-		Converter converter = (path, element, value) -> {
-			Attachments attachment = Attachments.of(path.target().values());
-			InputStream content = attachment.getContent();
-			boolean contentExists = nonNull(content);
-			if (nonNull(attachment.getContentId()) || contentExists) {
-				verifyStatus(path, attachment, contentExists);
-				Supplier<InputStream> supplier = contentExists ? () -> content
-						: () -> attachmentService.readAttachment(attachment.getContentId());
-				return new LazyProxyInputStream(supplier, statusValidator, attachment.getStatus());
-			} else {
-				return value;
-			}
-		};
-
-		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,
-				context.getTarget());
 	}
 
 	private List<String> getAttachmentAssociations(CdsModel model, CdsEntity entity, String associationName,

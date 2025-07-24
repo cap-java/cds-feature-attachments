@@ -3,6 +3,7 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -90,8 +91,7 @@ class CreateAttachmentsHandlerTest {
 
 		cut.processBefore(createContext, List.of(roots));
 
-		assertThat(roots.getId()).isNotEmpty();
-		assertThat(attachment.getId()).isNotEmpty();
+		verify(eventFactory).getEvent(null, null, Attachments.create());
 	}
 
 	@Test
@@ -205,7 +205,8 @@ class CreateAttachmentsHandlerTest {
 		events.setContent("test");
 		var items = Items.create();
 		var attachment = Attachments.create();
-		attachment.setContent(mock(InputStream.class));
+		var content = mock(InputStream.class);
+		attachment.setContent(content);
 		items.setAttachments(List.of(attachment));
 		events.setItems(List.of(items));
 		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
@@ -213,8 +214,7 @@ class CreateAttachmentsHandlerTest {
 		List<CdsData> input = List.of(events);
 		cut.processBefore(createContext, input);
 
-		assertThat(events.getId1()).isNotEmpty();
-		assertThat(events.getId2()).isNull();
+		verify(eventFactory).getEvent(eq(content), any(), any());
 	}
 
 	@Test
