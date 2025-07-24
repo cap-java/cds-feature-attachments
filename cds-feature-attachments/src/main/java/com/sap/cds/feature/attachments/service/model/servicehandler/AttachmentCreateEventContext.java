@@ -40,12 +40,12 @@ public interface AttachmentCreateEventContext extends EventContext {
 	void setContentId(String contentId);
 
 	/**
-	 * @return The IDs of the attachment storage entity or {@code Collections.emptyMap} if no id was specified
+	 * @return The IDs of the attachment storage entity or {@code Collections#emptyMap()} if no id was specified
 	 */
 	Map<String, Object> getAttachmentIds();
 
 	/**
-	 * Sets the id af the attachment entity for the attachment storage
+	 * Sets the IDs of the attachment entity for the attachment storage
 	 *
 	 * @param ids The key of the attachment entity which defines the content field
 	 */
@@ -93,7 +93,7 @@ public interface AttachmentCreateEventContext extends EventContext {
 	void setIsInternalStored(Boolean isInternalStored);
 
 	/**
-	 * @return The IDs of the attachment's parent entity or {@code Collections.emptyMap}
+	 * @return The IDs of the attachment's parent entity or {@code Collections#emptyMap()}.
 	 */
 	Map<String, Object> getParentIds();
 
