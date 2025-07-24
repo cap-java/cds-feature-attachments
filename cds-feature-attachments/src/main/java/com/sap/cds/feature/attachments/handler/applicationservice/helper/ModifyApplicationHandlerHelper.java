@@ -20,46 +20,56 @@ import com.sap.cds.services.EventContext;
 
 public final class ModifyApplicationHandlerHelper {
 
-	private ModifyApplicationHandlerHelper() {
-		// avoid instantiation
-	}
-
 	/**
 	 * Handles attachments for entities.
 	 * 
-	 * @param entity           the {@link CdsEntity entity} to handle attachments for
-	 * @param data             the given list of {@link CdsData data}
-	 * @param existingDataList the given list of existing {@link CdsData data}
-	 * @param eventFactory     the {@link ModifyAttachmentEventFactory} to create the corresponding event
-	 * @param eventContext     the current {@link EventContext}
+	 * @param entity              the {@link CdsEntity entity} to handle attachments for
+	 * @param data                the given list of {@link CdsData data}
+	 * @param existingAttachments the given list of existing {@link CdsData data}
+	 * @param eventFactory        the {@link ModifyAttachmentEventFactory} to create the corresponding event
+	 * @param eventContext        the current {@link EventContext}
 	 */
-	public static void handleAttachmentForEntities(CdsEntity entity, List<? extends CdsData> data,
-			List<Attachments> existingDataList, ModifyAttachmentEventFactory eventFactory, EventContext eventContext) {
-		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingDataList, eventFactory,
+	public static void handleAttachmentForEntities(CdsEntity entity, List<CdsData> data,
+			List<Attachments> existingAttachments, ModifyAttachmentEventFactory eventFactory,
+			EventContext eventContext) {
+		Converter converter = (path, element, value) -> handleAttachmentForEntity(existingAttachments, eventFactory,
 				eventContext, path, (InputStream) value);
 
 		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,
 				entity);
 	}
 
-	public static InputStream handleAttachmentForEntity(List<Attachments> existingDataList,
+	/**
+	 * Handles attachments for a single entity.
+	 * 
+	 * @param existingAttachments the list of existing {@link Attachments} to check against
+	 * @param eventFactory        the {@link ModifyAttachmentEventFactory} to create the corresponding event
+	 * @param eventContext        the current {@link EventContext}
+	 * @param path                the {@link Path} of the attachment
+	 * @param content             the content of the attachment
+	 * @return the processed content as an {@link InputStream}
+	 */
+	public static InputStream handleAttachmentForEntity(List<Attachments> existingAttachments,
 			ModifyAttachmentEventFactory eventFactory, EventContext eventContext, Path path, InputStream content) {
 		Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-		ReadonlyDataContextEnhancer.fillReadonlyInContext((CdsData) path.target().values());
-		Attachments existingData = getExistingData(keys, existingDataList);
+		ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values());
+		Attachments attachment = getExistingAttachment(keys, existingAttachments);
 		String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
 
 		// for the current request find the event to process
-		ModifyAttachmentEvent eventToProcess = eventFactory.getEvent(content, contentId, existingData);
+		ModifyAttachmentEvent eventToProcess = eventFactory.getEvent(content, contentId, attachment);
 
 		// process the event
-		return eventToProcess.processEvent(path, content, existingData, eventContext);
+		return eventToProcess.processEvent(path, content, attachment, eventContext);
 	}
 
-	private static Attachments getExistingData(Map<String, Object> keys, List<Attachments> existingDataList) {
-		return existingDataList.stream()
+	private static Attachments getExistingAttachment(Map<String, Object> keys, List<Attachments> existingAttachments) {
+		return existingAttachments.stream()
 				.filter(existingData -> ApplicationHandlerHelper.areKeysInData(keys, existingData)).findAny()
 				.orElse(Attachments.create());
 	}
 
+	private ModifyApplicationHandlerHelper() {
+		// avoid instantiation
+	}
 }

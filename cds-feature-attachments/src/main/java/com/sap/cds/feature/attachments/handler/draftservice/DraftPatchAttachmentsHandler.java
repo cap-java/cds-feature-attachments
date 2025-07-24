@@ -50,7 +50,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 
 	@Before
 	@HandlerOrder(HandlerOrder.LATE)
-	void processBeforeDraftPatch(DraftPatchEventContext context, List<? extends CdsData> data) {
+	void processBeforeDraftPatch(DraftPatchEventContext context, List<CdsData> data) {
 		logger.debug("Processing before draft patch event for entity {}", context.getTarget().getName());
 
 		Converter converter = (path, element, value) -> {
