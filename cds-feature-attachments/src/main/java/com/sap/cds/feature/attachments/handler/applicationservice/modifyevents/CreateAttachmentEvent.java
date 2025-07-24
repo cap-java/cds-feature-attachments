@@ -98,7 +98,4 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		Object value = nonNull(annotationValue) ? annotationValue : attachment.get(fieldName);
 		return Optional.ofNullable((String) value);
 	}
-
-	record Parent(CdsEntity entity, Map<String, Object> ids) {
-	}
 }
