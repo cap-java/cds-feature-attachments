@@ -22,7 +22,19 @@ public class OSServiceImpl extends ServiceDelegator implements OSService {
 	public OSServiceImpl(ServiceBinding binding) {
 		super(DEFAULT_NAME);
 		// possibly select the right client based on the service binding
-		osClient = new AWSClient(binding);
+		System.out.println("OSServiceImpl constructor called with binding: " + binding);
+		if (binding == null) {
+			osClient = new MockOSClient();
+		} else /*if (binding.getServiceName().orElse("").equals("aws"))*/ {
+			osClient = new AWSClient(binding);
+		} /*else if (binding.getServiceName().orElse("").equals("azure")) {
+			osClient = new AzureClient(binding);
+		} else if (binding.getServiceName().orElse("").equals("gcp")) {
+			osClient = new GCPClient(binding);
+		} else {
+			System.out.println("No valid service binding found, using MockOSClient.");
+			osClient = new MockOSClient();
+		}*/
 	}
 
 	@Override
