@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Avoid the generation of POJOs for `cds.outbox` and `sap.common` contexts.
 - Replaced usage of generic interface `CdsData` with specific interface `Attachments` to improve type safety.
 
+### Fixed
+
+- [Avoid unnessary malware scans](https://github.com/cap-java/cds-feature-attachments/pull/486) of attachments.
+
 ## Version 1.0.9 - 2025-06-06
 
 ### Changed
