@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.1.0 - tbd.
+## Version 1.1.0 - 2025-07-24
 
 ### Added
 
@@ -14,11 +14,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- Bumped minimum required versions of CAP Java to 3.10.3.
+- Bumped minimum required version of CAP Java to 3.10.3.
 - Avoid the generation of POJOs for `cds.outbox` and `sap.common` contexts.
 - Replaced usage of generic interface `CdsData` with specific interface `Attachments` to improve type safety.
-
-### Fixed
 
 ## Version 1.0.9 - 2025-06-06
 
