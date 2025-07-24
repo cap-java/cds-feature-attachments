@@ -6,6 +6,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Version 1.1.1 - tbd
+
+### Added
+
+### Changed
+
+### Fixed
+
 ## Version 1.1.0 - 2025-07-24
 
 ### Added
