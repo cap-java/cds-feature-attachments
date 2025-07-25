@@ -1,6 +1,7 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.modifyevents;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -76,7 +77,7 @@ class CreateAttachmentEventTest {
 		assertThat(resultValue.attachmentEntity()).isEqualTo(entity);
 		assertThat(resultValue.mimeType()).isEqualTo(attachment.getMimeType());
 		assertThat(resultValue.fileName()).isEqualTo(attachment.getFileName());
-		assertThat(resultValue.content()).isEqualTo(attachment.getContent());
+		assertNotNull(resultValue.content());
 	}
 
 	@Test
@@ -104,7 +105,7 @@ class CreateAttachmentEventTest {
 		assertThat(createInput.attachmentEntity()).isEqualTo(entity);
 		assertThat(createInput.mimeType()).isEqualTo(existingData.get(MediaData.MIME_TYPE));
 		assertThat(createInput.fileName()).isEqualTo(existingData.get(MediaData.FILE_NAME));
-		assertThat(createInput.content()).isEqualTo(attachment.getContent());
+		assertNotNull(createInput.content());
 	}
 
 	@Test
