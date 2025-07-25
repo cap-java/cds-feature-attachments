@@ -53,18 +53,19 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 		logger.info("FS Attachment Service handler called for creating attachment for entity name: {}",
 				context.getAttachmentEntity().getQualifiedName());
 
-		String contentId = (String) context.getAttachmentIds().get(Attachments.ID);
+		String attachmentId = (String) context.getAttachmentIds().get(Attachments.ID);
+		String parentId = (String) context.getParentIds().get("up__ID");
 
 		MediaData data = context.getData();
 		data.setStatus(StatusCode.CLEAN);
 
 		try (InputStream input = data.getContent()) {
-			Path contentPath = getContentPath(context, contentId);
+			Path contentPath = getContentPath(context, parentId, attachmentId);
 			Files.createDirectories(contentPath.getParent());
 			Files.copy(input, contentPath);
 
 			context.setIsInternalStored(false);
-			context.setContentId(contentId);
+			context.setContentId(getContentId(parentId, attachmentId));
 			context.setCompleted();
 		}
 	}
@@ -100,7 +101,12 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 	}
 
 	private Path getContentPath(EventContext context, String contentId) {
-		return this.rootFolder.resolve("%s/%s/content.bin".formatted(getTenant(context), contentId));
+		ParentAttachmentIds parentAttachmentId = getParentAttachmentId(contentId);
+		return getContentPath(context, parentAttachmentId.parentId(), parentAttachmentId.attachmentId());
+	}
+
+	private Path getContentPath(EventContext context, String parentId, String attachmentId) {
+		return this.rootFolder.resolve("%s/%s/%s/content.bin".formatted(getTenant(context), parentId, attachmentId));
 	}
 
 	private Path getDeletedFolder(EventContext context) {
@@ -115,4 +121,18 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 		return tenant;
 	}
 
+	private static String getContentId(String parentId, String attachmentId) {
+		return "%s:%s".formatted(parentId, attachmentId);
+	}
+
+	private static ParentAttachmentIds getParentAttachmentId(String contentId) {
+		String[] parts = contentId.split(":");
+		if (parts.length != 2) {
+			throw new IllegalArgumentException("Invalid content ID format: %s".formatted(contentId));
+		}
+		return new ParentAttachmentIds(parts[0], parts[1]);
+	}
+
+	record ParentAttachmentIds(String parentId, String attachmentId) {
+	}
 }

@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- Provide the attachment's parent entity keys in the `AttachmentCreateEventContext`.
+
 ### Changed
 
 ### Fixed

@@ -16,7 +16,8 @@ import com.sap.cds.reflect.CdsEntity;
  * @param fileName         The file name of the content
  * @param mimeType         The mime type of the content
  * @param content          The input stream of the content
+ * @param parentIds        The keys for the parent entity
  */
 public record CreateAttachmentInput(Map<String, Object> attachmentIds, CdsEntity attachmentEntity, String fileName,
-		String mimeType, InputStream content) {
+		String mimeType, InputStream content, Map<String, Object> parentIds) {
 }
