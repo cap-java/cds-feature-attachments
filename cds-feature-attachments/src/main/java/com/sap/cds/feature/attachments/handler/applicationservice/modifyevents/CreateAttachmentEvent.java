@@ -13,6 +13,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.io.CountingInputStream;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
@@ -49,8 +50,10 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		Optional<String> mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, attachment);
 		Optional<String> fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, attachment);
 
+		CountingInputStream countingInputStream = new CountingInputStream(content);
+
 		CreateAttachmentInput createEventInput = new CreateAttachmentInput(keys, path.target().entity(),
-				fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), content);
+				fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), countingInputStream);
 		AttachmentModificationResult result = attachmentService.createAttachment(createEventInput);
 		ChangeSetListener createListener = listenerProvider.provideListener(result.contentId(),
 				eventContext.getCdsRuntime());
@@ -58,7 +61,8 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		eventContext.getChangeSetContext().register(createListener);
 		path.target().values().put(Attachments.CONTENT_ID, result.contentId());
 		path.target().values().put(Attachments.STATUS, result.status());
-		return result.isInternalStored() ? content : null;
+		path.target().values().put(Attachments.LENGTH, countingInputStream.getCount());
+		return result.isInternalStored() ? countingInputStream : null;
 	}
 
 	private static Optional<String> getFieldValue(String fieldName, Map<String, Object> values,

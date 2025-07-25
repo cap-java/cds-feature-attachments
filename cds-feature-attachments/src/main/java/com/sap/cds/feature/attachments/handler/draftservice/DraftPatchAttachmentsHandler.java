@@ -11,9 +11,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.io.CountingInputStream;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
+import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
@@ -25,6 +27,7 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.handler.EventHandler;
+import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -66,4 +69,19 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 				context.getTarget());
 	}
 
+	@After
+	void processAfterDraftPatch(DraftPatchEventContext context, List<? extends CdsData> data) {
+		logger.debug("Processing after {} event for entity {}", context.getEvent(), context.getTarget());
+
+		Validator validator = (path, element, value) -> {
+			long count = -1;
+			if (value instanceof CountingInputStream countInput) {
+				count = countInput.getCount();
+			}
+			logger.debug("Attachment content size for {} is {} bytes", path.target().keys(), count);
+			// TODO write the content size to the attachment
+		};
+		CdsDataProcessor.create().addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator).process(data,
+				context.getTarget());
+	}
 }
