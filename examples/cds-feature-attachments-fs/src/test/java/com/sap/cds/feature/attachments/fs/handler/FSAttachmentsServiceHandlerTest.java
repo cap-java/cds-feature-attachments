@@ -20,7 +20,7 @@ import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -46,6 +46,16 @@ class FSAttachmentsServiceHandlerTest {
 
 	private static CdsEntity entity;
 
+	private String parentId;
+
+	private String attachmentId;
+
+	@BeforeEach
+	void setUpBeforeEach() {
+		parentId = UUID.randomUUID().toString();
+		attachmentId = UUID.randomUUID().toString();
+	}
+
 	@BeforeAll
 	static void setUpBeforeClass() throws IOException {
 		handler = new FSAttachmentsServiceHandler(rootFolder);
@@ -57,29 +67,26 @@ class FSAttachmentsServiceHandlerTest {
 	@NullSource
 	@ValueSource(strings = { "t0" })
 	void testCreateAttachment(String tenant) throws IOException {
-		String contentId = UUID.randomUUID().toString();
-		AttachmentCreateEventContext createContext = createAttachment(tenant, contentId, TEST_CONTENT);
+		AttachmentCreateEventContext createContext = createAttachment(tenant, parentId, attachmentId, TEST_CONTENT);
 
-		assertEquals(contentId, createContext.getContentId());
-		Path file = resolveContentPath(tenant, contentId);
+		assertEquals("%s:%s".formatted(parentId, attachmentId), createContext.getContentId());
+		Path file = resolveContentPath(tenant, parentId, attachmentId);
 		assertTrue(Files.exists(file));
 		assertTrue(createContext.isCompleted());
 		assertFalse(createContext.getIsInternalStored());
 
 		String content = Files.readString(file);
 		assertEquals(TEST_CONTENT, content);
-
 	}
 
 	@ParameterizedTest
 	@NullSource
 	@ValueSource(strings = { "t0" })
 	void testReadAttachment(String tenant) throws IOException {
-		String contentId = UUID.randomUUID().toString();
-		createAttachment(tenant, contentId, TEST_CONTENT);
+		var ctx = createAttachment(tenant, parentId, attachmentId, TEST_CONTENT);
 
 		AttachmentReadEventContext context = spy(AttachmentReadEventContext.create());
-		context.setContentId(contentId);
+		context.setContentId(ctx.getContentId());
 		context.setData(MediaData.create());
 		doReturn(getUserInfoMock(tenant)).when(context).getUserInfo();
 
@@ -93,15 +100,14 @@ class FSAttachmentsServiceHandlerTest {
 	@NullSource
 	@ValueSource(strings = { "t0" })
 	void testMarkAttachmentAsDeleted(String tenant) throws IOException {
-		String contentId = UUID.randomUUID().toString();
-		createAttachment(tenant, contentId, TEST_CONTENT);
+		var ctx = createAttachment(tenant, parentId, attachmentId, TEST_CONTENT);
 
 		AttachmentMarkAsDeletedEventContext context = spy(AttachmentMarkAsDeletedEventContext.create());
 		doReturn(getUserInfoMock(tenant)).when(context).getUserInfo();
-		context.setContentId(contentId);
+		context.setContentId(ctx.getContentId());
 
-		Path filePath = resolveContentPath(tenant, contentId);
-		Path deletedPath = resolveDeletedContentPath(tenant, contentId);
+		Path filePath = resolveContentPath(tenant, parentId, attachmentId);
+		Path deletedPath = resolveDeletedContentPath(tenant, attachmentId);
 		assertTrue(Files.exists(filePath));
 		assertFalse(Files.exists(deletedPath));
 
@@ -112,20 +118,18 @@ class FSAttachmentsServiceHandlerTest {
 		assertTrue(context.isCompleted());
 	}
 
-	@Test
-	void testRestoreAttachment() {
-	}
-
-	private static AttachmentCreateEventContext createAttachment(String tenant, String id, String content)
-			throws IOException {
+	private static AttachmentCreateEventContext createAttachment(String tenant, String parentId, String attachmentId,
+			String content) throws IOException {
 		AttachmentCreateEventContext createContext = spy(AttachmentCreateEventContext.create());
 		createContext.setAttachmentEntity(entity);
 		doReturn(getUserInfoMock(tenant)).when(createContext).getUserInfo();
 		assertFalse(createContext.isCompleted());
 		assertNull(createContext.getIsInternalStored());
 
-		Map<String, Object> keys = Map.of(Attachments.ID, id);
+		Map<String, Object> keys = Map.of(Attachments.ID, attachmentId);
+		Map<String, Object> parentKeys = Map.of("up__ID", parentId);
 		createContext.setAttachmentIds(keys);
+		createContext.setParentIds(parentKeys);
 		try (InputStream testStream = new ByteArrayInputStream(content.getBytes(UTF_8))) {
 			MediaData mediaData = MediaData.create();
 			mediaData.setContent(testStream);
@@ -142,13 +146,13 @@ class FSAttachmentsServiceHandlerTest {
 		return userInfo;
 	}
 
-	private static Path resolveDeletedContentPath(String tenant, String contentId) {
+	private static Path resolveDeletedContentPath(String tenant, String attachmentId) {
 		return rootFolder
-				.resolve("%s/deleted/%s/content.bin".formatted(tenant == null ? "default" : tenant, contentId));
+				.resolve("%s/deleted/%s/content.bin".formatted(tenant == null ? "default" : tenant, attachmentId));
 	}
 
-	private static Path resolveContentPath(String tenant, String contentId) {
-		return rootFolder.resolve("%s/%s/content.bin".formatted(tenant == null ? "default" : tenant, contentId));
+	private static Path resolveContentPath(String tenant, String parentId, String attachmentId) {
+		return rootFolder
+				.resolve("%s/%s/%s/content.bin".formatted(tenant == null ? "default" : tenant, parentId, attachmentId));
 	}
-
 }
