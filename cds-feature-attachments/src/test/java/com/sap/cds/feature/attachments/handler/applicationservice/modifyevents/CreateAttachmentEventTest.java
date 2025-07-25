@@ -199,7 +199,7 @@ class CreateAttachmentEventTest {
 		var attachment = Attachments.create();
 		attachment.put("up__ID", "test");
 
-		var parentId = CreateAttachmentEvent.getParentId(targetEntity, attachment);
+		var parentId = CreateAttachmentEvent.getParentIds(targetEntity, attachment);
 
 		assertThat(parentId).hasSize(1).containsEntry("up__ID", "test");
 	}

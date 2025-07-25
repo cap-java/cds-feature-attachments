@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
@@ -49,48 +48,52 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
 	@Override
 	public InputStream processEvent(Path path, InputStream content, Attachments attachment, EventContext eventContext) {
-		logger.debug("Calling attachment service with create event for entity {}",
-				path.target().entity().getQualifiedName());
+		CdsEntity target = path.target().entity();
+		logger.debug("Calling attachment service with create event for entity {}", target);
+
 		Map<String, Object> values = path.target().values();
 		Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-		Optional<String> mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, attachment);
-		Optional<String> fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, attachment);
+		String mimeType = getFieldValue(MediaData.MIME_TYPE, values, attachment).orElse(null);
+		String fileName = getFieldValue(MediaData.FILE_NAME, values, attachment).orElse(null);
 
-		Map<String, Object> parentIds = getParentId(path.target().entity(), attachment);
+		Map<String, Object> parentIds = getParentIds(target, attachment);
 
-		CreateAttachmentInput createEventInput = new CreateAttachmentInput(keys, path.target().entity(),
-				fileNameOptional.orElse(null), mimeTypeOptional.orElse(null), content, parentIds);
+		// call the attachment service to create the attachment
+		CreateAttachmentInput createEventInput = new CreateAttachmentInput(keys, target, fileName, mimeType, content,
+				parentIds);
 		AttachmentModificationResult result = attachmentService.createAttachment(createEventInput);
+
+		// create and register the listener to be able to revert the creation in case of errors
 		ChangeSetListener createListener = listenerProvider.provideListener(result.contentId(),
 				eventContext.getCdsRuntime());
-
 		eventContext.getChangeSetContext().register(createListener);
+
 		path.target().values().put(Attachments.CONTENT_ID, result.contentId());
 		path.target().values().put(Attachments.STATUS, result.status());
 		return result.isInternalStored() ? content : null;
 	}
 
 	@VisibleForTesting
-	static Map<String, Object> getParentId(CdsEntity target, CdsData data) {
-		// find association to parent entity
+	static Map<String, Object> getParentIds(CdsEntity target, Attachments attachment) {
+		// find "up_" association to parent entity
 		Optional<CdsElement> upAssociation = target.findAssociation("up_");
 
 		// if association is found, try to get foreign key to parent entity
 		if (upAssociation.isPresent()) {
 			// get association type
 			CdsAssociationType assocType = upAssociation.get().getType();
-			Map<String, Object> keys = new HashMap<>();
-			// get the refs of the association and map them to the corresponding data of the entity
+			Map<String, Object> parentIds = new HashMap<>();
+			// get refs of the association and read the corresponding values from the data of the entity
 			assocType.refs().forEach(ref -> {
 				String key = "up__" + ref.path();
-				Object value = data.get(key);
+				Object value = attachment.get(key);
 				if (nonNull(value)) {
-					keys.put(key, value);
+					parentIds.put(key, value);
 				}
 			});
-			return keys;
+			return parentIds;
 		}
-
+		// if no association is found, return empty map
 		return Collections.emptyMap();
 	}
 
