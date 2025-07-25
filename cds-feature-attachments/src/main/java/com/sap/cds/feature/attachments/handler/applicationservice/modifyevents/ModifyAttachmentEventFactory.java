@@ -9,14 +9,13 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 
 /**
  * The class {@link ModifyAttachmentEventFactory} is a factory class that creates the corresponding event for the
  * attachment service {@link AttachmentService}. The class is used to determine the event that should be executed based
- * on the content, the contentId and the existingData.<br>
+ * on the content, the contentId and the existing attachment.<br>
  * The events could be:
  * <ul>
  * <li>create</li>
@@ -45,7 +44,7 @@ public class ModifyAttachmentEventFactory {
 	 * 
 	 * @param content    the optional content as {@link InputStream}
 	 * @param contentId  the optional content id
-	 * @param attachment the existing {@link CdsData data}
+	 * @param attachment the existing {@link Attachments attachment}
 	 * @return the corresponding {@link ModifyAttachmentEvent} that should be executed
 	 */
 	public ModifyAttachmentEvent getEvent(InputStream content, String contentId, Attachments attachment) {
