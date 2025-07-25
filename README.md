@@ -53,7 +53,7 @@ The following version are the minimum versions for the usage of the plugin:
 
 | Component | Minimum Version |
 |-----------|-----------------|
-| CAP Java  | 3.10.2          |
+| CAP Java  | 3.10.3          |
 | UI5       | 1.136.0         |
 
 ## Maven Central
