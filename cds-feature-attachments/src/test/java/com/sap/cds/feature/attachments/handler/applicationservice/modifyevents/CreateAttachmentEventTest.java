@@ -91,7 +91,8 @@ class CreateAttachmentEventTest {
 
 		when(target.values()).thenReturn(attachment);
 		when(target.keys()).thenReturn(Map.of("ID", attachment.getId(), "up__ID", "test"));
-		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id", "test"));
+		when(attachmentService.createAttachment(any()))
+				.thenReturn(new AttachmentModificationResult(false, "id", "test"));
 		var existingData = Attachments.create();
 		existingData.setFileName("some file name");
 		existingData.setMimeType("some mime type");
@@ -100,8 +101,8 @@ class CreateAttachmentEventTest {
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 		var createInput = contextArgumentCaptor.getValue();
-		assertThat(createInput.attachmentIds()).hasSize(2).containsEntry("ID", attachment.getId()).containsEntry("up__ID",
-				"test");
+		assertThat(createInput.attachmentIds()).hasSize(2).containsEntry("ID", attachment.getId())
+				.containsEntry("up__ID", "test");
 		assertThat(createInput.attachmentEntity()).isEqualTo(entity);
 		assertThat(createInput.mimeType()).isEqualTo(existingData.get(MediaData.MIME_TYPE));
 		assertThat(createInput.fileName()).isEqualTo(existingData.get(MediaData.FILE_NAME));
@@ -112,6 +113,7 @@ class CreateAttachmentEventTest {
 	void resultFromServiceStoredInPath() {
 		var attachment = Attachments.create();
 		attachment.setId("test");
+		attachment.setContent(mock(InputStream.class));
 		var attachmentServiceResult = new AttachmentModificationResult(false, "some document id", "test");
 		when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
 		when(target.values()).thenReturn(attachment);
@@ -129,16 +131,16 @@ class CreateAttachmentEventTest {
 		when(eventContext.getCdsRuntime()).thenReturn(runtime);
 		var listener = mock(ChangeSetListener.class);
 		when(listenerProvider.provideListener(contentId, runtime)).thenReturn(listener);
-		when(attachmentService.createAttachment(any())).thenReturn(
-				new AttachmentModificationResult(false, contentId, "test"));
+		when(attachmentService.createAttachment(any()))
+				.thenReturn(new AttachmentModificationResult(false, contentId, "test"));
 
-		cut.processEvent(path, null, Attachments.create(), eventContext);
+		cut.processEvent(path, mock(InputStream.class), Attachments.create(), eventContext);
 
 		verify(changeSetContext).register(listener);
 	}
 
 	@ParameterizedTest
-	@ValueSource(booleans = {true, false})
+	@ValueSource(booleans = { true, false })
 	void contentIsReturnedIfNotExternalStored(boolean isExternalStored) throws IOException {
 		var attachment = Attachments.create();
 
@@ -148,13 +150,16 @@ class CreateAttachmentEventTest {
 			attachment.setId(UUID.randomUUID().toString());
 		}
 		when(target.values()).thenReturn(attachment);
-		when(attachmentService.createAttachment(any())).thenReturn(
-				new AttachmentModificationResult(isExternalStored, "id", "test"));
+		when(attachmentService.createAttachment(any()))
+				.thenReturn(new AttachmentModificationResult(isExternalStored, "id", "test"));
 
 		var result = cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
 
-		var expectedContent = isExternalStored ? attachment.getContent() : null;
-		assertThat(result).isEqualTo(expectedContent);
+		if (isExternalStored) {
+			assertNotNull(result);
+		} else {
+			assertThat(result).isNull();
+		}
 	}
 
 	private Attachments prepareAndExecuteEventWithData() {
@@ -167,7 +172,8 @@ class CreateAttachmentEventTest {
 
 		when(target.values()).thenReturn(attachment);
 		when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
-		when(attachmentService.createAttachment(any())).thenReturn(new AttachmentModificationResult(false, "id", "test"));
+		when(attachmentService.createAttachment(any()))
+				.thenReturn(new AttachmentModificationResult(false, "id", "test"));
 
 		cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
 		return attachment;

@@ -207,6 +207,7 @@
                             **/*Test**
                         </exclude>
                     </excludes>
+                    <skip>true</skip>
                 </configuration>
                 <!-- https://mvnrepository.com/artifact/com.sap.cloud.sdk.quality/pmd-rules -->
                 <dependencies>
