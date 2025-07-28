@@ -23,6 +23,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
@@ -187,7 +188,7 @@ class CreateAttachmentEventTest {
 	}
 
 	@Test
-	void testGetParentId() {
+	void testGetParentAssocType() {
 		var ref1 = mock(CqnElementRef.class);
 		when(ref1.path()).thenReturn("ID");
 		var ref2 = mock(CqnElementRef.class);
@@ -199,17 +200,41 @@ class CreateAttachmentEventTest {
 		var association = mock(CdsElement.class);
 		when(association.getType()).thenReturn(assocType);
 
-		var parentEntity = mock(CdsEntity.class);
-		when(parentEntity.findAssociation("up_")).thenReturn(Optional.of(association));
-		when(parentEntity.getQualifiedName()).thenReturn(PARENT_FULL_NAME);
+		// entity with up_ association
+		when(attachmentEntity.findAssociation("up_")).thenReturn(Optional.of(association));
+		when(attachmentEntity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
+		var parentEntityWithUp = mock(CdsEntity.class);
+		when(parentEntityWithUp.getQualifiedName()).thenReturn(PARENT_FULL_NAME);
+		when(parentEntityWithUp.findAssociation("up_")).thenReturn(Optional.of(association));
 
 		var attachment = Attachments.create();
 		attachment.put("up__ID", "test");
 
-		var parentAssocType = CreateAttachmentEvent.getParentAssocType(parentEntity);
+		var parentAssocType = CreateAttachmentEvent.getParentAssocType(parentEntityWithUp);
 		assertThat(parentAssocType).isNotNull();
 
 		var parentIds = CreateAttachmentEvent.getParentIds(attachment, parentAssocType);
 		assertThat(parentIds).hasSize(1);
+
+		// entity without the up_ association
+		var parentEntityWithoutUp = mock(CdsEntity.class);
+		when(parentEntityWithoutUp.getQualifiedName()).thenReturn(PARENT_FULL_NAME);
+		when(parentEntityWithoutUp.findAssociation("up_")).thenReturn(Optional.empty());
+
+		parentAssocType = CreateAttachmentEvent.getParentAssocType(parentEntityWithoutUp);
+		assertThat(parentAssocType).isNull();
+	}
+
+	@Test
+	void testProcessEventWithoutUpAssoc() {
+		when(attachmentService.createAttachment(any()))
+				.thenReturn(new AttachmentModificationResult(false, "id", StatusCode.CLEAN));
+		when(attachmentEntity.findAssociation("up_")).thenReturn(Optional.empty());
+		cut.processEvent(path, null, Attachments.create(), eventContext);
+
+		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+		var resultValue = contextArgumentCaptor.getValue();
+		assertThat(resultValue.parentIds()).isEmpty();
+		assertThat(resultValue.parentEntity()).isNull();
 	}
 }
