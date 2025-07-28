@@ -75,8 +75,6 @@ class CreateAttachmentEventTest {
 		CdsElement assoc = mock(CdsElement.class);
 		when(assoc.getName()).thenReturn("up_");
 		when(assoc.getType()).thenReturn(assocType);
-		when(assocType.getTarget()).thenReturn(attachmentEntity);
-		when(assocType.refs()).thenReturn(Stream.of(mock(CqnElementRef.class)));
 		when(attachmentEntity.findAssociation("up_")).thenReturn(Optional.of(assoc));
 	}
 
