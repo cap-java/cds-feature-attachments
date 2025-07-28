@@ -5,7 +5,7 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -54,7 +54,7 @@ public class CreateAttachmentsHandler implements EventHandler {
 	void processBefore(CdsCreateEventContext context, List<CdsData> data) {
 		if (ApplicationHandlerHelper.containsContentField(context.getTarget(), data)) {
 			logger.debug("Processing before {} event for entity {}", context.getEvent(), context.getTarget());
-			ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, new ArrayList<>(),
+			ModifyApplicationHandlerHelper.handleAttachmentForEntities(context.getTarget(), data, Collections.emptyList(),
 					eventFactory, context);
 		}
 	}

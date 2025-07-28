@@ -18,8 +18,8 @@ import com.sap.cds.services.EventName;
 public interface AttachmentCreateEventContext extends EventContext {
 
 	/**
-	 * Creates an {@link EventContext} already overlay with this interface. The event is set to be
-	 * {@link AttachmentService#EVENT_CREATE_ATTACHMENT}
+	 * Creates an {@link EventContext} already overlaid with this interface. The event is set to
+	 * {@link AttachmentService#EVENT_CREATE_ATTACHMENT}.
 	 *
 	 * @return the {@link AttachmentCreateEventContext}
 	 */
@@ -28,93 +28,110 @@ public interface AttachmentCreateEventContext extends EventContext {
 	}
 
 	/**
-	 * @return The id of the attachment storage entity or {@code null} if no id was specified
+	 * Returns the ID of the attachment storage entity.
+	 *
+	 * @return the ID of the attachment storage entity, or {@code null} if no ID was specified
 	 */
 	String getContentId();
 
 	/**
-	 * Sets the ID of the content for the attachment storage
+	 * Sets the ID of the content for the attachment storage.
 	 *
-	 * @param contentId The key of the content
+	 * @param contentId the ID of the content
 	 */
 	void setContentId(String contentId);
 
 	/**
-	 * @return The IDs of the attachment storage entity or {@code Collections#emptyMap()} if no id was specified
+	 * Returns the IDs of the attachment storage entity.
+	 *
+	 * @return the IDs of the attachment storage entity, or {@code java.util.Collections#emptyMap()} if no ID was
+	 *         specified
 	 */
 	Map<String, Object> getAttachmentIds();
 
 	/**
-	 * Sets the IDs of the attachment entity for the attachment storage
+	 * Sets the IDs of the attachment entity for the attachment storage.
 	 *
-	 * @param ids The key of the attachment entity which defines the content field
+	 * @param ids the IDs of the attachment entity which defines the content field
 	 */
 	void setAttachmentIds(Map<String, Object> ids);
 
 	/**
-	 * The attachment entity for the attachment storage
+	 * Returns the attachment entity for the attachment storage.
 	 *
-	 * @return The attachment entity which defines the content field
+	 * @return the attachment entity which defines the content field
 	 */
 	CdsEntity getAttachmentEntity();
 
 	/**
-	 * Sets the attachment entity for the attachment storage The name of this entity can be used e.g. to access the data
-	 * using the persistence service
+	 * Sets the attachment entity for the attachment storage. The name of this entity can be used, for example, to
+	 * access the data using the persistence service.
 	 *
-	 * @param attachmentEntity The attachment entity which defines the content field
+	 * @param attachmentEntity the attachment entity which defines the content field
 	 */
 	void setAttachmentEntity(CdsEntity attachmentEntity);
 
 	/**
-	 * @return The data of the content
+	 * Returns the data of the content.
+	 *
+	 * @return the data of the content
 	 */
 	MediaData getData();
 
 	/**
-	 * Sets the data of the attachment to be read
+	 * Sets the data of the attachment to be read.
 	 *
-	 * @param data The data of the content
+	 * @param data the data of the content
 	 */
 	void setData(MediaData data);
 
 	/**
-	 * Flag that shows if the content will be internal stored in the database
+	 * Indicates whether the content will be internally stored in the database.
 	 *
-	 * @return The flag for internal storage
+	 * @return {@code true} if the content will be internally stored; {@code false} otherwise
 	 */
 	Boolean getIsInternalStored();
 
 	/**
-	 * Sets the flag which show that the content will be internal stored in the database
+	 * Sets the flag indicating whether the content will be internally stored in the database.
 	 *
-	 * @param isInternalStored Flag that the content will be internal stored in the Database
+	 * @param isInternalStored {@code true} if the content will be internally stored; {@code false} otherwise
 	 */
 	void setIsInternalStored(Boolean isInternalStored);
 
 	/**
-	 * @return The IDs of the attachment's parent entity or {@code Collections#emptyMap()}.
+	 * Returns the IDs of the attachment's parent entity.
+	 * <p>
+	 * <b>Known limitation:</b> Works only for composition of aspects, because it requires the <code>_up</code> link to
+	 * the parent entity. Not supported for composition to entities including the Attachments aspect.
+	 * </p>
+	 *
+	 * @return the IDs of the attachment's parent entity, or {@code java.util.Collections#emptyMap()} if not available
 	 */
 	Map<String, Object> getParentIds();
 
 	/**
 	 * Sets the IDs of the attachment's parent entity.
 	 *
-	 * @param ids The key of the attachment's parent entity
+	 * @param ids the IDs of the attachment's parent entity
 	 */
 	void setParentIds(Map<String, Object> ids);
 
 	/**
-	 * The parent entity of the attachment.
+	 * Returns the parent entity of the attachment.
+	 * <p>
+	 * <b>Known limitation:</b> Works only for composition of aspects, because it requires the <code>_up</code> link to
+	 * the parent entity. Not supported for composition to entities including the Attachments aspect.
+	 * </p>
 	 *
-	 * @return The parent entity of the attachment or {@code null} if unknown.
+	 * @return the parent entity of the attachment, or {@code null} if not available
 	 */
 	CdsEntity getParentEntity();
 
 	/**
 	 * Sets the parent entity of the attachment.
 	 *
-	 * @param parent The parent entity of the attachment.
+	 * @param parent the parent entity of the attachment
 	 */
 	void setParentEntity(CdsEntity parent);
 }
