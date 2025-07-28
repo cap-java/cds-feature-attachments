@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- Provide the attachment's parent entity keys in the `AttachmentCreateEventContext`.
+- Provide the attachment's parent entity and IDs in the `AttachmentCreateEventContext`.
 
 ### Changed
 
