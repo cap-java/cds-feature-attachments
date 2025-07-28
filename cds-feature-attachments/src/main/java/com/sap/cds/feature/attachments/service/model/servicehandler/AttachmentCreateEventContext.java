@@ -103,4 +103,18 @@ public interface AttachmentCreateEventContext extends EventContext {
 	 * @param ids The key of the attachment's parent entity
 	 */
 	void setParentIds(Map<String, Object> ids);
+
+	/**
+	 * The parent entity of the attachment.
+	 *
+	 * @return The parent entity of the attachment or {@code null} if unknown.
+	 */
+	CdsEntity getParentEntity();
+
+	/**
+	 * Sets the parent entity of the attachment.
+	 *
+	 * @param parent The parent entity of the attachment.
+	 */
+	void setParentEntity(CdsEntity parent);
 }

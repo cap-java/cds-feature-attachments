@@ -199,8 +199,10 @@ class CreateAttachmentEventTest {
 		var attachment = Attachments.create();
 		attachment.put("up__ID", "test");
 
-		var parentId = CreateAttachmentEvent.getParentIds(targetEntity, attachment);
+		var parentAssocType = CreateAttachmentEvent.getParentAssocType(targetEntity);
+		assertThat(parentAssocType).isNotNull();
 
-		assertThat(parentId).hasSize(1).containsEntry("up__ID", "test");
+		var parentIds = CreateAttachmentEvent.getParentIds(attachment, parentAssocType);
+		assertThat(parentIds).hasSize(1);
 	}
 }

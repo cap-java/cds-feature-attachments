@@ -52,15 +52,23 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 		logger.debug("Calling attachment service with create event for entity {}", target);
 
 		Map<String, Object> values = path.target().values();
-		Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 		String mimeType = getFieldValue(MediaData.MIME_TYPE, values, attachment).orElse(null);
 		String fileName = getFieldValue(MediaData.FILE_NAME, values, attachment).orElse(null);
 
-		Map<String, Object> parentIds = getParentIds(target, attachment);
+		Map<String, Object> parentIds = Collections.emptyMap();
+		CdsEntity parentEntity = null;
+		CdsAssociationType parentAssocType = getParentAssocType(target);
+		if (parentAssocType != null) {
+			parentIds = getParentIds(attachment, parentAssocType);
+			parentEntity = parentAssocType.getTarget();
+		}
+
+		// remove the draft key from the keys of the target entity
+		Map<String, Object> attachmentIds = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 
 		// call the attachment service to create the attachment
-		CreateAttachmentInput createEventInput = new CreateAttachmentInput(keys, target, fileName, mimeType, content,
-				parentIds);
+		CreateAttachmentInput createEventInput = new CreateAttachmentInput(attachmentIds, target, fileName, mimeType,
+				content, parentIds, parentEntity);
 		AttachmentModificationResult result = attachmentService.createAttachment(createEventInput);
 
 		// create and register the listener to be able to revert the creation in case of errors
@@ -74,27 +82,27 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 	}
 
 	@VisibleForTesting
-	static Map<String, Object> getParentIds(CdsEntity target, Attachments attachment) {
+	static CdsAssociationType getParentAssocType(CdsEntity attachmentEntity) {
 		// find "up_" association to parent entity
-		Optional<CdsElement> upAssociation = target.findAssociation("up_");
-
-		// if association is found, try to get foreign key to parent entity
+		Optional<CdsElement> upAssociation = attachmentEntity.findAssociation("up_");
 		if (upAssociation.isPresent()) {
-			// get association type
-			CdsAssociationType assocType = upAssociation.get().getType();
-			Map<String, Object> parentIds = new HashMap<>();
-			// get refs of the association and read the corresponding values from the data of the entity
-			assocType.refs().forEach(ref -> {
-				String key = "up__" + ref.path();
-				Object value = attachment.get(key);
-				if (nonNull(value)) {
-					parentIds.put(key, value);
-				}
-			});
-			return parentIds;
+			return upAssociation.get().getType();
 		}
-		// if no association is found, return empty map
-		return Collections.emptyMap();
+		return null;
+	}
+
+	@VisibleForTesting
+	static Map<String, Object> getParentIds(Attachments attachment, CdsAssociationType assocType) {
+		Map<String, Object> parentIds = new HashMap<>();
+		// get refs of the association and read the corresponding values from the data of the entity
+		assocType.refs().forEach(ref -> {
+			String key = "up__" + ref.path();
+			Object value = attachment.get(key);
+			if (nonNull(value)) {
+				parentIds.put(key, value);
+			}
+		});
+		return parentIds;
 	}
 
 	private static Optional<String> getFieldValue(String fieldName, Map<String, Object> values,
