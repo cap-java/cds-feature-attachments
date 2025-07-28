@@ -40,15 +40,15 @@ import com.sap.cds.services.runtime.CdsRuntime;
 
 class CreateAttachmentEventTest {
 
-	private static final String TEST_FULL_NAME = "test.full.Name";
-
+	private static final String TEST_FULL_NAME = "AdminService.Books.covers";
+	private static final String PARENT_FULL_NAME = "AdminService.Books";
 	private CreateAttachmentEvent cut;
 
 	private AttachmentService attachmentService;
 	private ListenerProvider listenerProvider;
 	private Path path;
 	private ResolvedSegment target;
-	private CdsEntity entity;
+	private CdsEntity attachmentEntity;
 	private ArgumentCaptor<CreateAttachmentInput> contextArgumentCaptor;
 	private EventContext eventContext;
 	private ChangeSetContext changeSetContext;
@@ -62,23 +62,31 @@ class CreateAttachmentEventTest {
 		contextArgumentCaptor = ArgumentCaptor.forClass(CreateAttachmentInput.class);
 		path = mock(Path.class);
 		target = mock(ResolvedSegment.class);
-		entity = mock(CdsEntity.class);
+		attachmentEntity = mock(CdsEntity.class);
+		when(attachmentEntity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
 		eventContext = mock(EventContext.class);
 		changeSetContext = mock(ChangeSetContext.class);
 		when(eventContext.getChangeSetContext()).thenReturn(changeSetContext);
-		when(target.entity()).thenReturn(entity);
+		when(target.entity()).thenReturn(attachmentEntity);
 		when(path.target()).thenReturn(target);
+
+		CdsAssociationType assocType = mock(CdsAssociationType.class);
+		CdsElement assoc = mock(CdsElement.class);
+		when(assoc.getName()).thenReturn("up_");
+		when(assoc.getType()).thenReturn(assocType);
+		when(assocType.getTarget()).thenReturn(attachmentEntity);
+		when(assocType.refs()).thenReturn(Stream.of(mock(CqnElementRef.class)));
+		when(attachmentEntity.findAssociation("up_")).thenReturn(Optional.of(assoc));
 	}
 
 	@Test
 	void storageCalledWithAllFieldsFilledFromPath() {
-		when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
 		var attachment = prepareAndExecuteEventWithData();
 
 		verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
 		var resultValue = contextArgumentCaptor.getValue();
 		assertThat(resultValue.attachmentIds()).containsEntry("ID", attachment.getId());
-		assertThat(resultValue.attachmentEntity()).isEqualTo(entity);
+		assertThat(resultValue.attachmentEntity()).isEqualTo(attachmentEntity);
 		assertThat(resultValue.mimeType()).isEqualTo(attachment.getMimeType());
 		assertThat(resultValue.fileName()).isEqualTo(attachment.getFileName());
 		assertThat(resultValue.content()).isEqualTo(attachment.getContent());
@@ -86,7 +94,6 @@ class CreateAttachmentEventTest {
 
 	@Test
 	void storageCalledWithAllFieldsFilledFromExistingData() {
-		when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
 		var attachment = Attachments.create();
 
 		attachment.setContent(mock(InputStream.class));
@@ -107,7 +114,7 @@ class CreateAttachmentEventTest {
 		var createInput = contextArgumentCaptor.getValue();
 		assertThat(createInput.attachmentIds()).hasSize(2).containsEntry("ID", attachment.getId())
 				.containsEntry("up__ID", "test");
-		assertThat(createInput.attachmentEntity()).isEqualTo(entity);
+		assertThat(createInput.attachmentEntity()).isEqualTo(attachmentEntity);
 		assertThat(createInput.mimeType()).isEqualTo(existingData.get(MediaData.MIME_TYPE));
 		assertThat(createInput.fileName()).isEqualTo(existingData.get(MediaData.FILE_NAME));
 		assertThat(createInput.content()).isEqualTo(attachment.getContent());
@@ -186,20 +193,20 @@ class CreateAttachmentEventTest {
 		var ref2 = mock(CqnElementRef.class);
 		when(ref2.path()).thenReturn("ID2");
 
-		var associationType = mock(CdsAssociationType.class);
-		when(associationType.refs()).thenReturn(Stream.of(ref1, ref2));
+		var assocType = mock(CdsAssociationType.class);
+		when(assocType.refs()).thenReturn(Stream.of(ref1, ref2));
 
 		var association = mock(CdsElement.class);
-		when(association.getType()).thenReturn(associationType);
+		when(association.getType()).thenReturn(assocType);
 
-		var targetEntity = mock(CdsEntity.class);
-		when(targetEntity.findAssociation("up_")).thenReturn(Optional.of(association));
-		when(targetEntity.getQualifiedName()).thenReturn("test.Entity");
+		var parentEntity = mock(CdsEntity.class);
+		when(parentEntity.findAssociation("up_")).thenReturn(Optional.of(association));
+		when(parentEntity.getQualifiedName()).thenReturn(PARENT_FULL_NAME);
 
 		var attachment = Attachments.create();
 		attachment.put("up__ID", "test");
 
-		var parentAssocType = CreateAttachmentEvent.getParentAssocType(targetEntity);
+		var parentAssocType = CreateAttachmentEvent.getParentAssocType(parentEntity);
 		assertThat(parentAssocType).isNotNull();
 
 		var parentIds = CreateAttachmentEvent.getParentIds(attachment, parentAssocType);
