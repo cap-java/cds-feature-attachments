@@ -1,23 +1,25 @@
 package com.sap.cds.feature.attachments.oss.client;
 
 import java.io.InputStream;
+import java.util.concurrent.CompletableFuture;
 
-public class MockOSClient  implements OSClient {
+public class MockOSClient implements OSClient {
 
     @Override
-    public void uploadContent(InputStream content, String fileName) {
-        System.out.println("MockOSClient: Uploading content (mock implementation)");
+    public CompletableFuture<Void> uploadContent(InputStream content, String completeFileName, String contentType) {
+        // Mock: immediately complete
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public void deleteContent(String completeFileName) {
-        System.out.println("MockOSClient: Deleting content with identifier: " + completeFileName);
+    public CompletableFuture<Void> deleteContent(String completeFileName) {
+        // Mock: immediately complete
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public InputStream readContent(String completeFileName) {
-        System.out.println("MockOSClient: Reading content with identifier: " + completeFileName);
-        return null; // Mock implementation returns null
+    public CompletableFuture<InputStream> readContent(String completeFileName) {
+        // Mock: immediately complete with null
+        return CompletableFuture.completedFuture(null);
     }
-    
 }
