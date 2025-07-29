@@ -107,7 +107,7 @@ class FSAttachmentsServiceHandlerTest {
 		context.setContentId(ctx.getContentId());
 
 		Path filePath = resolveContentPath(tenant, parentId, attachmentId);
-		Path deletedPath = resolveDeletedContentPath(tenant, attachmentId);
+		Path deletedPath = resolveDeletedContentPath(tenant, parentId, attachmentId);
 		assertTrue(Files.exists(filePath));
 		assertFalse(Files.exists(deletedPath));
 
@@ -146,13 +146,13 @@ class FSAttachmentsServiceHandlerTest {
 		return userInfo;
 	}
 
-	private static Path resolveDeletedContentPath(String tenant, String attachmentId) {
-		return rootFolder
-				.resolve("%s/deleted/%s/content.bin".formatted(tenant == null ? "default" : tenant, attachmentId));
+	private static Path resolveDeletedContentPath(String tenant, String parentId, String attachmentId) {
+		return rootFolder.resolve(FSAttachmentsServiceHandler.PATTERN_DELETED_FOLDER
+				.formatted(tenant == null ? "default" : tenant, parentId) + "/%s/content.bin".formatted(attachmentId));
 	}
 
 	private static Path resolveContentPath(String tenant, String parentId, String attachmentId) {
-		return rootFolder
-				.resolve("%s/%s/%s/content.bin".formatted(tenant == null ? "default" : tenant, parentId, attachmentId));
+		return rootFolder.resolve(FSAttachmentsServiceHandler.PATTERN_CONTENT_BIN
+				.formatted(tenant == null ? "default" : tenant, parentId, attachmentId));
 	}
 }

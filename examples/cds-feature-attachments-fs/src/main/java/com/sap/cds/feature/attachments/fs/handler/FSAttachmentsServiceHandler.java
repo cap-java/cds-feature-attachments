@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
@@ -30,6 +31,12 @@ import com.sap.cds.services.handler.annotations.ServiceName;
  */
 @ServiceName(value = "*", type = AttachmentService.class)
 public class FSAttachmentsServiceHandler implements EventHandler {
+
+	@VisibleForTesting
+	static final String PATTERN_CONTENT_BIN = "%s/%s/%s/content.bin";
+
+	@VisibleForTesting
+	static final String PATTERN_DELETED_FOLDER = "%s/deleted/%s";
 
 	private static final Logger logger = LoggerFactory.getLogger(FSAttachmentsServiceHandler.class);
 
@@ -74,9 +81,9 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 	void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) throws IOException {
 		logger.info("Marking attachment as deleted with document id: {}", context.getContentId());
 
-		Path contenPath = getContentPath(context, context.getContentId());
-		Path parent = contenPath.getParent();
-		Path destPath = getDeletedFolder(context).resolve(parent.getFileName());
+		Path contentPath = getContentPath(context, context.getContentId());
+		Path parent = contentPath.getParent();
+		Path destPath = getDeletedFolder(context, context.getContentId()).resolve(parent.getFileName());
 
 		FileUtils.moveDirectory(parent.toFile(), destPath.toFile());
 		context.setCompleted();
@@ -106,11 +113,12 @@ public class FSAttachmentsServiceHandler implements EventHandler {
 	}
 
 	private Path getContentPath(EventContext context, String parentId, String attachmentId) {
-		return this.rootFolder.resolve("%s/%s/%s/content.bin".formatted(getTenant(context), parentId, attachmentId));
+		return rootFolder.resolve(PATTERN_CONTENT_BIN.formatted(getTenant(context), parentId, attachmentId));
 	}
 
-	private Path getDeletedFolder(EventContext context) {
-		return this.rootFolder.resolve("%s/deleted".formatted(getTenant(context)));
+	private Path getDeletedFolder(EventContext context, String contentId) {
+		ParentAttachmentIds parentAttachmentId = getParentAttachmentId(contentId);
+		return rootFolder.resolve(PATTERN_DELETED_FOLDER.formatted(getTenant(context), parentAttachmentId.parentId()));
 	}
 
 	private static String getTenant(EventContext context) {
