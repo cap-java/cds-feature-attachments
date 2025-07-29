@@ -29,7 +29,13 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
-            <version>${software.amazon.awssdk-version}</version>
+            <version>${software.amazon.awssdk-s3-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk.crt</groupId>
+            <artifactId>aws-crt</artifactId>
+            <version>${software.amazon.awssdk-crt-version}</version>
         </dependency>
 
         <dependency>

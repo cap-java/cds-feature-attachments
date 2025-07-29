@@ -4,7 +4,6 @@
 package com.sap.cds.feature.attachments.oss.handler;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -68,22 +67,27 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 		String contentId = (String) context.getAttachmentIds().get(Attachments.ID);
 
 		MediaData data = context.getData();
-		data.setStatus(StatusCode.CLEAN);
-		String completeFileName = contentId;
-		try (InputStream input = data.getContent()) {
-			context.setIsInternalStored(false);
-			context.setContentId(completeFileName);
-			osClient.uploadContent(input, completeFileName);
-			context.setCompleted();
-		}
+
+		osClient.uploadContent(data.getContent(), contentId, data.getMimeType())
+				.thenRun(() -> {
+					logger.info("Upload future is done: {}", context.getAttachmentEntity().getQualifiedName());
+					data.setStatus(StatusCode.CLEAN);
+					context.setIsInternalStored(false);
+					context.setContentId(contentId);
+					context.setCompleted();
+				}).exceptionally(ex -> {
+					logger.error("Upload failed for entity {}: {}", context.getAttachmentEntity().getQualifiedName(), ex.getMessage(), ex);
+					return null;
+				}).join();
 	}
 
 	@On
 	void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) throws IOException {
 		logger.info("OS Attachment Service handler called for marking attachment as deleted with document id: {}", context.getContentId());
 
-		osClient.deleteContent(context.getContentId());
-		context.setCompleted();
+		osClient.deleteContent(context.getContentId())
+				.thenRun(() -> {context.setCompleted();})
+				.join();
 	}
 
 	@On
@@ -99,8 +103,18 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 	void readAttachment(AttachmentReadEventContext context) throws IOException {
 		logger.info("OS Attachment Service handler called for reading attachment with document id: {}",
 				context.getContentId());
-		context.getData().setContent(osClient.readContent(context.getContentId()));
-		context.setCompleted();
+		osClient.readContent(context.getContentId())
+			.whenComplete((inputStream, throwable) -> {
+				if (throwable != null) {
+					throw new RuntimeException("Failed to read content for id: " + context.getContentId(), throwable);
+				} else if (inputStream != null) {
+					context.getData().setContent(inputStream);
+					context.getData().setStatus(StatusCode.CLEAN); //todo: malware scan staus?
+					context.setCompleted();
+				} else {
+					throw new RuntimeException("Content not found for id: " + context.getContentId(), throwable);
+				}
+			}).join();
 	}
 
 }
