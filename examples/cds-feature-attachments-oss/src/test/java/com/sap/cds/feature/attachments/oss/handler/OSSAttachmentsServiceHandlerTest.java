@@ -1,164 +1,168 @@
 package com.sap.cds.feature.attachments.oss.handler;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.UUID;
-
-import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.CleanupMode;
-import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
-
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.oss.client.AWSClient;
+import com.sap.cds.feature.attachments.oss.client.MockOSClient;
+import com.sap.cds.feature.attachments.oss.client.OSClient;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.services.request.UserInfo;
+import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
+
+import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class OSSAttachmentsServiceHandlerTest {
 
-	private static final String TEST_CONTENT = "Hello World !!";
+    @Test
+    void testConstructorWithNoBindingUsesMockClient() {
+        OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(Optional.empty());
+        // Reflection to access private static osClient
+        OSClient client = getOsClient(handler);
+        assertTrue(client instanceof MockOSClient);
+    }
 
-	private static OSSAttachmentsServiceHandler handler;
+    @Test
+    void testConstructorWithAwsBindingUsesAwsClient() {
+        // Create a mock ServiceBinding with AWS credentials
+        ServiceBinding binding = mock(ServiceBinding.class);
+        HashMap<String, Object> creds = new HashMap<>();
+        creds.put("host", "s3.amazonaws.com");
+		creds.put("bucket", "dummy");
+		creds.put("region", "dummy");
+		creds.put("access_key_id", "dummy");
+		creds.put("secret_access_key", "dummy");
+		when(binding.getCredentials()).thenReturn(creds);
 
-	@TempDir(cleanup = CleanupMode.ALWAYS)
-	private static Path rootFolder;
+        OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(Optional.of(binding));
+        OSClient client = getOsClient(handler);
+        assertTrue(client instanceof AWSClient);
+    }
 
-	private static CdsEntity entity;
+    @Test
+    void testCreateReadDeleteAttachmentFlow() throws Exception {
+        ServiceBinding binding = getRealServiceBinding();
+        if (binding == null) {
+            System.err.println("\n\n" +
+                "************************************************************\n" +
+                "  SKIPPING testCreateReadDeleteAttachmentFlow:\n" +
+                "  AWS S3 CREDENTIALS NOT SET IN ENVIRONMENT VARIABLES!\n" +
+                "************************************************************\n");
+            return; // Skip the test if no real binding is available
+        }
 
-	@BeforeAll
-	static void setUpBeforeClass() throws IOException {
-		//OSService osService = new OSServiceImpl();
-		//handler = new OSSAttachmentsServiceHandler(osService);
-		//entity = mock(CdsEntity.class);
-		//when(entity.getQualifiedName()).thenReturn("test.Attachments");
-	}
-	
-	@Disabled
-	@ParameterizedTest
-	@NullSource
-	@ValueSource(strings = { "t0" })
-	void testCreateAttachment(String tenant) throws IOException {
-		String contentId = UUID.randomUUID().toString();
-		AttachmentCreateEventContext createContext = createAttachment(tenant, contentId, TEST_CONTENT);
+        // Create test file to upload, read and delete
+        String testFileName = "testFileName-" + System.currentTimeMillis() + ".txt";
+        String testFileContent = "test";
+		
+        OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(Optional.of(binding));
 
-		assertEquals(contentId, createContext.getContentId());
+		// Create an AttachmentCreateEventContext with mocked data - to upload a test attachment
+        MediaData createMediaData = mock(MediaData.class);
+		when(createMediaData.getMimeType()).thenReturn("text/plain");
+        InputStream content = new ByteArrayInputStream(testFileContent.getBytes());
+        when(createMediaData.getContent()).thenReturn(content);
 
-		Path file = resolveContentPath(tenant, contentId);
+        CdsEntity attachmentEntity = mock(CdsEntity.class);
+        when(attachmentEntity.getQualifiedName()).thenReturn(testFileName);
+        
+		AttachmentCreateEventContext createContext = mock(AttachmentCreateEventContext.class);
+        when(createContext.getData()).thenReturn(createMediaData);
+        when(createContext.getAttachmentEntity()).thenReturn(attachmentEntity);
+        when(createContext.getAttachmentIds()).thenReturn(new HashMap<>() {{
+            put(Attachments.ID, testFileName);
+        }});
+        doNothing().when(createContext).setCompleted();
 
-		assertTrue(Files.exists(file));
-		assertTrue(createContext.isCompleted());
-		assertFalse(createContext.getIsInternalStored());
+        handler.createAttachment(createContext);
+        // Verify that the function setCompleted was called
+        verify(createContext).setCompleted();
 
-		String content = Files.readString(file);
-		assertEquals(TEST_CONTENT, content);
+        // Now read attachment
 
-	}
+        MediaData readMediaData = mock(MediaData.class);
+        // When calling readAttachment, we modify the readMetaData by calling setContent and setStatus.
+        // To check if these functions are called correctly, we use Mockito's doAnswer to capture the arguments passed to these methods.
+        doAnswer(invocation -> {
+            InputStream receivedInputStream = invocation.getArgument(0);
+            assertEquals(testFileContent, new String(receivedInputStream.readAllBytes()));
+            return null;
+        }).when(readMediaData).setContent(any());
+        doAnswer(invocation -> {
+            String newStatus = invocation.getArgument(0);
+            assertEquals(newStatus, StatusCode.CLEAN);
+            return null;
+        }).when(readMediaData).setStatus(any());
 
-	@Disabled
-	@ParameterizedTest
-	@NullSource
-	@ValueSource(strings = { "t0" })
-	void testReadAttachment(String tenant) throws IOException {
-		String contentId = UUID.randomUUID().toString();
-		createAttachment(tenant, contentId, TEST_CONTENT);
+        AttachmentReadEventContext readContext = mock(AttachmentReadEventContext.class);
+        when(readContext.getContentId()).thenReturn(testFileName);
+        when(readContext.getData()).thenReturn(readMediaData);
+        doNothing().when(readContext).setCompleted();
+        
+        handler.readAttachment(readContext);
+        // Verify that the function setCompleted was called
+        verify(readContext).setCompleted();
 
-		AttachmentReadEventContext context = spy(AttachmentReadEventContext.create());
-		context.setContentId(contentId);
-		context.setData(MediaData.create());
-		doReturn(getUserInfoMock(tenant)).when(context).getUserInfo();
+        // Delete attachment
+        AttachmentMarkAsDeletedEventContext deleteContext = mock(AttachmentMarkAsDeletedEventContext.class);
+        when(deleteContext.getContentId()).thenReturn(testFileName);
+        doNothing().when(readContext).setCompleted();
 
-		handler.readAttachment(context);
+        handler.markAttachmentAsDeleted(deleteContext);
+        // Verify that the function setCompleted was called
+        verify(deleteContext).setCompleted();
 
-		String content = IOUtils.toString(context.getData().getContent(), UTF_8);
-		assertEquals(TEST_CONTENT, content);
-	}
+        // Try to read again, this will throw a exception
+       assertThrows(RuntimeException.class, () -> handler.readAttachment(readContext));
+    }
 
-	@Disabled
-	@ParameterizedTest
-	@NullSource
-	@ValueSource(strings = { "t0" })
-	void testMarkAttachmentAsDeleted(String tenant) throws IOException {
-		String contentId = UUID.randomUUID().toString();
-		createAttachment(tenant, contentId, TEST_CONTENT);
+    private ServiceBinding getRealServiceBinding() {
+        // Read environment variables
+        String host = System.getenv("AWS_S3_HOST");
+        String bucket = System.getenv("AWS_S3_BUCKET");
+        String region = System.getenv("AWS_S3_REGION");
+        String accessKeyId = System.getenv("AWS_S3_ACCESS_KEY_ID");
+        String secretAccessKey = System.getenv("AWS_S3_SECRET_ACCESS_KEY");
 
-		AttachmentMarkAsDeletedEventContext context = spy(AttachmentMarkAsDeletedEventContext.create());
-		doReturn(getUserInfoMock(tenant)).when(context).getUserInfo();
-		context.setContentId(contentId);
+        // Return null if any are missing
+        if (host == null || bucket == null || region == null || accessKeyId == null || secretAccessKey == null) {
+            return null;
+        }
 
-		Path filePath = resolveContentPath(tenant, contentId);
-		Path deletedPath = resolveDeletedContentPath(tenant, contentId);
+        ServiceBinding binding = mock(ServiceBinding.class);
+        HashMap<String, Object> creds = new HashMap<>();
+        creds.put("host", host);
+        creds.put("bucket", bucket);
+        creds.put("region", region);
+        creds.put("access_key_id", accessKeyId);
+        creds.put("secret_access_key", secretAccessKey);
+        when(binding.getCredentials()).thenReturn(creds);
+        return binding;
+    }
 
-		assertTrue(Files.exists(filePath));
-		assertFalse(Files.exists(deletedPath));
-
-		handler.markAttachmentAsDeleted(context);
-
-		assertFalse(Files.exists(filePath));
-		assertTrue(Files.exists(deletedPath));
-		assertTrue(context.isCompleted());
-	}
-
-	@Test
-	void testRestoreAttachment() {
-	}
-
-	private static AttachmentCreateEventContext createAttachment(String tenant, String id, String content)
-			throws IOException {
-		AttachmentCreateEventContext createContext = spy(AttachmentCreateEventContext.create());
-		createContext.setAttachmentEntity(entity);
-		doReturn(getUserInfoMock(tenant)).when(createContext).getUserInfo();
-		assertFalse(createContext.isCompleted());
-		assertNull(createContext.getIsInternalStored());
-
-		Map<String, Object> keys = Map.of(Attachments.ID, id);
-		createContext.setAttachmentIds(keys);
-		try (InputStream testStream = new ByteArrayInputStream(content.getBytes(UTF_8))) {
-			MediaData mediaData = MediaData.create();
-			mediaData.setContent(testStream);
-			createContext.setData(mediaData);
-
-			handler.createAttachment(createContext);
-			return createContext;
-		}
-	}
-
-	private static UserInfo getUserInfoMock(String tenant) {
-		UserInfo userInfo = mock(UserInfo.class);
-		when(userInfo.getTenant()).thenReturn(tenant);
-		return userInfo;
-	}
-
-
-	private static Path resolveDeletedContentPath(String tenant, String contentId) {
-		return rootFolder
-				.resolve("%s/deleted/%s/content.bin".formatted(tenant == null ? "default" : tenant, contentId));
-	}
-
-	private static Path resolveContentPath(String tenant, String contentId) {
-		return rootFolder.resolve("%s/%s/content.bin".formatted(tenant == null ? "default" : tenant, contentId));
-	}
-
+    // Helper to access private static osClient
+    private OSClient getOsClient(OSSAttachmentsServiceHandler handler) {
+        try {
+            var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+            field.setAccessible(true);
+            return (OSClient) field.get(null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
