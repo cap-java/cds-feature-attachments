@@ -23,5 +23,6 @@ aspect MediaData           @(_is_media_data) {
 }
 
 aspect Attachments : cuid, managed, MediaData {
-    note : String;
+    note   : String;
+    length : Int32  @readonly; // length in bytes, calculated from content
 }
