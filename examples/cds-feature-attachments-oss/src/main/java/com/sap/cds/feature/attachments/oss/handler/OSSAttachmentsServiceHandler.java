@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.oss.client.AWSClient;
+import com.sap.cds.feature.attachments.oss.client.AzureClient;
 import com.sap.cds.feature.attachments.oss.client.MockOSClient;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -47,11 +48,13 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 			return;
 		}
 		String host = (String) bindingOpt.get().getCredentials().get("host");
-		if (java.util.stream.Stream.of("aws", "s3", "amazon").anyMatch(s -> host.contains(s))) {
+		String containerUri = (String) bindingOpt.get().getCredentials().get("container_uri");
+		if (host != null && java.util.stream.Stream.of("aws", "s3", "amazon").anyMatch(s -> host.contains(s))) {
 			this.osClient = new AWSClient(bindingOpt.get());
-		} /*else if (java.util.stream.Stream.of("azure", "microsoft").anyMatch(s -> host.contains(s))) {
-			osClient = new AzureClient(bindingOpt);
-		} else if (java.util.stream.Stream.of("gcp", "google").anyMatch(s -> host.contains(s))) {
+		} else if (containerUri != null && java.util.stream.Stream.of("azure", "windows").anyMatch(s -> containerUri.contains(s))) {
+			// Todo: catch error here in case containerUri is not valid
+			this.osClient = new AzureClient(bindingOpt.get());
+		} /*else if (java.util.stream.Stream.of("gcp", "google").anyMatch(s -> host.contains(s))) {
 			osClient = new GCPClient(bindingOpt);
 		} else {
 			logger.warn("No valid service binding found for host " + host + ", hence the attachment service is not connected!");

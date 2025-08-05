@@ -1,5 +1,22 @@
 package com.sap.cds.feature.attachments.oss.handler;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
+
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
@@ -11,21 +28,6 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMa
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
-
-import org.junit.jupiter.api.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class OSSAttachmentsServiceHandlerTest {
 
@@ -55,17 +57,36 @@ class OSSAttachmentsServiceHandlerTest {
     }
 
     @Test
-    void testCreateReadDeleteAttachmentFlow() throws Exception {
-        ServiceBinding binding = getRealServiceBinding();
+    void testCreateReadDeleteAttachmentFlowAWS() throws Exception {
+        ServiceBinding binding = getRealServiceBindingAWS();
         if (binding == null) {
             System.err.println("\n\n" +
                 "************************************************************\n" +
-                "  SKIPPING testCreateReadDeleteAttachmentFlow:\n" +
+                "  SKIPPING testCreateReadDeleteAttachmentFlowAWS:\n" +
                 "  AWS S3 CREDENTIALS NOT SET IN ENVIRONMENT VARIABLES!\n" +
                 "************************************************************\n");
             return; // Skip the test if no real binding is available
         }
+        testCreateReadDeleteAttachmentFlow(binding);
+    }
 
+    @Test
+    void testCreateReadDeleteAttachmentFlowAzure() throws Exception {
+        ServiceBinding binding = getRealServiceBindingAzure();
+        if (binding == null) {
+            System.err.println("\n\n" +
+                "************************************************************\n" +
+                "  SKIPPING testCreateReadDeleteAttachmentFlowAzure:\n" +
+                "  Azure CREDENTIALS NOT SET IN ENVIRONMENT VARIABLES!\n" +
+                "************************************************************\n");
+            return; // Skip the test if no real binding is available
+        }
+        testCreateReadDeleteAttachmentFlow(binding);
+    }
+
+    // This methods tests the complete flow of creating, reading, and deleting an attachment
+    // for all OS clients. It uses a mock ServiceBinding to simulate the attachment service.
+    private void testCreateReadDeleteAttachmentFlow(ServiceBinding binding) throws Exception {
         // Create test file to upload, read and delete
         String testFileName = "testFileName-" + System.currentTimeMillis() + ".txt";
         String testFileContent = "test";
@@ -131,7 +152,25 @@ class OSSAttachmentsServiceHandlerTest {
        assertThrows(RuntimeException.class, () -> handler.readAttachment(readContext));
     }
 
-    private ServiceBinding getRealServiceBinding() {
+    private ServiceBinding getRealServiceBindingAzure() {
+        // Read environment variables
+        String containerUri = System.getenv("AZURE_CONTAINER_URI");
+        String sasToken = System.getenv("AZURE_SAS_TOKEN");
+
+        // Return null if any are missing
+        if (containerUri == null || sasToken == null) {
+            return null;
+        }
+
+        ServiceBinding binding = mock(ServiceBinding.class);
+        HashMap<String, Object> creds = new HashMap<>();
+        creds.put("container_uri", containerUri);
+        creds.put("sas_token", sasToken);
+        when(binding.getCredentials()).thenReturn(creds);
+        return binding;
+    }
+
+    private ServiceBinding getRealServiceBindingAWS() {
         // Read environment variables
         String host = System.getenv("AWS_S3_HOST");
         String bucket = System.getenv("AWS_S3_BUCKET");

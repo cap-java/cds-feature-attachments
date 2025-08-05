@@ -38,6 +38,12 @@
             <version>${software.amazon.awssdk-crt-version}</version>
         </dependency>
 
+         <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-storage-blob</artifactId>
+            <version>12.25.0</version>
+        </dependency>
+
         <dependency>
             <groupId>com.sap.cloud.sdk</groupId>
             <artifactId>sdk-bom</artifactId>
