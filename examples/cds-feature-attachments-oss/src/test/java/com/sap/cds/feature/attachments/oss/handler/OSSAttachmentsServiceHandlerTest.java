@@ -59,28 +59,12 @@ class OSSAttachmentsServiceHandlerTest {
     @Test
     void testCreateReadDeleteAttachmentFlowAWS() throws Exception {
         ServiceBinding binding = getRealServiceBindingAWS();
-        if (binding == null) {
-            System.err.println("\n\n" +
-                "************************************************************\n" +
-                "  SKIPPING testCreateReadDeleteAttachmentFlowAWS:\n" +
-                "  AWS S3 CREDENTIALS NOT SET IN ENVIRONMENT VARIABLES!\n" +
-                "************************************************************\n");
-            return; // Skip the test if no real binding is available
-        }
         testCreateReadDeleteAttachmentFlow(binding);
     }
 
     @Test
     void testCreateReadDeleteAttachmentFlowAzure() throws Exception {
         ServiceBinding binding = getRealServiceBindingAzure();
-        if (binding == null) {
-            System.err.println("\n\n" +
-                "************************************************************\n" +
-                "  SKIPPING testCreateReadDeleteAttachmentFlowAzure:\n" +
-                "  Azure CREDENTIALS NOT SET IN ENVIRONMENT VARIABLES!\n" +
-                "************************************************************\n");
-            return; // Skip the test if no real binding is available
-        }
         testCreateReadDeleteAttachmentFlow(binding);
     }
 
