@@ -35,8 +35,8 @@
         <cds.cdsdk-version>8.9.8</cds.cdsdk-version> <!-- https://www.npmjs.com/package/@sap/cds-dk?activeTab=versions -->
 
         <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
-        <cds.services.latest-test-version>4.1.1</cds.services.latest-test-version>
-        <cds.cdsdk.latest-test-version>9.1.3</cds.cdsdk.latest-test-version>
+        <cds.services.latest-test-version>4.2.0</cds.services.latest-test-version>
+        <cds.cdsdk.latest-test-version>9.2.0</cds.cdsdk.latest-test-version>
     </properties>
 
     <groupId>com.sap.cds</groupId>
@@ -67,7 +67,7 @@
             <dependency>
                 <groupId>com.sap.cloud.sdk</groupId>
                 <artifactId>sdk-bom</artifactId>
-                <version>5.20.0</version>
+                <version>5.21.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -299,7 +299,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>flatten-maven-plugin</artifactId>
-                    <version>1.7.1</version>
+                    <version>1.7.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
@@ -309,7 +309,7 @@
                 <plugin>
                     <groupId>org.pitest</groupId>
                     <artifactId>pitest-maven</artifactId>
-                    <version>1.20.0</version>
+                    <version>1.20.1</version>
                 </plugin>
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
