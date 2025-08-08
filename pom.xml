@@ -37,6 +37,8 @@
         <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
         <cds.services.latest-test-version>4.2.0</cds.services.latest-test-version>
         <cds.cdsdk.latest-test-version>9.2.0</cds.cdsdk.latest-test-version>
+
+        <spotless.check.skip>true</spotless.check.skip>
     </properties>
 
     <groupId>com.sap.cds</groupId>
@@ -260,8 +262,8 @@
                     <java>
                         <licenseHeader>
                             <content>/*
- * © $YEAR SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
- */</content>
+                                * © $YEAR SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+                                */</content>
                         </licenseHeader>
                     </java>
                 </configuration>
