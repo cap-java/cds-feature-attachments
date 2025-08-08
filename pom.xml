@@ -250,6 +250,30 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- ENFORCING COMMON CODE FORMAT STYLE -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.46.1</version>
+                <configuration>
+                    <java>
+                        <licenseHeader>
+                            <content>/*
+ * © $YEAR SAP SE or an SAP affiliate company. All rights reserved.
+ */</content>
+                        </licenseHeader>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
 
         <pluginManagement>
