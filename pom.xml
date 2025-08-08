@@ -262,8 +262,8 @@
                     <java>
                         <licenseHeader>
                             <content>/*
-                                * © $YEAR SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
-                                */</content>
+ * © $YEAR SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ */</content>
                         </licenseHeader>
                     </java>
                 </configuration>
