@@ -1,3 +1,6 @@
+/*
+ * © 2024 SAP SE or an SAP affiliate company. All rights reserved.
+ */
 package com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper;
 
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.AttachmentEntity;

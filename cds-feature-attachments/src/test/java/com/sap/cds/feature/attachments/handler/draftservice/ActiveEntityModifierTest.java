@@ -1,3 +1,6 @@
+/*
+ * © 2024-2025 SAP SE or an SAP affiliate company. All rights reserved.
+ */
 package com.sap.cds.feature.attachments.handler.draftservice;
 
 import static com.sap.cds.services.draft.Drafts.IS_ACTIVE_ENTITY;
