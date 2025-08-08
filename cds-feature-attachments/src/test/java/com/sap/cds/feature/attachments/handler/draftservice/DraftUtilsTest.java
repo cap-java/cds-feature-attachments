@@ -1,5 +1,5 @@
 /*
- * © 2025 SAP SE or an SAP affiliate company. All rights reserved.
+ * © 2025-2024 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.handler.draftservice;
 
