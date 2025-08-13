@@ -50,7 +50,7 @@
 
     <modules>
         <module>cds-feature-attachments</module>
-        <module>examples/cds-feature-attachments-fs</module>
+        <module>storage-targets/cds-feature-attachments-fs</module>
         <module>integration-tests</module>
     </modules>
 
