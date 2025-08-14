@@ -88,20 +88,16 @@ public class GoogleClient implements OSClient {
                     Storage.BlobListOption.versions(true),
                     Storage.BlobListOption.prefix(completeFileName)
                 );
-                boolean anyDeleted = false;
                 for (Blob blob : blobs.iterateAll()) {
                     if (blob.getName().equals(completeFileName)) {
                         boolean deleted = storage.delete(BlobId.of(bucketName, completeFileName, blob.getGeneration()));
                         if (deleted) {
                             logger.info("Deleted version {} of file {}", blob.getGeneration(), completeFileName);
-                            anyDeleted = true;
                         } else {
-                            logger.warn("Failed to delete version {} of file {}", blob.getGeneration(), completeFileName);
+                            logger.error("Failed to delete version {} of file {}", blob.getGeneration(), completeFileName);
+                            throw new ServiceException("Failed to delete version " + blob.getGeneration() + " of file " + completeFileName);
                         }
                     }
-                }
-                if (!anyDeleted) {
-                    logger.warn("No versions found to delete for file {}", completeFileName);
                 }
             } catch (RuntimeException e) {
                 logger.error("Failed to delete file {}: {}", completeFileName, e.getMessage(), e);
@@ -118,11 +114,6 @@ public class GoogleClient implements OSClient {
                 // https://cloud.google.com/java/docs/reference/google-cloud-storage/latest/com.google.cloud.storage.Storage#com_google_cloud_storage_Storage_reader_com_google_cloud_storage_BlobId_com_google_cloud_storage_Storage_BlobSourceOption____
                 // such that we can read large files.
                 BlobId blobId = BlobId.of(bucketName, completeFileName);
-                if (storage.get(blobId) == null) {
-                    logger.error("File {} not found for reading", completeFileName);
-                    // We could throw an exception here, but since we log the error, we return an empty stream.
-                    return new ByteArrayInputStream(new byte[0]);
-                }
                 ReadChannel reader = storage.reader(blobId);
                 return Channels.newInputStream(reader);
             } catch (RuntimeException e) {

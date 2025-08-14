@@ -34,9 +34,6 @@ public class Registration implements CdsRuntimeConfiguration {
 		Optional<ServiceBinding> bindingOpt = environment.getServiceBindings()
 			.filter(b -> b.getServiceName().map(name -> name.equals("objectstore")).orElse(false))
 			.findFirst();
-		if (!bindingOpt.isPresent()) {
-			logger.info("No objectstore binding found when registering the attachments plugin.");
-		}
 		return bindingOpt;
 	}
 }

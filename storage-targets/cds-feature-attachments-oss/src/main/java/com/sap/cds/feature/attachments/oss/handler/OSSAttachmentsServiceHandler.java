@@ -3,6 +3,7 @@
  **************************************************************************/
 package com.sap.cds.feature.attachments.oss.handler;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -22,7 +23,6 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
-import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -99,9 +99,6 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 					context.setIsInternalStored(false);
 					context.setContentId(contentId);
 					context.setCompleted();
-				}).exceptionally(ex -> {
-					logger.error("Upload failed for entity {}: {}", context.getAttachmentEntity().getQualifiedName(), ex.getMessage(), ex);
-					return null;
 				}).join();
 	}
 
@@ -128,16 +125,17 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 		logger.info("OS Attachment Service handler called for reading attachment with document id: {}",
 				context.getContentId());
 		osClient.readContent(context.getContentId())
-			.whenComplete((inputStream, throwable) -> {
-				if (throwable != null) {
-					throw new ServiceException("Failed to read content for id: " + context.getContentId(), throwable);
-				} else if (inputStream != null) {
+			.thenApply(inputStream -> {
+				if (inputStream != null) {
 					context.getData().setContent(inputStream);
 					context.getData().setStatus(StatusCode.CLEAN); //todo: malware scan staus?
-					context.setCompleted();
 				} else {
-					throw new ServiceException("Content not found for id: " + context.getContentId(), throwable);
+					logger.error("Content not found for id: {}", context.getContentId());
+					// We could throw an exception here, but since we log the error, we return an empty stream.
+					context.getData().setContent(new ByteArrayInputStream(new byte[0]));
 				}
+				context.setCompleted();
+				return null;
 			}).join();
 	}
 
