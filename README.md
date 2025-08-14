@@ -25,6 +25,7 @@ and handling by using an aspect Attachments.
         * [Motivation](#motivation)
         * [HTTP Endpoint](#http-endpoint)
         * [Security](#security)
+    * [Storage Targets](#storage-targets)
 <!-- TOC -->
 
 ## Additional Information
@@ -402,3 +403,13 @@ Also, other annotations can be used to secure the service.
 
 More information about the CAP Java security concept can be found in
 the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
+
+### Storage Targets
+
+By default, the plugin operates without a dedicated storage target, storing attachments directly in the [underlying database](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L17).
+
+Other available storage targets:
+- [Object Store](storage-targets/cds-feature-attachments-oss)
+- [local file system as a storage backend](storage-targets/cds-feature-attachments-fs) (only for testing scenarios)
+
+When using a dedicated storage target, the attachment is not stored in the underlying database; instead, it is saved on the specified storage target, and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).

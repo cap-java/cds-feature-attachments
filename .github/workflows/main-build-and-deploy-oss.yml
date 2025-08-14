@@ -51,6 +51,17 @@ jobs:
     name: Build and Sonar Scan
     runs-on: ubuntu-latest
     needs: update-version
+    env:
+      AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+      AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
+      AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
+      AZURE_CONTAINER_URI: ${{ secrets.AZURE_CONTAINER_URI }}
+      AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
+      GS_BASE_64_ENCODED_PRIVATE_KEY_DATA: ${{ secrets.GS_BASE_64_ENCODED_PRIVATE_KEY_DATA }}
+      GS_BUCKET: ${{ secrets.GS_BUCKET }}
+      GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v5
