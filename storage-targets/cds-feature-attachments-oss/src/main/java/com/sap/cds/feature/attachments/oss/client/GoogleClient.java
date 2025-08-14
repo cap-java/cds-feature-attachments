@@ -42,6 +42,7 @@ public class GoogleClient implements OSClient {
             sac = ServiceAccountCredentials.fromStream(serviceAccountKeyStream);
         } catch (IOException e) {
             logger.error("Could not initialize Google Cloud Storage client: {}", e.getMessage(), e);
+            throw new ServiceException("Failed to initialize Google Cloud Storage client", e);
         }
         this.storage = StorageOptions.newBuilder()
                 .setProjectId(projectId)
@@ -119,6 +120,7 @@ public class GoogleClient implements OSClient {
                 BlobId blobId = BlobId.of(bucketName, completeFileName);
                 if (storage.get(blobId) == null) {
                     logger.error("File {} not found for reading", completeFileName);
+                    // We could throw an exception here, but since we log the error, we return an empty stream.
                     return new ByteArrayInputStream(new byte[0]);
                 }
                 ReadChannel reader = storage.reader(blobId);

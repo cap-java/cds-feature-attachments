@@ -28,7 +28,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 public class AWSClient implements OSClient {
     private final S3Client s3Client;
     private final S3AsyncClient s3AsyncClient;
-    private final String bucketName;	private static final Logger logger = LoggerFactory.getLogger(AWSClient.class);
+    private final String bucketName;
+    private static final Logger logger = LoggerFactory.getLogger(AWSClient.class);
 
     public AWSClient(ServiceBinding binding) {
         Map<String, Object> credentials = binding.getCredentials();
@@ -87,6 +88,8 @@ public class AWSClient implements OSClient {
                         content.close();
                     } catch (IOException e) {
                         logger.error("Failed to close input stream: {}", e.getMessage());
+                        // We chose to not throw an exception here, as the upload was successful
+                        // and only log the error.
                     }
                 }
                 return null; // for CompletableFuture<Void>
@@ -111,7 +114,7 @@ public class AWSClient implements OSClient {
                 }
             } catch (RuntimeException e) {
                 logger.error("Failed to delete file {}: {}", completeFileName, e.getMessage());
-                throw new ServiceException("Failed to delete file: " + completeFileName, e);
+                throw new ServiceException("Failed to delete file: " + completeFileName + " " + e.getMessage(), e);
             }
         });
     }

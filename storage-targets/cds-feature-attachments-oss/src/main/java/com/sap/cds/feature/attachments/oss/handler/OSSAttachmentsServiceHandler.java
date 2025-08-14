@@ -55,13 +55,23 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 		final String containerUri = (String) binding.getCredentials().get("container_uri"); //Azure
 		final String base64EncodedPrivateKeyData = (String) binding.getCredentials().get("base64EncodedPrivateKeyData"); //GCP
 
+		// In the follwing, we check the service binding credentials to determine which client to use.
+		// We do *not* throw exceptions here, as we want to provide a fallback to the MockOSClient if no valid service binding is found.
+		// Then the rest of the application still works, but without actual attachment storage.
 		if (host != null && java.util.stream.Stream.of("aws", "s3", "amazon").anyMatch(s -> host.contains(s))) {
 			this.osClient = new AWSClient(binding);
 		} else if (containerUri != null && java.util.stream.Stream.of("azure", "windows").anyMatch(s -> containerUri.contains(s))) {
 			this.osClient = new AzureClient(binding);
 		} else if (base64EncodedPrivateKeyData != null) {
-			String decoded = new String(java.util.Base64.getDecoder().decode(base64EncodedPrivateKeyData),java.nio.charset.StandardCharsets.UTF_8);
-			if (java.util.stream.Stream.of("google", "gcp").anyMatch(s -> decoded.contains(s))) {
+		    String decoded = "";
+			try {
+				decoded = new String(java.util.Base64.getDecoder().decode(base64EncodedPrivateKeyData),java.nio.charset.StandardCharsets.UTF_8);
+			} catch (IllegalArgumentException e) {
+				logger.error("No valid base64EncodedPrivateKeyData found in Google service binding {}, hence the attachment service is not connected!", binding);
+			}
+			// Redeclaring is needed here to make the variable effectively final for the lambda expression
+			final String dec = decoded;
+			if (java.util.stream.Stream.of("google", "gcp").anyMatch(s -> dec.contains(s))) {
 				this.osClient = new GoogleClient(binding);
 			} else {
 				logger.error("No valid Google service binding found in binding {}, hence the attachment service is not connected!", binding);
