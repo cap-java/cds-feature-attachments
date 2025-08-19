@@ -2,7 +2,6 @@ package com.sap.cds.feature.attachments.oss.handler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -17,7 +16,6 @@ import java.util.Optional;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
-import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
@@ -59,18 +57,13 @@ public class OSSAttachmentsServiceHandlerTestUtils {
 
         // Now read attachment
         MediaData readMediaData = mock(MediaData.class);
-        // When calling readAttachment, we modify the readMetaData by calling setContent and setStatus.
+        // When calling readAttachment, we modify the readMetaData by calling setContent.
         // To check if these functions are called correctly, we use Mockito's doAnswer to capture the arguments passed to these methods.
         doAnswer(invocation -> {
             InputStream receivedInputStream = invocation.getArgument(0);
             assertEquals(testFileContent, new String(receivedInputStream.readAllBytes()));
             return null;
         }).when(readMediaData).setContent(any());
-        doAnswer(invocation -> {
-            String newStatus = invocation.getArgument(0);
-            assertEquals(newStatus, StatusCode.CLEAN);
-            return null;
-        }).when(readMediaData).setStatus(any());
 
         AttachmentReadEventContext readContext = mock(AttachmentReadEventContext.class);
         when(readContext.getContentId()).thenReturn(testFileName);

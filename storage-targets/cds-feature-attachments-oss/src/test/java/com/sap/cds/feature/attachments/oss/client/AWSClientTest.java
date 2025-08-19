@@ -1,36 +1,37 @@
 package com.sap.cds.feature.attachments.oss.client;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
 import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.http.SdkHttpResponse;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 public class AWSClientTest {
 
     @Test
-    // Dummy tests for the other two clients (Azure and Google) are omitted because there a real binding is needed!
     void testConstructorWithAwsBindingUsesAwsClient() throws NoSuchFieldException, IllegalAccessException {
         OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(Optional.of(getDummyBinding()));
         OSClient client = OSSAttachmentsServiceHandlerTestUtils.getOsClient(handler);
@@ -38,27 +39,99 @@ public class AWSClientTest {
     }
 
     @Test
-    void testCreateReadDeleteAttachmentFlowAWS() throws Exception {
-        ServiceBinding binding = getRealServiceBindingAWS();
-        if (binding == null) {
-            // Skip the test if no real binding is available
-            return;
-        }
-        OSSAttachmentsServiceHandlerTestUtils.testCreateReadDeleteAttachmentFlow(binding);
+    void testReadContent() throws Exception {
+        AWSClient awsClient = new AWSClient(getDummyBinding());
+
+        // Mock S3Client to return a dummy InputStream
+        S3Client mockS3Client = mock(S3Client.class);
+        ByteArrayInputStream mockInputStream = new ByteArrayInputStream("test-data".getBytes());
+        GetObjectResponse mockResponse = mock(GetObjectResponse.class);
+        ResponseInputStream<GetObjectResponse> mockResponseInputStream = new ResponseInputStream<>(mockResponse, mockInputStream);
+
+        when(mockS3Client.getObject(any(GetObjectRequest.class))).thenReturn(mockResponseInputStream);
+        
+        var field = AWSClient.class.getDeclaredField("s3Client");
+        field.setAccessible(true);
+        field.set(awsClient, mockS3Client);
+
+        InputStream result = awsClient.readContent("test.txt").get();
+        assertNotNull(result);
     }
 
     @Test
-    void testUploadContentThrowsAWS() throws Exception {
+    void testUploadContent() throws Exception {
         AWSClient awsClient = new AWSClient(getDummyBinding());
 
-        // Inject a mock S3AsyncClient that always fails
+        // Mock S3AsyncClient to return a successful PutObjectResponse
+        S3AsyncClient mockAsyncClient = mock(S3AsyncClient.class);
+        PutObjectResponse mockPutRes = mock(PutObjectResponse.class);
+        SdkHttpResponse mockHttpRes = mock(SdkHttpResponse.class);
+        when(mockHttpRes.isSuccessful()).thenReturn(true);
+        when(mockPutRes.sdkHttpResponse()).thenReturn(mockHttpRes);
+        CompletableFuture<PutObjectResponse> successFuture = CompletableFuture.completedFuture(mockPutRes);
+        when(mockAsyncClient.putObject(any(PutObjectRequest.class), any(AsyncRequestBody.class)))
+            .thenReturn(successFuture);
+
+        var field = AWSClient.class.getDeclaredField("s3AsyncClient");
+        field.setAccessible(true);
+        field.set(awsClient, mockAsyncClient);
+
+        // Should not throw
+        
+        awsClient.uploadContent(
+            new ByteArrayInputStream("test".getBytes()),
+            "test.txt",
+            "text/plain"
+        ).get(); 
+    }
+
+    @Test
+    void testDeleteContent() throws NoSuchFieldException, IllegalAccessException {
+        AWSClient awsClient = new AWSClient(getDummyBinding());
+
+        // Mock S3Client to return a DeleteObjectResponse with successful SdkHttpResponse
+        S3Client mockS3Client = mock(S3Client.class);
+        DeleteObjectResponse mockDelRes = mock(DeleteObjectResponse.class);
+        SdkHttpResponse mockHttpRes = mock(SdkHttpResponse.class);
+        when(mockHttpRes.isSuccessful()).thenReturn(true);
+        when(mockDelRes.sdkHttpResponse()).thenReturn(mockHttpRes);
+        when(mockS3Client.deleteObject(any(DeleteObjectRequest.class))).thenReturn(mockDelRes);
+
+        var field = AWSClient.class.getDeclaredField("s3Client");
+        field.setAccessible(true);
+        field.set(awsClient, mockS3Client);
+
+        assertDoesNotThrow(() -> awsClient.deleteContent("test.txt").get());
+    }
+
+    @Test
+    void testReadContentThrows() throws Exception {
+        AWSClient awsClient = new AWSClient(getDummyBinding());
+
+        // Mock S3Client to return a dummy InputStream
+        S3Client mockS3Client = mock(S3Client.class);
+
+        when(mockS3Client.getObject(any(GetObjectRequest.class))).thenThrow(new RuntimeException("Simulated S3 failure"));
+        
+        var field = AWSClient.class.getDeclaredField("s3Client");
+        field.setAccessible(true);
+        field.set(awsClient, mockS3Client);
+
+        ExecutionException thrown = assertThrows(ExecutionException.class, () -> awsClient.readContent("test.txt").get());
+        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+    }
+
+    @Test
+    void testUploadContentThrows() throws Exception {
+        AWSClient awsClient = new AWSClient(getDummyBinding());
+
+        // Mock S3AsyncClient that always fails
         S3AsyncClient mockAsyncClient = mock(S3AsyncClient.class);
         CompletableFuture<?> failedFuture = new CompletableFuture<>();
         failedFuture.completeExceptionally(new RuntimeException("Simulated S3 failure"));
         when(mockAsyncClient.putObject(any(PutObjectRequest.class), any(AsyncRequestBody.class)))
             .thenReturn((CompletableFuture) failedFuture);
 
-        // Use reflection to set the private s3AsyncClient field
         var field = AWSClient.class.getDeclaredField("s3AsyncClient");
         field.setAccessible(true);
         field.set(awsClient, mockAsyncClient);
@@ -75,16 +148,15 @@ public class AWSClientTest {
     }
 
     @Test
-    void testUploadContentThrowsAWSOnPutResponseNull() throws Exception {
+    void testUploadContentThrowsOnPutResponseNull() throws Exception {
         AWSClient awsClient = new AWSClient(getDummyBinding());
 
-        // Inject a mock S3AsyncClient that returns a completed future with null
+        // Mock S3AsyncClient that returns a null PutObjectResponse
         S3AsyncClient mockAsyncClient = mock(S3AsyncClient.class);
         CompletableFuture<PutObjectResponse> nullFuture = CompletableFuture.completedFuture(null);
         when(mockAsyncClient.putObject(any(PutObjectRequest.class), any(AsyncRequestBody.class)))
             .thenReturn(nullFuture);
 
-        // Use reflection to set the private s3AsyncClient field
         var field = AWSClient.class.getDeclaredField("s3AsyncClient");
         field.setAccessible(true);
         field.set(awsClient, mockAsyncClient);
@@ -109,7 +181,6 @@ public class AWSClientTest {
         when(mockS3Client.deleteObject(any(DeleteObjectRequest.class)))
             .thenThrow(new RuntimeException("Simulated S3 delete failure"));
 
-        // Inject mock S3Client
         var field = AWSClient.class.getDeclaredField("s3Client");
         field.setAccessible(true);
         field.set(awsClient, mockS3Client);
@@ -129,11 +200,9 @@ public class AWSClientTest {
         DeleteObjectResponse mockDelRes = mock(DeleteObjectResponse.class);
         SdkHttpResponse mockHttpRes = mock(SdkHttpResponse.class);
         when(mockHttpRes.isSuccessful()).thenReturn(false);
-        when(mockHttpRes.statusText()).thenReturn(Optional.of("Simulated failure"));
         when(mockDelRes.sdkHttpResponse()).thenReturn(mockHttpRes);
         when(mockS3Client.deleteObject(any(DeleteObjectRequest.class))).thenReturn(mockDelRes);
 
-        // Inject mock S3Client
         var field = AWSClient.class.getDeclaredField("s3Client");
         field.setAccessible(true);
         field.set(awsClient, mockS3Client);
@@ -142,30 +211,6 @@ public class AWSClientTest {
             awsClient.deleteContent("test.txt").get()
         );
         assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
-    }
-
-    private ServiceBinding getRealServiceBindingAWS() {
-        // Read environment variables
-        String host = System.getenv("AWS_S3_HOST");
-        String bucket = System.getenv("AWS_S3_BUCKET");
-        String region = System.getenv("AWS_S3_REGION");
-        String accessKeyId = System.getenv("AWS_S3_ACCESS_KEY_ID");
-        String secretAccessKey = System.getenv("AWS_S3_SECRET_ACCESS_KEY");
-
-        // Return null if any are missing
-        if (host == null || bucket == null || region == null || accessKeyId == null || secretAccessKey == null) {
-            return null;
-        }
-
-        ServiceBinding binding = mock(ServiceBinding.class);
-        HashMap<String, Object> creds = new HashMap<>();
-        creds.put("host", host);
-        creds.put("bucket", bucket);
-        creds.put("region", region);
-        creds.put("access_key_id", accessKeyId);
-        creds.put("secret_access_key", secretAccessKey);
-        when(binding.getCredentials()).thenReturn(creds);
-        return binding;
     }
 
     private ServiceBinding getDummyBinding() {

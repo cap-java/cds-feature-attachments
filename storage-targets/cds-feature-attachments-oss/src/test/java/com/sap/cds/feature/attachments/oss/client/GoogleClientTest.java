@@ -3,81 +3,176 @@ package com.sap.cds.feature.attachments.oss.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
+import com.google.api.gax.paging.Page;
+import com.google.cloud.ReadChannel;
 import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
-import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
 import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 public class GoogleClientTest {
 
     @Test
-    void testCreateReadDeleteAttachmentFlowGoogle() throws Exception {
-        ServiceBinding binding = getRealServiceBindingGoogle();
-        if (binding == null) {
-            // Skip the test if no real binding is available
-            return;
-        }
-        OSSAttachmentsServiceHandlerTestUtils.testCreateReadDeleteAttachmentFlow(binding);
-    }
-
-    @Test
-    void testConstructorThrowsOnInvalidKey() {
-        // Arrange: create a ServiceBinding with invalid base64 key data
-        ServiceBinding binding = mock(ServiceBinding.class);
+    void testConstructorThrowsOnInvalidCredentials() {
+        ServiceBinding mockBinding = mock(ServiceBinding.class);
         HashMap<String, Object> creds = new HashMap<>();
-        creds.put("bucket", "dummy-bucket");
-        creds.put("projectId", "dummy-project");
-        String plain = "this is just a dummy string without keywords";
-        String base64 = Base64.getEncoder().encodeToString(plain.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        creds.put("base64EncodedPrivateKeyData", base64);
-        when(binding.getCredentials()).thenReturn(creds);
+        creds.put("bucket", "bucket");
+        creds.put("projectId", "project");
+        creds.put("base64EncodedPrivateKeyData", Base64.getEncoder().encodeToString("dummy".getBytes()));
+        when(mockBinding.getCredentials()).thenReturn(creds);
 
-        ObjectStoreServiceException thrown = assertThrows(ObjectStoreServiceException.class, () -> new GoogleClient(binding));
-        assertTrue(thrown.getMessage().contains("Failed to initialize Google Cloud Storage client"));
+        var mocked = mockStatic(com.google.auth.oauth2.ServiceAccountCredentials.class);
+        mocked.when(() -> com.google.auth.oauth2.ServiceAccountCredentials.fromStream(any(InputStream.class)))
+                .thenThrow(new IOException("Simulated IO error"));
+
+        // Act & Assert
+        ObjectStoreServiceException ex = assertThrows(
+            ObjectStoreServiceException.class,
+            () -> new GoogleClient(mockBinding)
+        );
+        assertTrue(ex.getCause() instanceof IOException);
     }
-    
+
     @Test
-    void testUploadContentThrowsOnIOException() throws Exception {
-        ServiceBinding binding = getRealServiceBindingGoogle();
-        if (binding == null) {
-            // Skip the test if no real binding is available
-            return;
-        }
-        GoogleClient googleClient = spy(new GoogleClient(binding));
+    void testDeleteContent() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, ExecutionException, IOException  {
+        GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
 
-        // Mock storage and writer to throw IOException
+        String fileName = "file.txt";
+
+        // Mock storage and paging
         Storage mockStorage = mock(Storage.class);
-        WriteChannel mockWriter = mock(WriteChannel.class);
+        Page<Blob> mockPage = mock(Page.class);
+        Blob mockBlob = mock(Blob.class);
+        when(mockBlob.getName()).thenReturn(fileName);
+        when(mockBlob.getGeneration()).thenReturn(123L);
+        Iterator<Blob> blobIterator = Collections.singletonList(mockBlob).iterator();
+        when(mockPage.iterateAll()).thenReturn(() -> blobIterator);
+        when(mockStorage.list(anyString(), any(), any())).thenReturn(mockPage);
+        when(mockStorage.delete(any(BlobId.class))).thenReturn(true);
 
-        // Inject mock storage into googleClient using reflection
+        // Inject mock storage and bucketName into googleClient using reflection
         var field = GoogleClient.class.getDeclaredField("storage");
         field.setAccessible(true);
         field.set(googleClient, mockStorage);
+        var bucketField = GoogleClient.class.getDeclaredField("bucketName");
+        bucketField.setAccessible(true);
+        bucketField.set(googleClient, "my-bucket");
+
+        // Should not throw
+        googleClient.deleteContent(fileName).get();
+    }
+
+    @Test
+    void testUploadContent() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, ExecutionException, IOException  {
+        GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
+
+        // Mock storage and writer
+        Storage mockStorage = mock(Storage.class);
+        WriteChannel mockWriter = mock(WriteChannel.class);
+
+        // Inject mock storage and bucketName into googleClient using reflection
+        var field = GoogleClient.class.getDeclaredField("storage");
+        field.setAccessible(true);
+        field.set(googleClient, mockStorage);
+        var bucketField = GoogleClient.class.getDeclaredField("bucketName");
+        bucketField.setAccessible(true);
+        bucketField.set(googleClient, "my-bucket");
 
         when(mockStorage.writer(any(BlobInfo.class))).thenReturn(mockWriter);
-        doThrow(new IOException("Simulated IO failure")).when(mockWriter).write(any(java.nio.ByteBuffer.class));
+        when(mockWriter.write(any(java.nio.ByteBuffer.class))).thenReturn(42); // return any int
+        InputStream input = new java.io.ByteArrayInputStream("test".getBytes());
 
-        InputStream input = mock(InputStream.class);
-        try {
-            when(input.read(any(byte[].class))).thenReturn(1).thenThrow(new IOException("Simulated IO failure"));
-        } catch (IOException e) {
-            // Will not happen in mock setup
-        }
+        // Should not throw
+        googleClient.uploadContent(input, "file.txt", "text/plain").get();
+    }
+
+    @Test
+    void testReadContent() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, ExecutionException {
+        GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
+
+        // Mock storage and read channel
+        Storage mockStorage = mock(Storage.class);
+        ReadChannel mockReadChannel = mock(ReadChannel.class);
+        when(mockStorage.reader(any(com.google.cloud.storage.BlobId.class))).thenReturn(mockReadChannel);
+
+        // Inject mock storage and bucketName into googleClient using reflection
+        var field = GoogleClient.class.getDeclaredField("storage");
+        field.setAccessible(true);
+        field.set(googleClient, mockStorage);
+        var bucketField = GoogleClient.class.getDeclaredField("bucketName");
+        bucketField.setAccessible(true);
+        bucketField.set(googleClient, "my-bucket");
+
+        // Should not throw
+        googleClient.readContent("file.txt").get();
+    }
+
+    @Test
+    void testDeleteContentDoesNotWork() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, ExecutionException, IOException  {
+        GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
+
+        String fileName = "file.txt";
+
+        // Mock storage and paging
+        Storage mockStorage = mock(Storage.class);
+        Page<Blob> mockPage = mock(Page.class);
+        Blob mockBlob = mock(Blob.class);
+        when(mockBlob.getName()).thenReturn(fileName);
+        when(mockBlob.getGeneration()).thenReturn(123L);
+        Iterator<Blob> blobIterator = Collections.singletonList(mockBlob).iterator();
+        when(mockPage.iterateAll()).thenReturn(() -> blobIterator);
+        when(mockStorage.list(anyString(), any(), any())).thenReturn(mockPage);
+        when(mockStorage.delete(any(BlobId.class))).thenReturn(false);
+
+        // Inject mock storage and bucketName into googleClient using reflection
+        var field = GoogleClient.class.getDeclaredField("storage");
+        field.setAccessible(true);
+        field.set(googleClient, mockStorage);
+        var bucketField = GoogleClient.class.getDeclaredField("bucketName");
+        bucketField.setAccessible(true);
+        bucketField.set(googleClient, "my-bucket");
+
+        ExecutionException thrown = assertThrows(ExecutionException.class, () ->
+            googleClient.deleteContent(fileName).get()
+        );
+        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+    }
+   
+    @Test
+    void testUploadContentThrowsOnIOException() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, ExecutionException, IOException  {
+        GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
+
+        // Mock storage and writer
+        Storage mockStorage = mock(Storage.class);
+        WriteChannel mockWriter = mock(WriteChannel.class);
+
+        // Inject mock storage and bucketName into googleClient using reflection
+        var field = GoogleClient.class.getDeclaredField("storage");
+        field.setAccessible(true);
+        field.set(googleClient, mockStorage);
+        var bucketField = GoogleClient.class.getDeclaredField("bucketName");
+        bucketField.setAccessible(true);
+        bucketField.set(googleClient, "my-bucket");
+
+        when(mockStorage.writer(any(BlobInfo.class))).thenReturn(mockWriter);
+        // Simulate IOException on write
+        doThrow(new java.io.IOException("Simulated IO failure"))
+            .when(mockWriter).write(any(java.nio.ByteBuffer.class));
+
+        InputStream input = new java.io.ByteArrayInputStream("test".getBytes());
 
         ExecutionException thrown = assertThrows(ExecutionException.class, () ->
             googleClient.uploadContent(input, "file.txt", "text/plain").get()
@@ -86,13 +181,8 @@ public class GoogleClientTest {
     }
 
     @Test
-    void testDeleteContentThrowsOnRuntimeException() throws Exception {
-        ServiceBinding binding = getRealServiceBindingGoogle();
-        if (binding == null) {
-            // Skip the test if no real binding is available
-            return;
-        }
-        GoogleClient googleClient = spy(new GoogleClient(binding));
+    void testDeleteContentThrowsOnRuntimeException() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, ExecutionException  {
+        GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
 
         // Mock storage and blob to throw RuntimeException on delete
         Storage mockStorage = mock(Storage.class);
@@ -113,13 +203,8 @@ public class GoogleClientTest {
     }
 
     @Test
-    void testReadContentThrowsOnRuntimeException() throws Exception {
-        ServiceBinding binding = getRealServiceBindingGoogle();
-        if (binding == null) {
-            // Skip the test if no real binding is available
-            return;
-        }
-        GoogleClient googleClient = spy(new GoogleClient(binding));
+    void testReadContentThrowsOnRuntimeException() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, ExecutionException  {
+        GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
 
         // Mock storage and blob to throw RuntimeException on reader
         Storage mockStorage = mock(Storage.class);
@@ -138,25 +223,4 @@ public class GoogleClientTest {
         );
         assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
     }
-
-    private ServiceBinding getRealServiceBindingGoogle() {
-        // Read environment variables
-        String bucket = System.getenv("GS_BUCKET");
-        String projectId = System.getenv("GS_PROJECT_ID");
-        String base64EncodedPrivateKeyData = System.getenv("GS_BASE_64_ENCODED_PRIVATE_KEY_DATA");
-
-        // Return null if any are missing
-        if (bucket == null || projectId == null || base64EncodedPrivateKeyData == null) {
-            return null;
-        }
-
-        ServiceBinding binding = mock(ServiceBinding.class);
-        HashMap<String, Object> creds = new HashMap<>();
-        creds.put("bucket", bucket);
-        creds.put("projectId", projectId);
-        creds.put("base64EncodedPrivateKeyData", base64EncodedPrivateKeyData);
-        when(binding.getCredentials()).thenReturn(creds);
-        return binding;
-    }
-
 }

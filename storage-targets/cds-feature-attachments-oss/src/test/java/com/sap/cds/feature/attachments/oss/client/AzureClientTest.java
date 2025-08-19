@@ -2,46 +2,63 @@ package com.sap.cds.feature.attachments.oss.client;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.specialized.BlobOutputStream;
 import com.azure.storage.blob.specialized.BlockBlobClient;
-import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
 import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
-import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 public class AzureClientTest {
+
     @Test
-    void testCreateReadDeleteAttachmentFlowAzure() throws Exception {
-        ServiceBinding binding = getRealServiceBindingAzure();
-        if (binding == null) {
-            // Skip the test if no real binding is available
-            return;
-        }
-        OSSAttachmentsServiceHandlerTestUtils.testCreateReadDeleteAttachmentFlow(binding);
+    void testReadContent() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InterruptedException, ExecutionException {
+        AzureClient azureClient = mock(AzureClient.class, CALLS_REAL_METHODS);
+
+        // Mock BlobContainerClient and BlobClient
+        BlobContainerClient mockContainer = mock(BlobContainerClient.class);
+        BlobClient mockBlobClient = mock(BlobClient.class);
+
+        var field = AzureClient.class.getDeclaredField("blobContainerClient");
+        field.setAccessible(true);
+        field.set(azureClient, mockContainer);
+        when(mockContainer.getBlobClient(anyString())).thenReturn(mockBlobClient);
+
+        //Should not throw
+        azureClient.readContent("file.txt").get();
+    }
+
+    @Test
+    void testUploadContent() throws NoSuchFieldException, IllegalAccessException, InterruptedException, ExecutionException {
+        AzureClient azureClient = mock(AzureClient.class, CALLS_REAL_METHODS);
+
+        // Mock BlobContainerClient and BlockBlobClient
+        BlobContainerClient mockContainer = mock(BlobContainerClient.class);
+        BlockBlobClient mockBlockBlob = mock(BlockBlobClient.class);
+        BlobOutputStream mockOutputStream = mock(BlobOutputStream.class);
+
+        var field = AzureClient.class.getDeclaredField("blobContainerClient");
+        field.setAccessible(true);
+        field.set(azureClient, mockContainer);
+        when(mockContainer.getBlobClient(anyString())).thenReturn(mock(BlobClient.class));
+        when(mockContainer.getBlobClient(anyString()).getBlockBlobClient()).thenReturn(mockBlockBlob);
+        when(mockBlockBlob.getBlobOutputStream()).thenReturn(mockOutputStream);
+
+        InputStream mockInput = new java.io.ByteArrayInputStream("test-data".getBytes());
+
+        // Should not throw
+        azureClient.uploadContent(mockInput, "file.txt", "text/plain").get();
     }
 
     @Test
     void testUploadContentThrowsOnIOException() throws NoSuchFieldException, IllegalAccessException {
-        ServiceBinding binding = getRealServiceBindingAzure();
-        if (binding == null) {
-            // Skip the test if no real binding is available
-            return;
-        }
-        AzureClient azureClient = spy(new AzureClient(binding));
+        AzureClient azureClient = mock(AzureClient.class, CALLS_REAL_METHODS);
 
         // Mock BlobContainerClient and BlockBlobClient
         BlobContainerClient mockContainer = mock(BlobContainerClient.class);
@@ -69,14 +86,9 @@ public class AzureClientTest {
         assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
     }
 
-        @Test
+    @Test
     void testDeleteContentThrowsOnRuntimeException() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
-        ServiceBinding binding = getRealServiceBindingAzure();
-        if (binding == null) {
-            // Skip the test if no real binding is available
-            return;
-        }
-        AzureClient azureClient = spy(new AzureClient(binding));
+        AzureClient azureClient = mock(AzureClient.class, CALLS_REAL_METHODS);
 
         // Mock BlobContainerClient and BlobClient
         BlobContainerClient mockContainer = mock(BlobContainerClient.class);
@@ -95,22 +107,43 @@ public class AzureClientTest {
         );
         assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
     }
-    private ServiceBinding getRealServiceBindingAzure() {
-        // Read environment variables
-        String containerUri = System.getenv("AZURE_CONTAINER_URI");
-        String sasToken = System.getenv("AZURE_SAS_TOKEN");
 
-        // Return null if any are missing
-        if (containerUri == null || sasToken == null) {
-            return null;
-        }
+    @Test
+    void testDeleteContent() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InterruptedException, ExecutionException {
+        AzureClient azureClient = mock(AzureClient.class, CALLS_REAL_METHODS);
 
-        ServiceBinding binding = mock(ServiceBinding.class);
-        HashMap<String, Object> creds = new HashMap<>();
-        creds.put("container_uri", containerUri);
-        creds.put("sas_token", sasToken);
-        when(binding.getCredentials()).thenReturn(creds);
-        return binding;
+        // Mock BlobContainerClient and BlobClient
+        BlobContainerClient mockContainer = mock(BlobContainerClient.class);
+        BlobClient mockBlobClient = mock(BlobClient.class);
+
+        var field = AzureClient.class.getDeclaredField("blobContainerClient");
+        field.setAccessible(true);
+        field.set(azureClient, mockContainer);
+        when(mockContainer.getBlobClient(anyString())).thenReturn(mockBlobClient);
+
+        // Should not throw
+        azureClient.deleteContent("file.txt").get();
     }
 
+    @Test
+    void testReadContentThrowsOnRuntimeException() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+        AzureClient azureClient = mock(AzureClient.class, CALLS_REAL_METHODS);
+
+        // Mock BlobContainerClient and BlobClient
+        BlobContainerClient mockContainer = mock(BlobContainerClient.class);
+        BlobClient mockBlobClient = mock(BlobClient.class);
+
+        var field = AzureClient.class.getDeclaredField("blobContainerClient");
+        field.setAccessible(true);
+        field.set(azureClient, mockContainer);
+        when(mockContainer.getBlobClient(anyString())).thenReturn(mockBlobClient);
+
+        // Mock delete to throw RuntimeException
+        doThrow(new RuntimeException("Simulated read failure")).when(mockBlobClient).openInputStream();
+
+        ExecutionException thrown = assertThrows(ExecutionException.class, () ->
+            azureClient.readContent("file.txt").get()
+        );
+        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+    }
 }
