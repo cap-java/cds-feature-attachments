@@ -37,3 +37,4 @@ steps:
       - sonar.exclusions=**/node_modules/**,**/target/**,**/test/**
       - sonar.coverage.jacoco.xmlReportPaths=cds-feature-attachments/target/site/jacoco/jacoco.xml,storage-targets/cds-feature-attachments-oss/target/site/jacoco/jacoco.xml
       - sonar.coverage.exclusions=cds-feature-attachments/src/test/**,cds-feature-attachments/src/gen/**,integration-tests/**,storage-targets/cds-feature-attachments-fs/**,storage-targets/cds-feature-attachments-oss/src/test/**
+
