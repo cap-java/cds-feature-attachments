@@ -53,7 +53,7 @@ public class AWSClient implements OSClient {
 
     @Override
     public Future<Void> uploadContent(InputStream content, String completeFileName, String contentType) {
-        // We upload the content asynchronously, sucht that we can also upload large
+        // We upload the content asynchronously, so that we can also upload large
         // files, as described here in "Using the asynchronous API":
         // https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/best-practices-s3-uploads.html
  
@@ -110,8 +110,7 @@ public class AWSClient implements OSClient {
                 .build();
     
             try {
-                InputStream inputStream = this.s3Client.getObject(getObjectRequest);
-                return inputStream;
+                return this.s3Client.getObject(getObjectRequest);
             } catch (RuntimeException e) {
                 throw new ObjectStoreServiceException("Failed to read file from the AWS Object Store", e);
             }

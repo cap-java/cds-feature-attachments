@@ -67,8 +67,7 @@ public class AzureClient implements OSClient {
         return executor.submit(() -> {
             BlobClient blobClient = this.blobContainerClient.getBlobClient(completeFileName);
             try {
-                InputStream inputStream = blobClient.openInputStream();
-                return inputStream;
+                return blobClient.openInputStream();
             } catch (RuntimeException e) {
                 throw new ObjectStoreServiceException("Failed to read file from the Azure Object Store", e);
             }
