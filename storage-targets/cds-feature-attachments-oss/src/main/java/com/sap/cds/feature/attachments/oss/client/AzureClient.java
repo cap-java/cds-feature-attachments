@@ -2,7 +2,6 @@ package com.sap.cds.feature.attachments.oss.client;
 
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
@@ -18,10 +17,11 @@ import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 public class AzureClient implements OSClient {
     private final BlobContainerClient blobContainerClient;
+    private final ExecutorService executor;
     private static final Logger logger = LoggerFactory.getLogger(AzureClient.class);
-    private static final ExecutorService executor = Executors.newFixedThreadPool(4); // or whatever size fits your needs
 
-    public AzureClient(ServiceBinding binding) {
+    public AzureClient(ServiceBinding binding, ExecutorService executor) {
+        this.executor = executor;
         this.blobContainerClient = new BlobContainerClientBuilder()
             .endpoint(binding.getCredentials().get("container_uri").toString() + "?" + binding.getCredentials().get("sas_token").toString())
             .buildClient();

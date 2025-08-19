@@ -3,10 +3,10 @@ package com.sap.cds.feature.attachments.oss.client;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
@@ -16,7 +16,8 @@ class MockOSClientTest {
 
     @Test
     void testConstructorWithNoBindingUsesMockClient() throws NoSuchFieldException, IllegalAccessException {
-        OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(Optional.empty());
+        ExecutorService executor = Executors.newCachedThreadPool();
+        OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(Optional.empty(), executor);
         // Reflection to access private static osClient
         OSClient client = OSSAttachmentsServiceHandlerTestUtils.getOsClient(handler);
         assertTrue(client instanceof MockOSClient);

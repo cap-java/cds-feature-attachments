@@ -1,9 +1,12 @@
 package com.sap.cds.feature.attachments.oss.client;
 
+import static org.mockito.Mockito.*;
+
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.*;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
@@ -20,7 +23,8 @@ public class AWSClientIntegrationTest {
             // Skip the test if no real binding is available
             return;
         }
-        OSSAttachmentsServiceHandlerTestUtils.testCreateReadDeleteAttachmentFlow(binding);
+        ExecutorService executor = Executors.newCachedThreadPool();
+        OSSAttachmentsServiceHandlerTestUtils.testCreateReadDeleteAttachmentFlow(binding, executor);
     }
 
     private ServiceBinding getRealServiceBindingAWS() {

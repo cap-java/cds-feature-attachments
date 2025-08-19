@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.util.Base64;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
@@ -28,14 +27,12 @@ import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 public class GoogleClient implements OSClient {
     private static final Logger logger = LoggerFactory.getLogger(GoogleClient.class);
-
+    private final ExecutorService executor;
     private final Storage storage;
     private final String bucketName;
 
-    private static final ExecutorService executor = Executors.newFixedThreadPool(4); // or whatever size fits your needs
-
-    public GoogleClient(ServiceBinding binding) {
-        // Example: get credentials and bucket from binding
+    public GoogleClient(ServiceBinding binding, ExecutorService executor) {
+        this.executor = executor;
         this.bucketName = (String) binding.getCredentials().get("bucket");
         String projectId = (String) binding.getCredentials().get("projectId");
         String base64EncodedPrivateKeyData = (String) binding.getCredentials().get("base64EncodedPrivateKeyData");

@@ -3,6 +3,8 @@ package com.sap.cds.feature.attachments.oss.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,7 @@ import com.azure.storage.blob.specialized.BlockBlobClient;
 import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 
 public class AzureClientTest {
+    ExecutorService executor = Executors.newCachedThreadPool();
 
     @Test
     void testReadContent() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException, InterruptedException, ExecutionException {
@@ -28,6 +31,9 @@ public class AzureClientTest {
         var field = AzureClient.class.getDeclaredField("blobContainerClient");
         field.setAccessible(true);
         field.set(azureClient, mockContainer);
+        var executorField = AzureClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(azureClient, executor);
         when(mockContainer.getBlobClient(anyString())).thenReturn(mockBlobClient);
 
         //Should not throw
@@ -46,6 +52,9 @@ public class AzureClientTest {
         var field = AzureClient.class.getDeclaredField("blobContainerClient");
         field.setAccessible(true);
         field.set(azureClient, mockContainer);
+        var executorField = AzureClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(azureClient, executor);
         when(mockContainer.getBlobClient(anyString())).thenReturn(mock(BlobClient.class));
         when(mockContainer.getBlobClient(anyString()).getBlockBlobClient()).thenReturn(mockBlockBlob);
         when(mockBlockBlob.getBlobOutputStream()).thenReturn(mockOutputStream);
@@ -68,6 +77,9 @@ public class AzureClientTest {
         var field = AzureClient.class.getDeclaredField("blobContainerClient");
         field.setAccessible(true);
         field.set(azureClient, mockContainer);
+        var executorField = AzureClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(azureClient, executor);
         when(mockContainer.getBlobClient(anyString())).thenReturn(mock(BlobClient.class));
         when(mockContainer.getBlobClient(anyString()).getBlockBlobClient()).thenReturn(mockBlockBlob);
         when(mockBlockBlob.getBlobOutputStream()).thenReturn(mockOutputStream);
@@ -97,6 +109,9 @@ public class AzureClientTest {
         var field = AzureClient.class.getDeclaredField("blobContainerClient");
         field.setAccessible(true);
         field.set(azureClient, mockContainer);
+        var executorField = AzureClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(azureClient, executor);
         when(mockContainer.getBlobClient(anyString())).thenReturn(mockBlobClient);
 
         // Mock delete to throw RuntimeException
@@ -119,6 +134,9 @@ public class AzureClientTest {
         var field = AzureClient.class.getDeclaredField("blobContainerClient");
         field.setAccessible(true);
         field.set(azureClient, mockContainer);
+        var executorField = AzureClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(azureClient, executor);
         when(mockContainer.getBlobClient(anyString())).thenReturn(mockBlobClient);
 
         // Should not throw
@@ -136,6 +154,9 @@ public class AzureClientTest {
         var field = AzureClient.class.getDeclaredField("blobContainerClient");
         field.setAccessible(true);
         field.set(azureClient, mockContainer);
+        var executorField = AzureClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(azureClient, executor);
         when(mockContainer.getBlobClient(anyString())).thenReturn(mockBlobClient);
 
         // Mock delete to throw RuntimeException

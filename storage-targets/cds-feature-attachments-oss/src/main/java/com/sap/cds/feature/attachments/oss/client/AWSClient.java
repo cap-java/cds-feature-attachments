@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
@@ -30,10 +29,10 @@ public class AWSClient implements OSClient {
     private final S3AsyncClient s3AsyncClient;
     private final String bucketName;
     private static final Logger logger = LoggerFactory.getLogger(AWSClient.class);
-    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor;
 
-
-    public AWSClient(ServiceBinding binding) {
+    public AWSClient(ServiceBinding binding, ExecutorService executor) {
+        this.executor = executor;
         Map<String, Object> credentials = binding.getCredentials();
 		this.bucketName = (String) credentials.get("bucket");
 

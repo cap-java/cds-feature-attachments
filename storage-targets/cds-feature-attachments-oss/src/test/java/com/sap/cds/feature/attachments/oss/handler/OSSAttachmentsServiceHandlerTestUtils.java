@@ -1,18 +1,14 @@
 package com.sap.cds.feature.attachments.oss.handler;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
@@ -27,12 +23,12 @@ public class OSSAttachmentsServiceHandlerTestUtils {
 
     // This methods tests the complete flow of creating, reading, and deleting an attachment
     // for all OS clients. It uses a mock ServiceBinding to simulate the attachment service.
-    public static void testCreateReadDeleteAttachmentFlow(ServiceBinding binding) throws Exception {
+    public static void testCreateReadDeleteAttachmentFlow(ServiceBinding binding, ExecutorService executor) throws Exception {
         // Create test file to upload, read and delete
         String testFileName = "testFileName-" + System.currentTimeMillis() + ".txt";
         String testFileContent = "test";
 		
-        OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(Optional.of(binding));
+        OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(Optional.of(binding), executor);
 
 		// Create an AttachmentCreateEventContext with mocked data - to upload a test attachment
         MediaData createMediaData = mock(MediaData.class);

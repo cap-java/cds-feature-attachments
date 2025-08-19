@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -30,17 +32,18 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 public class AWSClientTest {
+    ExecutorService executor = Executors.newCachedThreadPool();
 
     @Test
     void testConstructorWithAwsBindingUsesAwsClient() throws NoSuchFieldException, IllegalAccessException {
-        OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(Optional.of(getDummyBinding()));
+        OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(Optional.of(getDummyBinding()), executor);
         OSClient client = OSSAttachmentsServiceHandlerTestUtils.getOsClient(handler);
         assertTrue(client instanceof AWSClient);
     }
 
     @Test
     void testReadContent() throws Exception {
-        AWSClient awsClient = new AWSClient(getDummyBinding());
+        AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
 
         // Mock S3Client to return a dummy InputStream
         S3Client mockS3Client = mock(S3Client.class);
@@ -60,7 +63,7 @@ public class AWSClientTest {
 
     @Test
     void testUploadContent() throws Exception {
-        AWSClient awsClient = new AWSClient(getDummyBinding());
+        AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
 
         // Mock S3AsyncClient to return a successful PutObjectResponse
         S3AsyncClient mockAsyncClient = mock(S3AsyncClient.class);
@@ -87,7 +90,7 @@ public class AWSClientTest {
 
     @Test
     void testDeleteContent() throws NoSuchFieldException, IllegalAccessException {
-        AWSClient awsClient = new AWSClient(getDummyBinding());
+        AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
 
         // Mock S3Client to return a DeleteObjectResponse with successful SdkHttpResponse
         S3Client mockS3Client = mock(S3Client.class);
@@ -106,7 +109,7 @@ public class AWSClientTest {
 
     @Test
     void testReadContentThrows() throws Exception {
-        AWSClient awsClient = new AWSClient(getDummyBinding());
+        AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
 
         // Mock S3Client to return a dummy InputStream
         S3Client mockS3Client = mock(S3Client.class);
@@ -123,7 +126,7 @@ public class AWSClientTest {
 
     @Test
     void testUploadContentThrows() throws Exception {
-        AWSClient awsClient = new AWSClient(getDummyBinding());
+        AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
 
         // Mock S3AsyncClient that always fails
         S3AsyncClient mockAsyncClient = mock(S3AsyncClient.class);
@@ -149,7 +152,7 @@ public class AWSClientTest {
 
     @Test
     void testUploadContentThrowsOnPutResponseNull() throws Exception {
-        AWSClient awsClient = new AWSClient(getDummyBinding());
+        AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
 
         // Mock S3AsyncClient that returns a null PutObjectResponse
         S3AsyncClient mockAsyncClient = mock(S3AsyncClient.class);
@@ -174,7 +177,7 @@ public class AWSClientTest {
 
     @Test
     void testDeleteContentThrowsOnRuntimeException() throws Exception {
-        AWSClient awsClient = new AWSClient(getDummyBinding());
+        AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
 
         // Mock S3Client to throw a RuntimeException
         S3Client mockS3Client = mock(S3Client.class);
@@ -193,7 +196,7 @@ public class AWSClientTest {
 
     @Test
     void testDeleteContentThrowsOnUnsuccessfulResponse() throws NoSuchFieldException, IllegalAccessException {
-        AWSClient awsClient = new AWSClient(getDummyBinding());
+        AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
 
         // Mock S3Client to return a DeleteObjectResponse with unsuccessful SdkHttpResponse
         S3Client mockS3Client = mock(S3Client.class);

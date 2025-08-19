@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
@@ -51,7 +52,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
      * @param bindingOpt the optional {@link ServiceBinding} containing credentials for the object store service
      */
 
-	 public OSSAttachmentsServiceHandler(Optional<ServiceBinding> bindingOpt) {
+	 public OSSAttachmentsServiceHandler(Optional<ServiceBinding> bindingOpt, ExecutorService executor) {
 		if (bindingOpt.isEmpty()) {
 			logger.error("No service binding found, hence the attachment service is not connected!");
 			this.osClient = new MockOSClient();
@@ -67,9 +68,9 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 		// We do *not* throw exceptions here, as we want to provide a fallback to the MockOSClient if no valid service binding is found.
 		// Then the rest of the application still works, but without actual attachment storage.
 		if (host != null && java.util.stream.Stream.of("aws", "s3", "amazon").anyMatch(s -> host.contains(s))) {
-			this.osClient = new AWSClient(binding);
+			this.osClient = new AWSClient(binding, executor);
 		} else if (containerUri != null && java.util.stream.Stream.of("azure", "windows").anyMatch(s -> containerUri.contains(s))) {
-			this.osClient = new AzureClient(binding);
+			this.osClient = new AzureClient(binding, executor);
 		} else if (base64EncodedPrivateKeyData != null) {
 		    String decoded = "";
 			try {
@@ -80,7 +81,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 			// Redeclaring is needed here to make the variable effectively final for the lambda expression
 			final String dec = decoded;
 			if (java.util.stream.Stream.of("google", "gcp").anyMatch(s -> dec.contains(s))) {
-				this.osClient = new GoogleClient(binding);
+				this.osClient = new GoogleClient(binding, executor);
 			} else {
 				logger.error("No valid Google service binding found in binding {}, hence the attachment service is not connected!", binding);
 				this.osClient = new MockOSClient();

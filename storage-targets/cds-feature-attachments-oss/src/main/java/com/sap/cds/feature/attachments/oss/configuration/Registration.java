@@ -1,6 +1,8 @@
 package com.sap.cds.feature.attachments.oss.configuration;
 
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +22,8 @@ public class Registration implements CdsRuntimeConfiguration {
 	@Override
 	public void eventHandlers(CdsRuntimeConfigurer configurer) {
 		Optional<ServiceBinding> binding = getOSBinding(configurer.getCdsRuntime().getEnvironment());
-		configurer.eventHandler(new OSSAttachmentsServiceHandler(binding));
+		ExecutorService executor = Executors.newCachedThreadPool(); // This might be configured by CdsProperties, if needed in the future.
+		configurer.eventHandler(new OSSAttachmentsServiceHandler(binding, executor));
 		logger.info("Registered OSS Attachments Service Handler.");
 	}
 

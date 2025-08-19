@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,7 @@ import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 public class GoogleClientTest {
+    ExecutorService executor = Executors.newCachedThreadPool();
 
     @Test
     void testConstructorThrowsOnInvalidCredentials() {
@@ -38,10 +41,9 @@ public class GoogleClientTest {
         mocked.when(() -> com.google.auth.oauth2.ServiceAccountCredentials.fromStream(any(InputStream.class)))
                 .thenThrow(new IOException("Simulated IO error"));
 
-        // Act & Assert
         ObjectStoreServiceException ex = assertThrows(
             ObjectStoreServiceException.class,
-            () -> new GoogleClient(mockBinding)
+            () -> new GoogleClient(mockBinding, executor)
         );
         assertTrue(ex.getCause() instanceof IOException);
     }
@@ -67,6 +69,9 @@ public class GoogleClientTest {
         var field = GoogleClient.class.getDeclaredField("storage");
         field.setAccessible(true);
         field.set(googleClient, mockStorage);
+        var executorField = GoogleClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(googleClient, executor);
         var bucketField = GoogleClient.class.getDeclaredField("bucketName");
         bucketField.setAccessible(true);
         bucketField.set(googleClient, "my-bucket");
@@ -87,6 +92,9 @@ public class GoogleClientTest {
         var field = GoogleClient.class.getDeclaredField("storage");
         field.setAccessible(true);
         field.set(googleClient, mockStorage);
+        var executorField = GoogleClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(googleClient, executor);
         var bucketField = GoogleClient.class.getDeclaredField("bucketName");
         bucketField.setAccessible(true);
         bucketField.set(googleClient, "my-bucket");
@@ -112,6 +120,9 @@ public class GoogleClientTest {
         var field = GoogleClient.class.getDeclaredField("storage");
         field.setAccessible(true);
         field.set(googleClient, mockStorage);
+        var executorField = GoogleClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(googleClient, executor);
         var bucketField = GoogleClient.class.getDeclaredField("bucketName");
         bucketField.setAccessible(true);
         bucketField.set(googleClient, "my-bucket");
@@ -141,6 +152,9 @@ public class GoogleClientTest {
         var field = GoogleClient.class.getDeclaredField("storage");
         field.setAccessible(true);
         field.set(googleClient, mockStorage);
+        var executorField = GoogleClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(googleClient, executor);
         var bucketField = GoogleClient.class.getDeclaredField("bucketName");
         bucketField.setAccessible(true);
         bucketField.set(googleClient, "my-bucket");
@@ -163,6 +177,9 @@ public class GoogleClientTest {
         var field = GoogleClient.class.getDeclaredField("storage");
         field.setAccessible(true);
         field.set(googleClient, mockStorage);
+        var executorField = GoogleClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(googleClient, executor);
         var bucketField = GoogleClient.class.getDeclaredField("bucketName");
         bucketField.setAccessible(true);
         bucketField.set(googleClient, "my-bucket");
@@ -192,6 +209,9 @@ public class GoogleClientTest {
         var field = GoogleClient.class.getDeclaredField("storage");
         field.setAccessible(true);
         field.set(googleClient, mockStorage);
+        var executorField = GoogleClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(googleClient, executor);
 
         when(mockStorage.get(any(String.class), any(String.class))).thenReturn(mockBlob);
         doThrow(new RuntimeException("Simulated delete failure")).when(mockBlob).delete();
@@ -213,6 +233,9 @@ public class GoogleClientTest {
         var field = GoogleClient.class.getDeclaredField("storage");
         field.setAccessible(true);
         field.set(googleClient, mockStorage);
+        var executorField = GoogleClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(googleClient, executor);
 
         // Mock blob.reader() to throw RuntimeException
         doThrow(new RuntimeException("Simulated read failure"))
