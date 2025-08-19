@@ -1,17 +1,17 @@
 package com.sap.cds.feature.attachments.oss.client;
 
 import java.io.InputStream;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 /**
  * The {@link OSClient} is the connection to the object store service.
  */
 
-public interface OSClient {
+public interface OSClient<T> {
     
-    CompletableFuture<Void> uploadContent(InputStream content, String completeFileName, String contentType);
+    Future<T> uploadContent(InputStream content, String completeFileName, String contentType);
 
-    CompletableFuture<Void> deleteContent(String completeFileName);
+    Future<T> deleteContent(String completeFileName);
 
-    CompletableFuture<InputStream> readContent(String completeFileName);
+    Future<InputStream> readContent(String completeFileName);
 }

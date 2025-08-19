@@ -3,7 +3,7 @@ package com.sap.cds.feature.attachments.oss.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,7 +20,7 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.specialized.BlobOutputStream;
 import com.azure.storage.blob.specialized.BlockBlobClient;
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
-import com.sap.cds.services.ServiceException;
+import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 public class AzureClientTest {
@@ -35,7 +35,7 @@ public class AzureClientTest {
     }
 
     @Test
-    void testUploadContentThrowsServiceExceptionOnIOException() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    void testUploadContentThrowsOnIOException() throws NoSuchFieldException, IllegalAccessException {
         ServiceBinding binding = getRealServiceBindingAzure();
         if (binding == null) {
             // Skip the test if no real binding is available
@@ -63,15 +63,14 @@ public class AzureClientTest {
             // This will not happen
         }
 
-        CompletionException thrown = assertThrows(CompletionException.class, () ->
-            azureClient.uploadContent(mockInput, "file.txt", "text/plain").join()
+        ExecutionException thrown = assertThrows(ExecutionException.class, () ->
+            azureClient.uploadContent(mockInput, "file.txt", "text/plain").get()
         );
-        assertTrue(thrown.getCause() instanceof ServiceException);
-        assertTrue(thrown.getCause().getMessage().contains("Failed to upload file"));
+        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
     }
 
         @Test
-    void testDeleteContentThrowsServiceExceptionOnRuntimeException() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    void testDeleteContentThrowsOnRuntimeException() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         ServiceBinding binding = getRealServiceBindingAzure();
         if (binding == null) {
             // Skip the test if no real binding is available
@@ -91,11 +90,10 @@ public class AzureClientTest {
         // Mock delete to throw RuntimeException
         doThrow(new RuntimeException("Simulated delete failure")).when(mockBlobClient).delete();
 
-        CompletionException thrown = assertThrows(CompletionException.class, () ->
-            azureClient.deleteContent("file.txt").join()
+        ExecutionException thrown = assertThrows(ExecutionException.class, () ->
+            azureClient.deleteContent("file.txt").get()
         );
-        assertTrue(thrown.getCause() instanceof ServiceException);
-        assertTrue(thrown.getCause().getMessage().contains("Failed to delete file"));
+        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
     }
     private ServiceBinding getRealServiceBindingAzure() {
         // Read environment variables

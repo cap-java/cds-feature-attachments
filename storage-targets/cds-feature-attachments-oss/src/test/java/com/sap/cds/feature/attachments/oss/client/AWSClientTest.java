@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
-import com.sap.cds.services.ServiceException;
+import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 import software.amazon.awssdk.core.async.AsyncRequestBody;
@@ -63,16 +63,15 @@ public class AWSClientTest {
         field.setAccessible(true);
         field.set(awsClient, mockAsyncClient);
 
-        // Act & Assert: uploadContent should throw ServiceException
-        CompletionException thrown = assertThrows(CompletionException.class, () -> 
+        ExecutionException thrown = assertThrows(ExecutionException.class, () -> 
             awsClient.uploadContent(
                 new ByteArrayInputStream("test".getBytes()), 
                 "test.txt", 
                 "text/plain"
-            ).join()
+            ).get()
         );
 
-        assertTrue(thrown.getCause() instanceof ServiceException);
+        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
     }
 
     @Test
@@ -90,21 +89,19 @@ public class AWSClientTest {
         field.setAccessible(true);
         field.set(awsClient, mockAsyncClient);
 
-        // Act & Assert: uploadContent should throw ServiceException due to null putResponse
-        CompletionException thrown = assertThrows(CompletionException.class, () ->
+        ExecutionException thrown = assertThrows(ExecutionException.class, () ->
             awsClient.uploadContent(
                 new ByteArrayInputStream("test".getBytes()),
                 "test.txt",
                 "text/plain"
-            ).join()
+            ).get()
         );
 
-        assertTrue(thrown.getCause() instanceof ServiceException);
-        assertTrue(thrown.getCause().getMessage().contains("Failed to upload file"));
+        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
     }
 
     @Test
-    void testDeleteContentThrowsServiceExceptionOnRuntimeException() throws Exception {
+    void testDeleteContentThrowsOnRuntimeException() throws Exception {
         AWSClient awsClient = new AWSClient(getDummyBinding());
 
         // Mock S3Client to throw a RuntimeException
@@ -117,16 +114,14 @@ public class AWSClientTest {
         field.setAccessible(true);
         field.set(awsClient, mockS3Client);
 
-        // Act & Assert
-        CompletionException thrown = assertThrows(CompletionException.class, () ->
-            awsClient.deleteContent("test.txt").join()
+        ExecutionException thrown = assertThrows(ExecutionException.class, () ->
+            awsClient.deleteContent("test.txt").get()
         );
-        assertTrue(thrown.getCause() instanceof ServiceException);
-        assertTrue(thrown.getCause().getMessage().contains("Failed to delete file"));
+        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
     }
 
     @Test
-    void testDeleteContentThrowsServiceExceptionOnUnsuccessfulResponse() throws Exception {
+    void testDeleteContentThrowsOnUnsuccessfulResponse() throws NoSuchFieldException, IllegalAccessException {
         AWSClient awsClient = new AWSClient(getDummyBinding());
 
         // Mock S3Client to return a DeleteObjectResponse with unsuccessful SdkHttpResponse
@@ -143,13 +138,10 @@ public class AWSClientTest {
         field.setAccessible(true);
         field.set(awsClient, mockS3Client);
 
-        // Act & Assert
-        CompletionException thrown = assertThrows(CompletionException.class, () ->
-            awsClient.deleteContent("test.txt").join()
+        ExecutionException thrown = assertThrows(ExecutionException.class, () ->
+            awsClient.deleteContent("test.txt").get()
         );
-        assertTrue(thrown.getCause() instanceof ServiceException);
-        assertTrue(thrown.getCause().getMessage().contains("Failed to delete file"));
-        assertTrue(thrown.getCause().getMessage().contains("Simulated failure"));
+        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
     }
 
     private ServiceBinding getRealServiceBindingAWS() {

@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.util.Base64;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +22,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.sap.cds.services.ServiceException;
+import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 
@@ -29,6 +31,8 @@ public class GoogleClient implements OSClient {
 
     private final Storage storage;
     private final String bucketName;
+
+    private static final ExecutorService executor = Executors.newFixedThreadPool(4); // or whatever size fits your needs
 
     public GoogleClient(ServiceBinding binding) {
         // Example: get credentials and bucket from binding
@@ -41,8 +45,7 @@ public class GoogleClient implements OSClient {
         try {
             sac = ServiceAccountCredentials.fromStream(serviceAccountKeyStream);
         } catch (IOException e) {
-            logger.error("Could not initialize Google Cloud Storage client: {}", e.getMessage(), e);
-            throw new ServiceException("Failed to initialize Google Cloud Storage client", e);
+            throw new ObjectStoreServiceException("Failed to initialize Google Cloud Storage client", e);
         }
         this.storage = StorageOptions.newBuilder()
                 .setProjectId(projectId)
@@ -53,36 +56,36 @@ public class GoogleClient implements OSClient {
     }
 
     @Override
-    public CompletableFuture<Void> uploadContent(InputStream content, String completeFileName, String contentType) {
-        return CompletableFuture.runAsync(() -> {
+    public Future<Void> uploadContent(InputStream content, String completeFileName, String contentType) {
+        return executor.submit(() -> {
             BlobInfo blobInfo = BlobInfo.newBuilder(BlobId.of(bucketName, completeFileName))
                     .setContentType(contentType)
                     .build();
             // We use a writer as explained here:
             // https://cloud.google.com/java/docs/reference/google-cloud-storage/latest/com.google.cloud.storage.Storage#com_google_cloud_storage_Storage_writer_com_google_cloud_storage_BlobInfo_com_google_cloud_storage_Storage_BlobWriteOption____
             // so we can also upload large files.
+            // Create the writer in a try-with-resources block to ensure it is closed properly even if an exception occurs.
             try (WriteChannel writer = storage.writer(blobInfo)) {
                 byte[] buffer = new byte[8192]; // 8KB buffer
                 int limit;
                 while ((limit = content.read(buffer)) >= 0) {
                     writer.write(ByteBuffer.wrap(buffer, 0, limit));
                 }
-                logger.info("Uploaded file {}", completeFileName);
             } catch (RuntimeException | IOException e) {
-                logger.error("Failed to upload file {}: {}", completeFileName, e.getMessage(), e);
-                throw new ServiceException("Failed to upload file: " + completeFileName, e);
+                throw new ObjectStoreServiceException("Failed to upload file from Google Object Store", e);
             }
+            return null;
         });
     }
 
     @Override
-    public CompletableFuture<Void> deleteContent(String completeFileName) {
-        return CompletableFuture.runAsync(() -> {
+    public Future<Void> deleteContent(String completeFileName) {
+        return executor.submit(() -> {
+            // List all versions (generations) of the object to delete all of them
+            // We need to do this, since versioning is enabled for Google by default
+            // If we do not delete all versions, then artifacts of the attachment will
+            // still remain in the storage.
             try {
-                // List all versions (generations) of the object to delete all of them
-                // We need to do this, since versioning is enabled for Google by default
-                // If we do not delete all versions, then artifacts of the attachment will
-                // still remain in the storage.
                 Page<Blob> blobs = storage.list(
                     bucketName,
                     Storage.BlobListOption.versions(true),
@@ -91,24 +94,21 @@ public class GoogleClient implements OSClient {
                 for (Blob blob : blobs.iterateAll()) {
                     if (blob.getName().equals(completeFileName)) {
                         boolean deleted = storage.delete(BlobId.of(bucketName, completeFileName, blob.getGeneration()));
-                        if (deleted) {
-                            logger.info("Deleted version {} of file {}", blob.getGeneration(), completeFileName);
-                        } else {
-                            logger.error("Failed to delete version {} of file {}", blob.getGeneration(), completeFileName);
-                            throw new ServiceException("Failed to delete version " + blob.getGeneration() + " of file " + completeFileName);
+                        if (!deleted) {
+                            throw new ObjectStoreServiceException("Failed to delete version " + blob.getGeneration() + " of file " + completeFileName);
                         }
                     }
                 }
             } catch (RuntimeException e) {
-                logger.error("Failed to delete file {}: {}", completeFileName, e.getMessage(), e);
-                throw new ServiceException("Failed to delete file: " + completeFileName, e);
+                throw new ObjectStoreServiceException("Failed to delete file from Google Object Store", e);
             }
+            return null;
         });
     }
 
     @Override
-    public CompletableFuture<InputStream> readContent(String completeFileName) {
-        return CompletableFuture.supplyAsync(() -> {
+    public Future<InputStream> readContent(String completeFileName) {
+        return executor.submit(() -> {
             try {
                 // We read the file using a reader as explained here:
                 // https://cloud.google.com/java/docs/reference/google-cloud-storage/latest/com.google.cloud.storage.Storage#com_google_cloud_storage_Storage_reader_com_google_cloud_storage_BlobId_com_google_cloud_storage_Storage_BlobSourceOption____
@@ -117,8 +117,7 @@ public class GoogleClient implements OSClient {
                 ReadChannel reader = storage.reader(blobId);
                 return Channels.newInputStream(reader);
             } catch (RuntimeException e) {
-                logger.error("Failed to read file {}: {}", completeFileName, e.getMessage(), e);
-                throw new ServiceException("Failed to read file: " + completeFileName, e);
+                throw new ObjectStoreServiceException("Failed to read file from Google Object Store", e);
             }
         });
     }

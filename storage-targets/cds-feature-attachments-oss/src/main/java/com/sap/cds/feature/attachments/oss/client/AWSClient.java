@@ -1,16 +1,16 @@
 package com.sap.cds.feature.attachments.oss.client;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sap.cds.services.ServiceException;
+import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -30,6 +30,8 @@ public class AWSClient implements OSClient {
     private final S3AsyncClient s3AsyncClient;
     private final String bucketName;
     private static final Logger logger = LoggerFactory.getLogger(AWSClient.class);
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+
 
     public AWSClient(ServiceBinding binding) {
         Map<String, Object> credentials = binding.getCredentials();
@@ -50,13 +52,11 @@ public class AWSClient implements OSClient {
     }
 
     @Override
-    public CompletableFuture<Void> uploadContent(InputStream content, String completeFileName, String contentType) {
+    public Future<Void> uploadContent(InputStream content, String completeFileName, String contentType) {
         // We upload the content asynchronously, sucht that we can also upload large
         // files, as described here in "Using the asynchronous API":
         // https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/best-practices-s3-uploads.html
  
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-
         AsyncRequestBody body = AsyncRequestBody.fromInputStream(
             content,
             null, // length = null indicates that the stream's length is unknown
@@ -71,57 +71,39 @@ public class AWSClient implements OSClient {
         CompletableFuture<PutObjectResponse> putFuture = this.s3AsyncClient.putObject(putRequest, body);
 
         return putFuture.handle((putResponse, throwable) -> {
-                try {
-                    if (throwable != null) {
-                        logger.error("Failed to upload file {}: {}", completeFileName, throwable.getMessage());
-                        throw new ServiceException("Failed to upload file: " + completeFileName, throwable);
-                    } else if (putResponse == null || !putResponse.sdkHttpResponse().isSuccessful()) {
-                        String status = putResponse != null ? putResponse.sdkHttpResponse().statusText().orElse("Unknown error") : "No response received";
-                        logger.error("Failed to upload file {}: {}", completeFileName, status);
-                        throw new ServiceException("Failed to upload file: " + completeFileName + ", status: " + status);
-                    } else {
-                        logger.info("Uploaded file {}", completeFileName);
-                    }
-                } finally {
-                    executor.shutdown();
-                    try {
-                        content.close();
-                    } catch (IOException e) {
-                        logger.error("Failed to close input stream: {}", e.getMessage());
-                        // We chose to not throw an exception here, as the upload was successful
-                        // and only log the error.
-                    }
+                if (throwable != null) {
+                    throw new ObjectStoreServiceException("Failed to upload file to the AWS Object Store", throwable);
+                } else if (putResponse == null || !putResponse.sdkHttpResponse().isSuccessful()) {
+                    String status = putResponse != null ? putResponse.sdkHttpResponse().statusText().orElse("Unknown error") : "No response received";
+                    throw new ObjectStoreServiceException("Failed to upload file to the AWS Object Store, status: " + status);
                 }
                 return null; // for CompletableFuture<Void>
         });
     }
 
     @Override
-    public CompletableFuture<Void> deleteContent(String completeFileName) {
-        return CompletableFuture.runAsync(() -> {
+    public Future<Void> deleteContent(String completeFileName) {
+        return executor.submit(() -> {
             DeleteObjectRequest delReq = DeleteObjectRequest.builder()
                 .bucket(this.bucketName)
                 .key(completeFileName)
                 .build();
             try {
                 DeleteObjectResponse delRes = this.s3Client.deleteObject(delReq);
-                if (delRes.sdkHttpResponse().isSuccessful()) {
-                    logger.info("Deleted file {} from bucket {}", completeFileName, this.bucketName);
-                } else {
+                if (!delRes.sdkHttpResponse().isSuccessful()) {
                     String status = delRes.sdkHttpResponse().statusText().orElse("Unknown error");
-                    logger.error("Failed to delete file {}: {}", completeFileName, status);
-                    throw new ServiceException("Failed to delete file: " + completeFileName + ", status: " + status);
+                    throw new ObjectStoreServiceException("Failed to delete file from the AWS Object Store, status: " + status);
                 }
             } catch (RuntimeException e) {
-                logger.error("Failed to delete file {}: {}", completeFileName, e.getMessage());
-                throw new ServiceException("Failed to delete file: " + completeFileName + " " + e.getMessage(), e);
+                throw new ObjectStoreServiceException("Failed to delete file from the AWS Object Store", e);
             }
+            return null;
         });
     }
 
     @Override
-    public CompletableFuture<InputStream> readContent(String completeFileName) {
-        return CompletableFuture.supplyAsync(() -> {
+    public Future<InputStream> readContent(String completeFileName) {
+        return executor.submit(() -> {
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(this.bucketName)
                 .key(completeFileName)
@@ -129,11 +111,9 @@ public class AWSClient implements OSClient {
     
             try {
                 InputStream inputStream = this.s3Client.getObject(getObjectRequest);
-                logger.info("Read file {}", completeFileName);
                 return inputStream;
             } catch (RuntimeException e) {
-                logger.error("Failed to read file {}: {}", completeFileName, e.getMessage(), e);
-                throw new ServiceException("Failed to read file: " + completeFileName, e);
+                throw new ObjectStoreServiceException("Failed to read file from the AWS Object Store", e);
             }
         });
     }

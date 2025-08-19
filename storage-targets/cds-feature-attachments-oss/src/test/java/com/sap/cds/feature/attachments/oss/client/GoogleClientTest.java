@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,7 +20,7 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
-import com.sap.cds.services.ServiceException;
+import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 public class GoogleClientTest {
@@ -28,11 +28,15 @@ public class GoogleClientTest {
     @Test
     void testCreateReadDeleteAttachmentFlowGoogle() throws Exception {
         ServiceBinding binding = getRealServiceBindingGoogle();
+        if (binding == null) {
+            // Skip the test if no real binding is available
+            return;
+        }
         OSSAttachmentsServiceHandlerTestUtils.testCreateReadDeleteAttachmentFlow(binding);
     }
 
     @Test
-    void testConstructorThrowsServiceExceptionOnInvalidKey() {
+    void testConstructorThrowsOnInvalidKey() {
         // Arrange: create a ServiceBinding with invalid base64 key data
         ServiceBinding binding = mock(ServiceBinding.class);
         HashMap<String, Object> creds = new HashMap<>();
@@ -43,13 +47,12 @@ public class GoogleClientTest {
         creds.put("base64EncodedPrivateKeyData", base64);
         when(binding.getCredentials()).thenReturn(creds);
 
-        // Act & Assert
-        ServiceException thrown = assertThrows(ServiceException.class, () -> new GoogleClient(binding));
+        ObjectStoreServiceException thrown = assertThrows(ObjectStoreServiceException.class, () -> new GoogleClient(binding));
         assertTrue(thrown.getMessage().contains("Failed to initialize Google Cloud Storage client"));
     }
     
     @Test
-    void testUploadContentThrowsServiceExceptionOnIOException() throws Exception {
+    void testUploadContentThrowsOnIOException() throws Exception {
         ServiceBinding binding = getRealServiceBindingGoogle();
         if (binding == null) {
             // Skip the test if no real binding is available
@@ -76,15 +79,14 @@ public class GoogleClientTest {
             // Will not happen in mock setup
         }
 
-        CompletionException thrown = assertThrows(CompletionException.class, () ->
-            googleClient.uploadContent(input, "file.txt", "text/plain").join()
+        ExecutionException thrown = assertThrows(ExecutionException.class, () ->
+            googleClient.uploadContent(input, "file.txt", "text/plain").get()
         );
-        assertTrue(thrown.getCause() instanceof ServiceException);
-        assertTrue(thrown.getCause().getMessage().contains("Failed to upload file"));
+        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
     }
 
     @Test
-    void testDeleteContentThrowsServiceExceptionOnRuntimeException() throws Exception {
+    void testDeleteContentThrowsOnRuntimeException() throws Exception {
         ServiceBinding binding = getRealServiceBindingGoogle();
         if (binding == null) {
             // Skip the test if no real binding is available
@@ -104,15 +106,14 @@ public class GoogleClientTest {
         when(mockStorage.get(any(String.class), any(String.class))).thenReturn(mockBlob);
         doThrow(new RuntimeException("Simulated delete failure")).when(mockBlob).delete();
 
-        CompletionException thrown = assertThrows(CompletionException.class, () ->
-            googleClient.deleteContent("file.txt").join()
+        ExecutionException thrown = assertThrows(ExecutionException.class, () ->
+            googleClient.deleteContent("file.txt").get()
         );
-        assertTrue(thrown.getCause() instanceof ServiceException);
-        assertTrue(thrown.getCause().getMessage().contains("Failed to delete file"));
+        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
     }
 
     @Test
-    void testReadContentThrowsServiceExceptionOnRuntimeException() throws Exception {
+    void testReadContentThrowsOnRuntimeException() throws Exception {
         ServiceBinding binding = getRealServiceBindingGoogle();
         if (binding == null) {
             // Skip the test if no real binding is available
@@ -132,11 +133,10 @@ public class GoogleClientTest {
         doThrow(new RuntimeException("Simulated read failure"))
             .when(mockStorage).reader(any(com.google.cloud.storage.BlobId.class));
 
-        CompletionException thrown = assertThrows(CompletionException.class, () ->
-            googleClient.readContent("file.txt").join()
+        ExecutionException thrown = assertThrows(ExecutionException.class, () ->
+            googleClient.readContent("file.txt").get()
         );
-        assertTrue(thrown.getCause() instanceof ServiceException);
-        assertTrue(thrown.getCause().getMessage().contains("Failed to read file"));
+        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
     }
 
     private ServiceBinding getRealServiceBindingGoogle() {

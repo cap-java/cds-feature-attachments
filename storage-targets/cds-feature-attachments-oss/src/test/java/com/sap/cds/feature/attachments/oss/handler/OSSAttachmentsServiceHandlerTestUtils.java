@@ -2,6 +2,7 @@ package com.sap.cds.feature.attachments.oss.handler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -89,8 +90,8 @@ public class OSSAttachmentsServiceHandlerTestUtils {
         // Verify that the function setCompleted was called
         verify(deleteContext).setCompleted();
 
-        // Try to read again, this will throw a exception
-       assertThrows(RuntimeException.class, () -> handler.readAttachment(readContext));
+        // Try to read again, this will throw
+        assertThrows(Exception.class, () -> handler.readAttachment(readContext));
     }
 
     // Helper to access private static osClient

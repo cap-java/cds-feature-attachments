@@ -25,12 +25,12 @@ public class Registration implements CdsRuntimeConfiguration {
 	}
 
 	/**
-	 * Builds the {@link OSService object store service} based on the service binding.
-	 *
-	 * @param environment the {@link CdsEnvironment environment} to retrieve the service binding from
-	 * @return the {@link OSService object store service} or {@code null} if no service binding is available
-	 */
-	public static Optional<ServiceBinding> getOSBinding(CdsEnvironment environment) {
+     * Retrieves the {@link ServiceBinding} for the object store service from the given {@link CdsEnvironment}.
+     *
+     * @param environment the {@link CdsEnvironment} to retrieve the service binding from
+     * @return an {@link Optional} containing the {@link ServiceBinding} for "objectstore" if available, or {@link Optional#empty()} if not found
+     */
+	private static Optional<ServiceBinding> getOSBinding(CdsEnvironment environment) {
 		Optional<ServiceBinding> bindingOpt = environment.getServiceBindings()
 			.filter(b -> b.getServiceName().map(name -> name.equals("objectstore")).orElse(false))
 			.findFirst();

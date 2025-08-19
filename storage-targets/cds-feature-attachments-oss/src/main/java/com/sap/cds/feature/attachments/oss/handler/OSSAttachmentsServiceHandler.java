@@ -4,8 +4,10 @@
 package com.sap.cds.feature.attachments.oss.handler;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,14 +39,21 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 	private static final Logger logger = LoggerFactory.getLogger(OSSAttachmentsServiceHandler.class);
 	private final OSClient osClient;
 	/**
-	 * Creates a new OSSAttachmentsServiceHandler with the given root folder.
-	 * 
-	 * @param rootFolder the root folder where the attachments are stored
-	 * @throws IOException if the root folder cannot be created
-	 */
-	@SuppressWarnings("static-access")
-	public OSSAttachmentsServiceHandler(Optional<ServiceBinding> bindingOpt) {
-		if (!bindingOpt.isPresent()) {
+     * Creates a new OSSAttachmentsServiceHandler using the provided {@link ServiceBinding}.
+     * <p>
+     * The handler will automatically detect the storage backend (AWS S3, Azure Blob Storage, Google Cloud Storage)
+     * based on the credentials in the service binding. If no valid binding is found, a {@link MockOSClient} is used as fallback.
+     * <ul>
+     *   <li>For AWS, the binding must contain a "host" with "aws", "s3", or "amazon".</li>
+     *   <li>For Azure, the binding must contain a "container_uri" with "azure" or "windows".</li>
+     *   <li>For Google, the binding must contain a valid "base64EncodedPrivateKeyData" containing "google" or "gcp".</li>
+     * </ul>
+     * 
+     * @param bindingOpt the optional {@link ServiceBinding} containing credentials for the object store service
+     */
+
+	 public OSSAttachmentsServiceHandler(Optional<ServiceBinding> bindingOpt) {
+		if (bindingOpt.isEmpty()) {
 			logger.error("No service binding found, hence the attachment service is not connected!");
 			this.osClient = new MockOSClient();
 			return;
@@ -84,31 +93,39 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 	}
 
 	@On
-	void createAttachment(AttachmentCreateEventContext context) throws IOException {
-		logger.info("OS Attachment Service handler called for creating attachment for entity name: {}",
-				context.getAttachmentEntity().getQualifiedName());
-
+	void createAttachment(AttachmentCreateEventContext context) throws InterruptedException, ExecutionException {
+		String fileName = context.getAttachmentEntity().getQualifiedName();
+		logger.info("OS Attachment Service handler called for creating attachment for entity {}", fileName);
+		
 		String contentId = (String) context.getAttachmentIds().get(Attachments.ID);
-
 		MediaData data = context.getData();
 
-		osClient.uploadContent(data.getContent(), contentId, data.getMimeType())
-				.thenRun(() -> {
-					logger.info("Upload future is done: {}", context.getAttachmentEntity().getQualifiedName());
-					data.setStatus(StatusCode.CLEAN);
-					context.setIsInternalStored(false);
-					context.setContentId(contentId);
-					context.setCompleted();
-				}).join();
+		try {
+			osClient.uploadContent(data.getContent(), contentId, data.getMimeType()).get();
+			logger.info("Uploaded file {}", fileName);
+			data.setStatus(StatusCode.CLEAN);
+			context.setIsInternalStored(false);
+			context.setContentId(contentId);
+			context.setCompleted();
+		} catch (ObjectStoreServiceException ex) {
+			logger.error("Failed to upload file {}", fileName, ex);
+			context.setCompleted();
+			throw ex;
+		}
 	}
 
 	@On
-	void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) throws IOException {
-		logger.info("OS Attachment Service handler called for marking attachment as deleted with document id: {}", context.getContentId());
+	void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) throws InterruptedException, ExecutionException {
+		logger.info("OS Attachment Service handler called for marking attachment as deleted with document id {}", context.getContentId());
 
-		osClient.deleteContent(context.getContentId())
-				.thenRun(() -> {context.setCompleted();})
-				.join();
+		try {
+			osClient.deleteContent(context.getContentId()).get();
+			context.setCompleted();
+		} catch (ObjectStoreServiceException ex) {
+			logger.error("Failed to delete file with document id {}", context.getContentId(), ex);
+			context.setCompleted();
+			throw ex;
+		}
 	}
 
 	@On
@@ -121,22 +138,26 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 	}
 
 	@On
-	void readAttachment(AttachmentReadEventContext context) throws IOException {
+	void readAttachment(AttachmentReadEventContext context) throws InterruptedException, ExecutionException {
 		logger.info("OS Attachment Service handler called for reading attachment with document id: {}",
 				context.getContentId());
-		osClient.readContent(context.getContentId())
-			.thenApply(inputStream -> {
-				if (inputStream != null) {
-					context.getData().setContent(inputStream);
-					context.getData().setStatus(StatusCode.CLEAN); //todo: malware scan staus?
-				} else {
-					logger.error("Content not found for id: {}", context.getContentId());
-					// We could throw an exception here, but since we log the error, we return an empty stream.
-					context.getData().setContent(new ByteArrayInputStream(new byte[0]));
-				}
-				context.setCompleted();
-				return null;
-			}).join();
+		try {
+			Future<InputStream> future = osClient.readContent(context.getContentId());
+			InputStream inputStream = future.get(); // Wait for the content to be read
+			if (inputStream != null) {
+				context.getData().setContent(inputStream);
+				context.getData().setStatus(StatusCode.CLEAN); // todo: malware scan status?
+			} else {
+				logger.error("Document not found for id {}", context.getContentId());
+				context.getData().setContent(new ByteArrayInputStream(new byte[0]));
+			}
+			context.setCompleted();
+		} catch (ObjectStoreServiceException ex) {
+			logger.error("Failed to read file with document id {}", context.getContentId(), ex);
+			context.getData().setContent(new ByteArrayInputStream(new byte[0]));
+			context.setCompleted();
+			throw ex;
+		}
 	}
 
 }
