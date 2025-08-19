@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
-import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.oss.client.AWSClient;
 import com.sap.cds.feature.attachments.oss.client.AzureClient;
 import com.sap.cds.feature.attachments.oss.client.GoogleClient;
@@ -103,7 +102,6 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 		try {
 			osClient.uploadContent(data.getContent(), contentId, data.getMimeType()).get();
 			logger.info("Uploaded file {}", fileName);
-			data.setStatus(StatusCode.CLEAN);
 			context.setIsInternalStored(false);
 			context.setContentId(contentId);
 			context.setCompleted();
@@ -146,7 +144,6 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 			InputStream inputStream = future.get(); // Wait for the content to be read
 			if (inputStream != null) {
 				context.getData().setContent(inputStream);
-				context.getData().setStatus(StatusCode.CLEAN); // todo: malware scan status?
 			} else {
 				logger.error("Document not found for id {}", context.getContentId());
 				context.getData().setContent(new ByteArrayInputStream(new byte[0]));
