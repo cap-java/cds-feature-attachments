@@ -108,7 +108,6 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 			context.setContentId(contentId);
 			context.setCompleted();
 		} catch (ObjectStoreServiceException ex) {
-			logger.error("Failed to upload file {}", fileName, ex);
 			context.setCompleted();
 			throw new ServiceException("Failed to upload file " + fileName, ex);
 		}
@@ -122,7 +121,6 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 			osClient.deleteContent(context.getContentId()).get();
 			context.setCompleted();
 		} catch (ObjectStoreServiceException ex) {
-			logger.error("Failed to delete file with document id {}", context.getContentId(), ex);
 			context.setCompleted();
 			throw new ServiceException("Failed to delete file with document id " + context.getContentId(), ex);
 		}
@@ -152,7 +150,6 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 			}
 			context.setCompleted();
 		} catch (ObjectStoreServiceException ex) {
-			logger.error("Failed to read file with document id {}", context.getContentId(), ex);
 			context.getData().setContent(new ByteArrayInputStream(new byte[0]));
 			context.setCompleted();
 			throw new ServiceException("Failed to read file with document id " + context.getContentId(), ex);
