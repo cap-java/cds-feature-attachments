@@ -14,7 +14,23 @@ To do this, replace the `cds-feature-attachments` dependency in your `pom.xml` w
 </dependency>
 ```
 
-A valid Object Store service binding is also required — for example, one provisioned through SAP BTP.
+A valid Object Store service binding is required for this — for example, one provisioned through SAP BTP.
+
+#### Tests
+
+The unit tests in this module do not need a binding to the respective object stores, run them with `mvn clean install`.
+
+The integration tests need a binding to a real object store, run them with `mvn clean install -Pintegration-tests-oss`.
+To set the binding, provide the following environment variables:
+- AWS_S3_BUCKET
+- AWS_S3_REGION
+- AWS_S3_ACCESS_KEY_ID
+- AWS_S3_SECRET_ACCESS_KEY
+- AZURE_CONTAINER_URI
+- AZURE_SAS_TOKEN
+- GS_BUCKET
+- GS_PROJECT_ID
+- GS_BASE_64_ENCODED_PRIVATE_KEY_DATA
 
 ### Implementation details
 

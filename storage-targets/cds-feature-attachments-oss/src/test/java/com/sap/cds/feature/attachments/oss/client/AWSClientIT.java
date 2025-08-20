@@ -1,28 +1,22 @@
 package com.sap.cds.feature.attachments.oss.client;
 
-import static org.mockito.Mockito.*;
-
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.junit.jupiter.api.Test;
+import static org.mockito.Mockito.*;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
-public class AWSClientIntegrationTest {
+public class AWSClientIT {
     // The tests in this class are intended to run against a real AWS Storage instance.
     // They require a valid ServiceBinding with credentials set up in the environment.
-    // For this reason, the tests are not run when no real binding is available.
 
     @Test
     void testCreateReadDeleteAttachmentFlowAWS() throws Exception {
         ServiceBinding binding = getRealServiceBindingAWS();
-        if (binding == null) {
-            // Skip the test if no real binding is available
-            return;
-        }
         ExecutorService executor = Executors.newCachedThreadPool();
         OSSAttachmentsServiceHandlerTestUtils.testCreateReadDeleteAttachmentFlow(binding, executor);
     }
