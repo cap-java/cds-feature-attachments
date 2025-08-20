@@ -25,6 +25,7 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
+import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -109,7 +110,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 		} catch (ObjectStoreServiceException ex) {
 			logger.error("Failed to upload file {}", fileName, ex);
 			context.setCompleted();
-			throw ex;
+			throw new ServiceException("Failed to upload file " + fileName, ex);
 		}
 	}
 
@@ -123,7 +124,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 		} catch (ObjectStoreServiceException ex) {
 			logger.error("Failed to delete file with document id {}", context.getContentId(), ex);
 			context.setCompleted();
-			throw ex;
+			throw new ServiceException("Failed to delete file with document id " + context.getContentId(), ex);
 		}
 	}
 
@@ -154,7 +155,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 			logger.error("Failed to read file with document id {}", context.getContentId(), ex);
 			context.getData().setContent(new ByteArrayInputStream(new byte[0]));
 			context.setCompleted();
-			throw ex;
+			throw new ServiceException("Failed to read file with document id " + context.getContentId(), ex);
 		}
 	}
 
