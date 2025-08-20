@@ -95,11 +95,11 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 
 	@On
 	void createAttachment(AttachmentCreateEventContext context) throws InterruptedException, ExecutionException {
-		String fileName = context.getAttachmentEntity().getQualifiedName();
-		logger.info("OS Attachment Service handler called for creating attachment for entity {}", fileName);
-		
+		logger.info("OS Attachment Service handler called for creating attachment for entity {}", context.getAttachmentEntity().getQualifiedName());
+
 		String contentId = (String) context.getAttachmentIds().get(Attachments.ID);
 		MediaData data = context.getData();
+		String fileName = data.getFileName();
 
 		try {
 			osClient.uploadContent(data.getContent(), contentId, data.getMimeType()).get();
