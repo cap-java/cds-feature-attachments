@@ -408,5 +408,8 @@ the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
 
 By default, the plugin operates without a dedicated storage target, storing attachments directly in the [underlying database](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L17).
 
-For testing scenarios, you can instead use the [local file system as a storage backend](storage-targets/cds-feature-attachments-fs).
-Then, the attachment is not stored in the underlying database; instead, it is saved on the local file system, and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
+Other available storage targets:
+- [Object Store](storage-targets/cds-feature-attachments-oss)
+- [local file system as a storage backend](storage-targets/cds-feature-attachments-fs) (only for testing scenarios)
+
+When using a dedicated storage target, the attachment is not stored in the underlying database; instead, it is saved on the specified storage target, and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
