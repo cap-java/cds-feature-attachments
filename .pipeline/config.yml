@@ -36,4 +36,4 @@ steps:
       - sonar.java.source=17
       - sonar.exclusions=**/node_modules/**,**/target/**,**/test/**
       - sonar.coverage.jacoco.xmlReportPaths=cds-feature-attachments/target/site/jacoco/jacoco.xml,storage-targets/cds-feature-attachments-oss/target/site/jacoco/jacoco.xml
-      - sonar.coverage.exclusions=cds-feature-attachments/src/test/**,cds-feature-attachments/src/gen/**,integration-tests/**,storage-targets/cds-feature-attachments-fs/**,storage-targets/cds-feature-attachments-oss/src/test/**,storage-targets/cds-feature-attachments-oss/src/main/java/com/sap/cds/feature/attachments/oss/client/AzureClient.java,storage-targets/cds-feature-attachments-oss/src/main/java/com/sap/cds/feature/attachments/oss/client/GoogleClient.java
+      - sonar.coverage.exclusions=cds-feature-attachments/src/test/**,cds-feature-attachments/src/gen/**,integration-tests/**,storage-targets/cds-feature-attachments-fs/**,storage-targets/cds-feature-attachments-oss/src/test/**
