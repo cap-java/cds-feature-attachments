@@ -66,7 +66,7 @@ public class AzureClientTest {
     }
 
     @Test
-    void testUploadContentThrowsOnIOException() throws NoSuchFieldException, IllegalAccessException {
+    void testUploadContentThrowsOnIOException() throws NoSuchFieldException, IllegalAccessException, IOException {
         AzureClient azureClient = mock(AzureClient.class, CALLS_REAL_METHODS);
 
         // Mock BlobContainerClient and BlockBlobClient
@@ -86,16 +86,12 @@ public class AzureClientTest {
 
         // Mock InputStream to throw IOException
         InputStream mockInput = mock(InputStream.class);
-        try {
-            when(mockInput.read(any(byte[].class))).thenThrow(new IOException("Simulated IO failure"));
-        } catch (IOException e) {
-            // This will not happen
-        }
+        when(mockInput.read(any(byte[].class))).thenThrow(new IOException("Simulated IO failure"));
 
         ExecutionException thrown = assertThrows(ExecutionException.class, () ->
             azureClient.uploadContent(mockInput, "file.txt", "text/plain").get()
         );
-        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+        assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
     }
 
     @Test
@@ -120,7 +116,7 @@ public class AzureClientTest {
         ExecutionException thrown = assertThrows(ExecutionException.class, () ->
             azureClient.deleteContent("file.txt").get()
         );
-        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+        assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
     }
 
     @Test
@@ -165,6 +161,6 @@ public class AzureClientTest {
         ExecutionException thrown = assertThrows(ExecutionException.class, () ->
             azureClient.readContent("file.txt").get()
         );
-        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+        assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
     }
 }

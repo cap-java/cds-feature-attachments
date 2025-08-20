@@ -45,7 +45,7 @@ public class GoogleClientTest {
             ObjectStoreServiceException.class,
             () -> new GoogleClient(mockBinding, executor)
         );
-        assertTrue(ex.getCause() instanceof IOException);
+        assertInstanceOf(IOException.class, ex.getCause());
     }
 
     @Test
@@ -162,7 +162,7 @@ public class GoogleClientTest {
         ExecutionException thrown = assertThrows(ExecutionException.class, () ->
             googleClient.deleteContent(fileName).get()
         );
-        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+        assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
     }
    
     @Test
@@ -194,7 +194,7 @@ public class GoogleClientTest {
         ExecutionException thrown = assertThrows(ExecutionException.class, () ->
             googleClient.uploadContent(input, "file.txt", "text/plain").get()
         );
-        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+        assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
     }
 
     @Test
@@ -219,7 +219,7 @@ public class GoogleClientTest {
         ExecutionException thrown = assertThrows(ExecutionException.class, () ->
             googleClient.deleteContent("file.txt").get()
         );
-        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+        assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
     }
 
     @Test
@@ -244,6 +244,6 @@ public class GoogleClientTest {
         ExecutionException thrown = assertThrows(ExecutionException.class, () ->
             googleClient.readContent("file.txt").get()
         );
-        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+        assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
     }
 }

@@ -20,7 +20,7 @@ class MockOSClientTest {
         OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(Optional.empty(), executor);
         // Reflection to access private static osClient
         OSClient client = OSSAttachmentsServiceHandlerTestUtils.getOsClient(handler);
-        assertTrue(client instanceof MockOSClient);
+        assertInstanceOf(MockOSClient.class, client);
     }
 
     @Test

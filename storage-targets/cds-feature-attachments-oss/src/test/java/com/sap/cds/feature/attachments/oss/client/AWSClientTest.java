@@ -38,7 +38,7 @@ public class AWSClientTest {
     void testConstructorWithAwsBindingUsesAwsClient() throws NoSuchFieldException, IllegalAccessException {
         OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(Optional.of(getDummyBinding()), executor);
         OSClient client = OSSAttachmentsServiceHandlerTestUtils.getOsClient(handler);
-        assertTrue(client instanceof AWSClient);
+        assertInstanceOf(AWSClient.class, client);
     }
 
     @Test
@@ -121,7 +121,7 @@ public class AWSClientTest {
         field.set(awsClient, mockS3Client);
 
         ExecutionException thrown = assertThrows(ExecutionException.class, () -> awsClient.readContent("test.txt").get());
-        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+        assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
     }
 
     @Test
@@ -147,7 +147,7 @@ public class AWSClientTest {
             ).get()
         );
 
-        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+        assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
     }
 
     @Test
@@ -172,7 +172,7 @@ public class AWSClientTest {
             ).get()
         );
 
-        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+        assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
     }
 
     @Test
@@ -191,7 +191,7 @@ public class AWSClientTest {
         ExecutionException thrown = assertThrows(ExecutionException.class, () ->
             awsClient.deleteContent("test.txt").get()
         );
-        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+        assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
     }
 
     @Test
@@ -213,7 +213,7 @@ public class AWSClientTest {
         ExecutionException thrown = assertThrows(ExecutionException.class, () ->
             awsClient.deleteContent("test.txt").get()
         );
-        assertTrue(thrown.getCause() instanceof ObjectStoreServiceException);
+        assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
     }
 
     private ServiceBinding getDummyBinding() {
