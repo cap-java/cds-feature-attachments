@@ -23,12 +23,15 @@
     </developers>
 
     <properties>
-        <revision>1.1.1-SNAPSHOT</revision>
+        <revision>1.1.1</revision>
         <java.version>17</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
+
+        <software.amazon.awssdk-s3-version>2.32.4</software.amazon.awssdk-s3-version>
+        <software.amazon.awssdk-crt-version>0.38.7</software.amazon.awssdk-crt-version>
 
         <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
         <cds.services.version>3.10.3</cds.services.version> <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
@@ -52,7 +55,8 @@
 
     <modules>
         <module>cds-feature-attachments</module>
-        <module>examples/cds-feature-attachments-fs</module>
+        <module>storage-targets/cds-feature-attachments-fs</module>
+        <module>storage-targets/cds-feature-attachments-oss</module>
         <module>integration-tests</module>
     </modules>
 
