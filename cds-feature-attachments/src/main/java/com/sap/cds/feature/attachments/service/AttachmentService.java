@@ -1,6 +1,6 @@
-/**************************************************************************
- * (C) 2019-2025 SAP SE or an SAP affiliate company. All rights reserved. *
- **************************************************************************/
+/*
+ * © 2024-2025 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ */
 package com.sap.cds.feature.attachments.service;
 
 import java.io.InputStream;
