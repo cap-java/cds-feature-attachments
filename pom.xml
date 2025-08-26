@@ -30,8 +30,8 @@
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-        <software.amazon.awssdk-s3-version>2.32.4</software.amazon.awssdk-s3-version>
-        <software.amazon.awssdk-crt-version>0.38.7</software.amazon.awssdk-crt-version>
+        <software.amazon.awssdk-s3-version>2.32.29</software.amazon.awssdk-s3-version>
+        <software.amazon.awssdk-crt-version>0.38.11</software.amazon.awssdk-crt-version>
 
         <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
         <cds.services.version>3.10.3</cds.services.version> <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
@@ -89,7 +89,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-bom</artifactId>
-                <version>5.18.0</version>
+                <version>5.19.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -312,7 +312,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.11.2</version>
+                    <version>3.11.3</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
@@ -339,7 +339,7 @@
                 <plugin>
                     <groupId>org.pitest</groupId>
                     <artifactId>pitest-maven</artifactId>
-                    <version>1.20.1</version>
+                    <version>1.20.2</version>
                 </plugin>
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
