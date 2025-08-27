@@ -15,6 +15,10 @@
     <name>CDS Feature for Attachments - Object Store Service</name>
     <url>https://cap.cloud.sap/docs/plugins/#attachments</url>
 
+    <properties>
+        <generation-package>com.sap.cds.feature.attachments.oss.generated</generation-package>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.sap.cds</groupId>
@@ -167,6 +171,35 @@
                 <configuration>
                     <skip>true</skip>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <failOnError>true</failOnError>
+                    <doclint>all,-missing</doclint>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <excludePackageNames>${generation-package}.*</excludePackageNames>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>
