@@ -11,6 +11,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.io.CountingInputStream;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Validator;
@@ -28,6 +29,7 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.handler.EventHandler;
+import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -85,6 +87,22 @@ public class UpdateAttachmentsHandler implements EventHandler {
 				deleteRemovedAttachments(attachments, data, target, context.getUserInfo());
 			}
 		}
+	}
+
+	@After
+	void processAfter(CdsUpdateEventContext context, List<? extends CdsData> data) {
+		logger.debug("Processing after {} event for entity {}", context.getEvent(), context.getTarget());
+
+		Validator validator = (path, element, value) -> {
+			long count = -1;
+			if (value instanceof CountingInputStream countInput) {
+				count = countInput.getCount();
+			}
+			logger.debug("Attachment content size for {} is {} bytes", path.target().keys(), count);
+			// TODO write the content size to the attachment
+		};
+		CdsDataProcessor.create().addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator).process(data,
+				context.getTarget());
 	}
 
 	private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
