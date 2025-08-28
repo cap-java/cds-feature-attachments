@@ -13,6 +13,7 @@ and handling by using an aspect Attachments.
 * [Support, Feedback, Contributing](#support-feedback-contributing)
 * [Minimum Version](#minimum-version)
 * [Artifactory](#artifactory)
+* [Storage Targets](#storage-targets)
 * [Usage](#usage)
     * [CDS Models](#cds-models)
         * [Model Texts](#model-texts)
@@ -25,7 +26,6 @@ and handling by using an aspect Attachments.
         * [Motivation](#motivation)
         * [HTTP Endpoint](#http-endpoint)
         * [Security](#security)
-    * [Storage Targets](#storage-targets)
 <!-- TOC -->
 
 ## Additional Information
@@ -69,6 +69,16 @@ https://common.repositories.cloud.sap/artifactory/cap-java/com/sap/cds/cds-featu
 
 If you want to test snapshot versions of this plugin, you need to configure the Artifactory in your `${HOME}/.m2/settings.xml`.
 See [here](https://maven.apache.org/settings.html#Repositories) for further details.
+
+## Storage Targets
+
+By default, the plugin operates without a dedicated storage target, storing attachments directly in the [underlying database](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L17).
+
+Other available storage targets:
+- [Object Store](storage-targets/cds-feature-attachments-oss)
+- [local file system as a storage backend](storage-targets/cds-feature-attachments-fs) (only for testing scenarios)
+
+When using a dedicated storage target, the attachment is not stored in the underlying database; instead, it is saved on the specified storage target, and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
 
 ## Usage
 
@@ -403,13 +413,3 @@ Also, other annotations can be used to secure the service.
 
 More information about the CAP Java security concept can be found in
 the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
-
-### Storage Targets
-
-By default, the plugin operates without a dedicated storage target, storing attachments directly in the [underlying database](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L17).
-
-Other available storage targets:
-- [Object Store](storage-targets/cds-feature-attachments-oss)
-- [local file system as a storage backend](storage-targets/cds-feature-attachments-fs) (only for testing scenarios)
-
-When using a dedicated storage target, the attachment is not stored in the underlying database; instead, it is saved on the specified storage target, and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
