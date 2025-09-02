@@ -1,68 +1,68 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.sap.cds</groupId>
-        <artifactId>cds-feature-attachments-root</artifactId>
-        <version>${revision}</version>
-    </parent>
+  <parent>
+    <groupId>com.sap.cds</groupId>
+    <artifactId>cds-feature-attachments-root</artifactId>
+    <version>${revision}</version>
+  </parent>
 
-    <groupId>com.sap.cds.integration-tests</groupId>
-    <artifactId>cds-feature-attachments-integration-tests-parent</artifactId>
-    <packaging>pom</packaging>
+  <groupId>com.sap.cds.integration-tests</groupId>
+  <artifactId>cds-feature-attachments-integration-tests-parent</artifactId>
+  <packaging>pom</packaging>
 
-    <name>Integration Tests</name>
+  <name>Integration Tests</name>
 
-    <modules>
-        <module>db</module>
-        <module>srv</module>
-    </modules>
+  <modules>
+    <module>db</module>
+    <module>srv</module>
+  </modules>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- SPRING BOOT -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.5.5</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.wiremock.integrations</groupId>
-                <artifactId>wiremock-spring-boot</artifactId>
-                <version>3.10.6</version>
-                <scope>test</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
+  <dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>com.sap.cds</groupId>
-            <artifactId>cds-feature-attachments</artifactId>
-        </dependency>
+      <!-- SPRING BOOT -->
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>3.5.5</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.wiremock.integrations</groupId>
+        <artifactId>wiremock-spring-boot</artifactId>
+        <version>3.10.6</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
+  </dependencyManagement>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-    
-    <profiles>
-        <profile>
-            <id>latest-test-version</id>
-            <properties>
-                <cds.services.version>${cds.services.latest-test-version}</cds.services.version>
-                <cds.cdsdk-version>${cds.cdsdk.latest-test-version}</cds.cdsdk-version>
-            </properties>
-        </profile>
-    </profiles>
+  <dependencies>
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-feature-attachments</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>latest-test-version</id>
+      <properties>
+        <cds.services.version>${cds.services.latest-test-version}</cds.services.version>
+        <cds.cdsdk-version>${cds.cdsdk.latest-test-version}</cds.cdsdk-version>
+      </properties>
+    </profile>
+  </profiles>
 </project>
