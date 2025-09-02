@@ -165,9 +165,9 @@
           </execution>
         </executions>
       </plugin>
-
     </plugins>
   </build>
+
   <profiles>
     <profile>
       <id>integration-tests-oss</id>
