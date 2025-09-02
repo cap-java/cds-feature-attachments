@@ -174,9 +174,6 @@
             <goals>
               <goal>jar</goal>
             </goals>
-            <configuration>
-              <excludePackageNames>${generation-package}.*</excludePackageNames>
-            </configuration>
           </execution>
         </executions>
       </plugin>
