@@ -6,6 +6,18 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
@@ -32,16 +44,6 @@ import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The class {@link ReadAttachmentsHandler} is an event handler that is responsible for reading
@@ -148,16 +150,18 @@ public class ReadAttachmentsHandler implements EventHandler {
 
   private void verifyStatus(Path path, Attachments attachment) {
     if (areKeysEmpty(path.target().keys())) {
+      String currentStatus = attachment.getStatus();
       logger.debug(
           "In verify status for content id {} and status {}",
           attachment.getContentId(),
-          attachment.getStatus());
-      if (StatusCode.UNSCANNED.equals(attachment.getStatus())
-          || StatusCode.SCANNING.equals(attachment.getStatus())) {
+          currentStatus);
+      if (StatusCode.UNSCANNED.equals(currentStatus)
+          || StatusCode.SCANNING.equals(currentStatus)
+          || currentStatus == null) {
         logger.debug(
             "Scanning content with ID {} for malware, has current status {}",
             attachment.getContentId(),
-            attachment.getStatus());
+            currentStatus);
         scanExecutor.scanAsync(path.target().entity(), attachment.getContentId());
       }
       statusValidator.verifyStatus(attachment.getStatus());
