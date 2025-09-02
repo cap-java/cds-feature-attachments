@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- Provide the attachment's [parent entity and IDs](https://github.com/cap-java/cds-feature-attachments/pull/497) in the `AttachmentCreateEventContext`.
+
 ### Changed
 
 ### Fixed
