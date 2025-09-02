@@ -77,11 +77,6 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>${excluded.generation.package}**/*</exclude>
-          </excludes>
-        </configuration>
         <executions>
           <execution>
             <id>jacoco-initialize</id>
