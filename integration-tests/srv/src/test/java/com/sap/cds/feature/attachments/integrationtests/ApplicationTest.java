@@ -15,12 +15,10 @@ import org.springframework.context.ApplicationContext;
 @AutoConfigureMockMvc
 class ApplicationTest {
 
-	@Autowired
-	private ApplicationContext context;
+  @Autowired private ApplicationContext context;
 
-	@Test
-	void checkApplicationContextCanBeLoaded() {
-		assertThat(context).isNotNull();
-	}
-
+  @Test
+  void checkApplicationContextCanBeLoaded() {
+    assertThat(context).isNotNull();
+  }
 }

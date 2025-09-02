@@ -15,15 +15,15 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 @ServiceName(value = "*", type = DraftService.class)
 public class DraftActiveAttachmentsHandler implements EventHandler {
 
-	private final ThreadDataStorageSetter threadLocalSetter;
+  private final ThreadDataStorageSetter threadLocalSetter;
 
-	public DraftActiveAttachmentsHandler(ThreadDataStorageSetter threadLocalSetter) {
-		this.threadLocalSetter = requireNonNull(threadLocalSetter, "threadLocalSetter must not be null");
-	}
+  public DraftActiveAttachmentsHandler(ThreadDataStorageSetter threadLocalSetter) {
+    this.threadLocalSetter =
+        requireNonNull(threadLocalSetter, "threadLocalSetter must not be null");
+  }
 
-	@On
-	void processDraftSave(DraftSaveEventContext context) {
-		threadLocalSetter.set(true, context::proceed);
-	}
-
+  @On
+  void processDraftSave(DraftSaveEventContext context) {
+    threadLocalSetter.set(true, context::proceed);
+  }
 }

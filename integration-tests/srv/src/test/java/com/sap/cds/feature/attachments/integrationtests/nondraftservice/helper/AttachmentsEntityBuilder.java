@@ -7,27 +7,25 @@ import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testserv
 
 public class AttachmentsEntityBuilder {
 
-	private AttachmentEntity attachmentEntity = AttachmentEntity.create();
+  private AttachmentEntity attachmentEntity = AttachmentEntity.create();
 
-	private AttachmentsEntityBuilder() {
-	}
+  private AttachmentsEntityBuilder() {}
 
-	public static AttachmentsEntityBuilder create() {
-		return new AttachmentsEntityBuilder();
-	}
+  public static AttachmentsEntityBuilder create() {
+    return new AttachmentsEntityBuilder();
+  }
 
-	public AttachmentsEntityBuilder setMimeType(String mimeType) {
-		attachmentEntity.setMimeType(mimeType);
-		return this;
-	}
+  public AttachmentsEntityBuilder setMimeType(String mimeType) {
+    attachmentEntity.setMimeType(mimeType);
+    return this;
+  }
 
-	public AttachmentsEntityBuilder setFileName(String fileName) {
-		attachmentEntity.setFileName(fileName);
-		return this;
-	}
+  public AttachmentsEntityBuilder setFileName(String fileName) {
+    attachmentEntity.setFileName(fileName);
+    return this;
+  }
 
-	public AttachmentEntity build() {
-		return attachmentEntity;
-	}
-
+  public AttachmentEntity build() {
+    return attachmentEntity;
+  }
 }

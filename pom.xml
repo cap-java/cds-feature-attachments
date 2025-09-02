@@ -264,6 +264,9 @@
                 <version>2.46.1</version>
                 <configuration>
                     <java>
+                        <googleJavaFormat>
+                            <style>GOOGLE</style>
+                        </googleJavaFormat>
                         <licenseHeader>
                             <content>/*
  * © $YEAR SAP SE or an SAP affiliate company and cds-feature-attachments contributors.

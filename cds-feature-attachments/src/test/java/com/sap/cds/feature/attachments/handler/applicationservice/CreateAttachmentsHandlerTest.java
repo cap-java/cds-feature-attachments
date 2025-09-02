@@ -12,17 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
@@ -44,252 +33,266 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.runtime.CdsRuntime;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.List;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class CreateAttachmentsHandlerTest {
 
-	private static final String DRAFT_READONLY_CONTEXT = "DRAFT_READONLY_CONTEXT";
-	private static CdsRuntime runtime;
+  private static final String DRAFT_READONLY_CONTEXT = "DRAFT_READONLY_CONTEXT";
+  private static CdsRuntime runtime;
 
-	private CreateAttachmentsHandler cut;
-	private ModifyAttachmentEventFactory eventFactory;
-	private CdsCreateEventContext createContext;
-	private ModifyAttachmentEvent event;
-	private ThreadDataStorageReader storageReader;
+  private CreateAttachmentsHandler cut;
+  private ModifyAttachmentEventFactory eventFactory;
+  private CdsCreateEventContext createContext;
+  private ModifyAttachmentEvent event;
+  private ThreadDataStorageReader storageReader;
 
-	@BeforeAll
-	static void classSetup() {
-		runtime = RuntimeHelper.runtime;
-	}
+  @BeforeAll
+  static void classSetup() {
+    runtime = RuntimeHelper.runtime;
+  }
 
-	@BeforeEach
-	void setup() {
-		eventFactory = mock(ModifyAttachmentEventFactory.class);
-		storageReader = mock(ThreadDataStorageReader.class);
-		cut = new CreateAttachmentsHandler(eventFactory, storageReader);
+  @BeforeEach
+  void setup() {
+    eventFactory = mock(ModifyAttachmentEventFactory.class);
+    storageReader = mock(ThreadDataStorageReader.class);
+    cut = new CreateAttachmentsHandler(eventFactory, storageReader);
 
-		createContext = mock(CdsCreateEventContext.class);
-		event = mock(ModifyAttachmentEvent.class);
-	}
+    createContext = mock(CdsCreateEventContext.class);
+    event = mock(ModifyAttachmentEvent.class);
+  }
 
-	@Test
-	void noContentInDataNothingToDo() {
-		getEntityAndMockContext(Attachment_.CDS_NAME);
-		var attachment = Attachments.create();
+  @Test
+  void noContentInDataNothingToDo() {
+    getEntityAndMockContext(Attachment_.CDS_NAME);
+    var attachment = Attachments.create();
 
-		cut.processBefore(createContext, List.of(attachment));
+    cut.processBefore(createContext, List.of(attachment));
 
-		verifyNoInteractions(eventFactory);
-	}
+    verifyNoInteractions(eventFactory);
+  }
 
-	@Test
-	void idsAreSetInDataForCreate() {
-		getEntityAndMockContext(RootTable_.CDS_NAME);
-		var roots = RootTable.create();
-		var attachment = Attachments.create();
-		attachment.setFileName("test.txt");
-		attachment.setContent(null);
-		attachment.put("up__ID", "test");
-		roots.setAttachments(List.of(attachment));
-		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+  @Test
+  void idsAreSetInDataForCreate() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+    var roots = RootTable.create();
+    var attachment = Attachments.create();
+    attachment.setFileName("test.txt");
+    attachment.setContent(null);
+    attachment.put("up__ID", "test");
+    roots.setAttachments(List.of(attachment));
+    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-		cut.processBefore(createContext, List.of(roots));
+    cut.processBefore(createContext, List.of(roots));
 
-		verify(eventFactory).getEvent(null, null, Attachments.create());
-	}
+    verify(eventFactory).getEvent(null, null, Attachments.create());
+  }
 
-	@Test
-	void eventProcessorCalledForCreate() throws IOException {
-		getEntityAndMockContext(Attachment_.CDS_NAME);
+  @Test
+  void eventProcessorCalledForCreate() throws IOException {
+    getEntityAndMockContext(Attachment_.CDS_NAME);
 
-		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
-			var attachment = Attachments.create();
-			attachment.setContent(testStream);
-			when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+    try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
+      var attachment = Attachments.create();
+      attachment.setContent(testStream);
+      when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-			cut.processBefore(createContext, List.of(attachment));
+      cut.processBefore(createContext, List.of(attachment));
 
-			verify(eventFactory).getEvent(testStream, null, Attachments.create());
-		}
-	}
+      verify(eventFactory).getEvent(testStream, null, Attachments.create());
+    }
+  }
 
-	@Test
-	void readonlyDataFilledForDraftActivate() {
-		getEntityAndMockContext(Attachment_.CDS_NAME);
+  @Test
+  void readonlyDataFilledForDraftActivate() {
+    getEntityAndMockContext(Attachment_.CDS_NAME);
 
-		var attachment = Attachments.create();
-		attachment.setContentId("Document Id");
-		attachment.setStatus("Status Code");
-		attachment.setScannedAt(Instant.now());
-		attachment.setContent(null);
-		when(storageReader.get()).thenReturn(true);
+    var attachment = Attachments.create();
+    attachment.setContentId("Document Id");
+    attachment.setStatus("Status Code");
+    attachment.setScannedAt(Instant.now());
+    attachment.setContent(null);
+    when(storageReader.get()).thenReturn(true);
 
-		cut.processBeforeForDraft(createContext, List.of(attachment));
+    cut.processBeforeForDraft(createContext, List.of(attachment));
 
-		verifyNoInteractions(eventFactory, event);
-		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNotNull();
-		var readOnlyData = (CdsData) attachment.get(DRAFT_READONLY_CONTEXT);
-		assertThat(readOnlyData).containsEntry(Attachment.CONTENT_ID, attachment.getContentId())
-				.containsEntry(Attachment.STATUS, attachment.getStatus())
-				.containsEntry(Attachment.SCANNED_AT, attachment.getScannedAt());
-	}
+    verifyNoInteractions(eventFactory, event);
+    assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNotNull();
+    var readOnlyData = (CdsData) attachment.get(DRAFT_READONLY_CONTEXT);
+    assertThat(readOnlyData)
+        .containsEntry(Attachment.CONTENT_ID, attachment.getContentId())
+        .containsEntry(Attachment.STATUS, attachment.getStatus())
+        .containsEntry(Attachment.SCANNED_AT, attachment.getScannedAt());
+  }
 
-	@Test
-	void readonlyDataClearedIfNotDraftActivate() {
-		getEntityAndMockContext(Attachment_.CDS_NAME);
+  @Test
+  void readonlyDataClearedIfNotDraftActivate() {
+    getEntityAndMockContext(Attachment_.CDS_NAME);
 
-		var createAttachment = Attachments.create();
-		var contentId = "Document Id";
-		createAttachment.setContentId(contentId);
-		createAttachment.setContent(null);
-		var readonlyData = CdsData.create();
-		readonlyData.put(Attachment.STATUS, "some wrong status code");
-		readonlyData.put(Attachment.CONTENT_ID, "some other document id");
-		readonlyData.put(Attachment.SCANNED_AT, Instant.EPOCH);
-		createAttachment.put(DRAFT_READONLY_CONTEXT, readonlyData);
-		when(storageReader.get()).thenReturn(false);
+    var createAttachment = Attachments.create();
+    var contentId = "Document Id";
+    createAttachment.setContentId(contentId);
+    createAttachment.setContent(null);
+    var readonlyData = CdsData.create();
+    readonlyData.put(Attachment.STATUS, "some wrong status code");
+    readonlyData.put(Attachment.CONTENT_ID, "some other document id");
+    readonlyData.put(Attachment.SCANNED_AT, Instant.EPOCH);
+    createAttachment.put(DRAFT_READONLY_CONTEXT, readonlyData);
+    when(storageReader.get()).thenReturn(false);
 
-		cut.processBeforeForDraft(createContext, List.of(createAttachment));
+    cut.processBeforeForDraft(createContext, List.of(createAttachment));
 
-		verifyNoInteractions(eventFactory, event);
-		assertThat(createAttachment.get(DRAFT_READONLY_CONTEXT)).isNull();
-		assertThat(createAttachment).containsEntry(Attachment.CONTENT_ID, contentId)
-				.doesNotContainKey(Attachment.STATUS).doesNotContainKey(Attachment.SCANNED_AT);
-	}
+    verifyNoInteractions(eventFactory, event);
+    assertThat(createAttachment.get(DRAFT_READONLY_CONTEXT)).isNull();
+    assertThat(createAttachment)
+        .containsEntry(Attachment.CONTENT_ID, contentId)
+        .doesNotContainKey(Attachment.STATUS)
+        .doesNotContainKey(Attachment.SCANNED_AT);
+  }
 
-	@Test
-	void readonlyDataNotFilledForNonDraftActivate() {
-		getEntityAndMockContext(Attachment_.CDS_NAME);
+  @Test
+  void readonlyDataNotFilledForNonDraftActivate() {
+    getEntityAndMockContext(Attachment_.CDS_NAME);
 
-		var attachment = Attachments.create();
-		attachment.setContentId("Document Id");
-		attachment.setStatus("Status Code");
-		attachment.setScannedAt(Instant.now());
-		when(storageReader.get()).thenReturn(false);
+    var attachment = Attachments.create();
+    attachment.setContentId("Document Id");
+    attachment.setStatus("Status Code");
+    attachment.setScannedAt(Instant.now());
+    when(storageReader.get()).thenReturn(false);
 
-		cut.processBeforeForDraft(createContext, List.of(attachment));
+    cut.processBeforeForDraft(createContext, List.of(attachment));
 
-		verifyNoInteractions(eventFactory, event);
-		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
-	}
+    verifyNoInteractions(eventFactory, event);
+    assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
+  }
 
-	@Test
-	void eventProcessorNotCalledForCreateForDraft() throws IOException {
-		getEntityAndMockContext(Attachment_.CDS_NAME);
+  @Test
+  void eventProcessorNotCalledForCreateForDraft() throws IOException {
+    getEntityAndMockContext(Attachment_.CDS_NAME);
 
-		try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
-			var attachment = Attachments.create();
-			attachment.setContent(testStream);
-			when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
-			when(createContext.getService()).thenReturn(mock(ApplicationService.class));
+    try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
+      var attachment = Attachments.create();
+      attachment.setContent(testStream);
+      when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+      when(createContext.getService()).thenReturn(mock(ApplicationService.class));
 
-			cut.processBeforeForDraft(createContext, List.of(attachment));
+      cut.processBeforeForDraft(createContext, List.of(attachment));
 
-			verifyNoInteractions(eventFactory);
-		}
-	}
+      verifyNoInteractions(eventFactory);
+    }
+  }
 
-	@Test
-	void attachmentAccessExceptionCorrectHandledForCreate() {
-		getEntityAndMockContext(Attachment_.CDS_NAME);
-		var attachment = Attachments.create();
-		attachment.setFileName("test.txt");
-		attachment.setContent(null);
-		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
-		when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));
+  @Test
+  void attachmentAccessExceptionCorrectHandledForCreate() {
+    getEntityAndMockContext(Attachment_.CDS_NAME);
+    var attachment = Attachments.create();
+    attachment.setFileName("test.txt");
+    attachment.setContent(null);
+    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+    when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));
 
-		List<CdsData> input = List.of(attachment);
-		assertThrows(ServiceException.class, () -> cut.processBefore(createContext, input));
-	}
+    List<CdsData> input = List.of(attachment);
+    assertThrows(ServiceException.class, () -> cut.processBefore(createContext, input));
+  }
 
-	@Test
-	void handlerCalledForMediaEventInAssociationIdsAreSet() {
-		getEntityAndMockContext(Events_.CDS_NAME);
-		var events = Events.create();
-		events.setContent("test");
-		var items = Items.create();
-		var attachment = Attachments.create();
-		var content = mock(InputStream.class);
-		attachment.setContent(content);
-		items.setAttachments(List.of(attachment));
-		events.setItems(List.of(items));
-		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+  @Test
+  void handlerCalledForMediaEventInAssociationIdsAreSet() {
+    getEntityAndMockContext(Events_.CDS_NAME);
+    var events = Events.create();
+    events.setContent("test");
+    var items = Items.create();
+    var attachment = Attachments.create();
+    var content = mock(InputStream.class);
+    attachment.setContent(content);
+    items.setAttachments(List.of(attachment));
+    events.setItems(List.of(items));
+    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-		List<CdsData> input = List.of(events);
-		cut.processBefore(createContext, input);
+    List<CdsData> input = List.of(events);
+    cut.processBefore(createContext, input);
 
-		verify(eventFactory).getEvent(eq(content), any(), any());
-	}
+    verify(eventFactory).getEvent(eq(content), any(), any());
+  }
 
-	@Test
-	void readonlyFieldsAreUsedFromOwnContext() {
-		getEntityAndMockContext(Attachment_.CDS_NAME);
+  @Test
+  void readonlyFieldsAreUsedFromOwnContext() {
+    getEntityAndMockContext(Attachment_.CDS_NAME);
 
-		var readonlyFields = CdsData.create();
-		readonlyFields.put(Attachment.CONTENT_ID, "Document Id");
-		readonlyFields.put(Attachment.STATUS, "Status Code");
-		readonlyFields.put(Attachment.SCANNED_AT, Instant.now());
-		var testStream = mock(InputStream.class);
-		var attachment = Attachments.create();
-		attachment.setContent(testStream);
-		attachment.put("DRAFT_READONLY_CONTEXT", readonlyFields);
+    var readonlyFields = CdsData.create();
+    readonlyFields.put(Attachment.CONTENT_ID, "Document Id");
+    readonlyFields.put(Attachment.STATUS, "Status Code");
+    readonlyFields.put(Attachment.SCANNED_AT, Instant.now());
+    var testStream = mock(InputStream.class);
+    var attachment = Attachments.create();
+    attachment.setContent(testStream);
+    attachment.put("DRAFT_READONLY_CONTEXT", readonlyFields);
 
-		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-		cut.processBefore(createContext, List.of(attachment));
+    cut.processBefore(createContext, List.of(attachment));
 
-		verify(eventFactory).getEvent(testStream, (String) readonlyFields.get(Attachment.CONTENT_ID), Attachments.create());
-		assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
-		assertThat(attachment.getContentId()).isEqualTo(readonlyFields.get(Attachment.CONTENT_ID));
-		assertThat(attachment.getStatus()).isEqualTo(readonlyFields.get(Attachment.STATUS));
-		assertThat(attachment.getScannedAt()).isEqualTo(readonlyFields.get(Attachment.SCANNED_AT));
-	}
+    verify(eventFactory)
+        .getEvent(
+            testStream, (String) readonlyFields.get(Attachment.CONTENT_ID), Attachments.create());
+    assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
+    assertThat(attachment.getContentId()).isEqualTo(readonlyFields.get(Attachment.CONTENT_ID));
+    assertThat(attachment.getStatus()).isEqualTo(readonlyFields.get(Attachment.STATUS));
+    assertThat(attachment.getScannedAt()).isEqualTo(readonlyFields.get(Attachment.SCANNED_AT));
+  }
 
-	@Test
-	void handlerCalledForNonMediaEventNothingSetAndCalled() {
-		getEntityAndMockContext(Events_.CDS_NAME);
-		var events = Events.create();
-		events.setContent("test");
-		var eventItems = Items.create();
-		var attachment = Attachments.create();
-		attachment.setContent(mock(InputStream.class));
-		eventItems.setAttachments(List.of(attachment));
-		events.setEventItems(List.of(eventItems));
-		when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+  @Test
+  void handlerCalledForNonMediaEventNothingSetAndCalled() {
+    getEntityAndMockContext(Events_.CDS_NAME);
+    var events = Events.create();
+    events.setContent("test");
+    var eventItems = Items.create();
+    var attachment = Attachments.create();
+    attachment.setContent(mock(InputStream.class));
+    eventItems.setAttachments(List.of(attachment));
+    events.setEventItems(List.of(eventItems));
+    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-		List<CdsData> input = List.of(events);
-		cut.processBefore(createContext, input);
+    List<CdsData> input = List.of(events);
+    cut.processBefore(createContext, input);
 
-		verifyNoInteractions(eventFactory);
-		assertThat(events.getId1()).isNull();
-		assertThat(events.getId2()).isNull();
-	}
+    verifyNoInteractions(eventFactory);
+    assertThat(events.getId1()).isNull();
+    assertThat(events.getId2()).isNull();
+  }
 
-	@Test
-	void classHasCorrectAnnotation() {
-		var createHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
+  @Test
+  void classHasCorrectAnnotation() {
+    var createHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
 
-		assertThat(createHandlerAnnotation.type()).containsOnly(ApplicationService.class);
-		assertThat(createHandlerAnnotation.value()).containsOnly("*");
-	}
+    assertThat(createHandlerAnnotation.type()).containsOnly(ApplicationService.class);
+    assertThat(createHandlerAnnotation.value()).containsOnly("*");
+  }
 
-	@Test
-	void methodHasCorrectAnnotations() throws NoSuchMethodException {
-		var method = cut.getClass().getDeclaredMethod("processBefore", CdsCreateEventContext.class, List.class);
+  @Test
+  void methodHasCorrectAnnotations() throws NoSuchMethodException {
+    var method =
+        cut.getClass().getDeclaredMethod("processBefore", CdsCreateEventContext.class, List.class);
 
-		var createBeforeAnnotation = method.getAnnotation(Before.class);
-		var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
+    var createBeforeAnnotation = method.getAnnotation(Before.class);
+    var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-		assertThat(createBeforeAnnotation.event()).isEmpty();
-		assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
-	}
+    assertThat(createBeforeAnnotation.event()).isEmpty();
+    assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
+  }
 
-	private void getEntityAndMockContext(String cdsName) {
-		var serviceEntity = runtime.getCdsModel().findEntity(cdsName);
-		mockTargetInCreateContext(serviceEntity.orElseThrow());
-	}
+  private void getEntityAndMockContext(String cdsName) {
+    var serviceEntity = runtime.getCdsModel().findEntity(cdsName);
+    mockTargetInCreateContext(serviceEntity.orElseThrow());
+  }
 
-	private void mockTargetInCreateContext(CdsEntity serviceEntity) {
-		when(createContext.getTarget()).thenReturn(serviceEntity);
-	}
-
+  private void mockTargetInCreateContext(CdsEntity serviceEntity) {
+    when(createContext.getTarget()).thenReturn(serviceEntity);
+  }
 }

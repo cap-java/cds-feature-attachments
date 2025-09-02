@@ -10,18 +10,17 @@ import org.junit.jupiter.api.Test;
 
 class AttachmentMarkAsDeletedEventContextTest {
 
-	private AttachmentMarkAsDeletedEventContext cut;
+  private AttachmentMarkAsDeletedEventContext cut;
 
-	@BeforeEach
-	void setup() {
-		cut = AttachmentMarkAsDeletedEventContext.create();
-	}
+  @BeforeEach
+  void setup() {
+    cut = AttachmentMarkAsDeletedEventContext.create();
+  }
 
-	@Test
-	void fieldsCanBeSetAndRead() {
-		cut.setContentId("document id");
+  @Test
+  void fieldsCanBeSetAndRead() {
+    cut.setContentId("document id");
 
-		assertThat(cut.getContentId()).isEqualTo("document id");
-	}
-
+    assertThat(cut.getContentId()).isEqualTo("document id");
+  }
 }
