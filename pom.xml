@@ -1,416 +1,420 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
+  <groupId>com.sap.cds</groupId>
+  <artifactId>cds-feature-attachments-root</artifactId>
+  <version>${revision}</version>
+  <packaging>pom</packaging>
 
-    <organization>
-        <name>SAP SE</name>
-        <url>https://www.sap.com</url>
-    </organization>
+  <name>CDS Feature for Attachments - Root</name>
+  <description>This artifact is a CAP Java plugin that provides out-of-the box attachments storage and handling by using an aspect Attachments.</description>
+  <url>https://cap.cloud.sap/docs/plugins/#attachments</url>
 
-    <developers>
-        <developer>
-            <organization>SAP SE</organization>
-            <organizationUrl>https://www.sap.com</organizationUrl>
-        </developer>
-    </developers>
+  <organization>
+    <name>SAP SE</name>
+    <url>https://www.sap.com</url>
+  </organization>
 
-    <properties>
-        <revision>1.2.1-SNAPSHOT</revision>
-        <java.version>17</java.version>
-        <maven.compiler.release>${java.version}</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
-        <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
+  <developers>
+    <developer>
+      <organization>SAP SE</organization>
+      <organizationUrl>https://www.sap.com</organizationUrl>
+    </developer>
+  </developers>
 
-        <software.amazon.awssdk-s3-version>2.32.31</software.amazon.awssdk-s3-version>
-        <software.amazon.awssdk-crt-version>0.38.11</software.amazon.awssdk-crt-version>
+  <modules>
+    <module>cds-feature-attachments</module>
+    <module>storage-targets/cds-feature-attachments-fs</module>
+    <module>storage-targets/cds-feature-attachments-oss</module>
+    <module>integration-tests</module>
+  </modules>
 
-        <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
-        <cds.services.version>3.10.3</cds.services.version> <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
-        <cds.cdsdk-version>8.9.8</cds.cdsdk-version> <!-- https://www.npmjs.com/package/@sap/cds-dk?activeTab=versions -->
+  <scm>
+    <connection>scm:git:git@github.com:cap-java/cds-feature-attachments.git</connection>
+    <developerConnection>scm:git:git@github.com:cap-java/cds-feature-attachments.git</developerConnection>
+    <url>https://github.com/cap-java/cds-feature-attachments</url>
+  </scm>
 
-        <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
-        <cds.services.latest-test-version>4.2.0</cds.services.latest-test-version>
-        <cds.cdsdk.latest-test-version>9.2.1</cds.cdsdk.latest-test-version>
+  <distributionManagement>
+    <repository>
+      <id>central</id>
+      <name>MavenCentral</name>
+      <url>https://central.sonatype.com</url>
+    </repository>
+    <snapshotRepository>
+      <id>artifactory</id>
+      <name>Artifactory_DMZ-snapshots</name>
+      <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
+    </snapshotRepository>
+  </distributionManagement>
 
-        <spotless.check.skip>true</spotless.check.skip>
-    </properties>
+  <properties>
+    <revision>1.2.1-SNAPSHOT</revision>
+    <java.version>17</java.version>
+    <maven.compiler.release>${java.version}</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <groupId>com.sap.cds</groupId>
-    <artifactId>cds-feature-attachments-root</artifactId>
-    <version>${revision}</version>
-    <packaging>pom</packaging>
+    <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <name>CDS Feature for Attachments - Root</name>
-    <description>This artifact is a CAP Java plugin that provides out-of-the box attachments storage and handling by using an aspect Attachments.</description>
-    <url>https://cap.cloud.sap/docs/plugins/#attachments</url>
+    <software.amazon.awssdk-s3-version>2.32.31</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-crt-version>0.38.11</software.amazon.awssdk-crt-version>
 
-    <modules>
-        <module>cds-feature-attachments</module>
-        <module>storage-targets/cds-feature-attachments-fs</module>
-        <module>storage-targets/cds-feature-attachments-oss</module>
-        <module>integration-tests</module>
-    </modules>
+    <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
+    <cds.services.version>3.10.3</cds.services.version>
+    <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
+    <cds.cdsdk-version>8.9.8</cds.cdsdk-version>
+    <!-- https://www.npmjs.com/package/@sap/cds-dk?activeTab=versions -->
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.sap.cds</groupId>
-                <artifactId>cds-services-bom</artifactId>
-                <version>${cds.services.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+    <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
+    <cds.services.latest-test-version>4.2.0</cds.services.latest-test-version>
+    <cds.cdsdk.latest-test-version>9.2.1</cds.cdsdk.latest-test-version>
 
-            <dependency>
-                <groupId>com.sap.cloud.sdk</groupId>
-                <artifactId>sdk-bom</artifactId>
-                <version>5.22.0</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
+    <spotless.check.skip>true</spotless.check.skip>
+  </properties>
 
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>5.13.4</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-bom</artifactId>
-                <version>5.19.0</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.awaitility</groupId>
-                <artifactId>awaitility</artifactId>
-                <version>4.3.0</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>1.5.18</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sap.cds</groupId>
-                <artifactId>cds-feature-attachments</artifactId>
-                <version>${revision}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
+  <dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>com.sap.cds</groupId>
-            <artifactId>cds-services-api</artifactId>
-        </dependency>
+      <dependency>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-services-bom</artifactId>
+        <version>${cds.services.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
 
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
+      <dependency>
+        <groupId>com.sap.cloud.sdk</groupId>
+        <artifactId>sdk-bom</artifactId>
+        <version>5.22.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
 
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>3.27.4</version>
-            <scope>test</scope>
-        </dependency>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.13.4</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
 
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-bom</artifactId>
+        <version>5.19.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>4.3.0</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.5.18</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-feature-attachments</artifactId>
+        <version>${revision}</version>
+      </dependency>
     </dependencies>
+  </dependencyManagement>
 
-    <build>
-        <plugins>
-            <!-- POM FLATTENING FOR CI FRIENDLY VERSIONS -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>flatten-maven-plugin</artifactId>
-                <configuration>
-                    <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>flatten</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>flatten</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>flatten.clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+  <dependencies>
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-services-api</artifactId>
+    </dependency>
 
-            <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <configuration>
-                    <effort>Max</effort>
-                    <xmlOutput>true</xmlOutput>
-                    <excludeFilterFile>/src/main/resources/spotbugs-exclusion-filter.xml</excludeFilterFile>
-                    <spotbugsXmlOutputDirectory>${project.build.directory}</spotbugsXmlOutputDirectory>
-                    <includeTests>true</includeTests>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>spotbugs-error</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-            <plugin>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <configuration>
-                    <targetJdk>${java.version}</targetJdk>
-                    <failurePriority>5</failurePriority>
-                    <targetDirectory>${project.build.directory}</targetDirectory>
-                    <printFailingErrors>true</printFailingErrors>
-                    <includeTests>true</includeTests>
-                    <linkXRef>false</linkXRef>
-                    <verbose>false</verbose>
-                    <rulesets>
-                        <!-- Default Ruleset -->
-                        <ruleset>/rulesets/java/maven-pmd-plugin-default.xml</ruleset>
-                    </rulesets>
-                    <excludes>
-                        <exclude>
-                            **/${excluded.generation.package}**
-                        </exclude>
-                        <exclude>
-                            **/*Test**
-                        </exclude>
-                    </excludes>
-                </configuration>
-                <!-- https://mvnrepository.com/artifact/com.sap.cloud.sdk.quality/pmd-rules -->
-                <dependencies>
-                    <dependency>
-                        <groupId>com.sap.cloud.sdk.quality</groupId>
-                        <artifactId>pmd-rules</artifactId>
-                        <version>3.78.0</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <id>pmd-error</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>check</goal>
-                            <goal>cpd-check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.27.4</version>
+      <scope>test</scope>
+    </dependency>
 
-            <plugin>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>no-duplicate-declared-dependencies</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <banDuplicatePomDependencyVersions />
-                                <requireMavenVersion>
-                                    <version>3.6.3</version>
-                                </requireMavenVersion>
-                                <requireJavaVersion>
-                                    <version>${java.version}</version>
-                                </requireJavaVersion>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
-            <!-- ENFORCING COMMON CODE FORMAT STYLE -->
-            <plugin>
-                <groupId>com.diffplug.spotless</groupId>
-                <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.46.1</version>
-                <configuration>
-                    <java>
-                        <googleJavaFormat>
-                            <style>GOOGLE</style>
-                        </googleJavaFormat>
-                        <licenseHeader>
-                            <content>/*
+  <build>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.2.8</version>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>0.8.0</version>
+          <extensions>true</extensions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.5.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.14.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.3.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.1.4</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.11.3</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.5.3</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>3.27.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>3.6.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <version>1.7.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.8.13</version>
+        </plugin>
+        <plugin>
+          <groupId>org.pitest</groupId>
+          <artifactId>pitest-maven</artifactId>
+          <version>1.20.2</version>
+        </plugin>
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>4.9.4.0</version>
+        </plugin>
+        <plugin>
+          <groupId>com.sap.cds</groupId>
+          <artifactId>cds-maven-plugin</artifactId>
+          <version>${cds.services.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <!-- POM FLATTENING FOR CI FRIENDLY VERSIONS -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <configuration>
+          <updatePomFile>true</updatePomFile>
+          <flattenMode>resolveCiFriendliesOnly</flattenMode>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+            <phase>process-resources</phase>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+            <phase>clean</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <configuration>
+          <effort>Max</effort>
+          <xmlOutput>true</xmlOutput>
+          <excludeFilterFile>/src/main/resources/spotbugs-exclusion-filter.xml</excludeFilterFile>
+          <spotbugsXmlOutputDirectory>${project.build.directory}</spotbugsXmlOutputDirectory>
+          <includeTests>true</includeTests>
+        </configuration>
+        <executions>
+          <execution>
+            <id>spotbugs-error</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>process-test-classes</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <configuration>
+          <targetJdk>${java.version}</targetJdk>
+          <failurePriority>5</failurePriority>
+          <targetDirectory>${project.build.directory}</targetDirectory>
+          <printFailingErrors>true</printFailingErrors>
+          <includeTests>true</includeTests>
+          <linkXRef>false</linkXRef>
+          <verbose>false</verbose>
+          <rulesets>
+            <!-- Default Ruleset -->
+            <ruleset>/rulesets/java/maven-pmd-plugin-default.xml</ruleset>
+          </rulesets>
+          <excludes>
+            <exclude>**/${excluded.generation.package}**</exclude>
+            <exclude>**/*Test**</exclude>
+          </excludes>
+        </configuration>
+        <!-- https://mvnrepository.com/artifact/com.sap.cloud.sdk.quality/pmd-rules -->
+        <dependencies>
+          <dependency>
+            <groupId>com.sap.cloud.sdk.quality</groupId>
+            <artifactId>pmd-rules</artifactId>
+            <version>3.78.0</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>pmd-error</id>
+            <goals>
+              <goal>check</goal>
+              <goal>cpd-check</goal>
+            </goals>
+            <phase>process-test-classes</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>no-duplicate-declared-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <banDuplicatePomDependencyVersions/>
+                <requireMavenVersion>
+                  <version>3.6.3</version>
+                </requireMavenVersion>
+                <requireJavaVersion>
+                  <version>${java.version}</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- ENFORCING COMMON CODE FORMAT STYLE -->
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>2.46.1</version>
+        <configuration>
+          <java>
+            <googleJavaFormat>
+              <style>GOOGLE</style>
+            </googleJavaFormat>
+            <licenseHeader>
+              <content>/*
  * © $YEAR SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */</content>
-                        </licenseHeader>
-                    </java>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <phase>process-sources</phase>
-                    </execution>
-                </executions>
-            </plugin>
+            </licenseHeader>
+          </java>
+          <pom>
+            <includes>
+              <include>pom.xml</include>
+            </includes>
+            <sortPom/>
+          </pom>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>process-sources</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>deploy-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <phase>deploy</phase>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <excludeArtifacts>
+                <excludeArtifact>cds-feature-attachments-integration-tests-parent</excludeArtifact>
+                <excludeArtifact>cds-feature-attachments-integration-tests-db</excludeArtifact>
+                <excludeArtifact>cds-feature-attachments-integration-tests-srv</excludeArtifact>
+                <excludeArtifact>cds-feature-attachments-fs</excludeArtifact>
+              </excludeArtifacts>
+            </configuration>
+          </plugin>
         </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>3.2.8</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.sonatype.central</groupId>
-                    <artifactId>central-publishing-maven-plugin</artifactId>
-                    <version>0.8.0</version>
-                    <extensions>true</extensions>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.5.0</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.14.0</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.3.1</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>3.1.4</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.11.3</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.5.3</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-pmd-plugin</artifactId>
-                    <version>3.27.0</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.6.1</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>flatten-maven-plugin</artifactId>
-                    <version>1.7.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.jacoco</groupId>
-                    <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.13</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.pitest</groupId>
-                    <artifactId>pitest-maven</artifactId>
-                    <version>1.20.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>com.github.spotbugs</groupId>
-                    <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.9.4.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>com.sap.cds</groupId>
-                    <artifactId>cds-maven-plugin</artifactId>
-                    <version>${cds.services.version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>deploy-release</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.sonatype.central</groupId>
-                        <artifactId>central-publishing-maven-plugin</artifactId>
-                        <configuration>
-                            <publishingServerId>central</publishingServerId>
-                            <excludeArtifacts>
-                                <excludeArtifact>cds-feature-attachments-integration-tests-parent</excludeArtifact>
-                                <excludeArtifact>cds-feature-attachments-integration-tests-db</excludeArtifact>
-                                <excludeArtifact>cds-feature-attachments-integration-tests-srv</excludeArtifact>
-                                <excludeArtifact>cds-feature-attachments-fs</excludeArtifact>
-                            </excludeArtifacts>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>artifactory</id>
-            <name>Artifactory_DMZ-snapshots</name>
-            <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
-        </snapshotRepository>
-        <repository>
-            <id>central</id>
-            <name>MavenCentral</name>
-            <url>https://central.sonatype.com</url>
-        </repository>
-    </distributionManagement>
-
-    <scm>
-        <url>https://github.com/cap-java/cds-feature-attachments</url>
-        <connection>scm:git:git@github.com:cap-java/cds-feature-attachments.git</connection>
-        <developerConnection>scm:git:git@github.com:cap-java/cds-feature-attachments.git</developerConnection>
-    </scm>
+      </build>
+    </profile>
+  </profiles>
 
 </project>
