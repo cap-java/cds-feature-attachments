@@ -1,6 +1,6 @@
-/**************************************************************************
- * (C) 2019-2025 SAP SE or an SAP affiliate company. All rights reserved. *
- **************************************************************************/
+/*
+ * © 2024-2025 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ */
 package com.sap.cds.feature.attachments.handler.common;
 
 import java.util.ArrayList;
@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;

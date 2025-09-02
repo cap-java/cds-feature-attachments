@@ -23,20 +23,25 @@
     </developers>
 
     <properties>
-        <revision>1.1.1-SNAPSHOT</revision>
+        <revision>1.2.0</revision>
         <java.version>17</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
+        <software.amazon.awssdk-s3-version>2.32.31</software.amazon.awssdk-s3-version>
+        <software.amazon.awssdk-crt-version>0.38.11</software.amazon.awssdk-crt-version>
+
         <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
         <cds.services.version>3.10.3</cds.services.version> <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
-        <cds.cdsdk-version>8.9.7</cds.cdsdk-version> <!-- https://www.npmjs.com/package/@sap/cds-dk?activeTab=versions -->
+        <cds.cdsdk-version>8.9.8</cds.cdsdk-version> <!-- https://www.npmjs.com/package/@sap/cds-dk?activeTab=versions -->
 
         <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
-        <cds.services.latest-test-version>4.1.1</cds.services.latest-test-version>
-        <cds.cdsdk.latest-test-version>9.1.1</cds.cdsdk.latest-test-version>
+        <cds.services.latest-test-version>4.2.0</cds.services.latest-test-version>
+        <cds.cdsdk.latest-test-version>9.2.0</cds.cdsdk.latest-test-version>
+
+        <spotless.check.skip>true</spotless.check.skip>
     </properties>
 
     <groupId>com.sap.cds</groupId>
@@ -50,7 +55,8 @@
 
     <modules>
         <module>cds-feature-attachments</module>
-        <module>examples/cds-feature-attachments-fs</module>
+        <module>storage-targets/cds-feature-attachments-fs</module>
+        <module>storage-targets/cds-feature-attachments-oss</module>
         <module>integration-tests</module>
     </modules>
 
@@ -67,7 +73,7 @@
             <dependency>
                 <groupId>com.sap.cloud.sdk</groupId>
                 <artifactId>sdk-bom</artifactId>
-                <version>5.20.0</version>
+                <version>5.22.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -83,7 +89,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-bom</artifactId>
-                <version>5.18.0</version>
+                <version>5.19.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -125,7 +131,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.27.3</version>
+            <version>3.27.4</version>
             <scope>test</scope>
         </dependency>
 
@@ -251,6 +257,30 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- ENFORCING COMMON CODE FORMAT STYLE -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.46.1</version>
+                <configuration>
+                    <java>
+                        <licenseHeader>
+                            <content>/*
+ * © $YEAR SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ */</content>
+                        </licenseHeader>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
 
         <pluginManagement>
@@ -283,7 +313,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.11.2</version>
+                    <version>3.11.3</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
@@ -300,7 +330,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>flatten-maven-plugin</artifactId>
-                    <version>1.7.1</version>
+                    <version>1.7.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
@@ -310,12 +340,12 @@
                 <plugin>
                     <groupId>org.pitest</groupId>
                     <artifactId>pitest-maven</artifactId>
-                    <version>1.20.0</version>
+                    <version>1.20.2</version>
                 </plugin>
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.9.3.2</version>
+                    <version>4.9.4.0</version>
                 </plugin>
                 <plugin>
                     <groupId>com.sap.cds</groupId>
