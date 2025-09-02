@@ -3,18 +3,41 @@
  */
 package com.sap.cds.feature.attachments.oss.client;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
-import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.junit.jupiter.api.Test;
 
-public class AzureClientIT {
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.azure.AzuriteContainer;
+import org.testcontainers.utility.DockerImageName;
+
+import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
+import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
+
+class AzureClientIT {
+
   // The tests in this class are intended to run against a real Azure instance.
   // They require a valid ServiceBinding with credentials set up in the environment.
+
+  private static AzuriteContainer container =
+      new AzuriteContainer(DockerImageName.parse("mcr.microsoft.com/azure-storage/azurite:latest"));
+
+  @BeforeAll
+  static void beforeAll() {
+    container.start();
+  }
+
+  @AfterAll
+  static void tearDown() {
+    if (container != null) {
+      container.stop();
+    }
+  }
 
   @Test
   void testCreateReadDeleteAttachmentFlowAzure() throws Exception {
@@ -26,8 +49,15 @@ public class AzureClientIT {
 
   private ServiceBinding getRealServiceBindingAzure() {
     // Read environment variables
-    String containerUri = System.getenv("AZURE_CONTAINER_URI");
-    String sasToken = System.getenv("AZURE_SAS_TOKEN");
+    String containerUri = container.getConnectionString(); // System.getenv("AZURE_CONTAINER_URI");
+    String sasToken = ""; // System.getenv("AZURE_SAS_TOKEN");
+    String[] tokens = container.getConnectionString().split(";");
+    for (String token : tokens) {
+      if (token.startsWith("BlobEndpoint")) {
+        String[] blobTokens = token.split("=");
+        containerUri = blobTokens[0];
+      }
+    }
     // Return null if any are missing
     if (containerUri == null || sasToken == null) {
       return null;
