@@ -227,7 +227,7 @@ class ReadAttachmentsHandlerTest {
   }
 
   @Test
-  void scannerNotCalledForUnscannedAttachmentsIfNoContentProvided() {
+  void scannerCalledForUnscannedAttachmentsIfNoContentProvided() {
     mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
     var attachment = Attachments.create();
     attachment.setContentId("some ID");
@@ -236,7 +236,8 @@ class ReadAttachmentsHandlerTest {
 
     cut.processAfter(readEventContext, List.of(attachment));
 
-    verifyNoInteractions(asyncMalwareScanExecutor);
+    verify(asyncMalwareScanExecutor)
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
   }
 
   @Test
