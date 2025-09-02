@@ -10,29 +10,28 @@ import org.junit.jupiter.api.Test;
 
 class DeletionUserInfoTest {
 
-	private DeletionUserInfo cut;
+  private DeletionUserInfo cut;
 
-	@BeforeEach
-	void setup() {
-		cut = DeletionUserInfo.create();
-	}
+  @BeforeEach
+  void setup() {
+    cut = DeletionUserInfo.create();
+  }
 
-	@Test
-	void dataCanBeRead() {
-		var name = "some name";
+  @Test
+  void dataCanBeRead() {
+    var name = "some name";
 
-		cut.setName(name);
+    cut.setName(name);
 
-		assertThat(cut.getName()).isEqualTo(name);
-	}
+    assertThat(cut.getName()).isEqualTo(name);
+  }
 
-	@Test
-	void dataCanBeReadWithConstant() {
-		var name = "some_name";
+  @Test
+  void dataCanBeReadWithConstant() {
+    var name = "some_name";
 
-		cut.setName(name);
+    cut.setName(name);
 
-		assertThat(cut).containsEntry(DeletionUserInfo.NAME, name);
-	}
-
+    assertThat(cut).containsEntry(DeletionUserInfo.NAME, name);
+  }
 }

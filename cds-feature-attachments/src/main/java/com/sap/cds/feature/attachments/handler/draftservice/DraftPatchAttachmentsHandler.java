@@ -5,12 +5,6 @@ package com.sap.cds.feature.attachments.handler.draftservice;
 
 import static java.util.Objects.requireNonNull;
 
-import java.io.InputStream;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
@@ -29,41 +23,48 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
+import java.io.InputStream;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * The class {@link DraftPatchAttachmentsHandler} is an event handler that is called before a draft patch event is
- * executed. The handler checks the attachments of the draft entity and calls the event factory and corresponding
- * events.
+ * The class {@link DraftPatchAttachmentsHandler} is an event handler that is called before a draft
+ * patch event is executed. The handler checks the attachments of the draft entity and calls the
+ * event factory and corresponding events.
  */
 @ServiceName(value = "*", type = DraftService.class)
 public class DraftPatchAttachmentsHandler implements EventHandler {
 
-	private static final Logger logger = LoggerFactory.getLogger(DraftPatchAttachmentsHandler.class);
+  private static final Logger logger = LoggerFactory.getLogger(DraftPatchAttachmentsHandler.class);
 
-	private final PersistenceService persistence;
-	private final ModifyAttachmentEventFactory eventFactory;
+  private final PersistenceService persistence;
+  private final ModifyAttachmentEventFactory eventFactory;
 
-	public DraftPatchAttachmentsHandler(PersistenceService persistence, ModifyAttachmentEventFactory eventFactory) {
-		this.persistence = requireNonNull(persistence, "persistence must not be null");
-		this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
-	}
+  public DraftPatchAttachmentsHandler(
+      PersistenceService persistence, ModifyAttachmentEventFactory eventFactory) {
+    this.persistence = requireNonNull(persistence, "persistence must not be null");
+    this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
+  }
 
-	@Before
-	@HandlerOrder(HandlerOrder.LATE)
-	void processBeforeDraftPatch(DraftPatchEventContext context, List<? extends CdsData> data) {
-		logger.debug("Processing before {} event for entity {}", context.getEvent(), context.getTarget());
+  @Before
+  @HandlerOrder(HandlerOrder.LATE)
+  void processBeforeDraftPatch(DraftPatchEventContext context, List<? extends CdsData> data) {
+    logger.debug(
+        "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
 
-		Converter converter = (path, element, value) -> {
-			CdsEntity draftEntity = DraftUtils.getDraftEntity(path.target().entity());
-			CqnSelect select = Select.from(draftEntity).matching(path.target().keys());
-			Result result = persistence.run(select);
+    Converter converter =
+        (path, element, value) -> {
+          CdsEntity draftEntity = DraftUtils.getDraftEntity(path.target().entity());
+          CqnSelect select = Select.from(draftEntity).matching(path.target().keys());
+          Result result = persistence.run(select);
 
-			return ModifyApplicationHandlerHelper.handleAttachmentForEntity(result.listOf(Attachments.class),
-					eventFactory, context, path, (InputStream) value);
-		};
+          return ModifyApplicationHandlerHelper.handleAttachmentForEntity(
+              result.listOf(Attachments.class), eventFactory, context, path, (InputStream) value);
+        };
 
-		CdsDataProcessor.create().addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter).process(data,
-				context.getTarget());
-	}
-
+    CdsDataProcessor.create()
+        .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
+        .process(data, context.getTarget());
+  }
 }

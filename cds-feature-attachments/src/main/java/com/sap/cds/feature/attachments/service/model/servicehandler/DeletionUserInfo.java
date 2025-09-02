@@ -7,18 +7,18 @@ import com.sap.cds.CdsData;
 import com.sap.cds.Struct;
 
 /**
- * The {@link DeletionUserInfo} is used to store the user information of the user which triggers the deletion of an
- * attachment.
+ * The {@link DeletionUserInfo} is used to store the user information of the user which triggers the
+ * deletion of an attachment.
  */
 public interface DeletionUserInfo extends CdsData {
 
-	String NAME = "name";
+  String NAME = "name";
 
-	static DeletionUserInfo create() {
-		return Struct.create(DeletionUserInfo.class);
-	}
+  static DeletionUserInfo create() {
+    return Struct.create(DeletionUserInfo.class);
+  }
 
-	String getName();
+  String getName();
 
-	void setName(String id);
+  void setName(String id);
 }

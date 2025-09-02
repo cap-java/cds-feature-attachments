@@ -9,17 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
+import ch.qos.logback.classic.Level;
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_;
@@ -33,189 +23,201 @@ import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.persistence.PersistenceService;
-
-import ch.qos.logback.classic.Level;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class AttachmentsReaderTest {
 
-	private AttachmentsReader cut;
-	private AssociationCascader cascader;
-	private PersistenceService persistenceService;
-	private CdsEntity entity;
-	private CdsModel model;
-	private ArgumentCaptor<CqnSelect> selectArgumentCaptor;
-	private Result result;
-	private LogObserver observer;
+  private AttachmentsReader cut;
+  private AssociationCascader cascader;
+  private PersistenceService persistenceService;
+  private CdsEntity entity;
+  private CdsModel model;
+  private ArgumentCaptor<CqnSelect> selectArgumentCaptor;
+  private Result result;
+  private LogObserver observer;
 
-	@BeforeEach
-	void setup() {
-		cascader = mock(AssociationCascader.class);
-		persistenceService = mock(PersistenceService.class);
+  @BeforeEach
+  void setup() {
+    cascader = mock(AssociationCascader.class);
+    persistenceService = mock(PersistenceService.class);
 
-		cut = new AttachmentsReader(cascader, persistenceService);
+    cut = new AttachmentsReader(cascader, persistenceService);
 
-		entity = mock(CdsEntity.class);
-		model = mock(CdsModel.class);
-		selectArgumentCaptor = ArgumentCaptor.forClass(CqnSelect.class);
-		result = mock(Result.class);
-		when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
-		observer = LogObserver.create(cut.getClass().getName());
-	}
+    entity = mock(CdsEntity.class);
+    model = mock(CdsModel.class);
+    selectArgumentCaptor = ArgumentCaptor.forClass(CqnSelect.class);
+    result = mock(Result.class);
+    when(persistenceService.run(any(CqnSelect.class))).thenReturn(result);
+    observer = LogObserver.create(cut.getClass().getName());
+  }
 
-	@AfterEach
-	void teardown() {
-		observer.stop();
-	}
+  @AfterEach
+  void teardown() {
+    observer.stop();
+  }
 
-	@Test
-	void correctSelectAndResultValue() {
-		mockPathListAndEntity();
-		var keys = buildDefaultKeyMap();
-		var entityWithKeys = CQL.entity(RootTable_.CDS_NAME).matching(keys);
-		CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
-		List<Attachments> data = List.of(Attachments.create());
-		when(result.listOf(Attachments.class)).thenReturn(data);
+  @Test
+  void correctSelectAndResultValue() {
+    mockPathListAndEntity();
+    var keys = buildDefaultKeyMap();
+    var entityWithKeys = CQL.entity(RootTable_.CDS_NAME).matching(keys);
+    CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
+    List<Attachments> data = List.of(Attachments.create());
+    when(result.listOf(Attachments.class)).thenReturn(data);
 
-		var resultData = cut.readAttachments(model, entity, deleteFromEntity);
+    var resultData = cut.readAttachments(model, entity, deleteFromEntity);
 
-		verify(persistenceService).run(selectArgumentCaptor.capture());
-		var usedSelect = selectArgumentCaptor.getValue();
-		assertThat(usedSelect.getLock()).isEmpty();
-		assertThat(usedSelect).hasToString(
-				getExpectedSelectStatementWithWhereAndFilter((String) keys.get("ID")));
-		assertThat(resultData).isEqualTo(data);
-	}
+    verify(persistenceService).run(selectArgumentCaptor.capture());
+    var usedSelect = selectArgumentCaptor.getValue();
+    assertThat(usedSelect.getLock()).isEmpty();
+    assertThat(usedSelect)
+        .hasToString(getExpectedSelectStatementWithWhereAndFilter((String) keys.get("ID")));
+    assertThat(resultData).isEqualTo(data);
+  }
 
-	@Test
-	void selectCorrectWithoutWhere() {
-		mockPathListAndEntity();
-		var keys = buildDefaultKeyMap();
+  @Test
+  void selectCorrectWithoutWhere() {
+    mockPathListAndEntity();
+    var keys = buildDefaultKeyMap();
 
-		var entityWithKeys = CQL.entity(RootTable_.CDS_NAME).matching(keys);
-		CqnDelete deleteFromEntityWithoutWhere = Delete.from(entityWithKeys);
-		List<Attachments> data = List.of(Attachments.create());
-		when(result.listOf(Attachments.class)).thenReturn(data);
+    var entityWithKeys = CQL.entity(RootTable_.CDS_NAME).matching(keys);
+    CqnDelete deleteFromEntityWithoutWhere = Delete.from(entityWithKeys);
+    List<Attachments> data = List.of(Attachments.create());
+    when(result.listOf(Attachments.class)).thenReturn(data);
 
-		var resultData = cut.readAttachments(model, entity, deleteFromEntityWithoutWhere);
+    var resultData = cut.readAttachments(model, entity, deleteFromEntityWithoutWhere);
 
-		verify(persistenceService).run(selectArgumentCaptor.capture());
-		assertThat(selectArgumentCaptor.getValue()).hasToString(
-				getExpectedSelectStatementWithFilter((String) keys.get("ID")));
-		assertThat(resultData).isEqualTo(data);
-	}
+    verify(persistenceService).run(selectArgumentCaptor.capture());
+    assertThat(selectArgumentCaptor.getValue())
+        .hasToString(getExpectedSelectStatementWithFilter((String) keys.get("ID")));
+    assertThat(resultData).isEqualTo(data);
+  }
 
-	@Test
-	void selectCorrectWithoutFilter() {
-		mockPathListAndEntity();
-		CqnDelete deleteFromEntityWithoutFilter = Delete.from(RootTable_.CDS_NAME).byId("test");
-		List<Attachments> data = List.of(Attachments.create());
-		when(result.listOf(Attachments.class)).thenReturn(data);
+  @Test
+  void selectCorrectWithoutFilter() {
+    mockPathListAndEntity();
+    CqnDelete deleteFromEntityWithoutFilter = Delete.from(RootTable_.CDS_NAME).byId("test");
+    List<Attachments> data = List.of(Attachments.create());
+    when(result.listOf(Attachments.class)).thenReturn(data);
 
-		var resultData = cut.readAttachments(model, entity, deleteFromEntityWithoutFilter);
+    var resultData = cut.readAttachments(model, entity, deleteFromEntityWithoutFilter);
 
-		verify(persistenceService).run(selectArgumentCaptor.capture());
-		assertThat(selectArgumentCaptor.getValue()).hasToString(getExpectedSelectStatementWithWhere());
-		assertThat(resultData).isEqualTo(data);
-	}
+    verify(persistenceService).run(selectArgumentCaptor.capture());
+    assertThat(selectArgumentCaptor.getValue()).hasToString(getExpectedSelectStatementWithWhere());
+    assertThat(resultData).isEqualTo(data);
+  }
 
-	@Test
-	void selectCorrectWithoutWhereAndFilter() {
-		mockPathListAndEntity();
-		CqnDelete deleteFromEntityWithoutWhereAndFilter = Delete.from(RootTable_.CDS_NAME);
-		List<Attachments> data = List.of(Attachments.create());
-		when(result.listOf(Attachments.class)).thenReturn(data);
+  @Test
+  void selectCorrectWithoutWhereAndFilter() {
+    mockPathListAndEntity();
+    CqnDelete deleteFromEntityWithoutWhereAndFilter = Delete.from(RootTable_.CDS_NAME);
+    List<Attachments> data = List.of(Attachments.create());
+    when(result.listOf(Attachments.class)).thenReturn(data);
 
-		var resultData = cut.readAttachments(model, entity, deleteFromEntityWithoutWhereAndFilter);
+    var resultData = cut.readAttachments(model, entity, deleteFromEntityWithoutWhereAndFilter);
 
-		verify(persistenceService).run(selectArgumentCaptor.capture());
-		assertThat(selectArgumentCaptor.getValue()).hasToString(getExpectedSelectStatement());
-		assertThat(resultData).isEqualTo(data);
-	}
+    verify(persistenceService).run(selectArgumentCaptor.capture());
+    assertThat(selectArgumentCaptor.getValue()).hasToString(getExpectedSelectStatement());
+    assertThat(resultData).isEqualTo(data);
+  }
 
-	@Test
-	void selectCorrectWithWhereAndFilterForNonRootTable() {
-		mockPathListAndEntity(Items_.CDS_NAME);
-		var keys = buildDefaultKeyMap();
-		var entityWithKeys = CQL.entity(Items_.CDS_NAME).matching(keys);
-		CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
-		List<Attachments> data = List.of(Attachments.create());
-		when(result.listOf(Attachments.class)).thenReturn(data);
+  @Test
+  void selectCorrectWithWhereAndFilterForNonRootTable() {
+    mockPathListAndEntity(Items_.CDS_NAME);
+    var keys = buildDefaultKeyMap();
+    var entityWithKeys = CQL.entity(Items_.CDS_NAME).matching(keys);
+    CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
+    List<Attachments> data = List.of(Attachments.create());
+    when(result.listOf(Attachments.class)).thenReturn(data);
 
-		var resultData = cut.readAttachments(model, entity, deleteFromEntity);
+    var resultData = cut.readAttachments(model, entity, deleteFromEntity);
 
-		verify(persistenceService).run(selectArgumentCaptor.capture());
-		assertThat(selectArgumentCaptor.getValue()).hasToString(
-				getExpectedSelectStatementForItemsWithWhereAndFilter((String) keys.get("ID")));
-		assertThat(resultData).isEqualTo(data);
-	}
+    verify(persistenceService).run(selectArgumentCaptor.capture());
+    assertThat(selectArgumentCaptor.getValue())
+        .hasToString(getExpectedSelectStatementForItemsWithWhereAndFilter((String) keys.get("ID")));
+    assertThat(resultData).isEqualTo(data);
+  }
 
-	@Test
-	void selectCorrectWithWhereAndFilterForAttachments() {
-		mockPathListAndEntity(Attachment_.CDS_NAME);
-		var keys = buildDefaultKeyMap();
-		var entityWithKeys = CQL.entity(Attachment_.CDS_NAME).matching(keys);
-		CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
-		List<Attachments> data = List.of(Attachments.create());
-		when(result.listOf(Attachments.class)).thenReturn(data);
+  @Test
+  void selectCorrectWithWhereAndFilterForAttachments() {
+    mockPathListAndEntity(Attachment_.CDS_NAME);
+    var keys = buildDefaultKeyMap();
+    var entityWithKeys = CQL.entity(Attachment_.CDS_NAME).matching(keys);
+    CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
+    List<Attachments> data = List.of(Attachments.create());
+    when(result.listOf(Attachments.class)).thenReturn(data);
 
-		var resultData = cut.readAttachments(model, entity, deleteFromEntity);
+    var resultData = cut.readAttachments(model, entity, deleteFromEntity);
 
-		verify(persistenceService).run(selectArgumentCaptor.capture());
-		assertThat(selectArgumentCaptor.getValue()).hasToString(
-				getExpectedSelectStatementForAttachmentsWithWhereAndFilter((String) keys.get("ID")));
-		assertThat(resultData).isEqualTo(data);
-	}
+    verify(persistenceService).run(selectArgumentCaptor.capture());
+    assertThat(selectArgumentCaptor.getValue())
+        .hasToString(
+            getExpectedSelectStatementForAttachmentsWithWhereAndFilter((String) keys.get("ID")));
+    assertThat(resultData).isEqualTo(data);
+  }
 
-	@Test
-	void dataAreLogged() {
-		mockPathListAndEntity(Attachment_.CDS_NAME);
-		var keys = buildDefaultKeyMap();
-		var entityWithKeys = CQL.entity(Attachment_.CDS_NAME).matching(keys);
-		CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
-		var dataEntry = Attachments.create();
-		dataEntry.put("ID", UUID.randomUUID().toString());
-		dataEntry.put("IsActiveEntity", true);
-		var data = List.of(dataEntry);
-		when(result.listOf(Attachments.class)).thenReturn(data);
-		observer.setLevel(Level.TRACE);
-		observer.start();
+  @Test
+  void dataAreLogged() {
+    mockPathListAndEntity(Attachment_.CDS_NAME);
+    var keys = buildDefaultKeyMap();
+    var entityWithKeys = CQL.entity(Attachment_.CDS_NAME).matching(keys);
+    CqnDelete deleteFromEntity = Delete.from(entityWithKeys).byId("test");
+    var dataEntry = Attachments.create();
+    dataEntry.put("ID", UUID.randomUUID().toString());
+    dataEntry.put("IsActiveEntity", true);
+    var data = List.of(dataEntry);
+    when(result.listOf(Attachments.class)).thenReturn(data);
+    observer.setLevel(Level.TRACE);
+    observer.start();
 
-		cut.readAttachments(model, entity, deleteFromEntity);
+    cut.readAttachments(model, entity, deleteFromEntity);
 
-		observer.stop();
-		var traceEvents = observer.getLogEvents().stream().filter(event -> event.getLevel().equals(Level.TRACE)).toList();
-		assertThat(traceEvents).hasSize(1);
-		assertThat(traceEvents.get(0).getFormattedMessage()).contains("IsActiveEntity=true").contains(
-				"ID=" + dataEntry.get("ID"));
-	}
+    observer.stop();
+    var traceEvents =
+        observer.getLogEvents().stream()
+            .filter(event -> event.getLevel().equals(Level.TRACE))
+            .toList();
+    assertThat(traceEvents).hasSize(1);
+    assertThat(traceEvents.get(0).getFormattedMessage())
+        .contains("IsActiveEntity=true")
+        .contains("ID=" + dataEntry.get("ID"));
+  }
 
-	private HashMap<String, Object> buildDefaultKeyMap() {
-		var keys = new HashMap<String, Object>();
-		keys.put("IsActiveEntity", true);
-		keys.put("ID", UUID.randomUUID().toString());
-		return keys;
-	}
+  private HashMap<String, Object> buildDefaultKeyMap() {
+    var keys = new HashMap<String, Object>();
+    keys.put("IsActiveEntity", true);
+    keys.put("ID", UUID.randomUUID().toString());
+    return keys;
+  }
 
-	private void mockPathListAndEntity() {
-		mockPathListAndEntity(RootTable_.CDS_NAME);
-	}
+  private void mockPathListAndEntity() {
+    mockPathListAndEntity(RootTable_.CDS_NAME);
+  }
 
-	private void mockPathListAndEntity(String entityName) {
-		var pathList = new ArrayList<LinkedList<AssociationIdentifier>>();
-		var rootPath = new LinkedList<AssociationIdentifier>();
-		rootPath.add(new AssociationIdentifier("", RootTable_.CDS_NAME));
-		rootPath.add(new AssociationIdentifier("items", Items_.CDS_NAME));
-		rootPath.add(new AssociationIdentifier("attachments", Attachment_.CDS_NAME));
-		pathList.add(rootPath);
-		var nodeTree = new NodeTree(new AssociationIdentifier("", entityName));
-		pathList.forEach(nodeTree::addPath);
-		when(cascader.findEntityPath(model, entity)).thenReturn(nodeTree);
-		when(entity.getQualifiedName()).thenReturn(entityName);
-	}
+  private void mockPathListAndEntity(String entityName) {
+    var pathList = new ArrayList<LinkedList<AssociationIdentifier>>();
+    var rootPath = new LinkedList<AssociationIdentifier>();
+    rootPath.add(new AssociationIdentifier("", RootTable_.CDS_NAME));
+    rootPath.add(new AssociationIdentifier("items", Items_.CDS_NAME));
+    rootPath.add(new AssociationIdentifier("attachments", Attachment_.CDS_NAME));
+    pathList.add(rootPath);
+    var nodeTree = new NodeTree(new AssociationIdentifier("", entityName));
+    pathList.forEach(nodeTree::addPath);
+    when(cascader.findEntityPath(model, entity)).thenReturn(nodeTree);
+    when(entity.getQualifiedName()).thenReturn(entityName);
+  }
 
-	private String getExpectedSelectStatementWithWhereAndFilter(String id) {
-		var select = """
+  private String getExpectedSelectStatementWithWhereAndFilter(String id) {
+    var select =
+        """
 				{"SELECT":{"from":{"ref":[{"id":"unit.test.TestService.RootTable",
 				           "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
 				             "and",{"ref":["ID"]},"=",{"val":"%s"}]}]},
@@ -223,69 +225,76 @@ class AttachmentsReaderTest {
 				            "expand":[{"ref":["attachments"],
 				            "expand":["*"]}]}],
 				           "where":[{"ref":["$key"]},"=",{"val":"test"}]}}
-				""".formatted(id);
-		return removeSpaceInString(select);
-	}
+				"""
+            .formatted(id);
+    return removeSpaceInString(select);
+  }
 
-	private String getExpectedSelectStatementForItemsWithWhereAndFilter(String id) {
-		var select = """
+  private String getExpectedSelectStatementForItemsWithWhereAndFilter(String id) {
+    var select =
+        """
 				{"SELECT":{"from":{"ref":[{"id":"unit.test.TestService.Items",
 				           "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
 				             "and",{"ref":["ID"]},"=",{"val":"%s"}]}]},
 				           "columns":[{"ref":["attachments"],
 				           "expand":["*"]}],
 				           "where":[{"ref":["$key"]},"=",{"val":"test"}]}}
-				""".formatted(id);
-		return removeSpaceInString(select);
-	}
+				"""
+            .formatted(id);
+    return removeSpaceInString(select);
+  }
 
-	private String getExpectedSelectStatementForAttachmentsWithWhereAndFilter(String id) {
-		var select = """
+  private String getExpectedSelectStatementForAttachmentsWithWhereAndFilter(String id) {
+    var select =
+        """
 				{"SELECT":{"from":{"ref":[{"id":"unit.test.Attachment",
 				           "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
 				             "and",{"ref":["ID"]},"=",{"val":"%s"}]}]},
 				           "columns":["*"],
 				           "where":[{"ref":["$key"]},"=",{"val":"test"}]}}
-				""".formatted(id);
-		return removeSpaceInString(select);
-	}
+				"""
+            .formatted(id);
+    return removeSpaceInString(select);
+  }
 
-	private String getExpectedSelectStatementWithFilter(String id) {
-		var select = """
+  private String getExpectedSelectStatementWithFilter(String id) {
+    var select =
+        """
 				{"SELECT":{"from":{"ref":[{"id":"unit.test.TestService.RootTable",
 				           "where":[{"ref":["IsActiveEntity"]},"=",{"val":true},
 				             "and",{"ref":["ID"]},"=",{"val":"%s"}]}]},
 				           "columns":[{"ref":["items"],
 				           "expand":[{"ref":["attachments"],
 				           "expand":["*"]}]}]}}
-				""".formatted(id);
-		return removeSpaceInString(select);
-	}
+				"""
+            .formatted(id);
+    return removeSpaceInString(select);
+  }
 
-	private String getExpectedSelectStatementWithWhere() {
-		var select = """
+  private String getExpectedSelectStatementWithWhere() {
+    var select =
+        """
 				{"SELECT":{"from":{"ref":["unit.test.TestService.RootTable"]},
 				          "columns":[{"ref":["items"],
 				          "expand":[{"ref":["attachments"],
 				          "expand":["*"]}]}],
 				          "where":[{"ref":["$key"]},"=",{"val":"test"}]}}
 				""";
-		return removeSpaceInString(select);
-	}
+    return removeSpaceInString(select);
+  }
 
-	private String getExpectedSelectStatement() {
-		var select = """
+  private String getExpectedSelectStatement() {
+    var select =
+        """
 				{"SELECT":{"from":{"ref":["unit.test.TestService.RootTable"]},
 				          "columns":[{"ref":["items"],
 				          "expand":[{"ref":["attachments"],
 				          "expand":["*"]}]}]}}
 				""";
-		return removeSpaceInString(select);
-	}
+    return removeSpaceInString(select);
+  }
 
-	private String removeSpaceInString(String input) {
-		return input.replace("\n", "").replace("\t", "").replace(" ", "");
-	}
-
-
+  private String removeSpaceInString(String input) {
+    return input.replace("\n", "").replace("\t", "").replace(" ", "");
+  }
 }
