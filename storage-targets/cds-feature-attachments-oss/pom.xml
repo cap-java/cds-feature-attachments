@@ -54,14 +54,6 @@
       <version>2.56.0</version>
     </dependency>
 
-    <dependency>
-      <groupId>com.sap.cloud.sdk</groupId>
-      <artifactId>sdk-bom</artifactId>
-      <version>5.22.0</version>
-      <type>pom</type>
-      <scope>import</scope>
-    </dependency>
-
     <!-- TESTS -->
     <dependency>
       <groupId>com.sap.cds</groupId>
@@ -73,11 +65,6 @@
       <artifactId>logback-classic</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.awaitility</groupId>
-      <artifactId>awaitility</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -85,11 +72,6 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>${excluded.generation.package}**/*</exclude>
-          </excludes>
-        </configuration>
         <executions>
           <execution>
             <id>jacoco-initialize</id>
@@ -151,19 +133,6 @@
       </plugin>
 
       <plugin>
-        <groupId>com.sap.cds</groupId>
-        <artifactId>cds-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>cds.resolve</id>
-            <goals>
-              <goal>resolve</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
         <configuration>
@@ -182,9 +151,6 @@
             <goals>
               <goal>jar</goal>
             </goals>
-            <configuration>
-              <excludePackageNames>${generation-package}.*</excludePackageNames>
-            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -199,18 +165,16 @@
           </execution>
         </executions>
       </plugin>
-
     </plugins>
   </build>
+
   <profiles>
     <profile>
       <id>integration-tests-oss</id>
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>3.5.3</version>
             <configuration>
               <includes>
                 <include>**/*IT.java</include>
