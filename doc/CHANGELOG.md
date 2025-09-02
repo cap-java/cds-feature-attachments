@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.1.1 - tbd
+## Version 1.2.1 - tbd
 
 ### Added
 
@@ -15,6 +15,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 ### Fixed
+
+## Version 1.2.0 - 2025-08-26
+
+### Added
+- Support for Object Stores (AWS, Azure and Google) (#481)
+
+### Changed
+- Rename folder 'examples' to 'storage-targets' and add section about this in the README.md (#519)
+- Use spotless plugin to ensure correct license header (#515)
+- Several version bumps
 
 ## Version 1.1.0 - 2025-07-24
 
