@@ -59,8 +59,7 @@ public class GoogleClientTest {
           IllegalArgumentException,
           IllegalAccessException,
           InterruptedException,
-          ExecutionException,
-          IOException {
+          ExecutionException {
     GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
 
     String fileName = "file.txt";
@@ -156,12 +155,7 @@ public class GoogleClientTest {
 
   @Test
   void testDeleteContentDoesNotWork()
-      throws NoSuchFieldException,
-          IllegalArgumentException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException,
-          IOException {
+      throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
     GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
 
     String fileName = "file.txt";
@@ -195,12 +189,7 @@ public class GoogleClientTest {
 
   @Test
   void testUploadContentThrowsOnIOException()
-      throws NoSuchFieldException,
-          IllegalArgumentException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException,
-          IOException {
+      throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
     GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
 
     // Mock storage and writer
@@ -237,9 +226,7 @@ public class GoogleClientTest {
   void testDeleteContentThrowsOnRuntimeException()
       throws NoSuchFieldException,
           IllegalArgumentException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
+          IllegalAccessException {
     GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
 
     // Mock storage and blob to throw RuntimeException on delete
@@ -264,11 +251,7 @@ public class GoogleClientTest {
 
   @Test
   void testReadContentThrowsOnRuntimeException()
-      throws NoSuchFieldException,
-          IllegalArgumentException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
+      throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
     GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
 
     // Mock storage and blob to throw RuntimeException on reader
