@@ -5,6 +5,7 @@ package com.sap.cds.feature.attachments.oss.handler;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.oss.client.AWSClient;
 import com.sap.cds.feature.attachments.oss.client.AzureClient;
 import com.sap.cds.feature.attachments.oss.client.GoogleClient;
@@ -124,6 +125,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     try {
       osClient.uploadContent(data.getContent(), contentId, data.getMimeType()).get();
       logger.info("Uploaded file {}", fileName);
+      context.getData().setStatus(StatusCode.SCANNING);
       context.setIsInternalStored(false);
       context.setContentId(contentId);
       context.setCompleted();

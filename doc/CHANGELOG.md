@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- Fixed an issue where the Malware Scanning Service is not triggered after uploading an Attachment, if the target storage is other than the default DB storage. (#557)
+
 ## Version 1.2.0 - 2025-08-26
 
 ### Added
