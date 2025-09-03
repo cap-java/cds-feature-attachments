@@ -103,7 +103,7 @@ class AttachmentsServiceImplHandlerTest {
   @Test
   void createMethodHasCorrectAnnotation() throws NoSuchMethodException {
     var createMethod =
-        cut.getClass().getMethod("createAttachment", AttachmentCreateEventContext.class);
+        cut.getClass().getDeclaredMethod("createAttachment", AttachmentCreateEventContext.class);
     var onAnnotation = createMethod.getAnnotation(On.class);
     var handlerOrderAnnotation = createMethod.getAnnotation(HandlerOrder.class);
 
@@ -114,7 +114,7 @@ class AttachmentsServiceImplHandlerTest {
   @Test
   void restoreAttachmentMethodHasCorrectAnnotation() throws NoSuchMethodException {
     var updateMethod =
-        cut.getClass().getMethod("restoreAttachment", AttachmentRestoreEventContext.class);
+        cut.getClass().getDeclaredMethod("restoreAttachment", AttachmentRestoreEventContext.class);
     var onAnnotation = updateMethod.getAnnotation(On.class);
     var handlerOrderAnnotation = updateMethod.getAnnotation(HandlerOrder.class);
 
@@ -126,7 +126,8 @@ class AttachmentsServiceImplHandlerTest {
   void deleteMethodHasCorrectAnnotation() throws NoSuchMethodException {
     var deleteMethod =
         cut.getClass()
-            .getMethod("markAttachmentAsDeleted", AttachmentMarkAsDeletedEventContext.class);
+            .getDeclaredMethod(
+                "markAttachmentAsDeleted", AttachmentMarkAsDeletedEventContext.class);
     var onAnnotation = deleteMethod.getAnnotation(On.class);
     var handlerOrderAnnotation = deleteMethod.getAnnotation(HandlerOrder.class);
 
@@ -136,7 +137,8 @@ class AttachmentsServiceImplHandlerTest {
 
   @Test
   void readMethodHasCorrectAnnotation() throws NoSuchMethodException {
-    var readMethod = cut.getClass().getMethod("readAttachment", AttachmentReadEventContext.class);
+    var readMethod =
+        cut.getClass().getDeclaredMethod("readAttachment", AttachmentReadEventContext.class);
     var onAnnotation = readMethod.getAnnotation(On.class);
     var handlerOrderAnnotation = readMethod.getAnnotation(HandlerOrder.class);
 
@@ -156,6 +158,7 @@ class AttachmentsServiceImplHandlerTest {
     ChangeSetContextImpl.open(false);
 
     cut.createAttachment(createContext);
+    cut.afterCreateAttachment(createContext);
 
     verify(malwareScanProvider).getChangeSetListener(entity, "contentId");
   }
