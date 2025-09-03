@@ -6,18 +6,16 @@ package com.sap.cds.feature.attachments.oss.client;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
+import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.azure.AzuriteContainer;
 import org.testcontainers.utility.DockerImageName;
-
-import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
-import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 
 class AzureClientIT {
 
@@ -55,7 +53,7 @@ class AzureClientIT {
     for (String token : tokens) {
       if (token.startsWith("BlobEndpoint")) {
         String[] blobTokens = token.split("=");
-        containerUri = blobTokens[0];
+        containerUri = blobTokens[1];
       }
     }
     // Return null if any are missing
