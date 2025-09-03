@@ -95,11 +95,10 @@ public class ReadAttachmentsHandler implements EventHandler {
           (path, element, value) -> {
             Attachments attachment = Attachments.of(path.target().values());
             InputStream content = attachment.getContent();
-            boolean contentExists = nonNull(content);
-            if (nonNull(attachment.getContentId()) || contentExists) {
-              verifyStatus(path, attachment, contentExists);
+            if (nonNull(attachment.getContentId())) {
+              verifyStatus(path, attachment);
               Supplier<InputStream> supplier =
-                  contentExists
+                  nonNull(content)
                       ? () -> content
                       : () -> attachmentService.readAttachment(attachment.getContentId());
               return new LazyProxyInputStream(supplier, statusValidator, attachment.getStatus());
@@ -147,19 +146,20 @@ public class ReadAttachmentsHandler implements EventHandler {
     return associationNames;
   }
 
-  private void verifyStatus(Path path, Attachments attachment, boolean contentExists) {
+  private void verifyStatus(Path path, Attachments attachment) {
     if (areKeysEmpty(path.target().keys())) {
+      String currentStatus = attachment.getStatus();
       logger.debug(
           "In verify status for content id {} and status {}",
           attachment.getContentId(),
-          attachment.getStatus());
-      if ((StatusCode.UNSCANNED.equals(attachment.getStatus())
-              || StatusCode.SCANNING.equals(attachment.getStatus()))
-          && contentExists) {
+          currentStatus);
+      if (StatusCode.UNSCANNED.equals(currentStatus)
+          || StatusCode.SCANNING.equals(currentStatus)
+          || currentStatus == null) {
         logger.debug(
             "Scanning content with ID {} for malware, has current status {}",
             attachment.getContentId(),
-            attachment.getStatus());
+            currentStatus);
         scanExecutor.scanAsync(path.target().entity(), attachment.getContentId());
       }
       statusValidator.verifyStatus(attachment.getStatus());
