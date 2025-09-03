@@ -56,7 +56,7 @@ public class FSAttachmentsServiceHandler implements EventHandler {
     String contentId = (String) context.getAttachmentIds().get(Attachments.ID);
 
     MediaData data = context.getData();
-    data.setStatus(StatusCode.CLEAN);
+    data.setStatus(StatusCode.SCANNING);
 
     try (InputStream input = data.getContent()) {
       Path contentPath = getContentPath(context, contentId);

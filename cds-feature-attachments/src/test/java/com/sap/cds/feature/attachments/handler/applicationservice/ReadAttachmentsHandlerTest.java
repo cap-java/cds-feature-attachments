@@ -128,9 +128,10 @@ class ReadAttachmentsHandlerTest {
       item4.setId("item id4");
       item4.setAttachments(List.of(attachmentWithStreamAsContent));
       var attachmentWithStreamContentButWithoutContentId = Attachments.create();
-      attachmentWithStreamContentButWithoutContentId.setContent(mock(InputStream.class));
+      var inputMock = mock(InputStream.class);
+      attachmentWithStreamContentButWithoutContentId.setContent(inputMock);
       var item5 = Items.create();
-      item5.setId("item id4");
+      item5.setId("item id5");
       item5.setAttachments(List.of(attachmentWithStreamContentButWithoutContentId));
       var root1 = RootTable.create();
       root1.setItemTable(List.of(item2, item1, item4, item5));
@@ -147,8 +148,7 @@ class ReadAttachmentsHandlerTest {
       assertThat(attachmentWithoutContentField.getContent()).isNull();
       assertThat(attachmentWithStreamAsContent.getContent())
           .isInstanceOf(LazyProxyInputStream.class);
-      assertThat(attachmentWithStreamContentButWithoutContentId.getContent())
-          .isInstanceOf(LazyProxyInputStream.class);
+      assertThat(attachmentWithStreamContentButWithoutContentId.getContent()).isEqualTo(inputMock);
       verifyNoInteractions(attachmentService);
     }
   }
@@ -227,7 +227,7 @@ class ReadAttachmentsHandlerTest {
   }
 
   @Test
-  void scannerNotCalledForUnscannedAttachmentsIfNoContentProvided() {
+  void scannerCalledForUnscannedAttachmentsIfNoContentProvided() {
     mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
     var attachment = Attachments.create();
     attachment.setContentId("some ID");
@@ -236,7 +236,8 @@ class ReadAttachmentsHandlerTest {
 
     cut.processAfter(readEventContext, List.of(attachment));
 
-    verifyNoInteractions(asyncMalwareScanExecutor);
+    verify(asyncMalwareScanExecutor)
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
   }
 
   @Test
