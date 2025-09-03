@@ -38,11 +38,9 @@ public class Registration implements CdsRuntimeConfiguration {
    *     available, or {@link Optional#empty()} if not found
    */
   private static Optional<ServiceBinding> getOSBinding(CdsEnvironment environment) {
-    Optional<ServiceBinding> bindingOpt =
-        environment
-            .getServiceBindings()
-            .filter(b -> b.getServiceName().map(name -> name.equals("objectstore")).orElse(false))
-            .findFirst();
-    return bindingOpt;
+    return environment
+        .getServiceBindings()
+        .filter(b -> b.getServiceName().map(name -> name.equals("objectstore")).orElse(false))
+        .findFirst();
   }
 }
