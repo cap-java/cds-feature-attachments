@@ -20,13 +20,16 @@ public class Registration implements CdsRuntimeConfiguration {
 
   @Override
   public void eventHandlers(CdsRuntimeConfigurer configurer) {
-    Optional<ServiceBinding> binding = getOSBinding(configurer.getCdsRuntime().getEnvironment());
-    ExecutorService executor =
-        Executors
-            .newCachedThreadPool(); // This might be configured by CdsProperties, if needed in the
-    // future.
-    configurer.eventHandler(new OSSAttachmentsServiceHandler(binding, executor));
-    logger.info("Registered OSS Attachments Service Handler.");
+    Optional<ServiceBinding> bindingOpt = getOSBinding(configurer.getCdsRuntime().getEnvironment());
+    if (bindingOpt.isPresent()) {
+      ExecutorService executor =
+          Executors
+              .newCachedThreadPool(); // This might be configured by CdsProperties, if needed in the
+      configurer.eventHandler(new OSSAttachmentsServiceHandler(bindingOpt.get(), executor));
+      logger.info("Registered OSS Attachments Service Handler.");
+    } else {
+      logger.warn("No service binding found, hence the attachment service is not connected!");
+    }
   }
 
   /**

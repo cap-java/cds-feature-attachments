@@ -25,7 +25,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -57,18 +56,9 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
    *       "google" or "gcp".
    * </ul>
    *
-   * @param bindingOpt the optional {@link ServiceBinding} containing credentials for the object
-   *     store service
+   * @param binding the {@link ServiceBinding} containing credentials for the object store service
    */
-  public OSSAttachmentsServiceHandler(
-      Optional<ServiceBinding> bindingOpt, ExecutorService executor) {
-    if (bindingOpt.isEmpty()) {
-      logger.error("No service binding found, hence the attachment service is not connected!");
-      this.osClient = new MockOSClient();
-      return;
-    }
-    ServiceBinding binding = bindingOpt.get();
-
+  public OSSAttachmentsServiceHandler(ServiceBinding binding, ExecutorService executor) {
     final String host = (String) binding.getCredentials().get("host"); // AWS
     final String containerUri = (String) binding.getCredentials().get("container_uri"); // Azure
     final String base64EncodedPrivateKeyData =
