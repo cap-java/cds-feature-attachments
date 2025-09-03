@@ -28,7 +28,8 @@ public class Registration implements CdsRuntimeConfiguration {
       configurer.eventHandler(new OSSAttachmentsServiceHandler(bindingOpt.get(), executor));
       logger.info("Registered OSS Attachments Service Handler.");
     } else {
-      logger.warn("No service binding found, hence the attachment service is not connected!");
+      logger.warn(
+          "No service binding to Object Store Service found, hence the OSS Attachments Service Handler is not connected!");
     }
   }
 
