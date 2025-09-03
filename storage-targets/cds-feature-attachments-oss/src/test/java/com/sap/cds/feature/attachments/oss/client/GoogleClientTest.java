@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Test;
 
-public class GoogleClientTest {
+class GoogleClientTest {
   ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test

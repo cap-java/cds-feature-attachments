@@ -32,7 +32,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
-public class AWSClientTest {
+class AWSClientTest {
   ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
