@@ -224,9 +224,7 @@ class GoogleClientTest {
 
   @Test
   void testDeleteContentThrowsOnRuntimeException()
-      throws NoSuchFieldException,
-          IllegalArgumentException,
-          IllegalAccessException {
+      throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
     GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
 
     // Mock storage and blob to throw RuntimeException on delete
