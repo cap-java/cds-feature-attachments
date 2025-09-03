@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Test;
 
-public class OSSAttachmentsServiceHandlerTest {
+class OSSAttachmentsServiceHandlerTest {
   ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
