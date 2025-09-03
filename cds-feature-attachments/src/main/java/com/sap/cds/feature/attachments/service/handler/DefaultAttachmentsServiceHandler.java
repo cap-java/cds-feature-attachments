@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRe
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 import com.sap.cds.services.changeset.ChangeSetListener;
 import com.sap.cds.services.handler.EventHandler;
+import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -44,24 +45,34 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 
   @On
   @HandlerOrder(DEFAULT_ON)
-  public void createAttachment(AttachmentCreateEventContext context) {
+  void createAttachment(AttachmentCreateEventContext context) {
     logger.debug(
         "Default Attachment Service handler called for creating attachment for entity '{}'",
         context.getAttachmentEntity().getQualifiedName());
     String contentId = (String) context.getAttachmentIds().get(Attachments.ID);
     context.getData().setStatus(StatusCode.SCANNING);
-    ChangeSetListener listener =
-        endTransactionMalwareScanProvider.getChangeSetListener(
-            context.getAttachmentEntity(), contentId);
-    context.getChangeSetContext().register(listener);
     context.setIsInternalStored(true);
     context.setContentId(contentId);
     context.setCompleted();
   }
 
+  /**
+   * After the attachment is created, register a {@link ChangeSetListener} to perform a malware scan
+   * at the end of the transaction.
+   *
+   * @param context the attachment creation event context
+   */
+  @After
+  void afterCreateAttachment(AttachmentCreateEventContext context) {
+    ChangeSetListener listener =
+        endTransactionMalwareScanProvider.getChangeSetListener(
+            context.getAttachmentEntity(), context.getContentId());
+    context.getChangeSetContext().register(listener);
+  }
+
   @On
   @HandlerOrder(DEFAULT_ON)
-  public void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
+  void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
     logger.debug(
         "Default Attachment Service handler called for marking attachment as deleted with document id {}",
         context.getContentId());
@@ -72,7 +83,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 
   @On
   @HandlerOrder(DEFAULT_ON)
-  public void restoreAttachment(AttachmentRestoreEventContext context) {
+  void restoreAttachment(AttachmentRestoreEventContext context) {
     logger.debug(
         "Default Attachment Service handler called for restoring attachment for timestamp {}",
         context.getRestoreTimestamp());
@@ -83,7 +94,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
 
   @On
   @HandlerOrder(DEFAULT_ON)
-  public void readAttachment(AttachmentReadEventContext context) {
+  void readAttachment(AttachmentReadEventContext context) {
     logger.debug(
         "Default Attachment Service handler called for reading attachment with document id {}",
         context.getContentId());
