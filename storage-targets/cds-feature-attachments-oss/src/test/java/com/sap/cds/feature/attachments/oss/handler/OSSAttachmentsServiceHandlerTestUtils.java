@@ -3,9 +3,14 @@
  */
 package com.sap.cds.feature.attachments.oss.handler;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
@@ -18,7 +23,6 @@ import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 public class OSSAttachmentsServiceHandlerTestUtils {
@@ -31,8 +35,7 @@ public class OSSAttachmentsServiceHandlerTestUtils {
     String testFileName = "testFileName-" + System.currentTimeMillis() + ".txt";
     String testFileContent = "test";
 
-    OSSAttachmentsServiceHandler handler =
-        new OSSAttachmentsServiceHandler(Optional.of(binding), executor);
+    OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(binding, executor);
 
     // Create an AttachmentCreateEventContext with mocked data - to upload a test attachment
     MediaData createMediaData = mock(MediaData.class);

@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Test;
 
-public class GoogleClientIT {
+class GoogleClientIT {
   // The tests in this class are intended to run against a real Google Cloud Storage instance.
   // They require a valid ServiceBinding with credentials set up in the environment.
 

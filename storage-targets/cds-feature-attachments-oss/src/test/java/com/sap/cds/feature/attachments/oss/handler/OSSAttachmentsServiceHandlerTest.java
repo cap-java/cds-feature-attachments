@@ -4,8 +4,12 @@
 package com.sap.cds.feature.attachments.oss.handler;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
@@ -18,22 +22,20 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Test;
 
-public class OSSAttachmentsServiceHandlerTest {
+class OSSAttachmentsServiceHandlerTest {
   ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
   void testRestoreAttachmentCallsSetCompleted() {
     ServiceBinding binding = mock(ServiceBinding.class);
 
-    OSSAttachmentsServiceHandler handler =
-        new OSSAttachmentsServiceHandler(Optional.of(binding), executor);
+    OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(binding, executor);
     AttachmentRestoreEventContext context = mock(AttachmentRestoreEventContext.class);
     handler.restoreAttachment(context);
     verify(context).setCompleted();
@@ -178,8 +180,7 @@ public class OSSAttachmentsServiceHandlerTest {
     when(binding.getCredentials()).thenReturn(creds);
 
     // Act: Should not throw, but should use MockOSClient as fallback
-    OSSAttachmentsServiceHandler handler =
-        new OSSAttachmentsServiceHandler(Optional.of(binding), executor);
+    OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(binding, executor);
     // Optionally, check that the handler uses MockOSClient
     try {
       var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
@@ -211,8 +212,7 @@ public class OSSAttachmentsServiceHandlerTest {
     creds.put("base64EncodedPrivateKeyData", base64);
     when(binding.getCredentials()).thenReturn(creds);
 
-    OSSAttachmentsServiceHandler handler =
-        new OSSAttachmentsServiceHandler(Optional.of(binding), executor);
+    OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(binding, executor);
     try {
       var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
       field.setAccessible(true);
