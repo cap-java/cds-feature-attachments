@@ -3,9 +3,13 @@
  */
 package com.sap.cds.feature.attachments.oss.client;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
@@ -14,7 +18,6 @@ import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -32,14 +35,14 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
-public class AWSClientTest {
+class AWSClientTest {
   ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
   void testConstructorWithAwsBindingUsesAwsClient()
       throws NoSuchFieldException, IllegalAccessException {
     OSSAttachmentsServiceHandler handler =
-        new OSSAttachmentsServiceHandler(Optional.of(getDummyBinding()), executor);
+        new OSSAttachmentsServiceHandler(getDummyBinding(), executor);
     OSClient client = OSSAttachmentsServiceHandlerTestUtils.getOsClient(handler);
     assertInstanceOf(AWSClient.class, client);
   }

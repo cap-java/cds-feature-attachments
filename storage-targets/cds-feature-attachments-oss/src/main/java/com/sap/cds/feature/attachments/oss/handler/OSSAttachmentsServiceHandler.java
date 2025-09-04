@@ -23,10 +23,12 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,18 +56,9 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
    *       "google" or "gcp".
    * </ul>
    *
-   * @param bindingOpt the optional {@link ServiceBinding} containing credentials for the object
-   *     store service
+   * @param binding the {@link ServiceBinding} containing credentials for the object store service
    */
-  public OSSAttachmentsServiceHandler(
-      Optional<ServiceBinding> bindingOpt, ExecutorService executor) {
-    if (bindingOpt.isEmpty()) {
-      logger.error("No service binding found, hence the attachment service is not connected!");
-      this.osClient = new MockOSClient();
-      return;
-    }
-    ServiceBinding binding = bindingOpt.get();
-
+  public OSSAttachmentsServiceHandler(ServiceBinding binding, ExecutorService executor) {
     final String host = (String) binding.getCredentials().get("host"); // AWS
     final String containerUri = (String) binding.getCredentials().get("container_uri"); // Azure
     final String base64EncodedPrivateKeyData =
@@ -75,19 +68,17 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     // We do *not* throw exceptions here, as we want to provide a fallback to the MockOSClient if no
     // valid service binding is found.
     // Then the rest of the application still works, but without actual attachment storage.
-    if (host != null
-        && java.util.stream.Stream.of("aws", "s3", "amazon").anyMatch(s -> host.contains(s))) {
+    if (host != null && Stream.of("aws", "s3", "amazon").anyMatch(host::contains)) {
       this.osClient = new AWSClient(binding, executor);
     } else if (containerUri != null
-        && java.util.stream.Stream.of("azure", "windows").anyMatch(s -> containerUri.contains(s))) {
+        && Stream.of("azure", "windows").anyMatch(containerUri::contains)) {
       this.osClient = new AzureClient(binding, executor);
     } else if (base64EncodedPrivateKeyData != null) {
       String decoded = "";
       try {
         decoded =
             new String(
-                java.util.Base64.getDecoder().decode(base64EncodedPrivateKeyData),
-                java.nio.charset.StandardCharsets.UTF_8);
+                Base64.getDecoder().decode(base64EncodedPrivateKeyData), StandardCharsets.UTF_8);
       } catch (IllegalArgumentException e) {
         logger.error(
             "No valid base64EncodedPrivateKeyData found in Google service binding {}, hence the attachment service is not connected!",
@@ -95,7 +86,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
       }
       // Redeclaring is needed here to make the variable effectively final for the lambda expression
       final String dec = decoded;
-      if (java.util.stream.Stream.of("google", "gcp").anyMatch(s -> dec.contains(s))) {
+      if (Stream.of("google", "gcp").anyMatch(dec::contains)) {
         this.osClient = new GoogleClient(binding, executor);
       } else {
         logger.error(

@@ -20,13 +20,16 @@ public class Registration implements CdsRuntimeConfiguration {
 
   @Override
   public void eventHandlers(CdsRuntimeConfigurer configurer) {
-    Optional<ServiceBinding> binding = getOSBinding(configurer.getCdsRuntime().getEnvironment());
-    ExecutorService executor =
-        Executors
-            .newCachedThreadPool(); // This might be configured by CdsProperties, if needed in the
-    // future.
-    configurer.eventHandler(new OSSAttachmentsServiceHandler(binding, executor));
-    logger.info("Registered OSS Attachments Service Handler.");
+    Optional<ServiceBinding> bindingOpt = getOSBinding(configurer.getCdsRuntime().getEnvironment());
+    if (bindingOpt.isPresent()) {
+      ExecutorService executor = Executors.newCachedThreadPool();
+      // Thread count could be made configurable via CdsProperties if needed in the future.
+      configurer.eventHandler(new OSSAttachmentsServiceHandler(bindingOpt.get(), executor));
+      logger.info("Registered OSS Attachments Service Handler.");
+    } else {
+      logger.warn(
+          "No service binding to Object Store Service found, hence the OSS Attachments Service Handler is not connected!");
+    }
   }
 
   /**
@@ -38,11 +41,9 @@ public class Registration implements CdsRuntimeConfiguration {
    *     available, or {@link Optional#empty()} if not found
    */
   private static Optional<ServiceBinding> getOSBinding(CdsEnvironment environment) {
-    Optional<ServiceBinding> bindingOpt =
-        environment
-            .getServiceBindings()
-            .filter(b -> b.getServiceName().map(name -> name.equals("objectstore")).orElse(false))
-            .findFirst();
-    return bindingOpt;
+    return environment
+        .getServiceBindings()
+        .filter(b -> b.getServiceName().map(name -> name.equals("objectstore")).orElse(false))
+        .findFirst();
   }
 }
