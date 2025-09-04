@@ -13,7 +13,7 @@ It supports the [AWS, Azure and Google object stores](storage-targets/cds-featur
 <!-- TOC -->
 
 * [Getting Started](#getting-started)
-  * [CDS Models](#cds-models)
+  * [Changes in the CDS Models](#changes-in-the-cds-models)
   * [UI](#ui)
   * [Storage Targets](#storage-targets)
   * [Malware Scanner](#malware-scanner)
@@ -22,8 +22,8 @@ It supports the [AWS, Azure and Google object stores](storage-targets/cds-featur
     * [Motivation](#motivation)
     * [HTTP Endpoint](#http-endpoint)
     * [Security](#security)
-* [Releases: Maven Central and Artifactory](#releases)
-* [Minimum UI and CAP Java Version](#minimum-ui-and-cap-java-version)
+* [Releases: Maven Central and Artifactory](#releases-maven-central-and-artifactory)
+* [Minimum UI and CAP Java Version](#minimum-ui5-and-cap-java-version)
 * [Architecture Overview](#architecture-overview)
   * [Design](#design)
   * [Multitenancy](#multitenancy)
@@ -31,7 +31,7 @@ It supports the [AWS, Azure and Google object stores](storage-targets/cds-featur
   * [Model Texts](#model-texts)
 * [Monitoring & Logging](#monitoring--logging)
 * [Support, Feedback, Contributing](#support-feedback-contributing)
-* [References & Links](#references-links)
+* [References & Links](#references--links)
 
 ## Getting Started
 
@@ -64,7 +64,7 @@ To be able to also use the CDS models defined in this plugin the `cds-maven-plug
 ```
 After that, the aspect `Attachments` can be used in the application's CDS model.
 
-### Changes in CDS Models
+### Changes in the CDS Models
 
 Depending where the aspect `Attachments` shall be used in the application's CDS model, different approaches need to be implemented.
 - If the aspect `Attachments` shall be used on an entity provided in the `db` module, the corresponding entity needs to be extended from a CDS file in the `srv` module. Therefore the entity from the `db` folder needs to be imported with an `using` statement. Then, this entity can be extended with a new field that is a `Composition of many Attachments`.
@@ -322,13 +322,6 @@ Also, other annotations can be used to secure the service.
 More information about the CAP Java security concept can be found in
 the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
 
-## Minimum UI5 and CAP Java Version
-
-| Component | Minimum Version |
-|-----------|-----------------|
-| CAP Java  | 3.10.3          |
-| UI5       | 1.136.0         |
-
 ## Releases: Maven Central and Artifactory
 
 - The plugin is released to Maven Central at: https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments
@@ -338,6 +331,14 @@ the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
 - See the [changelog](./doc/CHANGELOG.md) for the latest changes.
 
 - If you want to test snapshot versions of this plugin, you need to configure the Artifactory in your `${HOME}/.m2/settings.xml`. See [the maven settings](https://maven.apache.org/settings.html#Repositories) for further details.
+
+## Minimum UI5 and CAP Java Version
+
+| Component | Minimum Version |
+|-----------|-----------------|
+| CAP Java  | 3.10.3          |
+| UI5       | 1.136.0         |
+
 
 ## Architecture Overview
 ### Design
