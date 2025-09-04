@@ -6,63 +6,47 @@ The `com.sap.cds:cds-feature-attachments` dependency is
 a [CAP Java plugin](https://cap.cloud.sap/docs/java/building-plugins) that provides out-of-the box attachments storage
 and handling by using an aspect Attachments.
 
+It supports the [AWS, Azure and Google object stores](storage-targets/cds-feature-attachments-oss) and can connect to a [malware scanner](#malware-scanner).
+
 ## Table of Contents
 
 <!-- TOC -->
-* [Additional Information](#additional-information)
-* [Support, Feedback, Contributing](#support-feedback-contributing)
-* [Minimum Version](#minimum-version)
-* [Artifactory](#artifactory)
-* [Storage Targets](#storage-targets)
-* [Usage](#usage)
+
+* [Getting Started](#getting-started)
+  * [Minimum Version](#minimum-version)
+  * [Releases: Maven Central and Artifactory](#releases)
+  * [How to use](#how-to-use)
     * [CDS Models](#cds-models)
-        * [Model Texts](#model-texts)
-        * [Status Texts](#status-texts)
     * [UI](#ui)
-    * [Outbox](#outbox)
+    * [Storage Targets](#storage-targets)
     * [Malware Scanner](#malware-scanner)
-    * [Error Messages](#error-messages)
+    * [Outbox](#outbox)
     * [Restore Endpoint](#restore-endpoint)
-        * [Motivation](#motivation)
-        * [HTTP Endpoint](#http-endpoint)
-        * [Security](#security)
-<!-- TOC -->
+      * [Motivation](#motivation)
+      * [HTTP Endpoint](#http-endpoint)
+      * [Security](#security)
+* [Architecture Overview](#architecture-overview)
+  * [Design](#design)
+  * [Multitenancy](#multitenancy)
+  * [Object Stores](#object-stores)
+  * [Model Texts](#model-texts)
+* [Extensibility]
+* [Monitoring & Logging](#monitoring-logging)
+* [Support, Feedback, Contributing](#support-feedback-contributing)
+* [References & Links](#references-links)
 
-## Additional Information
-
-- [Process Description](./doc/Processes.md)
-
-- [Changelog](./doc/CHANGELOG.md)
-
-- [Contributing](./doc/CONTRIBUTING.md)
-
-- [License](./LICENSE)
-
-- [Implementation Details](./doc/Design.md)
-
-## Support, Feedback, Contributing
-
-This project is open to feature requests/suggestions, bug reports etc.
-via [GitHub issues](https://github.com/cap-java/cds-feature-attachments/issues).
-Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project
-structure, as well as additional contribution information,
-see our [Contribution Guidelines](./doc/CONTRIBUTING.md).
-
-## Minimum Version
-
+## Getting Started / 
+### Minimum Version
 The following version are the minimum versions for the usage of the plugin:
 
 | Component | Minimum Version |
 |-----------|-----------------|
 | CAP Java  | 3.10.3          |
-| UI5       | 1.136.0         |
-
-## Maven Central
+| UI5       | 1.139.0         |
+### Releases: Maven Central and Artifactory
 
 The feature is released to Maven Central at:
 https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments
-
-## Artifactory
 
 Snapshots are deployed to SAP's Artifactory in DMZ:
 https://common.repositories.cloud.sap/artifactory/cap-java/com/sap/cds/cds-feature-attachments/
@@ -70,19 +54,11 @@ https://common.repositories.cloud.sap/artifactory/cap-java/com/sap/cds/cds-featu
 If you want to test snapshot versions of this plugin, you need to configure the Artifactory in your `${HOME}/.m2/settings.xml`.
 See [here](https://maven.apache.org/settings.html#Repositories) for further details.
 
-## Storage Targets
+Look at the [changelog](./doc/CHANGELOG.md) to see latest changes.
 
-By default, the plugin operates without a dedicated storage target, storing attachments directly in the [underlying database](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L17).
+### How to use
 
-Other available storage targets:
-- [Object Store](storage-targets/cds-feature-attachments-oss)
-- [local file system as a storage backend](storage-targets/cds-feature-attachments-fs) (only for testing scenarios)
-
-When using a dedicated storage target, the attachment is not stored in the underlying database; instead, it is saved on the specified storage target, and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
-
-## Usage
-
-The usage of CAP Java plugins is described in the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project). Following this documentation this plugin needs to be referenced in the `srv/pom.xml` of a CAP Java project:
+The usage of CAP Java plugins is described in the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project). Following this documentation this plugin needs to be referenced in the `srv/pom.xml` of a CAP Java application:
 
 ```xml
 <dependency>
@@ -91,8 +67,6 @@ The usage of CAP Java plugins is described in the [CAP Java Documentation](https
     <version>${latest-version}</version>
 </dependency>
 ```
-
-The latest version can be found in the [changelog](./doc/CHANGELOG.md) or in the [Maven Central Repository](https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments/versions).
 
 To be able to also use the CDS models defined in this plugin the `cds-maven-plugin` needs to be used with the `resolve` goal to make the CDS models available in the project:
 
@@ -113,11 +87,11 @@ To be able to also use the CDS models defined in this plugin the `cds-maven-plug
 ```
 After that, the aspect `Attachments` can be used in the application's CDS model.
 
-### CDS Models
+#### CDS Models
 
-Depending on the location in the application's CDS model where the aspect `Attachments` shall be used, different approaches need to be implemented.
-If the aspect `Attachments` shall be used on an entity provided in the `db` module, the corresponding entity needs to be extended from a CDS file in the `srv` module. Therefore the entity from the `db` folder needs to be imported with an `using` statement. Then, this entity can be extended with a new field that is a `Composition of many Attachments`.
-The following example shows how to extend the `db` entity `Books` in a CDS file in the `srv` module:
+Depending where the aspect `Attachments` shall be used in the application's CDS model, different approaches need to be implemented.
+- If the aspect `Attachments` shall be used on an entity provided in the `db` module, the corresponding entity needs to be extended from a CDS file in the `srv` module. Therefore the entity from the `db` folder needs to be imported with an `using` statement. Then, this entity can be extended with a new field that is a `Composition of many Attachments`.
+ The following example shows how to extend the `db` entity `Books` in a CDS file in the `srv` module:
 
 ```cds
 using {my.bookshop as my} from '../db/index';
@@ -129,7 +103,7 @@ extend my.Books with {
 };
 ```
 
-To use the aspect `Attachments` in the `srv` module, the following code needs to be added to the existing entity definition:
+- To use the aspect `Attachments` in the `srv` module, the following code needs to be added to the existing entity definition:
 
 ```cds
 using {sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
@@ -141,80 +115,12 @@ entity Items : cuid {
 }
 ```
 
-The aspect `Attachments` shall be used directly for the composition.
-It is very important to use the correct from clause for the `using` statement. Only if `com.sap.cds/cds-feature-attachments` is used and not concrete files of the feature are specified in the from-statement also the annotations and other definitions are found and used.
+Use the aspect `Attachments` directly for the composition.
+Use the correct from clause for the `using` statement. The annotations and other definitions are found and used only if `com.sap.cds/cds-feature-attachments` is used and not concrete files of the feature. 
 
-#### Model Texts
+#### UI
 
-In the model several fields are annotated with the `@title` annotation. Starting with version 1.0.6 of the `cds-feature-attachments`, default texts are provided in [35 languages](https://github.com/cap-java/cds-feature-attachments/tree/main/cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/_i18n). If these defaults are not sufficient for an application, they can be overwritten by applications with custom texts or translations.
-
-The following table gives an overview of the fields and the i18n codes:
-
-| Field Name | i18n Code             |
-|------------|-----------------------|
-| `content`  | `attachment_content`  |
-| `mimeType` | `attachment_mimeType` |
-| `fileName` | `attachment_fileName` |
-| `status`   | `attachment_status`   |
-| `note`     | `attachment_note`     |
-
-In addition to the field names also header information (`@UI.HeaderInfo`) are annotated:
-
-| Header Info      | i18n Code     |  
-|------------------|---------------|
-| `TypeName`       | `attachment`  |
-| `TypeNamePlural` | `attachments` |
-
-#### Status Texts
-
-For the status of the attachment only the code value is stored at the moment.
-The [status codes](./cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds)
-are:
-
-- `Unscanned`
-- `Scanning`
-- `Clean`
-- `Infected`
-- `Failed`
-
-If a text for the status needs to be displayed on the UI the model needs to be enhanced with the texts.
-For this a new Statuses entity needs to be created like the following example:
-
-```cds
-entity Statuses @cds.autoexpose @readonly {
-    key code : StatusCode;
-        text : localized String(255);
-}
-```
-
-For this entity csv files can be included in the project structure with texts and translations, to show the translated
-texts on the UI.
-
-With this a text can be added in example above like:
-
-```cds
-extend Attachments with {
-    statusText : Association to Statuses on statusText.code = $self.status;
-}
-```
-
-With this an annotation can be added to the attachments entity to have the status text displayed in the UI:
-
-```cds
-status @(
-    Common.Text: {
-        $value: ![statusText.text],
-        ![@UI.TextArrangement]: #TextOnly
-    },
-    ValueList: {entity:'Statuses'},
-    sap.value.list: 'fixed-values'
-);
-```
-
-### UI
-
-To enhance the UI with the attachments the following annotations are used for the `UI.Facets` annotations
-in your app:
+To enhance the UI with the attachments the following annotations are used for the `UI.Facets` annotations in the respective `.cds` file of your app:
 
 ```cds
     {
@@ -265,7 +171,71 @@ annotate service.Incidents with @(
 );
 ``` 
 
-### Outbox
+#### Storage Targets
+
+By default, the plugin operates without a dedicated storage target, storing attachments directly in the [underlying database](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L17).
+
+Other available storage targets:
+- [Amazon, Azure and Google Object Stores](storage-targets/cds-feature-attachments-oss)
+- [local file system as a storage backend](storage-targets/cds-feature-attachments-fs) (only for testing scenarios)
+
+When using a dedicated storage target, the attachment is not stored in the underlying database; instead, it is saved on the specified storage target, and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
+
+#### Malware Scanner
+
+This plugin checks for a binding to
+the [SAP Malware Scanning Service](https://help.sap.com/docs/malware-scanning-servce), this needs to have the label `malware-scanner`. The entry in the [mta-file](https://cap.cloud.sap/docs/guides/deployment/to-cf#add-mta-yaml) possibly looks like:
+
+```
+_schema-version: '0.1'
+ID: consuming-app
+version: 1.0.0
+description: "App consuming the attachments plugin with a malware scanner"
+parameters:
+  ...
+modules:
+  - name: consuming-app-srv
+# ------------------------------------------------------------
+    type: java
+    path: srv
+    parameters:
+      ...
+    properties:
+      ...
+    build-parameters:
+      ...
+    requires:
+      - name: consuming-app-hdi-container
+      - name: consuming-app-uaa
+      - name: cf-logging
+      - name: malware-scanner
+...
+resources:
+  ...
+  - name: malware-scanner
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: malware-scanner
+      service-plan: clamav
+```
+
+The malware scanner is used in the `AttachmentService` to scan
+attachments.
+If the default implementation of this service is overwritten, e.g. by using the plugin enhancement of the
+[SAP Document Management Service](https://help.sap.com/docs/document-management-service), then the overwriting plugin
+is responsible for the malware scan.
+
+If there is no malware scanner available the attachments are automatically marked as `Clean`.
+
+Scan status codes:
+- `Clean`: Only attachments with the status `Clean` are accessible.
+- `Scanning`: Immediately after upload, the attachment is marked as `Scanning`. Depending on processing speed, it may already appear as `Clean` when the page is reloaded.
+- `Unscanned`: Attachment is still unscanned.
+- `Failed`: Scanning failed.
+- `Infected`: The attachment is infected.
+
+
+#### Outbox
 
 In this plugin the [persistent outbox](https://cap.cloud.sap/docs/java/outbox#persistent) is used to mark attachments as
 deleted.
@@ -276,53 +246,13 @@ the default outbox configuration.
 
 If the default shall be used, nothing needs to be done.
 
-### Malware Scanner
 
-This plugin checks for a binding to
-the [SAP Malware Scanning Service](https://help.sap.com/docs/malware-scanning-servce).
-The concrete check if for a binding to a service with label `malware-scanner`.
-
-The malware scanner is used in the default implementation of the technical service `AttachmentService` to scan
-attachments.
-If the default implementation of this service is overwritten, e.g. by using the plugin enhancement of the
-[SAP Document Management Service](https://help.sap.com/docs/document-management-service), then this overwriting plugin
-is responsible for the malware scan and the plugin documentation needs to be checked for how the malware scan is done.
-
-If the default implementation is used and the malware scanner is not available the attachments are marked as clean
-by setting the status of the attachment to:
-
-- `Clean`
-
-Only attachments with the status `Clean` are accessible.
-Attachments with all other status codes are not accessible.
-
-If the malware scanner is available but during the request to the scanner an error occurs the status of the attachment
-is set to:
-
-- `Failed`
-
-### Error Messages
-
-If attachments are uploaded but not scanned by a malware scanner (if a scanner is available) or are marked as infected
-the direct access of the
-attachment is not possible.
-In case users try to access the content of the attachment the following errors messages are displayed:
-
-| Error Message                                         | Error Message i18n Code |
-|-------------------------------------------------------|-------------------------|
-| Attachment is not clean                               | `not_clean`             |
-| Attachment is not scanned, try again in a few minutes | `not_scanned`           |
-
-By adding the error message i18n code to the `i18n.properties` file the error message can be overwritten translated.
-More information can be found in the capire documentation
-for [i18n](https://cap.cloud.sap/docs/guides/i18n#where-to-place-text-bundles).
-
-### Restore Endpoint
+#### Restore Endpoint
 
 The attachment service has an event `RESTORE_ATTACHMENTS`.
-This event can be called with a timestamp to restore external stored attachments.
+This event can be called with a timestamp to restore externally stored attachments.
 
-#### Motivation
+##### Motivation
 
 Documents which are marked as deleted can be restored.
 
@@ -343,7 +273,7 @@ In such cases the restore endpoint can be used to restore attachments.
 How long attachments are marked as deleted before they get deleted dependents on the configuration
 of the used storage.
 
-#### HTTP Endpoint
+##### HTTP Endpoint
 
 There is no predefined endpoint for the restore action.
 To call the action of the service from outside the application a service could be defined like the following example:
@@ -392,7 +322,7 @@ public class RestoreAttachmentsHandler implements EventHandler {
 
 In the Spring Boot context the `AttachmentService` can be autowired in the handler.
 
-#### Security
+##### Security
 
 To secure the endpoint security annotations can be used e.g. like the following example:
 
@@ -413,3 +343,62 @@ Also, other annotations can be used to secure the service.
 
 More information about the CAP Java security concept can be found in
 the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
+
+## Architecture Overview
+### Design
+- [Design Details](./doc/Design.md)
+- [Process of Creating, Reading and Deleting an Attachment](./doc/Processes.md)
+
+### Multitenancy
+
+When using HANA as the storage target, multitenancy support depends on the consuming application. In most cases, multitenancy is achieved by using a dedicated schema for each tenant, providing strong data isolation at the database level.
+However, when using an object store as the storage target, true multitenancy is not yet implemented (as of version 1.2.1). In this case, all blobs are stored in a single bucket, and tenant data is not separated.
+
+
+### Object Stores
+
+See [Object Stores](storage-targets/cds-feature-attachments-oss).
+
+### Model Texts
+
+In the model several fields are annotated with the `@title` annotation. Default texts are provided in [35 languages](https://github.com/cap-java/cds-feature-attachments/tree/main/cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/_i18n). If these defaults are not sufficient for an application, they can be overwritten by applications with custom texts or translations.
+
+The following table gives an overview of the fields and the i18n codes:
+
+| Field Name | i18n Code             |
+|------------|-----------------------|
+| `content`  | `attachment_content`  |
+| `mimeType` | `attachment_mimeType` |
+| `fileName` | `attachment_fileName` |
+| `status`   | `attachment_status`   |
+| `note`     | `attachment_note`     |
+
+In addition to the field names also header information (`@UI.HeaderInfo`) are annotated:
+
+| Header Info      | i18n Code     |  
+|------------------|---------------|
+| `TypeName`       | `attachment`  |
+| `TypeNamePlural` | `attachments` |
+
+
+## Monitoring & Logging
+
+To configure logging for the attachments plugin, add the following line to the `/srv/src/main/resources/application.yaml` of the consuming application:
+```
+logging:
+  level:
+    ...
+    '[com.sap.cds.feature.attachments]': DEBUG
+...
+```
+
+## Support, Feedback, Contributing
+
+This project is open to feature requests/suggestions, bug reports etc.
+via [GitHub issues](https://github.com/cap-java/cds-feature-attachments/issues).
+Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project
+structure, as well as additional contribution information,
+see our [Contribution Guidelines](./doc/CONTRIBUTING.md).
+
+## References & Links
+- [License](./LICENSE)
