@@ -22,9 +22,8 @@ public class Registration implements CdsRuntimeConfiguration {
   public void eventHandlers(CdsRuntimeConfigurer configurer) {
     Optional<ServiceBinding> bindingOpt = getOSBinding(configurer.getCdsRuntime().getEnvironment());
     if (bindingOpt.isPresent()) {
-      ExecutorService executor =
-          Executors
-              .newCachedThreadPool(); // This might be configured by CdsProperties, if needed in the
+      ExecutorService executor = Executors.newCachedThreadPool();
+      // Thread count could be made configurable via CdsProperties if needed in the future.
       configurer.eventHandler(new OSSAttachmentsServiceHandler(bindingOpt.get(), executor));
       logger.info("Registered OSS Attachments Service Handler.");
     } else {
