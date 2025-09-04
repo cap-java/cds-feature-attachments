@@ -13,50 +13,27 @@ It supports the [AWS, Azure and Google object stores](storage-targets/cds-featur
 <!-- TOC -->
 
 * [Getting Started](#getting-started)
-  * [Minimum Version](#minimum-version)
-  * [Releases: Maven Central and Artifactory](#releases)
-  * [How to use](#how-to-use)
-    * [CDS Models](#cds-models)
-    * [UI](#ui)
-    * [Storage Targets](#storage-targets)
-    * [Malware Scanner](#malware-scanner)
-    * [Outbox](#outbox)
-    * [Restore Endpoint](#restore-endpoint)
-      * [Motivation](#motivation)
-      * [HTTP Endpoint](#http-endpoint)
-      * [Security](#security)
+  * [CDS Models](#cds-models)
+  * [UI](#ui)
+  * [Storage Targets](#storage-targets)
+  * [Malware Scanner](#malware-scanner)
+  * [Outbox](#outbox)
+  * [Restore Endpoint](#restore-endpoint)
+    * [Motivation](#motivation)
+    * [HTTP Endpoint](#http-endpoint)
+    * [Security](#security)
+* [Releases: Maven Central and Artifactory](#releases)
+* [Minimum UI and CAP Java Version](#minimum-ui-and-cap-java-version)
 * [Architecture Overview](#architecture-overview)
   * [Design](#design)
   * [Multitenancy](#multitenancy)
   * [Object Stores](#object-stores)
   * [Model Texts](#model-texts)
-* [Extensibility]
-* [Monitoring & Logging](#monitoring-logging)
+* [Monitoring & Logging](#monitoring--logging)
 * [Support, Feedback, Contributing](#support-feedback-contributing)
 * [References & Links](#references-links)
 
-## Getting Started / 
-### Minimum Version
-The following version are the minimum versions for the usage of the plugin:
-
-| Component | Minimum Version |
-|-----------|-----------------|
-| CAP Java  | 3.10.3          |
-| UI5       | 1.139.0         |
-### Releases: Maven Central and Artifactory
-
-The feature is released to Maven Central at:
-https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments
-
-Snapshots are deployed to SAP's Artifactory in DMZ:
-https://common.repositories.cloud.sap/artifactory/cap-java/com/sap/cds/cds-feature-attachments/
-
-If you want to test snapshot versions of this plugin, you need to configure the Artifactory in your `${HOME}/.m2/settings.xml`.
-See [here](https://maven.apache.org/settings.html#Repositories) for further details.
-
-Look at the [changelog](./doc/CHANGELOG.md) to see latest changes.
-
-### How to use
+## Getting Started
 
 The usage of CAP Java plugins is described in the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project). Following this documentation this plugin needs to be referenced in the `srv/pom.xml` of a CAP Java application:
 
@@ -87,48 +64,49 @@ To be able to also use the CDS models defined in this plugin the `cds-maven-plug
 ```
 After that, the aspect `Attachments` can be used in the application's CDS model.
 
-#### CDS Models
+### Changes in CDS Models
 
 Depending where the aspect `Attachments` shall be used in the application's CDS model, different approaches need to be implemented.
 - If the aspect `Attachments` shall be used on an entity provided in the `db` module, the corresponding entity needs to be extended from a CDS file in the `srv` module. Therefore the entity from the `db` folder needs to be imported with an `using` statement. Then, this entity can be extended with a new field that is a `Composition of many Attachments`.
  The following example shows how to extend the `db` entity `Books` in a CDS file in the `srv` module:
 
-```cds
-using {my.bookshop as my} from '../db/index';
-using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
+  ```cds
+  using {my.bookshop as my} from '../db/index';
+  using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
 
-// Extends the Books entity with the Attachments composition
-extend my.Books with {
-  covers : Composition of many Attachments;
-};
-```
+  // Extends the Books entity with the Attachments composition
+  extend my.Books with {
+    covers : Composition of many Attachments;
+  };
+  ```
 
 - To use the aspect `Attachments` in the `srv` module, the following code needs to be added to the existing entity definition:
 
-```cds
-using {sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
+  ```cds
+  using {sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
 
-entity Items : cuid {
-    ...
-    attachments : Composition of many Attachments;
-    ...
-}
-```
+  entity Items : cuid {
+      ...
+      attachments : Composition of many Attachments;
+      ...
+  }
+  ```
 
-Use the aspect `Attachments` directly for the composition.
-Use the correct from clause for the `using` statement. The annotations and other definitions are found and used only if `com.sap.cds/cds-feature-attachments` is used and not concrete files of the feature. 
+→ Use the aspect `Attachments` directly for the composition.
 
-#### UI
+→ Use the correct from clause for the `using` statement. The annotations and other definitions are found and used only if `com.sap.cds/cds-feature-attachments` is used and not concrete files of the feature. 
+
+### UI
 
 To enhance the UI with the attachments the following annotations are used for the `UI.Facets` annotations in the respective `.cds` file of your app:
 
 ```cds
-    {
-        $Type  : 'UI.ReferenceFacet',
-        ID     : 'AttachmentsFacet',
-        Label  : '{i18n>attachments}',
-        Target : 'attachments/@UI.LineItem'
-    }
+{
+    $Type  : 'UI.ReferenceFacet',
+    ID     : 'AttachmentsFacet',
+    Label  : '{i18n>attachments}',
+    Target : 'attachments/@UI.LineItem'
+}
 ```
 
 A complete `UI.Facets` annotation could look like:
@@ -171,7 +149,7 @@ annotate service.Incidents with @(
 );
 ``` 
 
-#### Storage Targets
+### Storage Targets
 
 By default, the plugin operates without a dedicated storage target, storing attachments directly in the [underlying database](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L17).
 
@@ -181,7 +159,7 @@ Other available storage targets:
 
 When using a dedicated storage target, the attachment is not stored in the underlying database; instead, it is saved on the specified storage target, and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
 
-#### Malware Scanner
+### Malware Scanner
 
 This plugin checks for a binding to
 the [SAP Malware Scanning Service](https://help.sap.com/docs/malware-scanning-servce), this needs to have the label `malware-scanner`. The entry in the [mta-file](https://cap.cloud.sap/docs/guides/deployment/to-cf#add-mta-yaml) possibly looks like:
@@ -235,7 +213,7 @@ Scan status codes:
 - `Infected`: The attachment is infected.
 
 
-#### Outbox
+### Outbox
 
 In this plugin the [persistent outbox](https://cap.cloud.sap/docs/java/outbox#persistent) is used to mark attachments as
 deleted.
@@ -247,12 +225,12 @@ the default outbox configuration.
 If the default shall be used, nothing needs to be done.
 
 
-#### Restore Endpoint
+### Restore Endpoint
 
 The attachment service has an event `RESTORE_ATTACHMENTS`.
 This event can be called with a timestamp to restore externally stored attachments.
 
-##### Motivation
+#### Motivation
 
 Documents which are marked as deleted can be restored.
 
@@ -273,7 +251,7 @@ In such cases the restore endpoint can be used to restore attachments.
 How long attachments are marked as deleted before they get deleted dependents on the configuration
 of the used storage.
 
-##### HTTP Endpoint
+#### HTTP Endpoint
 
 There is no predefined endpoint for the restore action.
 To call the action of the service from outside the application a service could be defined like the following example:
@@ -322,7 +300,7 @@ public class RestoreAttachmentsHandler implements EventHandler {
 
 In the Spring Boot context the `AttachmentService` can be autowired in the handler.
 
-##### Security
+#### Security
 
 To secure the endpoint security annotations can be used e.g. like the following example:
 
@@ -338,11 +316,28 @@ entity Items : cuid {
 annotate RestoreAttachments with @(requires: 'internal-user');
 ```
 
-Here the `RestoreAttachments` service is annotated with the `requires` annotation to secure the service.
+Here, the `RestoreAttachments` service is annotated with the `requires` annotation to secure the service.
 Also, other annotations can be used to secure the service.
 
 More information about the CAP Java security concept can be found in
 the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
+
+## Minimum UI5 and CAP Java Version
+
+| Component | Minimum Version |
+|-----------|-----------------|
+| CAP Java  | 3.10.3          |
+| UI5       | 1.136.0         |
+
+## Releases: Maven Central and Artifactory
+
+- The plugin is released to Maven Central at: https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments
+
+- Snapshots are deployed to SAP's Artifactory in DMZ: https://common.repositories.cloud.sap/artifactory/cap-java/com/sap/cds/cds-feature-attachments/
+
+- See the [changelog](./doc/CHANGELOG.md) for the latest changes.
+
+- If you want to test snapshot versions of this plugin, you need to configure the Artifactory in your `${HOME}/.m2/settings.xml`. See [the maven settings](https://maven.apache.org/settings.html#Repositories) for further details.
 
 ## Architecture Overview
 ### Design
@@ -351,9 +346,8 @@ the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
 
 ### Multitenancy
 
-When using HANA as the storage target, multitenancy support depends on the consuming application. In most cases, multitenancy is achieved by using a dedicated schema for each tenant, providing strong data isolation at the database level.
-However, when using an object store as the storage target, true multitenancy is not yet implemented (as of version 1.2.1). In this case, all blobs are stored in a single bucket, and tenant data is not separated.
-
+- When using HANA as the storage target, multitenancy support depends on the consuming application. In most cases, multitenancy is achieved by using a dedicated schema for each tenant, providing strong data isolation at the database level.
+- When using an [object store](storage-targets/cds-feature-attachments-oss) as the storage target, true multitenancy is not yet implemented (as of version 1.2.1). In this case, all blobs are stored in a single bucket, and tenant data is not separated.
 
 ### Object Stores
 
@@ -396,6 +390,7 @@ logging:
 
 This project is open to feature requests/suggestions, bug reports etc.
 via [GitHub issues](https://github.com/cap-java/cds-feature-attachments/issues).
+
 Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project
 structure, as well as additional contribution information,
 see our [Contribution Guidelines](./doc/CONTRIBUTING.md).
