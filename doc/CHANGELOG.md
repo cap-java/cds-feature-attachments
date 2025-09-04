@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.2.1 - tbd
+## Version 1.2.2 - tbd
 
 ### Added
 
@@ -14,6 +14,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+## Version 1.2.1 - 2025-09-03
+
+### Changed
+- Several version bumps
+- Apply GoogleJavaFormat style GOOGLE and enforce that for PRs (#551)
+
+### Fixed
 - Fixed an issue where the Malware Scanning Service is not triggered after uploading an Attachment, if the target storage is other than the default DB storage. (#557)
 
 ## Version 1.2.0 - 2025-08-26
