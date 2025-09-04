@@ -316,7 +316,7 @@ entity Items : cuid {
 annotate RestoreAttachments with @(requires: 'internal-user');
 ```
 
-Here, the `RestoreAttachments` service is annotated with the `requires` annotation to secure the service.
+Here the `RestoreAttachments` service is annotated with the `requires` annotation to secure the service.
 Also, other annotations can be used to secure the service.
 
 More information about the CAP Java security concept can be found in
