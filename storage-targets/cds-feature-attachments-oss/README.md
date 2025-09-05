@@ -14,9 +14,43 @@ To do this, replace the `cds-feature-attachments` dependency in your `pom.xml` w
 </dependency>
 ```
 
-A valid Object Store service binding is required for this — for example, one provisioned through SAP BTP.
+A valid Object Store service binding is required for this — for example, one provisioned through SAP BTP. The corresponding entry in the [mta-file](https://cap.cloud.sap/docs/guides/deployment/to-cf#add-mta-yaml) possibly looks like:
 
-#### Tests
+```
+_schema-version: '0.1'
+ID: consuming-app
+version: 1.0.0
+description: "App consuming the attachments plugin with an object store"
+parameters:
+  ...
+modules:
+  - name: consuming-app-srv
+# ------------------------------------------------------------
+    type: java
+    path: srv
+    parameters:
+      ...
+    properties:
+      ...
+    build-parameters:
+      ...
+    requires:
+      - name: consuming-app-hdi-container
+      - name: consuming-app-uaa
+      - name: cf-logging
+      - name: object-store-service
+...
+resources:
+  ...
+  - name: object-store-service
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: objectstore
+      service-plan: standard
+```
+
+
+### Tests
 
 The unit tests in this module do not need a binding to the respective object stores, run them with `mvn clean install`.
 
