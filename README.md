@@ -154,11 +154,8 @@ resources:
 
 The malware scanner is used in the `AttachmentService` to scan
 attachments.
-If the default implementation of this service is overwritten, e.g. by using the plugin enhancement of the
-[SAP Document Management Service](https://help.sap.com/docs/document-management-service), then the overwriting plugin
-is responsible for the malware scan.
 
-If there is no malware scanner available the attachments are automatically marked as `Clean`.
+If there is no malware scanner available, the attachments are automatically marked as `Clean`.
 
 Scan status codes:
 - `Clean`: Only attachments with the status `Clean` are accessible.
