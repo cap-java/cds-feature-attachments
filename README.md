@@ -12,9 +12,9 @@ It supports the [AWS, Azure and Google object stores](storage-targets/cds-featur
 
 <!-- TOC -->
 
-* [Getting Started](#getting-started)
-  * [Changes in the CDS Models](#changes-in-the-cds-models)
-  * [UI](#ui)
+* [Quick Start](#quick-start)
+* [Usage](#usage)
+  * [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
   * [Storage Targets](#storage-targets)
   * [Malware Scanner](#malware-scanner)
   * [Outbox](#outbox)
@@ -33,9 +33,17 @@ It supports the [AWS, Azure and Google object stores](storage-targets/cds-featur
 * [Support, Feedback, Contributing](#support-feedback-contributing)
 * [References & Links](#references--links)
 
-## Getting Started
+## Quick Start
 
-The usage of CAP Java plugins is described in the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project). Following this documentation this plugin needs to be referenced in the `srv/pom.xml` of a CAP Java application:
+To get started quickly:
+- add the `cds-feature-attachments` Maven dependency to your `srv/pom.xml` and configure the `cds-maven-plugin` with the `resolve` goal as described in [Usage](#usage)
+- extend your CDS model with the `Attachments` aspect and annotate your service for UI integration as explained in [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
+
+See the [incidents app](https://github.com/cap-java/incidents-app/) for a practical example.
+
+## Usage
+
+As described in the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project), the attachments plugin needs to be referenced in the `srv/pom.xml` of the consuming CAP Java application:
 
 ```xml
 <dependency>
@@ -44,8 +52,8 @@ The usage of CAP Java plugins is described in the [CAP Java Documentation](https
     <version>${latest-version}</version>
 </dependency>
 ```
-
-To be able to also use the CDS models defined in this plugin the `cds-maven-plugin` needs to be used with the `resolve` goal to make the CDS models available in the project:
+Additionally, you must configure the `cds-maven-plugin` with the `resolve` goal to ensure CDS models from dependencies are available.
+For this, add the following to the `srv/pom.xml` before the entry `build` as well:
 
 ```xml
 <plugin>
@@ -64,90 +72,35 @@ To be able to also use the CDS models defined in this plugin the `cds-maven-plug
 ```
 After that, the aspect `Attachments` can be used in the application's CDS model.
 
-### Changes in the CDS Models
+### Changes in the CDS Models and for the UI
 
-Depending where the aspect `Attachments` shall be used in the application's CDS model, different approaches need to be implemented.
-- If the aspect `Attachments` shall be used on an entity provided in the `db` module, the corresponding entity needs to be extended from a CDS file in the `srv` module. Therefore the entity from the `db` folder needs to be imported with an `using` statement. Then, this entity can be extended with a new field that is a `Composition of many Attachments`.
- The following example shows how to extend the `db` entity `Books` in a CDS file in the `srv` module:
-
-  ```cds
-  using {my.bookshop as my} from '../db/index';
-  using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
-
-  // Extends the Books entity with the Attachments composition
-  extend my.Books with {
-    covers : Composition of many Attachments;
-  };
-  ```
-
-- To use the aspect `Attachments` in the `srv` module, the following code needs to be added to the existing entity definition:
+To use the aspect `Attachments` on an existing entity, the corresponding entity needs to be extended in a CDS file in the `srv` module.
+The following example shows how to extend the entity `Incidents` in the `srv` module with an additional `attachments.cds` file, it also directly adds the respective UI Facet.
+To use this file with the [incidents app](https://github.com/cap-java/incidents-app/), check out the source code, copy the [file from the xmpls folder](https://github.com/cap-java/incidents-app/blob/main/xmpls/attachments.cds) to the srv folder and run the app as explained in the [incidents app README](https://github.com/cap-java/incidents-app/blob/main/README.md).
 
   ```cds
-  using {sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
+  using { sap.capire.incidents as my } from '../db/schema';
+  using { sap.attachments.Attachments } from 'com.sap.cds/cds-feature-attachments';
 
-  entity Items : cuid {
-      ...
-      attachments : Composition of many Attachments;
-      ...
+  extend my.Incidents with {
+    attachments: Composition of many Attachments;
   }
+
+  using { ProcessorService as service } from '../app/services';
+  annotate service.Incidents with @(
+    UI.Facets: [
+      ...,
+      {
+        $Type  : 'UI.ReferenceFacet',
+        ID     : 'AttachmentsFacet',
+        Label  : '{i18n>attachments}',
+        Target : 'attachments/@UI.LineItem'
+      }
+    ]
+  );
   ```
 
-→ Use the aspect `Attachments` directly for the composition.
-
-→ Use the correct from clause for the `using` statement. The annotations and other definitions are found and used only if `com.sap.cds/cds-feature-attachments` is used and not concrete files of the feature. 
-
-### UI
-
-To enhance the UI with the attachments the following annotations are used for the `UI.Facets` annotations in the respective `.cds` file of your app:
-
-```cds
-{
-    $Type  : 'UI.ReferenceFacet',
-    ID     : 'AttachmentsFacet',
-    Label  : '{i18n>attachments}',
-    Target : 'attachments/@UI.LineItem'
-}
-```
-
-A complete `UI.Facets` annotation could look like:
-
-```cds
-annotate service.Incidents with @(
-    UI.Facets : [
-        {
-            $Type : 'UI.CollectionFacet',
-            Label : '{i18n>Overview}',
-            ID : 'Overview',
-            Facets : [
-                {
-                    $Type : 'UI.ReferenceFacet',
-                    Label : '{i18n>GeneralInformation}',
-                    ID : 'i18nGeneralInformation',
-                    Target : '@UI.FieldGroup#i18nGeneralInformation',
-                },
-                {
-                    $Type : 'UI.ReferenceFacet',
-                    Label : '{i18n>Details}',
-                    ID : 'i18nDetails',
-                    Target : '@UI.FieldGroup#i18nDetails',
-                }
-            ]
-        },
-        {
-            $Type : 'UI.ReferenceFacet',
-            Label : 'Conversations',
-            ID : 'Conversations',
-            Target : 'conversations/@UI.LineItem#Conversations',
-        },
-        {
-            $Type  : 'UI.ReferenceFacet',
-            ID     : 'AttachmentsFacet',
-            Label  : '{i18n>attachments}',
-            Target : 'attachments/@UI.LineItem'
-        }
-    ]
-);
-``` 
+The UI Facet can also be added directly after other UI Facets in a `cds` file in the `app` folder.
 
 ### Storage Targets
 
@@ -217,7 +170,7 @@ Scan status codes:
 
 In this plugin the [persistent outbox](https://cap.cloud.sap/docs/java/outbox#persistent) is used to mark attachments as
 deleted.
-The enablement of the outbox is also included in the cds models of this plugin.
+When using this plugin, the persistent outbox is enabled by default.
 In the capire documentation of the [persistent outbox](https://cap.cloud.sap/docs/java/outbox#persistent) is it
 described how to overwrite
 the default outbox configuration.
@@ -234,10 +187,11 @@ This event can be called with a timestamp to restore externally stored attachmen
 
 Documents which are marked as deleted can be restored.
 
-The use case behind this feature is:
-
-If backups of databases are restored the attachments stored in external storages also needs to be restored.
-To have a possibility to restore attachments which are marked as deleted a restore endpoint is available.
+The use cases behind this feature are:
+- Restoring attachments after a database backup is restored:
+When you restore a database backup, any attachments stored in external storage (object stores, etc.) also need to be restored to maintain data consistency.
+- Restoring attachments that were marked as deleted:
+The restore endpoint provides a way to recover attachments that were previously marked as deleted, making it possible to undo deletions if needed.
 
 In the default implementation of the technical service `AttachmentService` this is not needed as the attachments are
 stored directly in the database and are restored with the database.
@@ -254,7 +208,7 @@ of the used storage.
 #### HTTP Endpoint
 
 There is no predefined endpoint for the restore action.
-To call the action of the service from outside the application a service could be defined like the following example:
+To call the action of the service from outside the application a service could be defined as in the following example:
 
 ```cds
 service RestoreAttachments {
@@ -262,6 +216,7 @@ service RestoreAttachments {
 }
 ```
 
+See [Security](#security) for how to secure this endpoint.
 The action `restoreAttachments` could get in a timestamp from which the attachments need to be restored.
 The action could be called with a POST request to the endpoint:
 
@@ -302,7 +257,7 @@ In the Spring Boot context the `AttachmentService` can be autowired in the handl
 
 #### Security
 
-To secure the endpoint security annotations can be used e.g. like the following example:
+To secure the endpoint security annotations can be used, e.g.:
 
 ```cds
 using {sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
@@ -324,9 +279,9 @@ the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
 
 ## Releases: Maven Central and Artifactory
 
-- The plugin is released to Maven Central at: https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments
+- The plugin is released to Maven Central at: https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments (public access)
 
-- Snapshots are deployed to SAP's Artifactory in DMZ: https://common.repositories.cloud.sap/artifactory/cap-java/com/sap/cds/cds-feature-attachments/
+- Snapshots are deployed to SAP's Artifactory in DMZ: https://common.repositories.cloud.sap/artifactory/cap-java/com/sap/cds/cds-feature-attachments/ (only for authorized users)
 
 - See the [changelog](./doc/CHANGELOG.md) for the latest changes.
 
