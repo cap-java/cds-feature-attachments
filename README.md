@@ -280,8 +280,6 @@ the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
 
 - The plugin is released to Maven Central at: https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments (public access)
 
-- Snapshots are deployed to SAP's Artifactory in DMZ: https://common.repositories.cloud.sap/artifactory/cap-java/com/sap/cds/cds-feature-attachments/ (only for authorized users)
-
 - See the [changelog](./doc/CHANGELOG.md) for the latest changes.
 
 - If you want to test snapshot versions of this plugin, you need to configure the Artifactory in your `${HOME}/.m2/settings.xml`. See [the maven settings](https://maven.apache.org/settings.html#Repositories) for further details.
