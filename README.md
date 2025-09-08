@@ -35,11 +35,13 @@ It supports the [AWS, Azure and Google object stores](storage-targets/cds-featur
 
 ## Quick Start
 
-To get started quickly:
+For a quick setup with in-memory storage:
 - add the `cds-feature-attachments` Maven dependency to your `srv/pom.xml` and configure the `cds-maven-plugin` with the `resolve` goal as described in [Usage](#usage)
 - extend your CDS model with the `Attachments` aspect and annotate your service for UI integration as explained in [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
 
 See the [incidents app](https://github.com/cap-java/incidents-app/) for a practical example.
+
+For object store integration, see [Amazon, Azure and Google Object Stores](storage-targets/cds-feature-attachments-oss).
 
 ## Usage
 
