@@ -195,7 +195,7 @@ The restore endpoint provides a way to recover attachments that were previously 
 In the default implementation of the technical service `AttachmentService` this is not needed as the attachments are
 stored directly in the database and are restored with the database.
 
-If the default implementation is replaced by overwriting the [respective handler](cds-feature-attachments/src/main/java/com/sap/cds/feature/attachments/service/handler/DefaultAttachmentsServiceHandler.java#L87), e.g. by the
+If the default implementation is replaced by overwriting the [respective handler](cds-feature-attachments/src/main/java/com/sap/cds/feature/attachments/service/handler/DefaultAttachmentsServiceHandler.java#L87), for example by the
 [SAP Document Management Service](https://help.sap.com/docs/document-management-service), then the overwriting plugin
 needs to handle the restore of attachments.
 
@@ -256,7 +256,7 @@ In the Spring Boot context the `AttachmentService` can be autowired in the handl
 
 #### Security
 
-To secure the endpoint security annotations can be used, e.g.:
+To secure the endpoint security annotations can be used, for example:
 
 ```cds
 using {sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
