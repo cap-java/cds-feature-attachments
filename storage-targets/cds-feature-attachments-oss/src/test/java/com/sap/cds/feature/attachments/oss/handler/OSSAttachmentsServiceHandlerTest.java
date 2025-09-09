@@ -3,7 +3,7 @@
  */
 package com.sap.cds.feature.attachments.oss.handler;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
@@ -33,7 +33,15 @@ class OSSAttachmentsServiceHandlerTest {
 
   @Test
   void testRestoreAttachmentCallsSetCompleted() {
+    // Setup a valid AWS binding for the test
     ServiceBinding binding = mock(ServiceBinding.class);
+    HashMap<String, Object> creds = new HashMap<>();
+    creds.put("host", "aws.example.com");
+    creds.put("region", "us-east-1");
+    creds.put("access_key_id", "test-access-key");
+    creds.put("secret_access_key", "test-secret-key");
+    creds.put("bucket", "test-bucket");
+    when(binding.getCredentials()).thenReturn(creds);
 
     OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(binding, executor);
     AttachmentRestoreEventContext context = mock(AttachmentRestoreEventContext.class);
@@ -179,17 +187,11 @@ class OSSAttachmentsServiceHandlerTest {
     creds.put("base64EncodedPrivateKeyData", "not-a-valid-base64-string");
     when(binding.getCredentials()).thenReturn(creds);
 
-    // Act: Should not throw, but should use MockOSClient as fallback
-    OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(binding, executor);
-    // Optionally, check that the handler uses MockOSClient
-    try {
-      var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
-      field.setAccessible(true);
-      Object osClient = field.get(handler);
-      assertTrue(osClient.getClass().getSimpleName().contains("MockOSClient"));
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    assertThrows(
+        ObjectStoreServiceException.class,
+        () -> {
+          new OSSAttachmentsServiceHandler(binding, executor);
+        });
   }
 
   @Test
@@ -197,29 +199,46 @@ class OSSAttachmentsServiceHandlerTest {
     String plain = "this is just a dummy string without keywords";
     String base64 =
         Base64.getEncoder().encodeToString(plain.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-    testConstructorHandlesBase64ResultingInMockClient(base64);
-  }
 
-  @Test
-  void testConstructorHandlesInValidBase64() {
-    testConstructorHandlesBase64ResultingInMockClient(
-        "this is just a dummy string without keywords");
-  }
-
-  void testConstructorHandlesBase64ResultingInMockClient(String base64) {
     ServiceBinding binding = mock(ServiceBinding.class);
     HashMap<String, Object> creds = new HashMap<>();
     creds.put("base64EncodedPrivateKeyData", base64);
     when(binding.getCredentials()).thenReturn(creds);
 
-    OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(binding, executor);
-    try {
-      var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
-      field.setAccessible(true);
-      Object osClient = field.get(handler);
-      assertTrue(osClient.getClass().getSimpleName().contains("MockOSClient"));
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    assertThrows(
+        ObjectStoreServiceException.class,
+        () -> {
+          new OSSAttachmentsServiceHandler(binding, executor);
+        });
+  }
+
+  @Test
+  void testConstructorHandlesInValidBase64() {
+    ServiceBinding binding = mock(ServiceBinding.class);
+    HashMap<String, Object> creds = new HashMap<>();
+    creds.put("base64EncodedPrivateKeyData", "this is just a dummy string without keywords");
+    when(binding.getCredentials()).thenReturn(creds);
+
+    assertThrows(
+        ObjectStoreServiceException.class,
+        () -> {
+          new OSSAttachmentsServiceHandler(binding, executor);
+        });
+  }
+
+  @Test
+  void testConstructorHandlesNoValidObjectStoreService() {
+    // Arrange: ServiceBinding with no valid object store credentials
+    ServiceBinding binding = mock(ServiceBinding.class);
+    HashMap<String, Object> creds = new HashMap<>();
+    // No host, container_uri, or base64EncodedPrivateKeyData
+    creds.put("someOtherField", "someValue");
+    when(binding.getCredentials()).thenReturn(creds);
+
+    assertThrows(
+        ObjectStoreServiceException.class,
+        () -> {
+          new OSSAttachmentsServiceHandler(binding, executor);
+        });
   }
 }
