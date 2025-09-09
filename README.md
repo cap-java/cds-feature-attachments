@@ -41,7 +41,7 @@ For a quick setup with in-memory storage:
 
 See the [incidents app](https://github.com/cap-java/incidents-app/) for a practical example.
 
-For object store integration, see [Amazon, Azure and Google Object Stores](storage-targets/cds-feature-attachments-oss).
+For object store integration, see [Amazon, Azure, and Google Object Stores](storage-targets/cds-feature-attachments-oss).
 
 ## Usage
 
