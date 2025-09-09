@@ -54,7 +54,7 @@ resources:
 
 The unit tests in this module do not need a binding to the respective object stores, run them with `mvn clean install`.
 
-The integration tests need a binding to a real object store, run them with `mvn clean install -Pintegration-tests-oss`.
+The integration tests need a binding to a real object store. Run them with `mvn clean install -Pintegration-tests-oss`.
 To set the binding, provide the following environment variables:
 - AWS_S3_BUCKET
 - AWS_S3_REGION

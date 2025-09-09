@@ -14,6 +14,7 @@ It supports the [AWS, Azure and Google object stores](storage-targets/cds-featur
 
 * [Quick Start](#quick-start)
 * [Usage](#usage)
+  * [MVN Setup](#mvn-setup)
   * [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
   * [Storage Targets](#storage-targets)
   * [Malware Scanner](#malware-scanner)
@@ -36,14 +37,16 @@ It supports the [AWS, Azure and Google object stores](storage-targets/cds-featur
 ## Quick Start
 
 For a quick setup with in-memory storage:
-- add the `cds-feature-attachments` Maven dependency to your `srv/pom.xml` and configure the `cds-maven-plugin` with the `resolve` goal as described in [Usage](#usage)
-- extend your CDS model with the `Attachments` aspect and annotate your service for UI integration as explained in [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
+- Add the `cds-feature-attachments` Maven dependency to the `srv/pom.xml` and configure the `cds-maven-plugin` with the `resolve` goal as described in [MVN Setup](#mvn-setup).
+- Extend the CDS model with the `Attachments` aspect and annotate the service for UI integration as explained in [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI).
 
-See the [incidents app](https://github.com/cap-java/incidents-app/) for a practical example.
+The [incidents app](https://github.com/cap-java/incidents-app/) provides a demonstration of how to use this plugin.
 
 For object store integration, see [Amazon, Azure, and Google Object Stores](storage-targets/cds-feature-attachments-oss).
 
 ## Usage
+
+### MVN Setup
 
 As described in the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project), the attachments plugin needs to be referenced in the `srv/pom.xml` of the consuming CAP Java application:
 
@@ -54,7 +57,7 @@ As described in the [CAP Java Documentation](https://cap.cloud.sap/docs/java/bui
     <version>${latest-version}</version>
 </dependency>
 ```
-Additionally, you must configure the `cds-maven-plugin` with the `resolve` goal to ensure CDS models from dependencies are available.
+Additionally, the `cds-maven-plugin` must be configured with the `resolve` goal to ensure CDS models from dependencies are available.
 For this, add the following to the `srv/pom.xml` before the entry `build` as well:
 
 ```xml
@@ -112,12 +115,12 @@ Other available storage targets:
 - [Amazon, Azure and Google Object Stores](storage-targets/cds-feature-attachments-oss)
 - [local file system as a storage backend](storage-targets/cds-feature-attachments-fs) (only for testing scenarios)
 
-When using a dedicated storage target, the attachment is not stored in the underlying database; instead, it is saved on the specified storage target, and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
+When using a dedicated storage target, the attachment is not stored in the underlying database; instead, it is saved on the specified storage target and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
 
 ### Malware Scanner
 
 This plugin checks for a binding to
-the [SAP Malware Scanning Service](https://help.sap.com/docs/malware-scanning-servce), this needs to have the label `malware-scanner`. The entry in the [mta-file](https://cap.cloud.sap/docs/guides/deployment/to-cf#add-mta-yaml) possibly looks like:
+the [SAP Malware Scanning Service](https://help.sap.com/docs/malware-scanning-servce), this needs to have the label `malware-scanner`. The entry in the [mta-file](https://cap.cloud.sap/docs/guides/deployment/to-cf#add-mta-yaml) may look like:
 
 ```
 _schema-version: '0.1'
@@ -188,7 +191,7 @@ Documents which are marked as deleted can be restored.
 
 The use cases behind this feature are:
 - Restoring attachments after a database backup is restored:
-When you restore a database backup, any attachments stored in external storage (object stores, etc.) also need to be restored to maintain data consistency.
+When restoring a database backup, any attachments stored in external storage (object stores, etc.) also need to be restored to maintain data consistency.
 - Restoring attachments that were marked as deleted:
 The restore endpoint provides a way to recover attachments that were previously marked as deleted, making it possible to undo deletions if needed.
 
@@ -201,8 +204,7 @@ needs to handle the restore of attachments.
 
 In such cases the restore endpoint can be used to restore attachments.
 
-How long attachments are marked as deleted before they get deleted dependents on the configuration
-of the used storage.
+How long attachments are marked as deleted before they are actually deleted depends on the configuration of the used storage.
 
 #### HTTP Endpoint
 
@@ -256,7 +258,7 @@ In the Spring Boot context the `AttachmentService` can be autowired in the handl
 
 #### Security
 
-To secure the endpoint security annotations can be used, for example:
+To secure the endpoint, security annotations can be used. For example:
 
 ```cds
 using {sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
@@ -271,18 +273,17 @@ annotate RestoreAttachments with @(requires: 'internal-user');
 ```
 
 Here the `RestoreAttachments` service is annotated with the `requires` annotation to secure the service.
-Also, other annotations can be used to secure the service.
+Various other annotations can be used to secure the service.
 
 More information about the CAP Java security concept can be found in
 the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
 
 ## Releases: Maven Central and Artifactory
 
-- The plugin is released to Maven Central at: https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments (public access)
-
+- The plugin is released to Maven Central at: https://central.sonatype.com/artifact/com.sap.cds/cds-feature-attachments (public access).
 - See the [changelog](./doc/CHANGELOG.md) for the latest changes.
 
-- If you want to test snapshot versions of this plugin, you need to configure the Artifactory in your `${HOME}/.m2/settings.xml`. See [the maven settings](https://maven.apache.org/settings.html#Repositories) for further details.
+- To test snapshot versions of this plugin, the artifactory in `${HOME}/.m2/settings.xml` needs to be configured. See [the maven settings](https://maven.apache.org/settings.html#Repositories) for further details.
 
 ## Minimum UI5 and CAP Java Version
 
@@ -308,7 +309,7 @@ See [Object Stores](storage-targets/cds-feature-attachments-oss).
 
 ### Model Texts
 
-In the model several fields are annotated with the `@title` annotation. Default texts are provided in [35 languages](https://github.com/cap-java/cds-feature-attachments/tree/main/cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/_i18n). If these defaults are not sufficient for an application, they can be overwritten by applications with custom texts or translations.
+In the model, several fields are annotated with the `@title` annotation. Default texts are provided in [35 languages](https://github.com/cap-java/cds-feature-attachments/tree/main/cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/_i18n). If these defaults are not sufficient for an application, they can be overwritten by applications with custom texts or translations.
 
 The following table gives an overview of the fields and the i18n codes:
 
@@ -320,7 +321,7 @@ The following table gives an overview of the fields and the i18n codes:
 | `status`   | `attachment_status`   |
 | `note`     | `attachment_note`     |
 
-In addition to the field names also header information (`@UI.HeaderInfo`) are annotated:
+In addition to the field names, header information (`@UI.HeaderInfo`) are also annotated:
 
 | Header Info      | i18n Code     |  
 |------------------|---------------|
