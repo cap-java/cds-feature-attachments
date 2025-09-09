@@ -112,7 +112,7 @@ The UI Facet can also be added directly after other UI Facets in a `cds` file in
 By default, the plugin operates without a dedicated storage target, storing attachments directly in the [underlying database](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L17).
 
 Other available storage targets:
-- [Amazon, Azure and Google Object Stores](storage-targets/cds-feature-attachments-oss)
+- [Amazon, Azure, and Google Object Stores](storage-targets/cds-feature-attachments-oss)
 - [local file system as a storage backend](storage-targets/cds-feature-attachments-fs) (only for testing scenarios)
 
 When using a dedicated storage target, the attachment is not stored in the underlying database; instead, it is saved on the specified storage target and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
@@ -120,7 +120,7 @@ When using a dedicated storage target, the attachment is not stored in the under
 ### Malware Scanner
 
 This plugin checks for a binding to
-the [SAP Malware Scanning Service](https://help.sap.com/docs/malware-scanning-servce), this needs to have the label `malware-scanner`. The entry in the [mta-file](https://cap.cloud.sap/docs/guides/deployment/to-cf#add-mta-yaml) may look like:
+the [SAP Malware Scanning Service](https://help.sap.com/docs/malware-scanning-servce), which needs to have the label `malware-scanner`. The entry in the [mta-file](https://cap.cloud.sap/docs/guides/deployment/to-cf#add-mta-yaml) may look like:
 
 ```
 _schema-version: '0.1'
