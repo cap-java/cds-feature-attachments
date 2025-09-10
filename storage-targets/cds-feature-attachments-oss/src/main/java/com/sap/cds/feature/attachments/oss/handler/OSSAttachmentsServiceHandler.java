@@ -9,7 +9,6 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCod
 import com.sap.cds.feature.attachments.oss.client.AWSClient;
 import com.sap.cds.feature.attachments.oss.client.AzureClient;
 import com.sap.cds.feature.attachments.oss.client.GoogleClient;
-import com.sap.cds.feature.attachments.oss.client.MockOSClient;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -47,7 +46,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
    *
    * <p>The handler will automatically detect the storage backend (AWS S3, Azure Blob Storage,
    * Google Cloud Storage) based on the credentials in the service binding. If no valid binding is
-   * found, a {@link MockOSClient} is used as fallback.
+   * found, an {@link ObjectStoreServiceException} is thrown.
    *
    * <ul>
    *   <li>For AWS, the binding must contain a "host" with "aws", "s3", or "amazon".
@@ -57,6 +56,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
    * </ul>
    *
    * @param binding the {@link ServiceBinding} containing credentials for the object store service
+   * @throws ObjectStoreServiceException if no valid object store service binding is found
    */
   public OSSAttachmentsServiceHandler(ServiceBinding binding, ExecutorService executor) {
     final String host = (String) binding.getCredentials().get("host"); // AWS
@@ -64,10 +64,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     final String base64EncodedPrivateKeyData =
         (String) binding.getCredentials().get("base64EncodedPrivateKeyData"); // GCP
 
-    // In the follwing, we check the service binding credentials to determine which client to use.
-    // We do *not* throw exceptions here, as we want to provide a fallback to the MockOSClient if no
-    // valid service binding is found.
-    // Then the rest of the application still works, but without actual attachment storage.
+    // Check the service binding credentials to determine which client to use.
     if (host != null && Stream.of("aws", "s3", "amazon").anyMatch(host::contains)) {
       this.osClient = new AWSClient(binding, executor);
     } else if (containerUri != null
@@ -80,25 +77,23 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
             new String(
                 Base64.getDecoder().decode(base64EncodedPrivateKeyData), StandardCharsets.UTF_8);
       } catch (IllegalArgumentException e) {
-        logger.error(
-            "No valid base64EncodedPrivateKeyData found in Google service binding {}, hence the attachment service is not connected!",
-            binding);
+        throw new ObjectStoreServiceException(
+            "No valid base64EncodedPrivateKeyData found in Google service binding: %s"
+                .formatted(binding),
+            e);
       }
       // Redeclaring is needed here to make the variable effectively final for the lambda expression
       final String dec = decoded;
       if (Stream.of("google", "gcp").anyMatch(dec::contains)) {
         this.osClient = new GoogleClient(binding, executor);
       } else {
-        logger.error(
-            "No valid Google service binding found in binding {}, hence the attachment service is not connected!",
-            binding);
-        this.osClient = new MockOSClient();
+        throw new ObjectStoreServiceException(
+            "No valid Google service binding found in binding: %s".formatted(binding));
       }
     } else {
-      logger.error(
-          "No valid service found in binding {}, hence the attachment service is not connected!",
-          binding);
-      this.osClient = new MockOSClient();
+      throw new ObjectStoreServiceException(
+          "No valid object store service found in binding: %s. Please ensure you have a valid AWS S3, Azure Blob Storage, or Google Cloud Storage service binding."
+              .formatted(binding));
     }
   }
 
@@ -122,7 +117,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
       context.setCompleted();
     } catch (ObjectStoreServiceException ex) {
       context.setCompleted();
-      throw new ServiceException("Failed to upload file " + fileName, ex);
+      throw new ServiceException("Failed to upload file %s".formatted(fileName), ex);
     }
   }
 
@@ -139,7 +134,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     } catch (ObjectStoreServiceException ex) {
       context.setCompleted();
       throw new ServiceException(
-          "Failed to delete file with document id " + context.getContentId(), ex);
+          "Failed to delete file with document id %s".formatted(context.getContentId()), ex);
     }
   }
 
@@ -173,7 +168,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
       context.getData().setContent(new ByteArrayInputStream(new byte[0]));
       context.setCompleted();
       throw new ServiceException(
-          "Failed to read file with document id " + context.getContentId(), ex);
+          "Failed to read file with document id %s".formatted(context.getContentId()), ex);
     }
   }
 }
