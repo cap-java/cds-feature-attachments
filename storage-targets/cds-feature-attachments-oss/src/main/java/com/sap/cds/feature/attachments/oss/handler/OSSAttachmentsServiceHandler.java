@@ -78,7 +78,9 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
                 Base64.getDecoder().decode(base64EncodedPrivateKeyData), StandardCharsets.UTF_8);
       } catch (IllegalArgumentException e) {
         throw new ObjectStoreServiceException(
-            "No valid base64EncodedPrivateKeyData found in Google service binding: " + binding, e);
+            "No valid base64EncodedPrivateKeyData found in Google service binding: %s"
+                .formatted(binding),
+            e);
       }
       // Redeclaring is needed here to make the variable effectively final for the lambda expression
       final String dec = decoded;
@@ -86,13 +88,12 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
         this.osClient = new GoogleClient(binding, executor);
       } else {
         throw new ObjectStoreServiceException(
-            "No valid Google service binding found in binding: " + binding);
+            "No valid Google service binding found in binding: %s".formatted(binding));
       }
     } else {
       throw new ObjectStoreServiceException(
-          "No valid object store service found in binding: "
-              + binding
-              + ". Please ensure you have a valid AWS S3, Azure Blob Storage, or Google Cloud Storage service binding.");
+          "No valid object store service found in binding: %s. Please ensure you have a valid AWS S3, Azure Blob Storage, or Google Cloud Storage service binding."
+              .formatted(binding));
     }
   }
 
@@ -116,7 +117,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
       context.setCompleted();
     } catch (ObjectStoreServiceException ex) {
       context.setCompleted();
-      throw new ServiceException("Failed to upload file " + fileName, ex);
+      throw new ServiceException("Failed to upload file %s".formatted(fileName), ex);
     }
   }
 
@@ -133,7 +134,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     } catch (ObjectStoreServiceException ex) {
       context.setCompleted();
       throw new ServiceException(
-          "Failed to delete file with document id " + context.getContentId(), ex);
+          "Failed to delete file with document id %s".formatted(context.getContentId()), ex);
     }
   }
 
@@ -167,7 +168,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
       context.getData().setContent(new ByteArrayInputStream(new byte[0]));
       context.setCompleted();
       throw new ServiceException(
-          "Failed to read file with document id " + context.getContentId(), ex);
+          "Failed to read file with document id %s".formatted(context.getContentId()), ex);
     }
   }
 }
