@@ -115,9 +115,9 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
       context.setContentId(contentId);
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
-      throw new ServiceException("Failed to upload file %s".formatted(fileName), ex);
+      throw new ServiceException("Failed to upload file {}", fileName, ex);
     } catch (ObjectStoreServiceException | ExecutionException ex) {
-      throw new ServiceException("Failed to upload file %s".formatted(fileName), ex);
+      throw new ServiceException("Failed to upload file {}", fileName, ex);
     } finally {
       context.setCompleted();
     }
@@ -134,10 +134,10 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
       throw new ServiceException(
-          "Failed to delete file with document id %s".formatted(context.getContentId()), ex);
+          "Failed to delete file with document id {}", context.getContentId(), ex);
     } catch (ObjectStoreServiceException | ExecutionException ex) {
       throw new ServiceException(
-          "Failed to delete file with document id %s".formatted(context.getContentId()), ex);
+          "Failed to delete file with document id {}", context.getContentId(), ex);
     } finally {
       context.setCompleted();
     }
@@ -170,10 +170,10 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
       throw new ServiceException(
-          "Failed to read file with document id %s".formatted(context.getContentId()), ex);
+          "Failed to read file with document id {}", context.getContentId(), ex);
     } catch (ObjectStoreServiceException | ExecutionException ex) {
       throw new ServiceException(
-          "Failed to read file with document id %s".formatted(context.getContentId()), ex);
+          "Failed to read file with document id {}", context.getContentId(), ex);
     } finally {
       context.setCompleted();
     }
