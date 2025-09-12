@@ -17,6 +17,8 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
+import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.ServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -51,10 +53,7 @@ class OSSAttachmentsServiceHandlerTest {
 
   @Test
   void testCreateAttachmentCallsOsClientUploadContent()
-      throws NoSuchFieldException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
+      throws NoSuchFieldException, IllegalAccessException {
     OSClient mockOsClient = mock(OSClient.class);
     // Mock the handler, but call the real method readAttachment
     OSSAttachmentsServiceHandler handler =
@@ -95,10 +94,7 @@ class OSSAttachmentsServiceHandlerTest {
 
   @Test
   void testReadAttachmentCallsOsClientReadContent()
-      throws NoSuchFieldException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
+      throws NoSuchFieldException, IllegalAccessException {
     OSClient mockOsClient = mock(OSClient.class);
     // Mock the handler, but call the real method readAttachment
     OSSAttachmentsServiceHandler handler =
@@ -126,10 +122,7 @@ class OSSAttachmentsServiceHandlerTest {
 
   @Test
   void testReadAttachmentCallsOsClientReadNullContent()
-      throws NoSuchFieldException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
+      throws NoSuchFieldException, IllegalAccessException {
     OSClient mockOsClient = mock(OSClient.class);
     // Mock the handler, but call the real method readAttachment
     OSSAttachmentsServiceHandler handler =
@@ -155,10 +148,7 @@ class OSSAttachmentsServiceHandlerTest {
 
   @Test
   void testMarkAttachmentAsDeletedCallsOsClientDeleteContent()
-      throws NoSuchFieldException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
+      throws NoSuchFieldException, IllegalAccessException {
     OSClient mockOsClient = mock(OSClient.class);
     // Mock the handler, but call the real method readAttachment
     OSSAttachmentsServiceHandler handler =
@@ -240,5 +230,159 @@ class OSSAttachmentsServiceHandlerTest {
         () -> {
           new OSSAttachmentsServiceHandler(binding, executor);
         });
+  }
+
+  // Helper method to setup common mocks for createAttachment exception tests
+  private AttachmentCreateEventContext setupCreateAttachmentContext(
+      OSClient mockOsClient, OSSAttachmentsServiceHandler handler, Exception exceptionToThrow)
+      throws NoSuchFieldException,
+          IllegalAccessException,
+          InterruptedException,
+          ExecutionException {
+
+    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    field.setAccessible(true);
+    field.set(handler, mockOsClient);
+
+    AttachmentCreateEventContext context = mock(AttachmentCreateEventContext.class);
+    MediaData mockMediaData = mock(MediaData.class);
+    CdsEntity mockEntity = mock(CdsEntity.class);
+    HashMap<String, Object> attachmentIds = new HashMap<>();
+    attachmentIds.put("ID", "test-id");
+
+    when(context.getAttachmentIds()).thenReturn(attachmentIds);
+    when(context.getData()).thenReturn(mockMediaData);
+    when(context.getAttachmentEntity()).thenReturn(mockEntity);
+    when(mockEntity.getQualifiedName()).thenReturn("TestEntity");
+    when(mockMediaData.getFileName()).thenReturn("test.txt");
+    when(mockMediaData.getContent()).thenReturn(new ByteArrayInputStream("test".getBytes()));
+    when(mockMediaData.getMimeType()).thenReturn("text/plain");
+
+    @SuppressWarnings("unchecked")
+    CompletableFuture<Void> future = mock(CompletableFuture.class);
+    when(mockOsClient.uploadContent(any(InputStream.class), anyString(), anyString()))
+        .thenReturn(future);
+    when(future.get()).thenThrow(exceptionToThrow);
+
+    return context;
+  }
+
+  @Test
+  void testCreateAttachmentExceptionHandling()
+      throws NoSuchFieldException,
+          IllegalAccessException,
+          InterruptedException,
+          ExecutionException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    // Test InterruptedException
+    AttachmentCreateEventContext context1 =
+        setupCreateAttachmentContext(
+            mockOsClient, handler, new InterruptedException("Thread interrupted"));
+    assertThrows(ServiceException.class, () -> handler.createAttachment(context1));
+    verify(context1).setCompleted();
+
+    // Test ObjectStoreServiceException
+    AttachmentCreateEventContext context2 =
+        setupCreateAttachmentContext(
+            mockOsClient, handler, new ObjectStoreServiceException("Upload failed"));
+    assertThrows(ServiceException.class, () -> handler.createAttachment(context2));
+    verify(context2).setCompleted();
+
+    // Test ExecutionException
+    AttachmentCreateEventContext context3 =
+        setupCreateAttachmentContext(
+            mockOsClient, handler, new ExecutionException("Upload failed", new RuntimeException()));
+    assertThrows(ServiceException.class, () -> handler.createAttachment(context3));
+    verify(context3).setCompleted();
+  }
+
+  // Helper method to setup common mocks for markAttachmentAsDeleted exception tests
+  private AttachmentMarkAsDeletedEventContext setupMarkAsDeletedContext(
+      OSClient mockOsClient, OSSAttachmentsServiceHandler handler, Exception exceptionToThrow)
+      throws NoSuchFieldException,
+          IllegalAccessException,
+          InterruptedException,
+          ExecutionException {
+
+    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    field.setAccessible(true);
+    field.set(handler, mockOsClient);
+
+    AttachmentMarkAsDeletedEventContext context = mock(AttachmentMarkAsDeletedEventContext.class);
+    String contentId = "test-content-id";
+
+    when(context.getContentId()).thenReturn(contentId);
+
+    @SuppressWarnings("unchecked")
+    CompletableFuture<Void> future = mock(CompletableFuture.class);
+    when(mockOsClient.deleteContent(contentId)).thenReturn(future);
+    when(future.get()).thenThrow(exceptionToThrow);
+
+    return context;
+  }
+
+  @Test
+  void testMarkAttachmentAsDeletedExceptionHandling()
+      throws NoSuchFieldException,
+          IllegalAccessException,
+          InterruptedException,
+          ExecutionException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    // Test InterruptedException
+    AttachmentMarkAsDeletedEventContext context1 =
+        setupMarkAsDeletedContext(
+            mockOsClient, handler, new InterruptedException("Thread interrupted"));
+    assertThrows(ServiceException.class, () -> handler.markAttachmentAsDeleted(context1));
+    verify(context1).setCompleted();
+
+    // Test ObjectStoreServiceException
+    AttachmentMarkAsDeletedEventContext context2 =
+        setupMarkAsDeletedContext(
+            mockOsClient, handler, new ObjectStoreServiceException("Delete failed"));
+    assertThrows(ServiceException.class, () -> handler.markAttachmentAsDeleted(context2));
+    verify(context2).setCompleted();
+
+    // Test ExecutionException
+    AttachmentMarkAsDeletedEventContext context3 =
+        setupMarkAsDeletedContext(
+            mockOsClient, handler, new ExecutionException("Delete failed", new RuntimeException()));
+    assertThrows(ServiceException.class, () -> handler.markAttachmentAsDeleted(context3));
+    verify(context3).setCompleted();
+  }
+
+  @Test
+  void testReadAttachmentHandlesInterruptedException()
+      throws NoSuchFieldException,
+          IllegalAccessException,
+          InterruptedException,
+          ExecutionException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+
+    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    field.setAccessible(true);
+    field.set(handler, mockOsClient);
+
+    String contentId = "doc123";
+    MediaData mockMediaData = mock(MediaData.class);
+
+    when(context.getContentId()).thenReturn(contentId);
+    when(context.getData()).thenReturn(mockMediaData);
+
+    @SuppressWarnings("unchecked")
+    CompletableFuture<InputStream> future = mock(CompletableFuture.class);
+    when(mockOsClient.readContent(contentId)).thenReturn(future);
+    when(future.get()).thenThrow(new InterruptedException("Thread interrupted"));
+
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+    verify(context).setCompleted();
   }
 }
