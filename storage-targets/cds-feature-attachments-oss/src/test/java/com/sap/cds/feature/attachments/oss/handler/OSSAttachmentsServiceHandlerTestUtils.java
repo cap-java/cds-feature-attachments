@@ -97,6 +97,7 @@ public class OSSAttachmentsServiceHandlerTestUtils {
 
     // Try to read again, this will throw
     assertThrows(Exception.class, () -> handler.readAttachment(readContext));
+    verify(deleteContext).setCompleted();
   }
 
   // Helper to access private static osClient

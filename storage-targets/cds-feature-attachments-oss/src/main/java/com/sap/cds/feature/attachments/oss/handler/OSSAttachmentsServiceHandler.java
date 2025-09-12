@@ -98,8 +98,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
   }
 
   @On
-  void createAttachment(AttachmentCreateEventContext context)
-      throws InterruptedException, ExecutionException {
+  void createAttachment(AttachmentCreateEventContext context) {
     logger.info(
         "OS Attachment Service handler called for creating attachment for entity {}",
         context.getAttachmentEntity().getQualifiedName());
@@ -114,27 +113,33 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
       context.getData().setStatus(StatusCode.SCANNING);
       context.setIsInternalStored(false);
       context.setContentId(contentId);
-      context.setCompleted();
-    } catch (ObjectStoreServiceException ex) {
-      context.setCompleted();
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
       throw new ServiceException("Failed to upload file %s".formatted(fileName), ex);
+    } catch (ObjectStoreServiceException | ExecutionException ex) {
+      throw new ServiceException("Failed to upload file %s".formatted(fileName), ex);
+    } finally {
+      context.setCompleted();
     }
   }
 
   @On
-  void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context)
-      throws InterruptedException, ExecutionException {
+  void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
     logger.info(
         "OS Attachment Service handler called for marking attachment as deleted with document id {}",
         context.getContentId());
 
     try {
       osClient.deleteContent(context.getContentId()).get();
-      context.setCompleted();
-    } catch (ObjectStoreServiceException ex) {
-      context.setCompleted();
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
       throw new ServiceException(
           "Failed to delete file with document id %s".formatted(context.getContentId()), ex);
+    } catch (ObjectStoreServiceException | ExecutionException ex) {
+      throw new ServiceException(
+          "Failed to delete file with document id %s".formatted(context.getContentId()), ex);
+    } finally {
+      context.setCompleted();
     }
   }
 
@@ -149,8 +154,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
   }
 
   @On
-  void readAttachment(AttachmentReadEventContext context)
-      throws InterruptedException, ExecutionException {
+  void readAttachment(AttachmentReadEventContext context) {
     logger.info(
         "OS Attachment Service handler called for reading attachment with document id: {}",
         context.getContentId());
@@ -163,12 +167,15 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
         logger.error("Document not found for id {}", context.getContentId());
         context.getData().setContent(new ByteArrayInputStream(new byte[0]));
       }
-      context.setCompleted();
-    } catch (ObjectStoreServiceException ex) {
-      context.getData().setContent(new ByteArrayInputStream(new byte[0]));
-      context.setCompleted();
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
       throw new ServiceException(
           "Failed to read file with document id %s".formatted(context.getContentId()), ex);
+    } catch (ObjectStoreServiceException | ExecutionException ex) {
+      throw new ServiceException(
+          "Failed to read file with document id %s".formatted(context.getContentId()), ex);
+    } finally {
+      context.setCompleted();
     }
   }
 }
