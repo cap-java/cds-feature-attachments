@@ -4,6 +4,9 @@
       "outbox": {
         "kind": "persistent-outbox"
       }
+    },
+    "fiori": {
+      "draft_messages": false
     }
   }
 }
