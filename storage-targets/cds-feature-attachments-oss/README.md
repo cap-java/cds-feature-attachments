@@ -4,7 +4,7 @@ This artifact uses the an Object Store as the storage target instead of the unde
 
 Then, the attachment is not stored in the underlying database; instead, it is saved in the respective Object Store, and only a reference to the file is kept in the database, as defined in the [CDS model](../../cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
 
-To do this, replace the `cds-feature-attachments` dependency in your `pom.xml` with:
+To do this, replace the `cds-feature-attachments` dependency in the `pom.xml` with:
 
 ```xml
 <dependency>
@@ -14,7 +14,26 @@ To do this, replace the `cds-feature-attachments` dependency in your `pom.xml` w
 </dependency>
 ```
 
-A valid Object Store service binding is required for this — for example, one provisioned through SAP BTP. The corresponding entry in the [mta-file](https://cap.cloud.sap/docs/guides/deployment/to-cf#add-mta-yaml) possibly looks like:
+A valid Object Store service binding is required for this, typically one provisioned through SAP BTP. See [Local development](#local-development) and [Deployment to Cloud Foundry](#deployment-to-cloud-foundry) on how to use this object store service binding.
+
+## Local development
+
+For local development, bind to an Object Store service using the `cds bind` command as described in the [CAP documentation for hybrid testing](https://cap.cloud.sap/docs/advanced/hybrid-testing#services-on-cloud-foundry):
+
+```bash
+cds bind <service-instance-name>
+```
+
+This will create an entry in the `.cdsrc-private.json` file with the service binding configuration. Then start the application with:
+
+```bash
+cds bind --exec mvn spring-boot:run
+```
+
+If such a binding is not available, use the underlying database as the storage target instead of an Object Store, so use the dependency `cds-feature-attachments` (not `cds-feature-attachments-oss`).
+
+## Deployment to Cloud Foundry
+The corresponding entry in the [mta-file](https://cap.cloud.sap/docs/guides/deployment/to-cf#add-mta-yaml) possibly looks like:
 
 ```
 _schema-version: '0.1'
@@ -38,11 +57,11 @@ modules:
       - name: consuming-app-hdi-container
       - name: consuming-app-uaa
       - name: cf-logging
-      - name: object-store-service
+      - name: **object-store-service**
 ...
 resources:
   ...
-  - name: object-store-service
+  - name: **object-store-service**
     type: org.cloudfoundry.managed-service
     parameters:
       service: objectstore
