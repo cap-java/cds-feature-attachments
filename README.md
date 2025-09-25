@@ -16,6 +16,7 @@ It supports the [AWS, Azure, and Google object stores](storage-targets/cds-featu
 * [Usage](#usage)
   * [MVN Setup](#mvn-setup)
   * [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
+  * [OData Containment Configuration](#odata-containment-configuration)
   * [Storage Targets](#storage-targets)
   * [Malware Scanner](#malware-scanner)
   * [Outbox](#outbox)
@@ -106,6 +107,20 @@ To use this file with the [incidents app](https://github.com/cap-java/incidents-
   ```
 
 The UI Facet can also be added directly after other UI Facets in a `cds` file in the `app` folder.
+
+### OData Containment Configuration
+
+It's necessary to enable OData containment in the `.cdsrc.json` file of the application:
+
+```json
+{
+  "odata": {
+    "containment": true
+  }
+}
+```
+
+This setting ensures proper handling of composition relationships between parent entities and their attachments, enabling correct ETag management and request processing for attachment operations.
 
 ### Storage Targets
 
