@@ -65,7 +65,7 @@
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.34.4</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-s3-version>2.34.5</software.amazon.awssdk-s3-version>
     <software.amazon.awssdk-crt-version>0.39.0</software.amazon.awssdk-crt-version>
 
     <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
