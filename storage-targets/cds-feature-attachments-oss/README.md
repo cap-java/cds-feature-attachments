@@ -1,6 +1,6 @@
 ### General Info
 
-This artifact uses the an Object Store as the storage target instead of the underlying database.
+This artifact uses an Object Store as the storage target instead of the underlying database.
 
 Then, the attachment is not stored in the underlying database; instead, it is saved in the respective Object Store, and only a reference to the file is kept in the database, as defined in the [CDS model](../../cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
 
