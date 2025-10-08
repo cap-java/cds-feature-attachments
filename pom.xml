@@ -65,7 +65,7 @@
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.34.6</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-s3-version>2.35.0</software.amazon.awssdk-s3-version>
     <software.amazon.awssdk-crt-version>0.39.0</software.amazon.awssdk-crt-version>
 
     <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
@@ -226,7 +226,7 @@
         <plugin>
           <groupId>org.pitest</groupId>
           <artifactId>pitest-maven</artifactId>
-          <version>1.20.3</version>
+          <version>1.20.5</version>
         </plugin>
         <plugin>
           <groupId>com.github.spotbugs</groupId>
