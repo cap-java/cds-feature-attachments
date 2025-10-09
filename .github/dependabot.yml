@@ -4,14 +4,21 @@ updates:
     directories:
       - "/"
     schedule:
-      interval: daily
-    open-pull-requests-limit: 10
+      interval: weekly
     ignore:
     - dependency-name:  com.sap.cds:*
       versions:
       - ">=4"
+    groups:
+      all-updates:
+        patterns:
+          - "*"
 
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: daily
+      interval: weekly
+    groups:
+      all-updates:
+        patterns:
+          - "*"
