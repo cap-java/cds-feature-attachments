@@ -24,6 +24,9 @@ runs:
       with:
         maven-version: ${{ inputs.maven-version }}
 
+    - name: Integration Tests with LTS version of CAP Java
+      run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml
+      shell: bash
     - name: Integration Tests with latest version of CAP Java
       run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml -P latest-test-version
       shell: bash
