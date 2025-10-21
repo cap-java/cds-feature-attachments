@@ -6,6 +6,7 @@
     <groupId>com.sap.cds</groupId>
     <artifactId>cds-feature-attachments-root</artifactId>
     <version>${revision}</version>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <groupId>com.sap.cds.integration-tests</groupId>

@@ -29,6 +29,9 @@
             <goals>
               <goal>resolve</goal>
             </goals>
+            <configuration>
+              <workingDirectory>${project.basedir}/..</workingDirectory>
+            </configuration>
           </execution>
         </executions>
       </plugin>
