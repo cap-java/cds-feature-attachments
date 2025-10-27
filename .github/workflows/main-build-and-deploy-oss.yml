@@ -64,7 +64,7 @@ jobs:
       GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: root-new-version
 
@@ -96,7 +96,7 @@ jobs:
     needs: [blackduck, build]
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: root-build
 
