@@ -1,0 +1,29 @@
+spring:
+  config.activate.on-profile: default
+  sql.init.schema-locations: classpath:schema-h2.sql
+  web.resources.static-locations: classpath:cds/com.sap.cds/incident_management/app
+cds:
+  data-source.auto-config.enabled: false
+  data-source.csv.paths: 
+    - "target/cds/**"
+    - "../target/cds/**"
+  security:
+    mock.users:
+      alice:
+        roles: [ admin, support ]
+      bob:
+        roles: [ support ]  
+---
+management:
+  endpoint:
+    health:
+      show-components: always
+      probes.enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    defaults.enabled: false
+    ping.enabled: true
+    db.enabled: true
