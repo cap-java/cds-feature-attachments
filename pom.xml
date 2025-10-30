@@ -94,7 +94,7 @@
       <dependency>
         <groupId>com.sap.cloud.sdk</groupId>
         <artifactId>sdk-bom</artifactId>
-        <version>5.22.0</version>
+        <version>5.24.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
