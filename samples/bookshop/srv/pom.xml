@@ -2,15 +2,15 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<artifactId>incident-app-impl-parent</artifactId>
-		<groupId>customer</groupId>
+		<artifactId>bookshop-parent</artifactId>
+		<groupId>com.sap.capire</groupId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>incident-app-impl</artifactId>
+	<artifactId>bookshop</artifactId>
 	<packaging>jar</packaging>
 
-	<name>incident-app-impl</name>
+	<name>bookshop</name>
 
 	<!-- ACTUAL DEPENDENCIES -->
 	<dependencies>
@@ -45,10 +45,9 @@
 		</dependency>
 
 		<dependency>
-				<groupId>com.sap.cds</groupId>
-				<artifactId>incident_management</artifactId>
-				<version>${revision}</version>
-			</dependency>
+			<groupId>com.sap.cds</groupId>
+			<artifactId>cds-feature-attachments</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

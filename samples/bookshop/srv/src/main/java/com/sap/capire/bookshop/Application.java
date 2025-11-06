@@ -1,4 +1,4 @@
-package customer.incident_app;
+package com.sap.capire.bookshop;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
