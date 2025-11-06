@@ -6,19 +6,25 @@ updates:
     schedule:
       interval: weekly
     ignore:
-    - dependency-name:  com.sap.cds:*
-      versions:
-      - ">=4"
+      - dependency-name: "com.sap.cds:*"
+        versions:
+          - ">=4"
     groups:
-      all-updates:
+      minor-patch:
         patterns:
           - "*"
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
     groups:
-      all-updates:
+      minor-patch:
         patterns:
           - "*"
+        update-types:
+          - minor
+          - patch
