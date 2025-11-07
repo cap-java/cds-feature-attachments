@@ -98,6 +98,11 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     };
   }
 
+  // This function checks if the WHERE clause of the CQN is empty.
+  // This is the current way to verify that we are really cancelling a draft and not doing sth else.
+  // Also see here:
+  // https://github.com/cap-java/cds-feature-attachments/blob/main/doc/Design.md#events
+  // Unfortunately, context.getEvent() does not return a reliable value in this case.
   private boolean isWhereEmpty(DraftCancelEventContext context) {
     return context.getCqn().where().isEmpty();
   }
