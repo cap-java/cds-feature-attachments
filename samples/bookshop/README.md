@@ -4,7 +4,7 @@ This sample demonstrates how to use the `cds-feature-attachments` plugin in a CA
 
 ## What This Sample Demonstrates
 
-- Integration of the attachments plugin with CAP Java
+- Integration of the latest attachments plugin with CAP Java
 - Extending existing entities with attachment capabilities
 - UI integration with Fiori elements applications
 - Basic attachment operations (upload, download, delete)
