@@ -18,7 +18,7 @@ runs:
         
     - name: Compile sample
       shell: bash
-      working-directory: sample/bookshop
+      working-directory: samples/bookshop
       run: mvn compile test-compile -B -V
       
     - name: Run tests
