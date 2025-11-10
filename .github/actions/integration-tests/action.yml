@@ -25,10 +25,10 @@ runs:
         maven-version: ${{ inputs.maven-version }}
 
     - name: Integration Tests with version of CAP Java used for build
-      run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml
+      run: mvn clean verify -ntp -B -f ./samples/integration-tests/pom.xml
       shell: bash
     - name: Integration Tests with latest version of CAP Java
-      run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml -P latest-test-version
+      run: mvn clean verify -ntp -B -f ./samples/integration-tests/pom.xml -P latest-test-version
       shell: bash
     - name: Integration Tests for the object store service
       run: mvn clean verify -Pintegration-tests-oss
