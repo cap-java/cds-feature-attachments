@@ -11,28 +11,29 @@ It supports the [AWS, Azure, and Google object stores](storage-targets/cds-featu
 ## Table of Contents
 
 <!-- TOC -->
-
-* [Quick Start](#quick-start)
-* [Usage](#usage)
-  * [MVN Setup](#mvn-setup)
-  * [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
-  * [Storage Targets](#storage-targets)
-  * [Malware Scanner](#malware-scanner)
-  * [Outbox](#outbox)
-  * [Restore Endpoint](#restore-endpoint)
-    * [Motivation](#motivation)
-    * [HTTP Endpoint](#http-endpoint)
-    * [Security](#security)
-* [Releases: Maven Central and Artifactory](#releases-maven-central-and-artifactory)
-* [Minimum UI and CAP Java Version](#minimum-ui5-and-cap-java-version)
-* [Architecture Overview](#architecture-overview)
-  * [Design](#design)
-  * [Multitenancy](#multitenancy)
-  * [Object Stores](#object-stores)
-  * [Model Texts](#model-texts)
-* [Monitoring & Logging](#monitoring--logging)
-* [Support, Feedback, Contributing](#support-feedback-contributing)
-* [References & Links](#references--links)
+- [Attachments Plugin for SAP Cloud Application Programming Model (CAP)](#attachments-plugin-for-sap-cloud-application-programming-model-cap)
+  - [Table of Contents](#table-of-contents)
+  - [Quick Start](#quick-start)
+  - [Usage](#usage)
+    - [Try the Bookshop Sample](#try-the-bookshop-sample)
+    - [Integration in Your Project](#integration-in-your-project)
+    - [Storage Targets](#storage-targets)
+    - [Malware Scanner](#malware-scanner)
+    - [Outbox](#outbox)
+    - [Restore Endpoint](#restore-endpoint)
+      - [Motivation](#motivation)
+      - [HTTP Endpoint](#http-endpoint)
+      - [Security](#security)
+  - [Releases: Maven Central and Artifactory](#releases-maven-central-and-artifactory)
+  - [Minimum UI5 and CAP Java Version](#minimum-ui5-and-cap-java-version)
+  - [Architecture Overview](#architecture-overview)
+    - [Design](#design)
+    - [Multitenancy](#multitenancy)
+    - [Object Stores](#object-stores)
+    - [Model Texts](#model-texts)
+  - [Monitoring \& Logging](#monitoring--logging)
+  - [Support, Feedback, Contributing](#support-feedback-contributing)
+  - [References \& Links](#references--links)
 
 ## Quick Start
 
@@ -40,72 +41,80 @@ For a quick setup with in-memory storage:
 - Add the `cds-feature-attachments` Maven dependency to the `srv/pom.xml` and configure the `cds-maven-plugin` with the `resolve` goal as described in [MVN Setup](#mvn-setup).
 - Extend the CDS model with the `Attachments` aspect and annotate the service for UI integration as explained in [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI).
 
-The [incidents app](https://github.com/cap-java/incidents-app/) provides a demonstration of how to use this plugin.
+For a complete working example, see the [bookshop sample](samples/bookshop/).
 
 For object store integration, see [Amazon, Azure, and Google Object Stores](storage-targets/cds-feature-attachments-oss).
 
 ## Usage
 
-### MVN Setup
+### Try the Bookshop Sample
 
-As described in the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project), the attachments plugin needs to be referenced in the `srv/pom.xml` of the consuming CAP Java application:
+The easiest way to get started is with the included [bookshop sample](samples/bookshop/):
 
-```xml
-<dependency>
-    <groupId>com.sap.cds</groupId>
-    <artifactId>cds-feature-attachments</artifactId>
-    <version>${latest-version}</version>
-</dependency>
+```bash
+cd samples/bookshop
+npm install
+mvn clean install
+mvn spring-boot:run
 ```
-Additionally, the `cds-maven-plugin` must be configured with the `resolve` goal to ensure CDS models from dependencies are available.
-For this, add the following to the `srv/pom.xml` before the entry `build` as well:
 
-```xml
-<plugin>
-    <groupId>com.sap.cds</groupId>
-    <artifactId>cds-maven-plugin</artifactId>
-    <version>${cds.services.version}</version>
-    <executions>
-        <execution>
-            <id>cds.resolve</id>
-            <goals>
-                <goal>resolve</goal>
-            </goals>
-        </execution>
-    </executions>
-</plugin>
-```
-After that, the aspect `Attachments` can be used in the application's CDS model.
+Then browse to http://localhost:8080/browse/index.html to see attachments in action.
 
-### Changes in the CDS Models and for the UI
+For detailed setup instructions and implementation details, see the [bookshop sample README](samples/bookshop/README.md).
 
-To use the aspect `Attachments` on an existing entity, the corresponding entity needs to be extended in a CDS file in the `srv` module.
-The following example shows how to extend the entity `Incidents` in the `srv` module with an additional `attachments.cds` file, it also directly adds the respective UI Facet.
-To use this file with the [incidents app](https://github.com/cap-java/incidents-app/), check out the source code, copy the [file from the xmpls folder](https://github.com/cap-java/incidents-app/blob/main/xmpls/attachments.cds) to the srv folder and run the app as explained in the [incidents app README](https://github.com/cap-java/incidents-app/blob/main/README.md).
+### Integration in Your Project
 
-  ```cds
-  using { sap.capire.incidents as my } from '../db/schema';
-  using { sap.attachments.Attachments } from 'com.sap.cds/cds-feature-attachments';
+To integrate the attachments plugin in your own CAP Java project:
 
-  extend my.Incidents with {
-    attachments: Composition of many Attachments;
-  }
+1. **Add Maven dependency** in `srv/pom.xml`:
+   ```xml
+   <dependency>
+       <groupId>com.sap.cds</groupId>
+       <artifactId>cds-feature-attachments</artifactId>
+       <version>${latest-version}</version>
+   </dependency>
+   ```
 
-  using { ProcessorService as service } from '../app/services';
-  annotate service.Incidents with @(
-    UI.Facets: [
-      ...,
-      {
-        $Type  : 'UI.ReferenceFacet',
-        ID     : 'AttachmentsFacet',
-        Label  : '{i18n>attachments}',
-        Target : 'attachments/@UI.LineItem'
-      }
-    ]
-  );
-  ```
+2. **Configure the Maven plugin** to resolve CDS models from dependencies:
+   ```xml
+   <plugin>
+       <groupId>com.sap.cds</groupId>
+       <artifactId>cds-maven-plugin</artifactId>
+       <executions>
+           <execution>
+               <id>cds.resolve</id>
+               <goals>
+                   <goal>resolve</goal>
+               </goals>
+           </execution>
+       </executions>
+   </plugin>
+   ```
 
-The UI Facet can also be added directly after other UI Facets in a `cds` file in the `app` folder.
+3. **Extend your entity** with attachments in a `.cds` file:
+   ```cds
+   using { sap.attachments.Attachments } from 'com.sap.cds/cds-feature-attachments';
+   
+   extend my.YourEntity with {
+     attachments: Composition of many Attachments;
+   }
+   ```
+
+4. **Add UI annotations** for Fiori integration:
+   ```cds
+   annotate service.YourEntity with @(
+     UI.Facets: [
+       {
+         $Type  : 'UI.ReferenceFacet',
+         ID     : 'AttachmentsFacet',
+         Label  : '{i18n>attachments}',
+         Target : 'attachments/@UI.LineItem'
+       }
+     ]
+   );
+   ```
+
+For complete examples and troubleshooting, see the [bookshop sample](samples/bookshop/).
 
 ### Storage Targets
 
