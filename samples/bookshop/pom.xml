@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.sap.capire</groupId>
+	<groupId>customer</groupId>
 	<artifactId>bookshop-parent</artifactId>
 	<version>${revision}</version>
 	<packaging>pom</packaging>
@@ -19,7 +19,6 @@
 		<jdk.version>17</jdk.version>
 		<cds.services.version>4.4.0</cds.services.version>
 		<spring.boot.version>3.5.6</spring.boot.version>
-		<cds.feature.attachments>1.2.1</cds.feature.attachments>
 
 		<cds.install-node.downloadUrl>https://nodejs.org/dist/</cds.install-node.downloadUrl>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -52,7 +51,7 @@
 			<dependency>
 				<groupId>com.sap.cds</groupId>
 				<artifactId>cds-feature-attachments</artifactId>
-				<version>${cds.feature.attachments}</version>
+				<version>1.2.1</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
