@@ -107,32 +107,3 @@ jobs:
           DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
           DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
         shell: bash
-  build-sample:
-    name: Build sample and run tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-      - name: Set up Java ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v5
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: sapmachine
-          cache: maven
-          server-id: artifactory
-          server-username: DEPLOYMENT_USER
-          server-password: DEPLOYMENT_PASS
-      - name: Set up Maven ${{ env.MAVEN_VERSION }}
-        uses: stCarolas/setup-maven@v5
-        with:
-          maven-version: ${{ env.MAVEN_VERSION }}
-      - name: Build Bookshop App (with test compilation)
-        shell: bash
-        working-directory: samples/bookshop
-        run: |
-          mvn clean compile test-compile -B -V
-      - name: Run Bookshop Tests
-        shell: bash
-        working-directory: samples/bookshop
-        run: |
-          mvn test -B -V

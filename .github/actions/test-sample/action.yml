@@ -1,0 +1,27 @@
+name: 'Test Sample'
+description: 'Compile sample and run tests'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Java ${{ inputs.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: sapmachine
+        cache: maven
+        
+    - name: Set up Maven ${{ inputs.maven-version }}
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version: ${{ inputs.maven-version }}
+        
+    - name: Compile sample
+      shell: bash
+      working-directory: sample bookshop
+      run: mvn compile test-compile -B -V
+      
+    - name: Run tests
+      shell: bash
+      working-directory: tests/incident-app
+      run: mvn test
