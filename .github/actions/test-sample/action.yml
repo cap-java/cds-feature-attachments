@@ -23,5 +23,5 @@ runs:
       
     - name: Run tests
       shell: bash
-      working-directory: tests/incident-app
+      working-directory: samples/bookshop
       run: mvn test
