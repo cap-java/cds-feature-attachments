@@ -4,7 +4,6 @@
 package com.sap.cds.feature.attachments.integrationtests.testhandler;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -39,9 +38,9 @@ class TestPersistenceHandlerTest {
   void testThrowExceptionOnUpdateWhenEnabled() {
     testPersistenceHandler.setThrowExceptionOnUpdate(true);
 
-    ServiceException exception = assertThrows(ServiceException.class, 
-        () -> testPersistenceHandler.throwExceptionOnUpdate());
-    
+    ServiceException exception =
+        assertThrows(ServiceException.class, () -> testPersistenceHandler.throwExceptionOnUpdate());
+
     assertTrue(exception.getMessage().contains("Exception on update"));
   }
 
@@ -56,9 +55,9 @@ class TestPersistenceHandlerTest {
   void testThrowExceptionOnCreateWhenEnabled() {
     testPersistenceHandler.setThrowExceptionOnCreate(true);
 
-    ServiceException exception = assertThrows(ServiceException.class, 
-        () -> testPersistenceHandler.throwExceptionOnCreate());
-    
+    ServiceException exception =
+        assertThrows(ServiceException.class, () -> testPersistenceHandler.throwExceptionOnCreate());
+
     assertTrue(exception.getMessage().contains("Exception on create"));
   }
 
@@ -73,8 +72,7 @@ class TestPersistenceHandlerTest {
   void testSetThrowExceptionOnUpdate() {
     // Test setting to true
     testPersistenceHandler.setThrowExceptionOnUpdate(true);
-    assertThrows(ServiceException.class, 
-        () -> testPersistenceHandler.throwExceptionOnUpdate());
+    assertThrows(ServiceException.class, () -> testPersistenceHandler.throwExceptionOnUpdate());
 
     // Test setting to false
     testPersistenceHandler.setThrowExceptionOnUpdate(false);
@@ -85,8 +83,7 @@ class TestPersistenceHandlerTest {
   void testSetThrowExceptionOnCreate() {
     // Test setting to true
     testPersistenceHandler.setThrowExceptionOnCreate(true);
-    assertThrows(ServiceException.class, 
-        () -> testPersistenceHandler.throwExceptionOnCreate());
+    assertThrows(ServiceException.class, () -> testPersistenceHandler.throwExceptionOnCreate());
 
     // Test setting to false
     testPersistenceHandler.setThrowExceptionOnCreate(false);
@@ -106,8 +103,7 @@ class TestPersistenceHandlerTest {
     testPersistenceHandler.setThrowExceptionOnUpdate(true);
     testPersistenceHandler.setThrowExceptionOnCreate(false);
 
-    assertThrows(ServiceException.class, 
-        () -> testPersistenceHandler.throwExceptionOnUpdate());
+    assertThrows(ServiceException.class, () -> testPersistenceHandler.throwExceptionOnUpdate());
     assertDoesNotThrow(() -> testPersistenceHandler.throwExceptionOnCreate());
 
     // Switch them
@@ -115,7 +111,6 @@ class TestPersistenceHandlerTest {
     testPersistenceHandler.setThrowExceptionOnCreate(true);
 
     assertDoesNotThrow(() -> testPersistenceHandler.throwExceptionOnUpdate());
-    assertThrows(ServiceException.class, 
-        () -> testPersistenceHandler.throwExceptionOnCreate());
+    assertThrows(ServiceException.class, () -> testPersistenceHandler.throwExceptionOnCreate());
   }
 }

@@ -6,7 +6,6 @@ package com.sap.cds.feature.attachments.integrationtests.testhandler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
@@ -98,7 +97,9 @@ class TestPluginAttachmentsServiceHandlerTest {
   void testCreateAttachmentSetsContentIdAndStatus() throws IOException {
     var context = AttachmentCreateEventContext.create();
     context.setData(MediaData.create());
-    context.getData().setContent(new ByteArrayInputStream("test content".getBytes(StandardCharsets.UTF_8)));
+    context
+        .getData()
+        .setContent(new ByteArrayInputStream("test content".getBytes(StandardCharsets.UTF_8)));
 
     cut.createAttachment(context);
 
@@ -111,10 +112,13 @@ class TestPluginAttachmentsServiceHandlerTest {
     // Test create event tracking
     var createContext = AttachmentCreateEventContext.create();
     createContext.setData(MediaData.create());
-    createContext.getData().setContent(new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8)));
+    createContext
+        .getData()
+        .setContent(new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8)));
     cut.createAttachment(createContext);
 
-    List<EventContextHolder> createEvents = cut.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
+    List<EventContextHolder> createEvents =
+        cut.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
     assertThat(createEvents).hasSize(1);
     assertThat(createEvents.get(0).event()).isEqualTo(AttachmentService.EVENT_CREATE_ATTACHMENT);
 
@@ -124,7 +128,8 @@ class TestPluginAttachmentsServiceHandlerTest {
     readContext.setData(MediaData.create());
     cut.readAttachment(readContext);
 
-    List<EventContextHolder> readEvents = cut.getEventContextForEvent(AttachmentService.EVENT_READ_ATTACHMENT);
+    List<EventContextHolder> readEvents =
+        cut.getEventContextForEvent(AttachmentService.EVENT_READ_ATTACHMENT);
     assertThat(readEvents).hasSize(1);
     assertThat(readEvents.get(0).event()).isEqualTo(AttachmentService.EVENT_READ_ATTACHMENT);
 
@@ -133,16 +138,19 @@ class TestPluginAttachmentsServiceHandlerTest {
     deleteContext.setContentId("test-id");
     cut.markAttachmentAsDeleted(deleteContext);
 
-    List<EventContextHolder> deleteEvents = cut.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
+    List<EventContextHolder> deleteEvents =
+        cut.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
     assertThat(deleteEvents).hasSize(1);
-    assertThat(deleteEvents.get(0).event()).isEqualTo(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
+    assertThat(deleteEvents.get(0).event())
+        .isEqualTo(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 
     // Test restore event tracking
     var restoreContext = AttachmentRestoreEventContext.create();
     restoreContext.setRestoreTimestamp(Instant.now());
     cut.restoreAttachment(restoreContext);
 
-    List<EventContextHolder> restoreEvents = cut.getEventContextForEvent(AttachmentService.EVENT_RESTORE_ATTACHMENT);
+    List<EventContextHolder> restoreEvents =
+        cut.getEventContextForEvent(AttachmentService.EVENT_RESTORE_ATTACHMENT);
     assertThat(restoreEvents).hasSize(1);
     assertThat(restoreEvents.get(0).event()).isEqualTo(AttachmentService.EVENT_RESTORE_ATTACHMENT);
   }
@@ -152,7 +160,9 @@ class TestPluginAttachmentsServiceHandlerTest {
     // Create multiple events
     var createContext = AttachmentCreateEventContext.create();
     createContext.setData(MediaData.create());
-    createContext.getData().setContent(new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8)));
+    createContext
+        .getData()
+        .setContent(new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8)));
     cut.createAttachment(createContext);
 
     var readContext = AttachmentReadEventContext.create();
@@ -207,13 +217,17 @@ class TestPluginAttachmentsServiceHandlerTest {
     // Create first attachment
     var createContext1 = AttachmentCreateEventContext.create();
     createContext1.setData(MediaData.create());
-    createContext1.getData().setContent(new ByteArrayInputStream("content1".getBytes(StandardCharsets.UTF_8)));
+    createContext1
+        .getData()
+        .setContent(new ByteArrayInputStream("content1".getBytes(StandardCharsets.UTF_8)));
     cut.createAttachment(createContext1);
 
     // Create second attachment
     var createContext2 = AttachmentCreateEventContext.create();
     createContext2.setData(MediaData.create());
-    createContext2.getData().setContent(new ByteArrayInputStream("content2".getBytes(StandardCharsets.UTF_8)));
+    createContext2
+        .getData()
+        .setContent(new ByteArrayInputStream("content2".getBytes(StandardCharsets.UTF_8)));
     cut.createAttachment(createContext2);
 
     // Read first attachment
@@ -243,7 +257,8 @@ class TestPluginAttachmentsServiceHandlerTest {
 
     cut.restoreAttachment(context);
 
-    List<EventContextHolder> restoreEvents = cut.getEventContextForEvent(AttachmentService.EVENT_RESTORE_ATTACHMENT);
+    List<EventContextHolder> restoreEvents =
+        cut.getEventContextForEvent(AttachmentService.EVENT_RESTORE_ATTACHMENT);
     assertThat(restoreEvents).hasSize(1);
     var restoredContext = (AttachmentRestoreEventContext) restoreEvents.get(0).context();
     assertThat(restoredContext.getRestoreTimestamp()).isEqualTo(timestamp);
