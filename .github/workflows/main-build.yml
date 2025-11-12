@@ -98,7 +98,7 @@ jobs:
         # https://maven.apache.org/plugins/maven-deploy-plugin/usage.html#the-deploy-deploy-mojo
         run: >
           mvn -B -ntp -fae
-          -pl !integration-tests,!integration-tests/db,!integration-tests/srv
+          -pl !samples/integration-tests,!samples/integration-tests/db,!samples/integration-tests/srv
           -Dmaven.install.skip=true
           -Dmaven.test.skip=true
           -DdeployAtEnd=true
