@@ -109,8 +109,11 @@ class DraftCancelAttachmentsHandlerTest {
     CdsEntity target = eventContext.getTarget();
     verify(attachmentsReader)
         .readAttachments(eq(runtime.getCdsModel()), eq(target), deleteArgumentCaptor.capture());
-    CqnDelete originDelete = deleteArgumentCaptor.getValue();
-    assertThat(originDelete.toJson()).isEqualTo(delete.toJson());
+    // Check if the modified CqnDelete that is passed to readAttachments looks correct
+    CqnDelete modifiedCQN = deleteArgumentCaptor.getValue();
+    assertThat(modifiedCQN.toJson())
+        .isEqualTo(
+            "{\"DELETE\":{\"from\":{\"ref\":[{\"id\":\"unit.test.TestService.Attachment\",\"where\":[{\"ref\":[\"IsActiveEntity\"]},\"=\",{\"val\":true}]}]}}}");
 
     deleteArgumentCaptor = ArgumentCaptor.forClass(CqnDelete.class);
     CdsEntity siblingTarget = target.getTargetOf(Drafts.SIBLING_ENTITY);
@@ -133,8 +136,11 @@ class DraftCancelAttachmentsHandlerTest {
     CdsEntity target = eventContext.getTarget();
     verify(attachmentsReader)
         .readAttachments(eq(runtime.getCdsModel()), eq(target), deleteArgumentCaptor.capture());
-    CqnDelete originDelete = deleteArgumentCaptor.getValue();
-    assertThat(originDelete.toJson()).isEqualTo(delete.toJson());
+    // Check if the modified CqnDelete that is passed to readAttachments looks correct
+    CqnDelete modifiedCQN = deleteArgumentCaptor.getValue();
+    assertThat(modifiedCQN.toJson())
+        .isEqualTo(
+            "{\"DELETE\":{\"from\":{\"ref\":[{\"id\":\"unit.test.TestService.RootTable\",\"where\":[{\"ref\":[\"IsActiveEntity\"]},\"=\",{\"val\":true}]}]}}}");
 
     deleteArgumentCaptor = ArgumentCaptor.forClass(CqnDelete.class);
     CdsEntity siblingTarget = target.getTargetOf(Drafts.SIBLING_ENTITY);
@@ -162,7 +168,9 @@ class DraftCancelAttachmentsHandlerTest {
         .readAttachments(
             eq(runtime.getCdsModel()), eq(siblingTarget), deleteArgumentCaptor.capture());
     CqnDelete siblingDelete = deleteArgumentCaptor.getValue();
-    assertThat(siblingDelete.toJson()).isEqualTo(delete.toJson());
+    assertThat(siblingDelete.toJson())
+        .isEqualTo(
+            "{\"DELETE\":{\"from\":{\"ref\":[{\"id\":\"unit.test.TestService.Attachment\",\"where\":[{\"ref\":[\"IsActiveEntity\"]},\"=\",{\"val\":true}]}]}}}");
   }
 
   @Test

@@ -38,21 +38,28 @@ class ActiveEntityModifierTest {
   }
 
   @Test
-  void entityNameReplaced() {
+  void entityNameReplacedAndActiveEntity() {
     var select = Select.from(RootTable_.class).where(root -> root.IsActiveEntity().eq(true));
 
     var result = CQL.copy(select, new ActiveEntityModifier(true, RootTable_.CDS_NAME + "_draft"));
 
-    assertThat(result.toString()).contains("{\"ref\":[\"unit.test.TestService.RootTable_draft\"]}");
+    // Expects the entity to have an IsActiveEntity filter in the reference
+    assertThat(result.toString())
+        .contains(
+            "{\"id\":\"unit.test.TestService.RootTable_draft\",\"where\":[{\"ref\":[\"IsActiveEntity\"]},\"=\",{\"val\":true}]}");
   }
 
   @Test
-  void nothingReplaced() {
+  void entityNameNotReplacedAndActiveEntity() {
     var select = Select.from(RootTable_.class).where(root -> root.IsActiveEntity().eq(true));
 
     var result = CQL.copy(select, new ActiveEntityModifier(true, RootTable_.CDS_NAME));
 
-    assertThat(result).hasToString(select.toString());
+    // Expects the entity to have an IsActiveEntity filter in the reference even when entity name
+    // doesn't change
+    assertThat(result.toString())
+        .contains(
+            "{\"id\":\"unit.test.TestService.RootTable\",\"where\":[{\"ref\":[\"IsActiveEntity\"]},\"=\",{\"val\":true}]}");
   }
 
   @Test
@@ -94,5 +101,28 @@ class ActiveEntityModifierTest {
     assertThat(result.toString()).contains("{\"ref\":[\"HasActiveEntity\"]},\"=\",{\"val\":true}");
     assertThat(result.toString()).contains("{\"val\":false},\"=\",{\"ref\":[\"IsActiveEntity\"]}");
     assertThat(result.toString()).contains("{\"val\":true},\"=\",{\"ref\":[\"HasActiveEntity\"]}");
+  }
+
+  @Test
+  void combinesNonIsActiveEntityFilterWithIsActiveEntityFilter() {
+    // Create query with a filter on the last/target segment
+    CqnSelect original =
+        Select.from(
+            CQL.entity(RootTable_.CDS_NAME)
+                .filter(CQL.get("title").eq("Some Title")) // Filter on entity reference
+            );
+
+    ActiveEntityModifier modifier = new ActiveEntityModifier(true, RootTable_.CDS_NAME);
+
+    var result = CQL.copy(original, modifier);
+
+    // Should contain both the original title filter and IsActiveEntity filter
+    assertThat(result.toString()).contains("\"title\"");
+    assertThat(result.toString()).contains("\"Some Title\"");
+    assertThat(result.toString()).contains("\"IsActiveEntity\"");
+    assertThat(result.toString()).contains("\"val\":true");
+
+    // The key assertion: should contain AND operation combining both filters
+    assertThat(result.toString()).contains("\"and\"");
   }
 }

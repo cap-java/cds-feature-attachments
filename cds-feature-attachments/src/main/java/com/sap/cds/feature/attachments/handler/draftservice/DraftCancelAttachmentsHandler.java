@@ -136,16 +136,13 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   private List<Attachments> readAttachments(
       DraftCancelEventContext context, CdsStructuredType entity, boolean isActiveEntity) {
     logger.debug(
-        "Reading attachments for entity {} (isActiveEntity={})",
-        entity.getName(),
-        isActiveEntity);
+        "Reading attachments for entity {} (isActiveEntity={})", entity.getName(), isActiveEntity);
     logger.debug("Original CQN: {}", context.getCqn());
-    CqnDelete cqnInactiveEntity =
+    CqnDelete modifiedCQN =
         CQL.copy(
             context.getCqn(), new ActiveEntityModifier(isActiveEntity, entity.getQualifiedName()));
-    logger.debug("Modified CQN: {}", cqnInactiveEntity);
-    return attachmentsReader.readAttachments(
-        context.getModel(), (CdsEntity) entity, cqnInactiveEntity);
+    logger.debug("Modified CQN: {}", modifiedCQN);
+    return attachmentsReader.readAttachments(context.getModel(), (CdsEntity) entity, modifiedCQN);
   }
 
   private List<Attachments> getCondensedActiveAttachments(
