@@ -1,4 +1,4 @@
-****[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml) [![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg?branch=main)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml) [![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
+\*\*\*\*[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml) [![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg?branch=main)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml) [![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
 
 # Attachments Plugin for SAP Cloud Application Programming Model (CAP)
 
@@ -11,33 +11,34 @@ It supports the [AWS, Azure, and Google object stores](storage-targets/cds-featu
 ## Table of Contents
 
 <!-- TOC -->
-- [Attachments Plugin for SAP Cloud Application Programming Model (CAP)](#attachments-plugin-for-sap-cloud-application-programming-model-cap)
-  - [Table of Contents](#table-of-contents)
-  - [Quick Start](#quick-start)
-  - [Usage](#usage)
-    - [Try the Bookshop Sample](#try-the-bookshop-sample)
-    - [Integration in Your Project](#integration-in-your-project)
-    - [Storage Targets](#storage-targets)
-    - [Malware Scanner](#malware-scanner)
-    - [Outbox](#outbox)
-    - [Restore Endpoint](#restore-endpoint)
-      - [Motivation](#motivation)
-      - [HTTP Endpoint](#http-endpoint)
-      - [Security](#security)
-  - [Releases: Maven Central and Artifactory](#releases-maven-central-and-artifactory)
-  - [Minimum UI5 and CAP Java Version](#minimum-ui5-and-cap-java-version)
-  - [Architecture Overview](#architecture-overview)
-    - [Design](#design)
-    - [Multitenancy](#multitenancy)
-    - [Object Stores](#object-stores)
-    - [Model Texts](#model-texts)
-  - [Monitoring \& Logging](#monitoring--logging)
-  - [Support, Feedback, Contributing](#support-feedback-contributing)
-  - [References \& Links](#references--links)
+
+* [Quick Start](#quick-start)
+* [Usage](#usage)
+  * [MVN Setup](#mvn-setup)
+  * [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
+  * [Try the Bookshop Sample](#try-the-bookshop-sample)
+  * [Storage Targets](#storage-targets)
+  * [Malware Scanner](#malware-scanner)
+  * [Outbox](#outbox)
+  * [Restore Endpoint](#restore-endpoint)
+    * [Motivation](#motivation)
+    * [HTTP Endpoint](#http-endpoint)
+    * [Security](#security)
+* [Releases: Maven Central and Artifactory](#releases-maven-central-and-artifactory)
+* [Minimum UI5 and CAP Java Version](#minimum-ui5-and-cap-java-version)
+* [Architecture Overview](#architecture-overview)
+  * [Design](#design)
+  * [Multitenancy](#multitenancy)
+  * [Object Stores](#object-stores)
+  * [Model Texts](#model-texts)
+* [Monitoring \& Logging](#monitoring--logging)
+* [Support, Feedback, Contributing](#support-feedback-contributing)
+* [References \& Links](#references--links)
 
 ## Quick Start
 
 For a quick setup with in-memory storage:
+
 - Add the `cds-feature-attachments` Maven dependency to the `srv/pom.xml` and configure the `cds-maven-plugin` with the `resolve` goal as described in [MVN Setup](#mvn-setup).
 - Extend the CDS model with the `Attachments` aspect and annotate the service for UI integration as explained in [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI).
 
@@ -48,6 +49,67 @@ The [incidents app](https://github.com/cap-java/incidents-app/) provides a demon
 For object store integration, see [Amazon, Azure, and Google Object Stores](storage-targets/cds-feature-attachments-oss).
 
 ## Usage
+
+### MVN Setup
+
+As described in the [CAP Java Documentation](https://cap.cloud.sap/docs/java/building-plugins#reference-the-new-cds-model-in-an-existing-cap-java-project), the attachments plugin needs to be referenced in the `srv/pom.xml` of the consuming CAP Java application:
+
+```xml
+<dependency>
+    <groupId>com.sap.cds</groupId>
+    <artifactId>cds-feature-attachments</artifactId>
+    <version>${latest-version}</version>
+</dependency>
+```
+
+Additionally, the `cds-maven-plugin` must be configured with the `resolve` goal to ensure CDS models from dependencies are available.
+For this, add the following to the `srv/pom.xml` before the entry `build` as well:
+
+```xml
+<plugin>
+    <groupId>com.sap.cds</groupId>
+    <artifactId>cds-maven-plugin</artifactId>
+    <version>${cds.services.version}</version>
+    <executions>
+        <execution>
+            <id>cds.resolve</id>
+            <goals>
+                <goal>resolve</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
+After that, the aspect `Attachments` can be used in the application's CDS model.
+
+### Changes in the CDS Models and for the UI
+
+To use the aspect `Attachments` on an existing entity, the corresponding entity needs to be extended in a CDS file in the `srv` module.
+The following example shows how to extend the entity `Incidents` in the `srv` module with an additional `attachments.cds` file, it also directly adds the respective UI Facet.
+To use this file with the [incidents app](https://github.com/cap-java/incidents-app/), check out the source code, copy the [file from the xmpls folder](https://github.com/cap-java/incidents-app/blob/main/xmpls/attachments.cds) to the srv folder and run the app as explained in the [incidents app README](https://github.com/cap-java/incidents-app/blob/main/README.md).
+
+```cds
+using { sap.capire.incidents as my } from '../db/schema';
+using { sap.attachments.Attachments } from 'com.sap.cds/cds-feature-attachments';
+extend my.Incidents with {
+  attachments: Composition of many Attachments;
+}
+using { ProcessorService as service } from '../app/services';
+annotate service.Incidents with @(
+  UI.Facets: [
+    ...,
+    {
+      $Type  : 'UI.ReferenceFacet',
+      ID     : 'AttachmentsFacet',
+      Label  : '{i18n>attachments}',
+      Target : 'attachments/@UI.LineItem'
+    }
+  ]
+);
+```
+
+The UI Facet can also be added directly after other UI Facets in a `cds` file in the `app` folder.
 
 ### Try the Bookshop Sample
 
@@ -64,65 +126,12 @@ Then browse to http://localhost:8080/browse/index.html to see attachments in act
 
 For detailed setup instructions and implementation details, see the [bookshop sample README](samples/bookshop/README.md).
 
-### Integration in Your Project
-
-To integrate the attachments plugin in your own CAP Java project:
-
-1. **Add Maven dependency** in `srv/pom.xml`:
-   ```xml
-   <dependency>
-       <groupId>com.sap.cds</groupId>
-       <artifactId>cds-feature-attachments</artifactId>
-       <version>${latest-version}</version>
-   </dependency>
-   ```
-
-2. **Configure the Maven plugin** to resolve CDS models from dependencies:
-   ```xml
-   <plugin>
-       <groupId>com.sap.cds</groupId>
-       <artifactId>cds-maven-plugin</artifactId>
-       <executions>
-           <execution>
-               <id>cds.resolve</id>
-               <goals>
-                   <goal>resolve</goal>
-               </goals>
-           </execution>
-       </executions>
-   </plugin>
-   ```
-
-3. **Extend your entity** with attachments in a `.cds` file:
-   ```cds
-   using { sap.attachments.Attachments } from 'com.sap.cds/cds-feature-attachments';
-   
-   extend my.YourEntity with {
-     attachments: Composition of many Attachments;
-   }
-   ```
-
-4. **Add UI annotations** for Fiori integration:
-   ```cds
-   annotate service.YourEntity with @(
-     UI.Facets: [
-       {
-         $Type  : 'UI.ReferenceFacet',
-         ID     : 'AttachmentsFacet',
-         Label  : '{i18n>attachments}',
-         Target : 'attachments/@UI.LineItem'
-       }
-     ]
-   );
-   ```
-
-For complete examples and troubleshooting, see the [bookshop sample](samples/bookshop/).
-
 ### Storage Targets
 
 By default, the plugin operates without a dedicated storage target, storing attachments directly in the [underlying database](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L17).
 
 Other available storage targets:
+
 - [Amazon, Azure, and Google Object Stores](storage-targets/cds-feature-attachments-oss)
 - [local file system as a storage backend](storage-targets/cds-feature-attachments-fs) (only for testing scenarios)
 
@@ -172,12 +181,12 @@ attachments.
 If there is no malware scanner available, the attachments are automatically marked as `Clean`.
 
 Scan status codes:
+
 - `Clean`: Only attachments with the status `Clean` are accessible.
 - `Scanning`: Immediately after upload, the attachment is marked as `Scanning`. Depending on processing speed, it may already appear as `Clean` when the page is reloaded.
 - `Unscanned`: Attachment is still unscanned.
 - `Failed`: Scanning failed.
 - `Infected`: The attachment is infected.
-
 
 ### Outbox
 
@@ -190,7 +199,6 @@ the default outbox configuration.
 
 If the default shall be used, nothing needs to be done.
 
-
 ### Restore Endpoint
 
 The attachment service has an event `RESTORE_ATTACHMENTS`.
@@ -201,10 +209,11 @@ This event can be called with a timestamp to restore externally stored attachmen
 Documents which are marked as deleted can be restored.
 
 The use cases behind this feature are:
+
 - Restoring attachments after a database backup is restored:
-When restoring a database backup, any attachments stored in external storage (object stores, etc.) also need to be restored to maintain data consistency.
+  When restoring a database backup, any attachments stored in external storage (object stores, etc.) also need to be restored to maintain data consistency.
 - Restoring attachments that were marked as deleted:
-The restore endpoint provides a way to recover attachments that were previously marked as deleted, making it possible to undo deletions if needed.
+  The restore endpoint provides a way to recover attachments that were previously marked as deleted, making it possible to undo deletions if needed.
 
 In the default implementation of the technical service `AttachmentService` this is not needed as the attachments are
 stored directly in the database and are restored with the database.
@@ -299,13 +308,14 @@ the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
 ## Minimum UI5 and CAP Java Version
 
 | Component | Minimum Version |
-|-----------|-----------------|
+| --------- | --------------- |
 | CAP Java  | 3.10.3          |
 | UI5       | 1.136.0         |
 
-
 ## Architecture Overview
+
 ### Design
+
 - [Design Details](./doc/Design.md)
 - [Process of Creating, Reading and Deleting an Attachment](./doc/Processes.md)
 
@@ -325,7 +335,7 @@ In the model, several fields are annotated with the `@title` annotation. Default
 The following table gives an overview of the fields and the i18n codes:
 
 | Field Name | i18n Code             |
-|------------|-----------------------|
+| ---------- | --------------------- |
 | `content`  | `attachment_content`  |
 | `mimeType` | `attachment_mimeType` |
 | `fileName` | `attachment_fileName` |
@@ -334,15 +344,15 @@ The following table gives an overview of the fields and the i18n codes:
 
 In addition to the field names, header information (`@UI.HeaderInfo`) are also annotated:
 
-| Header Info      | i18n Code     |  
-|------------------|---------------|
+| Header Info      | i18n Code     |
+| ---------------- | ------------- |
 | `TypeName`       | `attachment`  |
 | `TypeNamePlural` | `attachments` |
-
 
 ## Monitoring & Logging
 
 To configure logging for the attachments plugin, add the following line to the `/srv/src/main/resources/application.yaml` of the consuming application:
+
 ```
 logging:
   level:
@@ -361,4 +371,5 @@ structure, as well as additional contribution information,
 see our [Contribution Guidelines](./doc/CONTRIBUTING.md).
 
 ## References & Links
+
 - [License](./LICENSE)
