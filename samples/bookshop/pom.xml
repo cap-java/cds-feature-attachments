@@ -48,6 +48,7 @@
 				<scope>import</scope>
 			</dependency>
 
+			<!-- CDS ATTACHMENTS FEATURE -->
 			<dependency>
 				<groupId>com.sap.cds</groupId>
 				<artifactId>cds-feature-attachments</artifactId>
