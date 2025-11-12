@@ -35,7 +35,7 @@
     <module>cds-feature-attachments</module>
     <module>storage-targets/cds-feature-attachments-fs</module>
     <module>storage-targets/cds-feature-attachments-oss</module>
-    <module>samples/integration-tests</module>
+    <module>integration-tests</module>
   </modules>
 
   <scm>
