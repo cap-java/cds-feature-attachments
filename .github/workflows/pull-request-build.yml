@@ -46,7 +46,13 @@ jobs:
         with:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
-
+      
+      - name: Build sample and run tests
+        uses: ./.github/actions/test-sample
+        with:
+          java-version: ${{ matrix.java-version }}
+          maven-version: ${{ env.MAVEN_VERSION }}
+      
       - name: SonarQube Scan
         uses: ./.github/actions/scan-with-sonar
         if: ${{ matrix.java-version == 17 }}

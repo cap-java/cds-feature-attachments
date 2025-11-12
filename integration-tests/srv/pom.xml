@@ -83,6 +83,9 @@
             <goals>
               <goal>resolve</goal>
             </goals>
+            <configuration>
+              <workingDirectory>${project.basedir}/..</workingDirectory>
+            </configuration>
           </execution>
 
           <execution>
@@ -91,6 +94,7 @@
               <goal>cds</goal>
             </goals>
             <configuration>
+              <workingDirectory>${project.basedir}/..</workingDirectory>
               <commands>
                 <command>build --for java</command>
                 <command>deploy --to h2 --dry &gt;
@@ -105,6 +109,7 @@
               <goal>generate</goal>
             </goals>
             <configuration>
+              <workingDirectory>${project.basedir}/..</workingDirectory>
               <basePackage>${generation-package}.integration.test.cds4j</basePackage>
             </configuration>
           </execution>
