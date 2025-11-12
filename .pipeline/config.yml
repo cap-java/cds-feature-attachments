@@ -41,12 +41,16 @@ steps:
       - cds-feature-attachments.sonar.projectBaseDir=cds-feature-attachments
       - cds-feature-attachments.sonar.sources=src/main/java
       - cds-feature-attachments.sonar.tests=src/test/java
+      - cds-feature-attachments.sonar.java.binaries=target/classes
       - cds-feature-attachments-fs.sonar.projectBaseDir=storage-targets/cds-feature-attachments-fs
       - cds-feature-attachments-fs.sonar.sources=src/main/java
       - cds-feature-attachments-fs.sonar.tests=src/test/java
+      - cds-feature-attachments-fs.sonar.java.binaries=target/classes
       - cds-feature-attachments-oss.sonar.projectBaseDir=storage-targets/cds-feature-attachments-oss
       - cds-feature-attachments-oss.sonar.sources=src/main/java
       - cds-feature-attachments-oss.sonar.tests=src/test/java
+      - cds-feature-attachments-oss.sonar.java.binaries=target/classes
       - bookshop.sonar.projectBaseDir=samples/bookshop/srv
       - bookshop.sonar.sources=src/main/java
       - bookshop.sonar.tests=src/test/java
+      - bookshop.sonar.java.binaries=target/classes
