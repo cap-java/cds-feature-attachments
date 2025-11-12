@@ -140,7 +140,8 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     logger.debug("Original CQN: {}", context.getCqn());
     CqnDelete modifiedCQN =
         CQL.copy(
-            context.getCqn(), new ActiveEntityModifier(isActiveEntity, entity.getQualifiedName()));
+            context.getCqn(),
+            new ModifierToCreateFlatCQN(isActiveEntity, entity.getQualifiedName()));
     logger.debug("Modified CQN: {}", modifiedCQN);
     return attachmentsReader.readAttachments(context.getModel(), (CdsEntity) entity, modifiedCQN);
   }

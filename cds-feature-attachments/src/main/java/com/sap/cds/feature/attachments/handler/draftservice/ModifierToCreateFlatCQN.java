@@ -32,14 +32,14 @@ import org.slf4j.LoggerFactory;
  * <p>This is primarily used in draft service scenarios to transform queries between draft entities
  * (IsActiveEntity = false) and active entities (IsActiveEntity = true).
  */
-class ActiveEntityModifier implements Modifier {
+class ModifierToCreateFlatCQN implements Modifier {
 
-  private static final Logger logger = LoggerFactory.getLogger(ActiveEntityModifier.class);
+  private static final Logger logger = LoggerFactory.getLogger(ModifierToCreateFlatCQN.class);
 
   private final boolean isActiveEntity;
   private final String fullEntityName;
 
-  ActiveEntityModifier(boolean isActiveEntity, String fullEntityName) {
+  ModifierToCreateFlatCQN(boolean isActiveEntity, String fullEntityName) {
     this.isActiveEntity = isActiveEntity;
     this.fullEntityName = fullEntityName;
   }
