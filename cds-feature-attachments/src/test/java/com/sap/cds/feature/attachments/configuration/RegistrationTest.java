@@ -110,7 +110,30 @@ class RegistrationTest {
 
     var handlerSize = 8;
     verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
-    var handlers = handlerArgumentCaptor.getAllValues();
+    checkHandlers(handlerArgumentCaptor.getAllValues(), handlerSize);
+  }
+
+  @Test
+  void handlersAreRegisteredWithoutOutboxService() {
+    when(serviceCatalog.getService(PersistenceService.class, PersistenceService.DEFAULT_NAME))
+        .thenReturn(persistenceService);
+    when(serviceCatalog.getService(AttachmentService.class, AttachmentService.DEFAULT_NAME))
+        .thenReturn(attachmentService);
+    when(serviceCatalog.getServices(DraftService.class)).thenReturn(Stream.of(draftService));
+    when(serviceCatalog.getServices(ApplicationService.class))
+        .thenReturn(Stream.of(applicationService));
+    // Return null for OutboxService to test the missing branch
+    when(serviceCatalog.getService(OutboxService.class, OutboxService.PERSISTENT_UNORDERED_NAME))
+        .thenReturn(null);
+
+    cut.eventHandlers(configurer);
+
+    var handlerSize = 8;
+    verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
+    checkHandlers(handlerArgumentCaptor.getAllValues(), handlerSize);
+  }
+
+  private void checkHandlers(List<EventHandler> handlers, int handlerSize) {
     assertThat(handlers).hasSize(handlerSize);
     isHandlerForClassIncluded(handlers, DefaultAttachmentsServiceHandler.class);
     isHandlerForClassIncluded(handlers, CreateAttachmentsHandler.class);

@@ -58,7 +58,10 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   @Before
   @HandlerOrder(HandlerOrder.LATE)
   void processBeforeDraftCancel(DraftCancelEventContext context) {
-    if (isWhereEmpty(context)) {
+    // We only process the draft cancel event if there is no WHERE clause in the CQN
+    // and if the target entity is an attachment entity or has attachment associations.
+    if ((isAttachmentEntity(context.getTarget()) || hasAttachmentAssociations(context.getTarget()))
+        && isWhereEmpty(context)) {
       logger.debug(
           "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
 
@@ -98,17 +101,49 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     };
   }
 
+  // This function checks if the WHERE clause of the CQN is empty.
+  // This is the current way to verify that we are really cancelling a draft and not doing sth else.
+  // Also see here:
+  // https://github.com/cap-java/cds-feature-attachments/blob/main/doc/Design.md#events
+  // Unfortunately, context.getEvent() does not return a reliable value in this case.
   private boolean isWhereEmpty(DraftCancelEventContext context) {
     return context.getCqn().where().isEmpty();
   }
 
+  // This function checks if the given entity is of type Attachments
+  private boolean isAttachmentEntity(CdsEntity entity) {
+    boolean hasAttachmentInName = entity.getQualifiedName().toLowerCase().contains("attachment");
+
+    boolean hasFileNameElement =
+        entity.elements().anyMatch(element -> Attachments.FILE_NAME.equals(element.getName()));
+
+    logger.debug(
+        "Entity: {}, hasAttachmentInName: {}, hasFileNameElement: {}",
+        entity.getQualifiedName(),
+        hasAttachmentInName,
+        hasFileNameElement);
+
+    return hasAttachmentInName || hasFileNameElement;
+  }
+
+  // This function checks if the given entity has attachment associations.
+  private boolean hasAttachmentAssociations(CdsEntity entity) {
+    return entity
+        .elements()
+        .anyMatch(element -> element.getName().toLowerCase().contains("attachment"));
+  }
+
   private List<Attachments> readAttachments(
       DraftCancelEventContext context, CdsStructuredType entity, boolean isActiveEntity) {
-    CqnDelete cqnInactiveEntity =
+    logger.debug(
+        "Reading attachments for entity {} (isActiveEntity={})", entity.getName(), isActiveEntity);
+    logger.debug("Original CQN: {}", context.getCqn());
+    CqnDelete modifiedCQN =
         CQL.copy(
-            context.getCqn(), new ActiveEntityModifier(isActiveEntity, entity.getQualifiedName()));
-    return attachmentsReader.readAttachments(
-        context.getModel(), (CdsEntity) entity, cqnInactiveEntity);
+            context.getCqn(),
+            new ModifierToCreateFlatCQN(isActiveEntity, entity.getQualifiedName()));
+    logger.debug("Modified CQN: {}", modifiedCQN);
+    return attachmentsReader.readAttachments(context.getModel(), (CdsEntity) entity, modifiedCQN);
   }
 
   private List<Attachments> getCondensedActiveAttachments(
