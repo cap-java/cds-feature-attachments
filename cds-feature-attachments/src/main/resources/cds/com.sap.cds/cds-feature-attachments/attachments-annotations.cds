@@ -32,6 +32,7 @@ annotate Attachments with @UI: {
         {Value: createdAt, @HTML5.CssDefaults: {width: '20%'}},
         {Value: createdBy, @HTML5.CssDefaults: {width: '15%'}},
         {Value: note,      @HTML5.CssDefaults: {width: '25%'}},
+        {Value: up__ID, @UI.Hidden}
     ]
 } {
     note       @(title: '{i18n>attachment_note}');
