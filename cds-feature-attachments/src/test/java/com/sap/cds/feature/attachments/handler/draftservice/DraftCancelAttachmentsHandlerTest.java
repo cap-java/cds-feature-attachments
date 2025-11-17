@@ -6,10 +6,7 @@ package com.sap.cds.feature.attachments.handler.draftservice;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
@@ -71,6 +68,24 @@ class DraftCancelAttachmentsHandlerTest {
   }
 
   @Test
+  void entityHasNoAttachmentsAndIsNotAttachmentEntityNothingHappens() {
+    // Test the case where isAttachmentEntity and hasAttachmentAssociations both return false
+    CdsEntity mockEntity = mock(CdsEntity.class);
+    // Entity has no elements with name "attachment"
+    when(mockEntity.getQualifiedName())
+        .thenReturn("TestService.RegularEntity"); // No "Attachment" in name
+    when(eventContext.getTarget()).thenReturn(mockEntity);
+
+    CqnDelete mockDelete = mock(CqnDelete.class);
+    when(mockDelete.where()).thenReturn(Optional.empty());
+    when(eventContext.getCqn()).thenReturn(mockDelete);
+
+    cut.processBeforeDraftCancel(eventContext);
+
+    verifyNoInteractions(attachmentsReader);
+  }
+
+  @Test
   void nothingSelectedNothingToDo() {
     getEntityAndMockContext(RootTable_.CDS_NAME);
     CqnDelete delete = Delete.from(RootTable_.class);
@@ -84,6 +99,33 @@ class DraftCancelAttachmentsHandlerTest {
 
   @Test
   void attachmentReaderCorrectCalled() {
+    getEntityAndMockContext(Attachment_.CDS_NAME);
+    CqnDelete delete = Delete.from(Attachment_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+
+    cut.processBeforeDraftCancel(eventContext);
+
+    CdsEntity target = eventContext.getTarget();
+    verify(attachmentsReader)
+        .readAttachments(eq(runtime.getCdsModel()), eq(target), deleteArgumentCaptor.capture());
+    // Check if the modified CqnDelete that is passed to readAttachments looks correct
+    CqnDelete modifiedCQN = deleteArgumentCaptor.getValue();
+    assertThat(modifiedCQN.toJson())
+        .isEqualTo(
+            "{\"DELETE\":{\"from\":{\"ref\":[{\"id\":\"unit.test.TestService.Attachment\",\"where\":[{\"ref\":[\"IsActiveEntity\"]},\"=\",{\"val\":true}]}]}}}");
+
+    deleteArgumentCaptor = ArgumentCaptor.forClass(CqnDelete.class);
+    CdsEntity siblingTarget = target.getTargetOf(Drafts.SIBLING_ENTITY);
+    verify(attachmentsReader)
+        .readAttachments(
+            eq(runtime.getCdsModel()), eq(siblingTarget), deleteArgumentCaptor.capture());
+    CqnDelete siblingDelete = deleteArgumentCaptor.getValue();
+    assertThat(siblingDelete.toJson()).isNotEqualTo(delete.toJson());
+  }
+
+  @Test
+  void attachmentReaderCorrectCalledForEntityWithAttachmentAssociations() {
     getEntityAndMockContext(RootTable_.CDS_NAME);
     CqnDelete delete = Delete.from(RootTable_.class);
     when(eventContext.getCqn()).thenReturn(delete);
@@ -94,8 +136,11 @@ class DraftCancelAttachmentsHandlerTest {
     CdsEntity target = eventContext.getTarget();
     verify(attachmentsReader)
         .readAttachments(eq(runtime.getCdsModel()), eq(target), deleteArgumentCaptor.capture());
-    CqnDelete originDelete = deleteArgumentCaptor.getValue();
-    assertThat(originDelete.toJson()).isEqualTo(delete.toJson());
+    // Check if the modified CqnDelete that is passed to readAttachments looks correct
+    CqnDelete modifiedCQN = deleteArgumentCaptor.getValue();
+    assertThat(modifiedCQN.toJson())
+        .isEqualTo(
+            "{\"DELETE\":{\"from\":{\"ref\":[{\"id\":\"unit.test.TestService.RootTable\",\"where\":[{\"ref\":[\"IsActiveEntity\"]},\"=\",{\"val\":true}]}]}}}");
 
     deleteArgumentCaptor = ArgumentCaptor.forClass(CqnDelete.class);
     CdsEntity siblingTarget = target.getTargetOf(Drafts.SIBLING_ENTITY);
@@ -108,8 +153,8 @@ class DraftCancelAttachmentsHandlerTest {
 
   @Test
   void modifierCalledWithCorrectEntitiesIfDraftIsInContext() {
-    getEntityAndMockContext(RootTable_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX);
-    CqnDelete delete = Delete.from(RootTable_.class);
+    getEntityAndMockContext(Attachment_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX);
+    CqnDelete delete = Delete.from(Attachment_.class);
     when(eventContext.getCqn()).thenReturn(delete);
     when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
 
@@ -123,7 +168,9 @@ class DraftCancelAttachmentsHandlerTest {
         .readAttachments(
             eq(runtime.getCdsModel()), eq(siblingTarget), deleteArgumentCaptor.capture());
     CqnDelete siblingDelete = deleteArgumentCaptor.getValue();
-    assertThat(siblingDelete.toJson()).isEqualTo(delete.toJson());
+    assertThat(siblingDelete.toJson())
+        .isEqualTo(
+            "{\"DELETE\":{\"from\":{\"ref\":[{\"id\":\"unit.test.TestService.Attachment\",\"where\":[{\"ref\":[\"IsActiveEntity\"]},\"=\",{\"val\":true}]}]}}}");
   }
 
   @Test
