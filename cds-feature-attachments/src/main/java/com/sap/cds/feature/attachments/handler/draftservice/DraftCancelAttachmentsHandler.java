@@ -60,7 +60,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   void processBeforeDraftCancel(DraftCancelEventContext context) {
     // We only process the draft cancel event if there is no WHERE clause in the CQN
     // and if the target entity is an attachment entity or has attachment associations.
-    if ((isAttachmentEntity(context.getTarget()) || hasAttachmentAssociations(context.getTarget()))
+    if ((isMediaData(context.getTarget()) || hasMediaDataAssociations(context.getTarget()))
         && isWhereEmpty(context)) {
       logger.debug(
           "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
@@ -110,27 +110,27 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     return context.getCqn().where().isEmpty();
   }
 
-  // This function checks if the given entity is of type Attachments
-  private boolean isAttachmentEntity(CdsEntity entity) {
-    boolean hasAttachmentInName = entity.getQualifiedName().toLowerCase().contains("attachment");
-
-    boolean hasFileNameElement =
-        entity.elements().anyMatch(element -> Attachments.FILE_NAME.equals(element.getName()));
-
+  // This function checks if the given entity is of type Mediadata (all attachments are of type
+  // Mediadata).
+  private boolean isMediaData(CdsEntity entity) {
+    boolean hasMediaDataAnnotation = entity.getAnnotationValue("_is_media_data", false);
     logger.debug(
-        "Entity: {}, hasAttachmentInName: {}, hasFileNameElement: {}",
+        "Entity: {}, hasMediaDataAnnotation: {}",
         entity.getQualifiedName(),
-        hasAttachmentInName,
-        hasFileNameElement);
+        hasMediaDataAnnotation);
 
-    return hasAttachmentInName || hasFileNameElement;
-  }
-
-  // This function checks if the given entity has attachment associations.
-  private boolean hasAttachmentAssociations(CdsEntity entity) {
+    return hasMediaDataAnnotation;
+  }  // This function checks if the given entity has attachment associations.
+  private boolean hasMediaDataAssociations(CdsEntity entity) {
     return entity
         .elements()
-        .anyMatch(element -> element.getName().toLowerCase().contains("attachment"));
+        .anyMatch(
+            element -> {
+              if (element.getType() instanceof CdsEntity targetEntity) {
+                return isMediaData(targetEntity);
+              }
+              return false;
+            });
   }
 
   private List<Attachments> readAttachments(

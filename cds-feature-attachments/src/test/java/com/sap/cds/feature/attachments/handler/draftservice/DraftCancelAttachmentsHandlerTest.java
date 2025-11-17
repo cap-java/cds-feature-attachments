@@ -98,7 +98,7 @@ class DraftCancelAttachmentsHandlerTest {
   }
 
   @Test
-  void attachmentReaderCorrectCalled() {
+  void attachmentReaderCorrectlyCalled() {
     getEntityAndMockContext(Attachment_.CDS_NAME);
     CqnDelete delete = Delete.from(Attachment_.class);
     when(eventContext.getCqn()).thenReturn(delete);
@@ -125,7 +125,7 @@ class DraftCancelAttachmentsHandlerTest {
   }
 
   @Test
-  void attachmentReaderCorrectCalledForEntityWithAttachmentAssociations() {
+  void attachmentReaderCorrectlyCalledForEntityWithAttachmentAssociations() {
     getEntityAndMockContext(RootTable_.CDS_NAME);
     CqnDelete delete = Delete.from(RootTable_.class);
     when(eventContext.getCqn()).thenReturn(delete);
