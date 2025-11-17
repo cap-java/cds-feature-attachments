@@ -25,7 +25,6 @@ This sample demonstrates how to use the `cds-feature-attachments` plugin in a CA
 
 2. **Install dependencies**:
    ```bash
-   npm install
    mvn clean install
    ```
 
