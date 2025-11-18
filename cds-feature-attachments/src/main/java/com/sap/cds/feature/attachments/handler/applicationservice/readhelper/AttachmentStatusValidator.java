@@ -18,7 +18,7 @@ public class AttachmentStatusValidator {
    * @throws AttachmentStatusException if the attachment status is not CLEAN
    */
   public void verifyStatus(String attachmentStatus) throws AttachmentStatusException {
-    if (!StatusCode.CLEAN.equals(attachmentStatus)) {
+    if (!StatusCode.CLEAN.equals(attachmentStatus) && !StatusCode.FAILED.equals(attachmentStatus)) {
       throw StatusCode.UNSCANNED.equals(attachmentStatus)
               || StatusCode.SCANNING.equals(attachmentStatus)
           ? AttachmentStatusException.getNotScannedException()
