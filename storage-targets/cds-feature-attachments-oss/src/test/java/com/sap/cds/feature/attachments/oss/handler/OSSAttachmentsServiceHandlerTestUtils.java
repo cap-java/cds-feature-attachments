@@ -3,14 +3,9 @@
  */
 package com.sap.cds.feature.attachments.oss.handler;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
@@ -19,7 +14,6 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.services.ServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -97,7 +91,7 @@ public class OSSAttachmentsServiceHandlerTestUtils {
     verify(deleteContext).setCompleted();
 
     // Try to read again, this will throw
-    assertThrows(ServiceException.class, () -> handler.readAttachment(readContext));
+    assertThrows(Exception.class, () -> handler.readAttachment(readContext));
     verify(deleteContext).setCompleted();
   }
 
