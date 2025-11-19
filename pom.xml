@@ -58,24 +58,24 @@
   </distributionManagement>
 
   <properties>
-    <revision>1.2.2-SNAPSHOT</revision>
+    <revision>1.2.3-SNAPSHOT</revision>
     <java.version>17</java.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.34.2</software.amazon.awssdk-s3-version>
-    <software.amazon.awssdk-crt-version>0.39.0</software.amazon.awssdk-crt-version>
+    <software.amazon.awssdk-s3-version>2.38.2</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-crt-version>0.39.4</software.amazon.awssdk-crt-version>
 
     <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
     <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
-    <cds.services.version>3.10.4</cds.services.version>
+    <cds.services.version>3.10.5</cds.services.version>
     <!-- https://www.npmjs.com/package/@sap/cds-dk?activeTab=versions -->
     <cds.cdsdk-version>8.9.8</cds.cdsdk-version>
 
     <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
-    <cds.services.latest-test-version>4.3.1</cds.services.latest-test-version>
+    <cds.services.latest-test-version>4.4.0</cds.services.latest-test-version>
     <cds.cdsdk.latest-test-version>9.3.2</cds.cdsdk.latest-test-version>
 
     <spotless.check.skip>true</spotless.check.skip>
@@ -94,7 +94,7 @@
       <dependency>
         <groupId>com.sap.cloud.sdk</groupId>
         <artifactId>sdk-bom</artifactId>
-        <version>5.22.0</version>
+        <version>5.24.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -102,7 +102,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>5.13.4</version>
+        <version>6.0.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -125,7 +125,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.5.18</version>
+        <version>1.5.20</version>
         <scope>test</scope>
       </dependency>
 
@@ -207,11 +207,11 @@
         </plugin>
         <plugin>
           <artifactId>maven-pmd-plugin</artifactId>
-          <version>3.27.0</version>
+          <version>3.28.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>3.6.1</version>
+          <version>3.6.2</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -221,17 +221,17 @@
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.13</version>
+          <version>0.8.14</version>
         </plugin>
         <plugin>
           <groupId>org.pitest</groupId>
           <artifactId>pitest-maven</artifactId>
-          <version>1.20.3</version>
+          <version>1.21.1</version>
         </plugin>
         <plugin>
           <groupId>com.github.spotbugs</groupId>
           <artifactId>spotbugs-maven-plugin</artifactId>
-          <version>4.9.6.0</version>
+          <version>4.9.8.1</version>
         </plugin>
         <plugin>
           <groupId>com.sap.cds</groupId>
@@ -355,7 +355,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>2.46.1</version>
+        <version>3.0.0</version>
         <configuration>
           <java>
             <googleJavaFormat>

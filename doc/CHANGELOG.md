@@ -6,13 +6,21 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.2.2 - tbd
+## Version 1.2.3 - tbd
 
 ### Added
 
 ### Changed
 
 ### Fixed
+
+## Version 1.2.2 - 2025-11-14
+
+### Changed
+- Several version bumps
+
+### Fixed
+- Deletion error when having "fiori": {"draft_messages": true } (#526) 
 
 ## Version 1.2.1 - 2025-09-03
 
