@@ -125,4 +125,4 @@ For advanced topics like object store integration, malware scanning, and securit
 - **Port conflicts**: If port 8080 is in use, specify a different port: `mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"`
 - **Memory issues**: Increase JVM heap size: `export MAVEN_OPTS="-Xmx2g"`
 - **File upload issues**: Check browser developer console for error messages
-- **View loading issues**: If your view doesn’t load, try clearing the cache and local storage for `localhost` (and the relevant port) in your browser settings.
+- **View loading issues**: If your view doesn’t load, try clearing the cache and local storage for `localhost` (and the relevant port) in your browser settings or try a private/incognito tab.
