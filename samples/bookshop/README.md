@@ -12,7 +12,7 @@ This sample demonstrates how to use the `cds-feature-attachments` plugin in a CA
 ## Prerequisites
 
 - Java 17 or higher
-- Maven 3.6 or higher  
+- Maven 3.6 or higher
 - Node.js 18 or higher
 - npm
 
@@ -122,6 +122,6 @@ For advanced topics like object store integration, malware scanning, and securit
 
 ## Troubleshooting
 
-- **Port conflicts**: If port 8080 is in use, specify a different port: `mvn spring-boot:run -Dserver.port=8081`
+- **Port conflicts**: If port 8080 is in use, specify a different port: `mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"`
 - **Memory issues**: Increase JVM heap size: `export MAVEN_OPTS="-Xmx2g"`
 - **File upload issues**: Check browser developer console for error messages
