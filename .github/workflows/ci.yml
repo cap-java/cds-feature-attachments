@@ -1,11 +1,12 @@
-name: Main build and deploy
+name: CI
 
 env:
-  JAVA_VERSION: '17'
   MAVEN_VERSION: '3.6.3'
 
 on:
   push:
+    branches: [ "main" ]
+  pull_request:
     branches: [ "main" ]
 
 jobs:
@@ -30,8 +31,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Spotless check
+        run: mvn spotless:check -Dspotless.check.skip=false
+
       - name: Build
         uses: ./.github/actions/build
+        with:
+          java-version: ${{ matrix.java-version }}
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+      - name: Integration Tests
+        uses: ./.github/actions/integration-tests
+        with:
+          java-version: ${{ matrix.java-version }}
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+      - name: Build sample and run tests
+        uses: ./.github/actions/test-sample
         with:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
@@ -68,12 +84,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Set up Java ${{ env.JAVA_VERSION }}
+      - name: Set up Java
         uses: actions/setup-java@v5
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: sapmachine
-          cache: maven
+          java-version: '17'
+          distribution: 'sapmachine'
+          cache: 'maven'
           server-id: artifactory
           server-username: DEPLOYMENT_USER
           server-password: DEPLOYMENT_PASS
@@ -92,10 +108,9 @@ jobs:
       - name: Print Revision
         run: echo "Current revision ${{ steps.get-revision.outputs.REVISION }}"
         shell: bash
-  
+
       - name: Deploy snapshot
         if: ${{ endsWith(steps.get-revision.outputs.REVISION, '-SNAPSHOT') }}
-        # https://maven.apache.org/plugins/maven-deploy-plugin/usage.html#the-deploy-deploy-mojo
         run: >
           mvn -B -ntp -fae
           -pl !integration-tests,!integration-tests/db,!integration-tests/srv
