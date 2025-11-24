@@ -41,6 +41,13 @@ runs:
       run: echo "${{steps.get-revision.outputs.REVISION}}"
       shell: bash
 
+    - name: Build project for SonarQube scan
+      run: |
+        mvn clean verify -ntp -B \
+          -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss,samples/bookshop/srv \
+          -am
+      shell: bash
+
     - name: SonarQube Scan
       uses: SAP/project-piper-action@main
       with:
