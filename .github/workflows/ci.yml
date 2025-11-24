@@ -99,6 +99,11 @@ jobs:
         with:
           maven-version: ${{ env.MAVEN_VERSION }}
 
+      - name: Set Dry Run for Pull Request
+        if: github.event_name == 'pull_request'
+        run: echo "DRY_RUN_PARAM=-DaltDeploymentRepository=local-repo::default::file:./local-repo" >> $GITHUB_ENV
+        shell: bash
+
       - name: Get Revision
         id: get-revision
         run: |
@@ -117,7 +122,7 @@ jobs:
           -Dmaven.install.skip=true
           -Dmaven.test.skip=true
           -DdeployAtEnd=true
-          deploy
+          deploy ${{ env.DRY_RUN_PARAM }}
         env:
           DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
           DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
