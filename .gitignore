@@ -33,3 +33,5 @@ event.json
 
 # CAP Notebook
 cap-notebook/demoapp/
+
+.DS_Store
