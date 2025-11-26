@@ -2,16 +2,16 @@ name: Scan Bookshop Sample with SonarQube
 description: Scans the bookshop sample project with SonarQube
 
 inputs:
-  sonarq-token:
+  sonarq_token:
     description: The token to use for SonarQube authentication
     required: true
-  github-token:
+  github_token:
     description: The token to use for GitHub authentication
     required: true
-  java-version:
+  java_version:
     description: The version of Java to use
     required: true
-  maven-version:
+  maven_version:
     description: The version of Maven to use
     required: true
 
@@ -19,17 +19,17 @@ runs:
   using: composite
 
   steps:
-    - name: Set up Java ${{inputs.java-version}}
+    - name: Set up Java ${{inputs.java_version}}
       uses: actions/setup-java@v4
       with:
-        java-version: ${{inputs.java-version}}
+        java-version: ${{inputs.java_version}}
         distribution: sapmachine
         cache: maven
 
-    - name: Set up Maven ${{inputs.maven-version}}
+    - name: Set up Maven ${{inputs.maven_version}}
       uses: stCarolas/setup-maven@v5
       with:
-        maven-version: ${{inputs.maven-version}}
+        maven-version: ${{inputs.maven_version}}
 
     - name: Install main cds-feature-attachments dependency
       run: mvn install -ntp -B
@@ -57,6 +57,6 @@ runs:
       run: |
         mvn sonar:sonar \
           -Dsonar.host.url=https://sonar.tools.sap \
-          -Dsonar.token=${{inputs.sonarq-token}} \
+          -Dsonar.token=${{inputs.sonarq_token}} \
           -Dsonar.projectVersion=${{steps.get-revision.outputs.REVISION}}
       shell: bash

@@ -97,10 +97,10 @@ jobs:
       - name: Bookshop SonarQube Scan
         uses: ./.github/actions/scan-bookshop-with-sonar
         with:
-          java-version: 17
-          maven-version: ${{ env.MAVEN_VERSION }}
-          sonarq-token: ${{ secrets.SONARQ_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          java_version: 17
+          maven_version: ${{ env.MAVEN_VERSION }}
+          sonarq_token: ${{ secrets.SONARQ_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   scan:
     name: Blackduck Scan
