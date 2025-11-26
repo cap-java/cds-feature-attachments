@@ -58,11 +58,21 @@ public class LazyProxyInputStream extends InputStream {
   }
 
   private InputStream getDelegate() {
-    attachmentStatusValidator.verifyStatus(status);
-
     if (delegate == null) {
       logger.debug("Creating delegate input stream");
-      delegate = inputStreamSupplier.get();
+      try {
+        delegate = inputStreamSupplier.get();
+        attachmentStatusValidator.verifyStatus(status);
+      } catch (RuntimeException originalException) {
+        try {
+          attachmentStatusValidator.verifyStatus(status);
+          throw originalException;
+        } catch (AttachmentStatusException statusException) {
+          // Add status validation error as suppressed exception to preserve context
+          originalException.addSuppressed(statusException);
+          throw originalException;
+        }
+      }
     }
     return delegate;
   }
