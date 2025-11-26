@@ -44,7 +44,7 @@ runs:
     - name: Build project for SonarQube scan
       run: |
         mvn clean verify -ntp -B \
-          -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss,samples/bookshop/srv \
+          -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss \
           -am
       shell: bash
 
