@@ -1,0 +1,62 @@
+name: Scan Bookshop Sample with SonarQube
+description: Scans the bookshop sample project with SonarQube
+
+inputs:
+  sonarq-token:
+    description: The token to use for SonarQube authentication
+    required: true
+  github-token:
+    description: The token to use for GitHub authentication
+    required: true
+  java-version:
+    description: The version of Java to use
+    required: true
+  maven-version:
+    description: The version of Maven to use
+    required: true
+
+runs:
+  using: composite
+
+  steps:
+    - name: Set up Java ${{inputs.java-version}}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{inputs.java-version}}
+        distribution: sapmachine
+        cache: maven
+
+    - name: Set up Maven ${{inputs.maven-version}}
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version: ${{inputs.maven-version}}
+
+    - name: Install main cds-feature-attachments dependency
+      run: mvn install -ntp -B
+      shell: bash
+
+    - name: Get Bookshop Revision
+      id: get-revision
+      working-directory: samples/bookshop
+      run: |
+        echo "REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Print Bookshop Revision
+      run: echo "Bookshop revision: ${{steps.get-revision.outputs.REVISION}}"
+      shell: bash
+
+    - name: Build bookshop project with coverage
+      working-directory: samples/bookshop
+      run: |
+        mvn clean verify -ntp -B
+      shell: bash
+
+    - name: Run SonarQube scan for bookshop
+      working-directory: samples/bookshop
+      run: |
+        mvn sonar:sonar \
+          -Dsonar.host.url=https://sonar.tools.sap \
+          -Dsonar.token=${{inputs.sonarq-token}} \
+          -Dsonar.projectVersion=${{steps.get-revision.outputs.REVISION}}
+      shell: bash
