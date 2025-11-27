@@ -16,20 +16,19 @@ inputs:
     required: true
 
 runs:
-  using: composite
-
+  using: "composite"
   steps:
-    - name: Set up Java ${{inputs.java_version}}
+    - name: "Set up Java ${{ inputs.java_version }}"
       uses: actions/setup-java@v4
       with:
-        java-version: ${{inputs.java_version}}
-        distribution: sapmachine
-        cache: maven
+        java-version: ${{ inputs.java_version }}
+        distribution: "sapmachine"
+        cache: "maven"
 
-    - name: Set up Maven ${{inputs.maven_version}}
+    - name: "Set up Maven ${{ inputs.maven_version }}"
       uses: stCarolas/setup-maven@v5
       with:
-        maven-version: ${{inputs.maven_version}}
+        maven-version: ${{ inputs.maven_version }}
 
     - name: Install main cds-feature-attachments dependency
       run: mvn install -ntp -B
@@ -39,11 +38,11 @@ runs:
       id: get-revision
       working-directory: samples/bookshop
       run: |
-        echo "REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
+        echo "REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> "$GITHUB_OUTPUT"
       shell: bash
 
     - name: Print Bookshop Revision
-      run: echo "Bookshop revision: ${{steps.get-revision.outputs.REVISION}}"
+      run: echo "Bookshop revision: ${{ steps.get-revision.outputs.REVISION }}"
       shell: bash
 
     - name: Build bookshop project with coverage
@@ -54,9 +53,9 @@ runs:
 
     - name: Run SonarQube scan for bookshop
       working-directory: samples/bookshop
+      shell: bash
       run: |
         mvn sonar:sonar \
           -Dsonar.host.url=https://sonar.tools.sap \
-          -Dsonar.token=${{inputs.sonarq_token}} \
-          -Dsonar.projectVersion=${{steps.get-revision.outputs.REVISION}}
-      shell: bash
+          -Dsonar.token=${{ inputs.sonarq_token }} \
+          -Dsonar.projectVersion=${{ steps.get-revision.outputs.REVISION }}
