@@ -57,4 +57,4 @@ runs:
           --githubToken=${{ inputs.github-token }}
           --version=${{ steps.get-revision.outputs.REVISION }}
           --inferJavaBinaries=true
-          --sonarProperty=sonar.exclusions=**/samples/**
+          --options=-Dsonar.exclusions=**/samples/**
