@@ -68,7 +68,6 @@ public class LazyProxyInputStream extends InputStream {
           attachmentStatusValidator.verifyStatus(status);
           throw originalException;
         } catch (AttachmentStatusException statusException) {
-          // Add status validation error as suppressed exception to preserve context
           originalException.addSuppressed(statusException);
           throw originalException;
         }
