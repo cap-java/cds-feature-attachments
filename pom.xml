@@ -65,8 +65,8 @@
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.38.2</software.amazon.awssdk-s3-version>
-    <software.amazon.awssdk-crt-version>0.39.4</software.amazon.awssdk-crt-version>
+    <software.amazon.awssdk-s3-version>2.39.2</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-crt-version>0.40.0</software.amazon.awssdk-crt-version>
 
     <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
     <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
@@ -125,7 +125,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.5.20</version>
+        <version>1.5.21</version>
         <scope>test</scope>
       </dependency>
 
@@ -226,7 +226,7 @@
         <plugin>
           <groupId>org.pitest</groupId>
           <artifactId>pitest-maven</artifactId>
-          <version>1.21.1</version>
+          <version>1.22.0</version>
         </plugin>
         <plugin>
           <groupId>com.github.spotbugs</groupId>
@@ -355,7 +355,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <configuration>
           <java>
             <googleJavaFormat>
