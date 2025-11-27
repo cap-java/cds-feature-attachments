@@ -56,22 +56,6 @@ jobs:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
 
-  bookshop-tests:
-    name: Bookshop Tests (Java ${{ matrix.java-version }})
-    runs-on: ubuntu-latest
-    needs: build
-    strategy:
-      matrix:
-        java-version: [ 17, 21 ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-      - name: Build sample and run tests
-        uses: ./.github/actions/test-sample
-        with:
-          java-version: ${{ matrix.java-version }}
-          maven-version: ${{ env.MAVEN_VERSION }}
-
   sonarqube-scan:
     name: SonarQube Scan
     runs-on: ubuntu-latest
@@ -87,25 +71,10 @@ jobs:
           sonarq-token: ${{ secrets.SONARQ_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-  bookshop-sonarqube-scan:
-    name: Bookshop SonarQube Scan
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-      - name: Bookshop SonarQube Scan
-        uses: ./.github/actions/scan-bookshop-with-sonar
-        with:
-          java_version: 17
-          maven_version: ${{ env.MAVEN_VERSION }}
-          sonarq_token: ${{ secrets.SONARQ_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
   scan:
     name: Blackduck Scan
     runs-on: ubuntu-latest
-    needs: [integration-tests, bookshop-tests]
+    needs: [integration-tests]
     timeout-minutes: 15
     steps:
       - name: Checkout
