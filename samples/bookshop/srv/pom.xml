@@ -62,6 +62,14 @@
 	<build>
 		<finalName>${project.artifactId}</finalName>
 		<plugins>
+			<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <configuration>
+        <parameters>true</parameters>
+    </configuration>
+</plugin>
+
 			<!-- SPRING BOOT PLUGIN -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
