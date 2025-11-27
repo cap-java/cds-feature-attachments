@@ -31,31 +31,34 @@ runs:
         maven-version: ${{ inputs.maven_version }}
 
     - name: Install main cds-feature-attachments dependency
-      run: mvn install -ntp -B
       shell: bash
+      run: mvn install -ntp -B
 
     - name: Get Bookshop Revision
       id: get-revision
+      shell: bash
       working-directory: samples/bookshop
       run: |
         echo "REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> "$GITHUB_OUTPUT"
-      shell: bash
 
     - name: Print Bookshop Revision
-      run: echo "Bookshop revision: ${{ steps.get-revision.outputs.REVISION }}"
       shell: bash
+      run: echo "Bookshop revision: ${{ steps.get-revision.outputs.REVISION }}"
 
     - name: Build bookshop project with coverage
+      shell: bash
       working-directory: samples/bookshop
       run: |
         mvn clean verify -ntp -B
-      shell: bash
 
     - name: Run SonarQube scan for bookshop
-      working-directory: samples/bookshop
       shell: bash
+      working-directory: samples/bookshop
+      env:
+        SONARQ_TOKEN: ${{ inputs.sonarq_token }}
+        BOOKSHOP_REVISION: ${{ steps.get-revision.outputs.REVISION }}
       run: |
         mvn sonar:sonar \
           -Dsonar.host.url=https://sonar.tools.sap \
-          -Dsonar.token=${{ inputs.sonarq_token }} \
-          -Dsonar.projectVersion=${{ steps.get-revision.outputs.REVISION }}
+          -Dsonar.token="${SONARQ_TOKEN}" \
+          -Dsonar.projectVersion="${BOOKSHOP_REVISION}"
