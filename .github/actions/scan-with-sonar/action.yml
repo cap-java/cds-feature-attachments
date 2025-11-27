@@ -52,4 +52,9 @@ runs:
       uses: SAP/project-piper-action@main
       with:
         step-name: sonarExecuteScan
-        flags: --token=${{inputs.sonarq-token}} --githubToken=${{inputs.github-token}} --version=${{steps.get-revision.outputs.REVISION}} --inferJavaBinaries=true --sonar.exclusions=**/samples/**
+        flags: >
+          --token=${{ inputs.sonarq-token }}
+          --githubToken=${{ inputs.github-token }}
+          --version=${{ steps.get-revision.outputs.REVISION }}
+          --inferJavaBinaries=true
+          --sonarProperty=sonar.exclusions=**/samples/**
