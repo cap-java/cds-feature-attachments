@@ -20,7 +20,6 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -160,19 +159,22 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
         context.getContentId());
     try {
       Future<InputStream> future = osClient.readContent(context.getContentId());
-      try (InputStream inputStream = future.get()) { // Wait for the content to be read
-        if (inputStream != null) {
-          context.getData().setContent(inputStream);
-        } else {
-          logger.error("Document not found for id {}", context.getContentId());
-          context.getData().setContent(new ByteArrayInputStream(new byte[0]));
-        }
+      InputStream inputStream = future.get(); // Wait for the content to be read
+      if (inputStream != null) {
+        context.getData().setContent(inputStream);
+      } else {
+        logger.error("Document not found for id {}", context.getContentId());
+        throw new AttachmentNotFoundException(
+            "Document not found for id " + context.getContentId(), context.getContentId());
       }
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
       throw new ServiceException(
           "Failed to read file with document id {}", context.getContentId(), ex);
-    } catch (ObjectStoreServiceException | ExecutionException | java.io.IOException ex) {
+    } catch (AttachmentNotFoundException ex) {
+      throw new ServiceException(
+          "Attachment not found with document id {}", context.getContentId(), ex);
+    } catch (ObjectStoreServiceException | ExecutionException ex) {
       throw new ServiceException(
           "Failed to read file with document id {}", context.getContentId(), ex);
     } finally {
