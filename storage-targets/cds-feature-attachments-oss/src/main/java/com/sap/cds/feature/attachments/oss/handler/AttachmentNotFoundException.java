@@ -3,9 +3,7 @@
  */
 package com.sap.cds.feature.attachments.oss.handler;
 
-/**
- * Exception thrown when an attachment document is not found in the object store.
- */
+/** Exception thrown when an attachment document is not found in the object store. */
 public class AttachmentNotFoundException extends RuntimeException {
   private static final long serialVersionUID = -1234567890123456789L;
 
@@ -23,7 +21,8 @@ public class AttachmentNotFoundException extends RuntimeException {
   }
 
   /**
-   * Constructs a new AttachmentNotFoundException with the specified detail message, content ID, and cause.
+   * Constructs a new AttachmentNotFoundException with the specified detail message, content ID, and
+   * cause.
    *
    * @param message the detail message
    * @param contentId the ID of the content that was not found

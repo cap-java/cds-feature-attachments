@@ -24,7 +24,7 @@ class OSSAttachmentsServiceHandlerStreamLifecycleTest {
    * Regression test: verifies that the OSS handler does NOT close the InputStream before the
    * framework/consumer reads it (API, non-OData path).
    *
-   * This would fail against the previous implementation that used try-with-resources around the
+   * <p>This would fail against the previous implementation that used try-with-resources around the
    * stream because our ClosingAwareInputStream throws on reads after close.
    */
   @Test
@@ -48,7 +48,8 @@ class OSSAttachmentsServiceHandlerStreamLifecycleTest {
 
     byte[] payload = "test-data".getBytes();
     InputStream wrapped = new ClosingAwareInputStream(new ByteArrayInputStream(payload));
-    when(mockOsClient.readContent(contentId)).thenReturn(CompletableFuture.completedFuture(wrapped));
+    when(mockOsClient.readContent(contentId))
+        .thenReturn(CompletableFuture.completedFuture(wrapped));
 
     ArgumentCaptor<InputStream> captor = ArgumentCaptor.forClass(InputStream.class);
 
