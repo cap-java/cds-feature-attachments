@@ -19,9 +19,9 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.services.ServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
@@ -31,7 +31,7 @@ public class OSSAttachmentsServiceHandlerTestUtils {
   // This methods tests the complete flow of creating, reading, and deleting an attachment
   // for all OS clients. It uses a mock ServiceBinding to simulate the attachment service.
   public static void testCreateReadDeleteAttachmentFlow(
-      ServiceBinding binding, ExecutorService executor) throws Exception {
+      ServiceBinding binding, ExecutorService executor) {
     // Create test file to upload, read and delete
     String testFileName = "testFileName-" + System.currentTimeMillis() + ".txt";
     String testFileContent = "test";
@@ -97,7 +97,7 @@ public class OSSAttachmentsServiceHandlerTestUtils {
     verify(deleteContext).setCompleted();
 
     // Try to read again, this will throw
-    assertThrows(ServiceException.class, () -> handler.readAttachment(readContext));
+    assertThrows(IOException.class, () -> handler.readAttachment(readContext));
     verify(deleteContext).setCompleted();
   }
 
