@@ -19,6 +19,7 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.ServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -71,8 +72,12 @@ public class OSSAttachmentsServiceHandlerTestUtils {
     doAnswer(
             invocation -> {
               InputStream receivedInputStream = invocation.getArgument(0);
-              assertEquals(testFileContent, new String(receivedInputStream.readAllBytes()));
-              return null;
+              try {
+                assertEquals(testFileContent, new String(receivedInputStream.readAllBytes()));
+                return null;
+              } catch (IOException ioex) {
+                throw new ServiceException(ioex);
+              }
             })
         .when(readMediaData)
         .setContent(any());
@@ -97,7 +102,7 @@ public class OSSAttachmentsServiceHandlerTestUtils {
     verify(deleteContext).setCompleted();
 
     // Try to read again, this will throw
-    assertThrows(IOException.class, () -> handler.readAttachment(readContext));
+    assertThrows(ServiceException.class, () -> handler.readAttachment(readContext));
     verify(deleteContext).setCompleted();
   }
 
