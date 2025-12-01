@@ -20,7 +20,6 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -163,7 +162,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
       Future<InputStream> future = osClient.readContent(context.getContentId());
       InputStream inputStream = future.get(); // Wait for the content to be read
       if (inputStream != null) {
-        executeWithIOException(() -> context.getData().setContent(inputStream));
+        context.getData().setContent(inputStream);
       } else {
         logger.error("Document not found for id {}", context.getContentId());
         throw new ServiceException(
@@ -173,20 +172,11 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
       Thread.currentThread().interrupt();
       throw new ServiceException(
           "Failed to read file with document id {}", context.getContentId(), ex);
-    } catch (ObjectStoreServiceException | ExecutionException | IOException ex) {
+    } catch (ObjectStoreServiceException | ExecutionException ex) {
       throw new ServiceException(
           "Failed to read file with document id {}", context.getContentId(), ex);
     } finally {
       context.setCompleted();
     }
-  }
-
-  @FunctionalInterface
-  private interface IOExceptionCallable {
-    void call() throws IOException;
-  }
-
-  private void executeWithIOException(IOExceptionCallable callable) throws IOException {
-    callable.call();
   }
 }
