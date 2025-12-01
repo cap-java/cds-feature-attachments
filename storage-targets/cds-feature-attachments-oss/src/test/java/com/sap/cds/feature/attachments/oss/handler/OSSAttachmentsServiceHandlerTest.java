@@ -140,7 +140,7 @@ class OSSAttachmentsServiceHandlerTest {
     when(context.getData()).thenReturn(mockMediaData);
     when(mockOsClient.readContent(contentId)).thenReturn(CompletableFuture.completedFuture(null));
 
-    handler.readAttachment(context);
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
 
     verify(mockOsClient).readContent(contentId);
     verify(context).setCompleted();
