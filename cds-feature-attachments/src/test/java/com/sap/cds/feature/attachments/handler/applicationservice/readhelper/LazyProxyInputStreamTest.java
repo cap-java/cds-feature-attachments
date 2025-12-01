@@ -143,7 +143,8 @@ class LazyProxyInputStreamTest {
   void originalExceptionPreservedWhenSupplierFails() {
     // Test the core fix: original exception from supplier should be preserved
     // even when status validation also fails
-    ServiceException originalException = new ServiceException("Failed to retrieve document content for file with ID: test123");
+    ServiceException originalException =
+        new ServiceException("Failed to retrieve document content for file with ID: test123");
     AttachmentStatusException statusException = AttachmentStatusException.getNotCleanException();
 
     // Mock supplier to throw original exception
@@ -151,17 +152,19 @@ class LazyProxyInputStreamTest {
     // Mock status validator to also throw exception
     doThrow(statusException).when(attachmentStatusValidator).verifyStatus(StatusCode.INFECTED);
 
-    cut = new LazyProxyInputStream(
-        () -> attachmentService.readAttachment(any()),
-        attachmentStatusValidator,
-        StatusCode.INFECTED);
+    cut =
+        new LazyProxyInputStream(
+            () -> attachmentService.readAttachment(any()),
+            attachmentStatusValidator,
+            StatusCode.INFECTED);
 
     // The original exception should be thrown, not the status exception
     ServiceException thrownException = assertThrows(ServiceException.class, () -> cut.read());
 
     // Verify the original exception is preserved
     assertThat(thrownException).isEqualTo(originalException);
-    assertThat(thrownException.getMessage()).isEqualTo("Failed to retrieve document content for file with ID: test123");
+    assertThat(thrownException.getMessage())
+        .isEqualTo("Failed to retrieve document content for file with ID: test123");
 
     // Verify the status exception is added as suppressed exception for context
     assertThat(thrownException.getSuppressed()).hasSize(1);
@@ -178,10 +181,11 @@ class LazyProxyInputStreamTest {
     when(attachmentService.readAttachment(any())).thenThrow(originalException);
     // Status validator should pass (no exception thrown)
 
-    cut = new LazyProxyInputStream(
-        () -> attachmentService.readAttachment(any()),
-        attachmentStatusValidator,
-        StatusCode.CLEAN);
+    cut =
+        new LazyProxyInputStream(
+            () -> attachmentService.readAttachment(any()),
+            attachmentStatusValidator,
+            StatusCode.CLEAN);
 
     // The original exception should be thrown
     ServiceException thrownException = assertThrows(ServiceException.class, () -> cut.read());
@@ -197,12 +201,14 @@ class LazyProxyInputStreamTest {
   @Test
   void statusValidationOnlyWhenSupplierSucceeds() {
     // Test that status validation happens after successful stream creation
-    // This ensures we don't pre-emptively block access due to status when the underlying issue might be different
+    // This ensures we don't pre-emptively block access due to status when the underlying issue
+    // might be different
 
-    cut = new LazyProxyInputStream(
-        () -> attachmentService.readAttachment(any()),
-        attachmentStatusValidator,
-        StatusCode.CLEAN);
+    cut =
+        new LazyProxyInputStream(
+            () -> attachmentService.readAttachment(any()),
+            attachmentStatusValidator,
+            StatusCode.CLEAN);
 
     assertDoesNotThrow(() -> cut.read());
 
