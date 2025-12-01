@@ -62,16 +62,11 @@ public class LazyProxyInputStream extends InputStream {
       logger.debug("Creating delegate input stream");
       try {
         delegate = inputStreamSupplier.get();
-        attachmentStatusValidator.verifyStatus(status);
-      } catch (RuntimeException originalException) {
-        try {
-          attachmentStatusValidator.verifyStatus(status);
-          throw originalException;
-        } catch (AttachmentStatusException statusException) {
-          originalException.addSuppressed(statusException);
-          throw originalException;
-        }
+      } catch (RuntimeException ex) {
+        logger.debug("Failed to access attachment content", ex);
+        throw ex;
       }
+      attachmentStatusValidator.verifyStatus(status);
     }
     return delegate;
   }

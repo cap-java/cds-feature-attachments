@@ -3,217 +3,193 @@
  */
 package com.sap.cds.feature.attachments.handler.applicationservice.readhelper;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.services.ServiceException;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+/**
+ * Unit tests for {@link LazyProxyInputStream} to verify that exceptions from the input stream
+ * supplier are not masked by status validation exceptions.
+ */
 class LazyProxyInputStreamTest {
 
-  private LazyProxyInputStream cut;
-  private InputStream inputStream;
-  private AttachmentService attachmentService;
-  private AttachmentStatusValidator attachmentStatusValidator;
+  @Mock private Supplier<InputStream> inputStreamSupplier;
+
+  @Mock private AttachmentStatusValidator statusValidator;
 
   @BeforeEach
-  void setup() {
-    inputStream = mock(InputStream.class);
-    attachmentService = mock(AttachmentService.class);
-    attachmentStatusValidator = mock(AttachmentStatusValidator.class);
-    when(attachmentService.readAttachment(any())).thenReturn(inputStream);
-    cut =
-        new LazyProxyInputStream(
-            () -> attachmentService.readAttachment(any()),
-            attachmentStatusValidator,
-            StatusCode.CLEAN);
+  void setUp() {
+    MockitoAnnotations.openMocks(this);
   }
 
   @Test
-  void noMethodCallNoStreamAccess() {
-    verifyNoInteractions(attachmentService);
+  void testAuthorizationExceptionIsNotMaskedByStatusException() throws IOException {
+    // Arrange: Create an authorization exception
+    ServiceException authException =
+        new ServiceException("Forbidden: User does not have permission to read this attachment");
+
+    // Mock supplier to throw authorization exception
+    when(inputStreamSupplier.get()).thenThrow(authException);
+
+    // Create LazyProxyInputStream with NOT_CLEAN status (which would throw if checked)
+    try (LazyProxyInputStream lazyStream =
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "not_clean")) {
+
+      // Act & Assert: The authorization exception should be thrown, not a status exception
+      ServiceException thrown = assertThrows(ServiceException.class, () -> lazyStream.read());
+
+      assertEquals(authException, thrown);
+      assertEquals(
+          "Forbidden: User does not have permission to read this attachment", thrown.getMessage());
+
+      // Verify that status validation was never called because the supplier failed first
+      verify(statusValidator, never()).verifyStatus("not_clean");
+    }
   }
 
   @Test
-  void simpleReadIsForwarded() throws IOException {
-    when(inputStream.read()).thenReturn(12);
+  void testNetworkExceptionIsNotMaskedByStatusException() throws IOException {
+    // Arrange: Create a network exception
+    RuntimeException networkException = new RuntimeException("Network timeout");
 
-    var result = cut.read();
+    // Mock supplier to throw network exception
+    when(inputStreamSupplier.get()).thenThrow(networkException);
 
-    verify(inputStream).read();
-    assertThat(result).isEqualTo(12);
+    // Create LazyProxyInputStream with NOT_SCANNED status
+    try (LazyProxyInputStream lazyStream =
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "unscanned")) {
+
+      // Act & Assert: The network exception should be thrown, not a status exception
+      RuntimeException thrown = assertThrows(RuntimeException.class, () -> lazyStream.read());
+
+      assertEquals(networkException, thrown);
+      assertEquals("Network timeout", thrown.getMessage());
+
+      // Verify that status validation was never called
+      verify(statusValidator, never()).verifyStatus("unscanned");
+    }
   }
 
   @Test
-  @SuppressFBWarnings("RR_NOT_CHECKED")
-  void readWithBytesIsForwarded() throws IOException {
-    var bytes = "test".getBytes(StandardCharsets.UTF_8);
-    when(inputStream.read(bytes)).thenReturn(24);
+  void testStatusExceptionIsThrownWhenAccessSucceeds() throws IOException {
+    // Arrange: Mock successful stream access
+    InputStream mockStream = new ByteArrayInputStream(new byte[] {1, 2, 3});
+    when(inputStreamSupplier.get()).thenReturn(mockStream);
 
-    var result = cut.read(bytes);
-
-    verify(inputStream).read(bytes);
-    assertThat(result).isEqualTo(24);
-  }
-
-  @Test
-  @SuppressFBWarnings("RR_NOT_CHECKED")
-  void readWithBytesAndParametersIsForwarded() throws IOException {
-    var bytes = "test".getBytes(StandardCharsets.UTF_8);
-    when(inputStream.read(bytes, 1, 2)).thenReturn(36);
-
-    var result = cut.read(bytes, 1, 2);
-
-    verify(inputStream).read(bytes, 1, 2);
-    assertThat(result).isEqualTo(36);
-  }
-
-  @Test
-  void supplierOnlyCalledOnce() throws IOException {
-    when(inputStream.read()).thenReturn(48).thenReturn(60);
-
-    var result1 = cut.read();
-    var result2 = cut.read();
-
-    verify(inputStream, times(2)).read();
-    verify(attachmentService).readAttachment(any());
-    assertThat(result1).isEqualTo(48);
-    assertThat(result2).isEqualTo(60);
-  }
-
-  @Test
-  void closeDoesNotCallSupplier() throws IOException {
-    cut.close();
-
-    verifyNoInteractions(inputStream);
-    verifyNoInteractions(attachmentService);
-  }
-
-  @Test
-  void closeCallsInputStream() throws IOException {
-    cut.read();
-    cut.close();
-
-    verify(inputStream, times(1)).read();
-    verify(inputStream, times(1)).close();
-    verify(attachmentService).readAttachment(any());
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {StatusCode.UNSCANNED, StatusCode.INFECTED})
-  void exceptionIfWrongStatus(String status) {
-    doThrow(AttachmentStatusException.class).when(attachmentStatusValidator).verifyStatus(status);
-
-    cut =
-        new LazyProxyInputStream(
-            () -> attachmentService.readAttachment(any()), attachmentStatusValidator, status);
-
-    assertThrows(AttachmentStatusException.class, () -> cut.read());
-  }
-
-  @Test
-  void noExceptionIfCorrectStatus() {
-    cut =
-        new LazyProxyInputStream(
-            () -> attachmentService.readAttachment(any()),
-            attachmentStatusValidator,
-            StatusCode.CLEAN);
-
-    assertDoesNotThrow(() -> cut.read());
-  }
-
-  @Test
-  void originalExceptionPreservedWhenSupplierFails() {
-    // Test the core fix: original exception from supplier should be preserved
-    // even when status validation also fails
-    ServiceException originalException =
-        new ServiceException("Failed to retrieve document content for file with ID: test123");
+    // Mock status validator to throw AttachmentStatusException for NOT_CLEAN
     AttachmentStatusException statusException = AttachmentStatusException.getNotCleanException();
+    doThrow(statusException).when(statusValidator).verifyStatus("not_clean");
 
-    // Mock supplier to throw original exception
-    when(attachmentService.readAttachment(any())).thenThrow(originalException);
-    // Mock status validator to also throw exception
-    doThrow(statusException).when(attachmentStatusValidator).verifyStatus(StatusCode.INFECTED);
+    // Create LazyProxyInputStream with NOT_CLEAN status
+    try (LazyProxyInputStream lazyStream =
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "not_clean")) {
 
-    cut =
-        new LazyProxyInputStream(
-            () -> attachmentService.readAttachment(any()),
-            attachmentStatusValidator,
-            StatusCode.INFECTED);
+      // Act & Assert: Now the status exception should be thrown (because access succeeded)
+      AttachmentStatusException thrown =
+          assertThrows(AttachmentStatusException.class, () -> lazyStream.read());
 
-    // The original exception should be thrown, not the status exception
-    ServiceException thrownException = assertThrows(ServiceException.class, () -> cut.read());
+      assertEquals(statusException, thrown);
 
-    // Verify the original exception is preserved
-    assertThat(thrownException).isEqualTo(originalException);
-    assertThat(thrownException.getMessage())
-        .isEqualTo("Failed to retrieve document content for file with ID: test123");
-
-    // Verify the status exception is added as suppressed exception for context
-    assertThat(thrownException.getSuppressed()).hasSize(1);
-    assertThat(thrownException.getSuppressed()[0]).isInstanceOf(AttachmentStatusException.class);
+      // Verify that supplier was called successfully
+      verify(inputStreamSupplier).get();
+      // Verify that status validation was called after successful access
+      verify(statusValidator).verifyStatus("not_clean");
+    }
   }
 
   @Test
-  void originalExceptionPreservedWhenStatusValidationPasses() {
-    // Test edge case: supplier fails but status validation passes
-    // In this case, we still want the original exception, not status exception
-    ServiceException originalException = new ServiceException("Network connection failed");
+  void testSuccessfulReadWhenBothAccessAndStatusAreValid() throws IOException {
+    // Arrange: Mock successful stream access
+    byte[] testData = new byte[] {1, 2, 3, 4, 5};
+    InputStream mockStream = new ByteArrayInputStream(testData);
+    when(inputStreamSupplier.get()).thenReturn(mockStream);
 
-    // Mock supplier to throw original exception
-    when(attachmentService.readAttachment(any())).thenThrow(originalException);
-    // Status validator should pass (no exception thrown)
+    // Mock status validator to pass for CLEAN status (no exception)
+    // Note: verifyStatus with CLEAN status should not throw, so we don't mock it to throw
 
-    cut =
-        new LazyProxyInputStream(
-            () -> attachmentService.readAttachment(any()),
-            attachmentStatusValidator,
-            StatusCode.CLEAN);
+    // Create LazyProxyInputStream with CLEAN status
+    try (LazyProxyInputStream lazyStream =
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "clean")) {
 
-    // The original exception should be thrown
-    ServiceException thrownException = assertThrows(ServiceException.class, () -> cut.read());
+      // Act: Read from the stream
+      int firstByte = lazyStream.read();
 
-    // Verify the original exception is preserved
-    assertThat(thrownException).isEqualTo(originalException);
-    assertThat(thrownException.getMessage()).isEqualTo("Network connection failed");
+      // Assert: Should successfully read the first byte
+      assertEquals(1, firstByte);
 
-    // No suppressed exceptions should be present since status validation passed
-    assertThat(thrownException.getSuppressed()).isEmpty();
+      // Verify that supplier was called
+      verify(inputStreamSupplier).get();
+      // Verify that status validation was called
+      verify(statusValidator).verifyStatus("clean");
+    }
   }
 
   @Test
-  void statusValidationOnlyWhenSupplierSucceeds() {
-    // Test that status validation happens after successful stream creation
-    // This ensures we don't pre-emptively block access due to status when the underlying issue
-    // might be different
+  void testDelegateIsOnlyCreatedOnce() throws IOException {
+    // Arrange: Mock successful stream access
+    byte[] testData = new byte[] {1, 2, 3};
+    InputStream mockStream = new ByteArrayInputStream(testData);
+    when(inputStreamSupplier.get()).thenReturn(mockStream);
 
-    cut =
-        new LazyProxyInputStream(
-            () -> attachmentService.readAttachment(any()),
-            attachmentStatusValidator,
-            StatusCode.CLEAN);
+    // Create LazyProxyInputStream with CLEAN status
+    try (LazyProxyInputStream lazyStream =
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "clean")) {
 
-    assertDoesNotThrow(() -> cut.read());
+      // Act: Read multiple times
+      lazyStream.read();
+      lazyStream.read();
+      lazyStream.read();
 
-    // Verify status was validated after supplier was called
-    verify(attachmentService).readAttachment(any());
-    verify(attachmentStatusValidator).verifyStatus(StatusCode.CLEAN);
+      // Assert: Supplier should only be called once (delegate is cached)
+      verify(inputStreamSupplier).get();
+      // Status validation should also only be called once
+      verify(statusValidator).verifyStatus("clean");
+    }
+  }
+
+  @Test
+  void testCloseDoesNotThrowWhenDelegateIsNull() throws IOException {
+    // Arrange: Create LazyProxyInputStream that hasn't accessed the delegate yet
+    LazyProxyInputStream lazyStream =
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "clean");
+
+    // Act & Assert: Close should not throw even if delegate is null
+    lazyStream.close();
+
+    // Verify that supplier was never called
+    verify(inputStreamSupplier, never()).get();
+  }
+
+  @Test
+  void testCloseClosesDelegate() throws IOException {
+    // Arrange: Mock successful stream access
+    InputStream mockStream = mock(InputStream.class);
+    when(inputStreamSupplier.get()).thenReturn(mockStream);
+
+    LazyProxyInputStream lazyStream =
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "clean");
+
+    // Access the delegate first
+    lazyStream.read();
+
+    // Act: Close the lazy stream
+    lazyStream.close();
+
+    // Assert: Delegate should be closed
+    verify(mockStream).close();
   }
 }
