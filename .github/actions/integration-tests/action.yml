@@ -24,6 +24,10 @@ runs:
       with:
         maven-version: ${{ inputs.maven-version }}
 
+    - name: Build dependencies for integration tests
+      run: mvn clean install -ntp -B -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss -am
+      shell: bash
+
     - name: Integration Tests with version of CAP Java used for build
       run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml
       shell: bash
@@ -31,5 +35,5 @@ runs:
       run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml -P latest-test-version
       shell: bash
     - name: Integration Tests for the object store service
-      run: mvn clean verify -Pintegration-tests-oss
+      run: mvn clean verify -ntp -B -Pintegration-tests-oss
       shell: bash

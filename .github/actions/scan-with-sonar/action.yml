@@ -41,8 +41,20 @@ runs:
       run: echo "${{steps.get-revision.outputs.REVISION}}"
       shell: bash
 
+    - name: Build project for SonarQube scan
+      run: |
+        mvn clean verify -ntp -B \
+          -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss \
+          -am
+      shell: bash
+
     - name: SonarQube Scan
       uses: SAP/project-piper-action@main
       with:
         step-name: sonarExecuteScan
-        flags: --token=${{inputs.sonarq-token}} --githubToken=${{inputs.github-token}} --version=${{steps.get-revision.outputs.REVISION}} --inferJavaBinaries=true
+        flags: >
+          --token=${{ inputs.sonarq-token }}
+          --githubToken=${{ inputs.github-token }}
+          --version=${{ steps.get-revision.outputs.REVISION }}
+          --inferJavaBinaries=true
+          --options=-Dsonar.exclusions=**/samples/**

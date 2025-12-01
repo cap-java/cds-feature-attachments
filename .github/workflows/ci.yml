@@ -1,34 +1,38 @@
-name: Main build and deploy
+name: CI
 
 env:
-  JAVA_VERSION: '17'
   MAVEN_VERSION: '3.6.3'
+  # Cloud storage environment variables (available to all jobs that need them)
+  AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
+  AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+  AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+  AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
+  AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
+  AZURE_CONTAINER_URI: ${{ secrets.AZURE_CONTAINER_URI }}
+  AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
+  GS_BASE_64_ENCODED_PRIVATE_KEY_DATA: ${{ secrets.GS_BASE_64_ENCODED_PRIVATE_KEY_DATA }}
+  GS_BUCKET: ${{ secrets.GS_BUCKET }}
+  GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
 
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
-    name: Build and Sonar Scan
+    name: Build
     runs-on: ubuntu-latest
     strategy:
       matrix:
         java-version: [ 17, 21 ]
-    env:
-      AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
-      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
-      AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
-      AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
-      AZURE_CONTAINER_URI: ${{ secrets.AZURE_CONTAINER_URI }}
-      AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
-      GS_BASE_64_ENCODED_PRIVATE_KEY_DATA: ${{ secrets.GS_BASE_64_ENCODED_PRIVATE_KEY_DATA }}
-      GS_BUCKET: ${{ secrets.GS_BUCKET }}
-      GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
+      - name: Spotless check
+        run: mvn spotless:check -Dspotless.check.skip=false
 
       - name: Build
         uses: ./.github/actions/build
@@ -36,11 +40,33 @@ jobs:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
 
-      - name: SonarQube Scan
-        uses: ./.github/actions/scan-with-sonar
-        if: ${{ matrix.java-version == 17 }}
+  integration-tests:
+    name: Integration Tests (Java ${{ matrix.java-version }})
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        java-version: [ 17, 21 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Integration Tests
+        uses: ./.github/actions/integration-tests
         with:
           java-version: ${{ matrix.java-version }}
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+  sonarqube-scan:
+    name: SonarQube Scan
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: SonarQube Scan
+        uses: ./.github/actions/scan-with-sonar
+        with:
+          java-version: 17
           maven-version: ${{ env.MAVEN_VERSION }}
           sonarq-token: ${{ secrets.SONARQ_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -48,6 +74,7 @@ jobs:
   scan:
     name: Blackduck Scan
     runs-on: ubuntu-latest
+    needs: [integration-tests]
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -63,17 +90,17 @@ jobs:
   deploy-snapshot:
     name: Deploy snapshot to Artifactory
     runs-on: ubuntu-latest
-    needs: [build, scan]
+    needs: [scan]
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Set up Java ${{ env.JAVA_VERSION }}
+      - name: Set up Java
         uses: actions/setup-java@v5
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: sapmachine
-          cache: maven
+          java-version: '17'
+          distribution: 'sapmachine'
+          cache: 'maven'
           server-id: artifactory
           server-username: DEPLOYMENT_USER
           server-password: DEPLOYMENT_PASS
@@ -82,6 +109,11 @@ jobs:
         uses: stCarolas/setup-maven@v5
         with:
           maven-version: ${{ env.MAVEN_VERSION }}
+
+      - name: Set Dry Run for Pull Request
+        if: github.event_name == 'pull_request'
+        run: echo "DRY_RUN_PARAM=-DaltDeploymentRepository=local-repo::default::file:./local-repo" >> $GITHUB_ENV
+        shell: bash
 
       - name: Get Revision
         id: get-revision
@@ -92,17 +124,16 @@ jobs:
       - name: Print Revision
         run: echo "Current revision ${{ steps.get-revision.outputs.REVISION }}"
         shell: bash
-  
+
       - name: Deploy snapshot
         if: ${{ endsWith(steps.get-revision.outputs.REVISION, '-SNAPSHOT') }}
-        # https://maven.apache.org/plugins/maven-deploy-plugin/usage.html#the-deploy-deploy-mojo
         run: >
           mvn -B -ntp -fae
           -pl !integration-tests,!integration-tests/db,!integration-tests/srv
           -Dmaven.install.skip=true
           -Dmaven.test.skip=true
           -DdeployAtEnd=true
-          deploy
+          deploy ${{ env.DRY_RUN_PARAM }}
         env:
           DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
           DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
