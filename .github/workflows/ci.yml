@@ -28,7 +28,7 @@ jobs:
         java-version: [ 17, 21 ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Spotless check
         run: mvn spotless:check -Dspotless.check.skip=false
@@ -48,7 +48,7 @@ jobs:
         java-version: [ 17, 21 ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Integration Tests
         uses: ./.github/actions/integration-tests
         with:
@@ -61,7 +61,7 @@ jobs:
     needs: build
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: SonarQube Scan
         uses: ./.github/actions/scan-with-sonar
         with:
@@ -77,7 +77,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Scan
         uses: ./.github/actions/scan-with-blackduck
@@ -92,7 +92,7 @@ jobs:
     needs: [scan]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Java
         uses: actions/setup-java@v5
