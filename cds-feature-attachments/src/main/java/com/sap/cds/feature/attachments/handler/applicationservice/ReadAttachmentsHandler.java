@@ -54,118 +54,118 @@ import org.slf4j.LoggerFactory;
 @ServiceName(value = "*", type = ApplicationService.class)
 public class ReadAttachmentsHandler implements EventHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReadAttachmentsHandler.class);
+  private static final Logger logger = LoggerFactory.getLogger(ReadAttachmentsHandler.class);
 
-    private final AttachmentService attachmentService;
-    private final AttachmentStatusValidator statusValidator;
-    private final AsyncMalwareScanExecutor scanExecutor;
+  private final AttachmentService attachmentService;
+  private final AttachmentStatusValidator statusValidator;
+  private final AsyncMalwareScanExecutor scanExecutor;
 
-    public ReadAttachmentsHandler(
-            AttachmentService attachmentService,
-            AttachmentStatusValidator statusValidator,
-            AsyncMalwareScanExecutor scanExecutor) {
-        this.attachmentService =
-                requireNonNull(attachmentService, "attachmentService must not be null");
-        this.statusValidator = requireNonNull(statusValidator, "statusValidator must not be null");
-        this.scanExecutor = requireNonNull(scanExecutor, "scanExecutor must not be null");
+  public ReadAttachmentsHandler(
+      AttachmentService attachmentService,
+      AttachmentStatusValidator statusValidator,
+      AsyncMalwareScanExecutor scanExecutor) {
+    this.attachmentService =
+        requireNonNull(attachmentService, "attachmentService must not be null");
+    this.statusValidator = requireNonNull(statusValidator, "statusValidator must not be null");
+    this.scanExecutor = requireNonNull(scanExecutor, "scanExecutor must not be null");
+  }
+
+  @Before
+  @HandlerOrder(HandlerOrder.EARLY)
+  void processBefore(CdsReadEventContext context) {
+    logger.debug("Processing before {} for entity {}.", context.getEvent(), context.getTarget());
+
+    CdsModel cdsModel = context.getModel();
+    List<String> fieldNames =
+        getAttachmentAssociations(cdsModel, context.getTarget(), "", new ArrayList<>());
+    if (!fieldNames.isEmpty()) {
+      CqnSelect resultCqn = CQL.copy(context.getCqn(), new BeforeReadItemsModifier(fieldNames));
+      context.setCqn(resultCqn);
     }
+  }
 
-    @Before
-    @HandlerOrder(HandlerOrder.EARLY)
-    void processBefore(CdsReadEventContext context) {
-        logger.debug("Processing before {} for entity {}.", context.getEvent(), context.getTarget());
+  @After
+  @HandlerOrder(HandlerOrder.EARLY)
+  void processAfter(CdsReadEventContext context, List<CdsData> data) {
+    if (ApplicationHandlerHelper.containsContentField(context.getTarget(), data)) {
+      logger.debug(
+          "Processing after {} event for entity {}", context.getEvent(), context.getTarget());
 
-        CdsModel cdsModel = context.getModel();
-        List<String> fieldNames =
-                getAttachmentAssociations(cdsModel, context.getTarget(), "", new ArrayList<>());
-        if (!fieldNames.isEmpty()) {
-            CqnSelect resultCqn = CQL.copy(context.getCqn(), new BeforeReadItemsModifier(fieldNames));
-            context.setCqn(resultCqn);
-        }
-    }
-
-    @After
-    @HandlerOrder(HandlerOrder.EARLY)
-    void processAfter(CdsReadEventContext context, List<CdsData> data) {
-        if (ApplicationHandlerHelper.containsContentField(context.getTarget(), data)) {
-            logger.debug(
-                    "Processing after {} event for entity {}", context.getEvent(), context.getTarget());
-
-            Converter converter =
-                    (path, element, value) -> {
-                        Attachments attachment = Attachments.of(path.target().values());
-                        InputStream content = attachment.getContent();
-                        if (nonNull(attachment.getContentId())) {
-                            verifyStatus(path, attachment);
-                            Supplier<InputStream> supplier =
-                                    nonNull(content)
-                                            ? () -> content
-                                            : () -> attachmentService.readAttachment(attachment.getContentId());
-                            return new LazyProxyInputStream(supplier, statusValidator, attachment.getStatus());
-                        } else {
-                            return value;
-                        }
-                    };
-            CdsDataProcessor.create()
-                    .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
-                    .process(data, context.getTarget());
-        }
-    }
-
-    private List<String> getAttachmentAssociations(
-            CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {
-        List<String> associationNames = new ArrayList<>();
-        if (ApplicationHandlerHelper.isMediaEntity(entity)) {
-            associationNames.add(associationName);
-        }
-
-        Map<String, CdsEntity> annotatedEntities =
-                entity
-                        .associations()
-                        .collect(
-                                Collectors.toMap(
-                                        CdsElementDefinition::getName,
-                                        element -> element.getType().as(CdsAssociationType.class).getTarget()));
-
-        if (annotatedEntities.isEmpty()) {
-            return associationNames;
-        }
-
-        for (Entry<String, CdsEntity> associatedElement : annotatedEntities.entrySet()) {
-            if (!associationNames.contains(associatedElement.getKey())
-                    && !processedEntities.contains(associatedElement.getKey())
-                    && !Drafts.SIBLING_ENTITY.equals(associatedElement.getKey())) {
-                processedEntities.add(associatedElement.getKey());
-                List<String> result =
-                        getAttachmentAssociations(
-                                model, associatedElement.getValue(), associatedElement.getKey(), processedEntities);
-                associationNames.addAll(result);
+      Converter converter =
+          (path, element, value) -> {
+            Attachments attachment = Attachments.of(path.target().values());
+            InputStream content = attachment.getContent();
+            if (nonNull(attachment.getContentId())) {
+              verifyStatus(path, attachment);
+              Supplier<InputStream> supplier =
+                  nonNull(content)
+                      ? () -> content
+                      : () -> attachmentService.readAttachment(attachment.getContentId());
+              return new LazyProxyInputStream(supplier, statusValidator, attachment.getStatus());
+            } else {
+              return value;
             }
-        }
-        return associationNames;
+          };
+      CdsDataProcessor.create()
+          .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
+          .process(data, context.getTarget());
+    }
+  }
+
+  private List<String> getAttachmentAssociations(
+      CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {
+    List<String> associationNames = new ArrayList<>();
+    if (ApplicationHandlerHelper.isMediaEntity(entity)) {
+      associationNames.add(associationName);
     }
 
-    private void verifyStatus(Path path, Attachments attachment) {
-        if (areKeysEmpty(path.target().keys())) {
-            String currentStatus = attachment.getStatus();
-            logger.debug(
-                    "In verify status for content id {} and status {}",
-                    attachment.getContentId(),
-                    currentStatus);
-            if (StatusCode.UNSCANNED.equals(currentStatus)
-                    || StatusCode.SCANNING.equals(currentStatus)
-                    || currentStatus == null) {
-                logger.debug(
-                        "Scanning content with ID {} for malware, has current status {}",
-                        attachment.getContentId(),
-                        currentStatus);
-                scanExecutor.scanAsync(path.target().entity(), attachment.getContentId());
-            }
-            statusValidator.verifyStatus(attachment.getStatus());
-        }
+    Map<String, CdsEntity> annotatedEntities =
+        entity
+            .associations()
+            .collect(
+                Collectors.toMap(
+                    CdsElementDefinition::getName,
+                    element -> element.getType().as(CdsAssociationType.class).getTarget()));
+
+    if (annotatedEntities.isEmpty()) {
+      return associationNames;
     }
 
-    private boolean areKeysEmpty(Map<String, Object> keys) {
-        return keys.values().stream().allMatch(Objects::isNull);
+    for (Entry<String, CdsEntity> associatedElement : annotatedEntities.entrySet()) {
+      if (!associationNames.contains(associatedElement.getKey())
+          && !processedEntities.contains(associatedElement.getKey())
+          && !Drafts.SIBLING_ENTITY.equals(associatedElement.getKey())) {
+        processedEntities.add(associatedElement.getKey());
+        List<String> result =
+            getAttachmentAssociations(
+                model, associatedElement.getValue(), associatedElement.getKey(), processedEntities);
+        associationNames.addAll(result);
+      }
     }
+    return associationNames;
+  }
+
+  private void verifyStatus(Path path, Attachments attachment) {
+    if (areKeysEmpty(path.target().keys())) {
+      String currentStatus = attachment.getStatus();
+      logger.debug(
+          "In verify status for content id {} and status {}",
+          attachment.getContentId(),
+          currentStatus);
+      if (StatusCode.UNSCANNED.equals(currentStatus)
+          || StatusCode.SCANNING.equals(currentStatus)
+          || currentStatus == null) {
+        logger.debug(
+            "Scanning content with ID {} for malware, has current status {}",
+            attachment.getContentId(),
+            currentStatus);
+        scanExecutor.scanAsync(path.target().entity(), attachment.getContentId());
+      }
+      statusValidator.verifyStatus(attachment.getStatus());
+    }
+  }
+
+  private boolean areKeysEmpty(Map<String, Object> keys) {
+    return keys.values().stream().allMatch(Objects::isNull);
+  }
 }

@@ -3,7 +3,7 @@
  */
 package com.sap.cds.feature.attachments.handler.applicationservice.readhelper;
 
-//import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 
 /**
  * The class {@link AttachmentStatusValidator} is responsible for validating the status of an
@@ -18,12 +18,11 @@ public class AttachmentStatusValidator {
    * @throws AttachmentStatusException if the attachment status is not CLEAN
    */
   public void verifyStatus(String attachmentStatus) throws AttachmentStatusException {
-    throw AttachmentStatusException.getNotCleanException();
-      //if (!StatusCode.CLEAN.equals(attachmentStatus)) {
-    //  throw StatusCode.UNSCANNED.equals(attachmentStatus)
-    //          || StatusCode.SCANNING.equals(attachmentStatus)
-    //      ? AttachmentStatusException.getNotScannedException()
-    //      : AttachmentStatusException.getNotCleanException();
-    //}
+    if (!StatusCode.CLEAN.equals(attachmentStatus)) {
+      throw StatusCode.UNSCANNED.equals(attachmentStatus)
+              || StatusCode.SCANNING.equals(attachmentStatus)
+          ? AttachmentStatusException.getNotScannedException()
+          : AttachmentStatusException.getNotCleanException();
+    }
   }
 }
