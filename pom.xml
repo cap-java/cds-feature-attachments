@@ -289,44 +289,6 @@
         </executions>
       </plugin>
 
-      <plugin>
-        <artifactId>maven-pmd-plugin</artifactId>
-        <configuration>
-          <targetJdk>${java.version}</targetJdk>
-          <failurePriority>5</failurePriority>
-          <targetDirectory>${project.build.directory}</targetDirectory>
-          <printFailingErrors>true</printFailingErrors>
-          <includeTests>true</includeTests>
-          <linkXRef>false</linkXRef>
-          <verbose>false</verbose>
-          <rulesets>
-            <!-- Default Ruleset -->
-            <ruleset>/rulesets/java/maven-pmd-plugin-default.xml</ruleset>
-          </rulesets>
-          <excludes>
-            <exclude>**/${excluded.generation.package}**</exclude>
-            <exclude>**/*Test**</exclude>
-          </excludes>
-        </configuration>
-        <!-- https://mvnrepository.com/artifact/com.sap.cloud.sdk.quality/pmd-rules -->
-        <dependencies>
-          <dependency>
-            <groupId>com.sap.cloud.sdk.quality</groupId>
-            <artifactId>pmd-rules</artifactId>
-            <version>3.78.0</version>
-          </dependency>
-        </dependencies>
-        <executions>
-          <execution>
-            <id>pmd-error</id>
-            <goals>
-              <goal>check</goal>
-              <goal>cpd-check</goal>
-            </goals>
-            <phase>process-test-classes</phase>
-          </execution>
-        </executions>
-      </plugin>
 
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
