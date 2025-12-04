@@ -106,7 +106,6 @@ public class ReadAttachmentsHandler implements EventHandler {
               return value;
             }
           };
-
       CdsDataProcessor.create()
           .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
           .process(data, context.getTarget());
