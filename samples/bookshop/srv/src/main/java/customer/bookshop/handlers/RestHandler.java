@@ -157,12 +157,6 @@ public class RestHandler {
         }
     }
 
-    @GetMapping("/{attachmentId}/content/s")
-    public ResponseEntity<Resource> downloadAttachmentS() {
-        try {
-        }
-    }
-
     /**
      * Upload a new attachment
      * POST /api/books/{bookId}/attachments
