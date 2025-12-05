@@ -14,7 +14,10 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
         title: '{i18n>attachment_mimeType}',
         Core.IsMediaType
     );
-    fileName  @(title: '{i18n>attachment_fileName}');
+    fileName  @(
+        title: '{i18n>attachment_fileName}',
+        UI.MultiLineText
+        );
     status    @(title: '{i18n>attachment_status}');
     contentId @(UI.Hidden: true);
     scannedAt @(UI.Hidden: true);
