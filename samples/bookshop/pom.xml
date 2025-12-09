@@ -17,7 +17,7 @@
 
 		<!-- DEPENDENCIES VERSION -->
 		<jdk.version>17</jdk.version>
-		<cds.services.version>4.4.2</cds.services.version>
+		<cds.services.version>4.5.0</cds.services.version>
 		<spring.boot.version>3.5.7</spring.boot.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
