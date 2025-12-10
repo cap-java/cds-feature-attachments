@@ -38,7 +38,10 @@ annotate Attachments with @UI: {
         {Value: up__ID, @UI.Hidden}
     ]
 } {
-    note       @(title: '{i18n>attachment_note}');
+    note       @(
+        title: '{i18n>attachment_note}',
+        UI.MultiLineText
+    );
     modifiedAt @(odata.etag);
 }
 
