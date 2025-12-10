@@ -1,6 +1,14 @@
 using {sap.capire.bookshop as my} from '../db/schema';
 using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
 
+extend Attachments with {
+  uploadStatus : String enum {
+    pending   = 'Pending';
+    uploaded  = 'Uploaded';
+    failed    = 'Failed';
+  }
+}
+
 // Extend Books entity to support file attachments (images, PDFs, documents)
 // Each book can have multiple attachments via composition relationship
 extend my.Books with {
