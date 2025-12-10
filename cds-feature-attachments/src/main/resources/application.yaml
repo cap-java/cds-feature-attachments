@@ -1,0 +1,5 @@
+cds:
+    data-source:
+        csv:
+            paths:
+            - "./src/main/resources/cds/**"
