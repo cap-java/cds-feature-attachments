@@ -39,7 +39,7 @@
   </modules>
 
   <scm>
-    <connection>scm:git:git@github.com:cap-java/cds-feature-attachments.git</connection>
+    <connection>scm:git:https://github.com/cap-java/cds-feature-attachments.git</connection>
     <developerConnection>scm:git:git@github.com:cap-java/cds-feature-attachments.git</developerConnection>
     <url>https://github.com/cap-java/cds-feature-attachments</url>
   </scm>
