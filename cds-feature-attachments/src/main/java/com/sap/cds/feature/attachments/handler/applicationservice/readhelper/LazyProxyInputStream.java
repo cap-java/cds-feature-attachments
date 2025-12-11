@@ -3,18 +3,22 @@
  */
 package com.sap.cds.feature.attachments.handler.applicationservice.readhelper;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Supplier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class {@link LazyProxyInputStream} is a lazy proxy for an {@link InputStream}. The class is
- * used to create a proxy for an {@link InputStream} that is not yet available. Before the {@link
- * InputStream} is accessed, the status of the attachment is validated.
+ * The class {@link LazyProxyInputStream} is a buffered proxy for an
+ * {@link InputStream}. The class validates the attachment status and
+ * stream health before making the stream available for reading.
+ * For content requests, the stream is eagerly initialized to catch errors before serialization.
+ * For metadata requests, the stream is lazily initialized only when accessed.
  */
-public class LazyProxyInputStream extends InputStream {
+public final class LazyProxyInputStream extends InputStream {
   private static final Logger logger = LoggerFactory.getLogger(LazyProxyInputStream.class);
 
   private final Supplier<InputStream> inputStreamSupplier;
@@ -25,10 +29,17 @@ public class LazyProxyInputStream extends InputStream {
   public LazyProxyInputStream(
       Supplier<InputStream> inputStreamSupplier,
       AttachmentStatusValidator attachmentStatusValidator,
-      String status) {
+      String status,
+      boolean eagerValidation) throws IOException {
     this.inputStreamSupplier = inputStreamSupplier;
     this.attachmentStatusValidator = attachmentStatusValidator;
     this.status = status;
+    
+    // Only eagerly initialize if this is a content request
+    if (eagerValidation) {
+      logger.debug("Eagerly initializing stream for content request");
+      this.delegate = initializeDelegate();
+    }
   }
 
   @Override
@@ -59,15 +70,38 @@ public class LazyProxyInputStream extends InputStream {
 
   private InputStream getDelegate() throws IOException {
     if (delegate == null) {
-      logger.debug("Creating delegate input stream");
-      try {
-        delegate = inputStreamSupplier.get();
-      } catch (RuntimeException ex) {
-        logger.error("Failed to access attachment content", ex);
-        throw new IOException("Failed to read attachment content: " + ex.getMessage(), ex);
-      }
-      attachmentStatusValidator.verifyStatus(status);
+      logger.debug("Lazily initializing stream for metadata request");
+      delegate = initializeDelegate();
     }
     return delegate;
+  }
+
+  private InputStream initializeDelegate() throws IOException {
+    logger.debug("Initializing buffered input stream");
+    
+    // Validate status before attempting to create the stream
+    attachmentStatusValidator.verifyStatus(status);
+    
+    // Get the input stream from the supplier
+    // ServiceExceptions should propagate as-is to preserve error details
+    InputStream rawStream = inputStreamSupplier.get();
+    
+    // Wrap in BufferedInputStream to enable mark/reset and buffering
+    InputStream bufferedStream = new BufferedInputStream(rawStream, 1024);
+    
+    // Verify stream health by reading the first byte
+    bufferedStream.mark(1024);
+    int firstByte = bufferedStream.read();
+    
+    if (firstByte == -1) {
+      logger.error("Attachment content is empty");
+      throw new IOException("Attachment content is empty");
+    }
+    
+    // Reset to the beginning so consumer gets the full stream
+    bufferedStream.reset();
+    logger.debug("Buffered input stream initialized and verified");
+    
+    return bufferedStream;
   }
 }

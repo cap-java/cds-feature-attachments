@@ -47,7 +47,7 @@ class LazyProxyInputStreamTest {
 
     // Create LazyProxyInputStream with NOT_CLEAN status (which would throw if checked)
     try (LazyProxyInputStream lazyStream =
-        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "not_clean")) {
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "not_clean", false)) {
 
       // Act & Assert: The authorization exception should be thrown, not a status exception
       ServiceException thrown = assertThrows(ServiceException.class, () -> lazyStream.read());
@@ -71,7 +71,7 @@ class LazyProxyInputStreamTest {
 
     // Create LazyProxyInputStream with NOT_SCANNED status
     try (LazyProxyInputStream lazyStream =
-        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "unscanned")) {
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "unscanned", false)) {
 
       // Act & Assert: The network exception should be thrown, not a status exception
       RuntimeException thrown = assertThrows(RuntimeException.class, () -> lazyStream.read());
@@ -96,7 +96,7 @@ class LazyProxyInputStreamTest {
 
     // Create LazyProxyInputStream with NOT_CLEAN status
     try (LazyProxyInputStream lazyStream =
-        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "not_clean")) {
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "not_clean", false)) {
 
       // Act & Assert: Now the status exception should be thrown (because access succeeded)
       AttachmentStatusException thrown =
@@ -123,7 +123,7 @@ class LazyProxyInputStreamTest {
 
     // Create LazyProxyInputStream with CLEAN status
     try (LazyProxyInputStream lazyStream =
-        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "clean")) {
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "clean", false)) {
 
       // Act: Read from the stream
       int firstByte = lazyStream.read();
@@ -147,7 +147,7 @@ class LazyProxyInputStreamTest {
 
     // Create LazyProxyInputStream with CLEAN status
     try (LazyProxyInputStream lazyStream =
-        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "clean")) {
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "clean", false)) {
 
       // Act: Read multiple times
       lazyStream.read();
@@ -165,7 +165,7 @@ class LazyProxyInputStreamTest {
   void testCloseDoesNotThrowWhenDelegateIsNull() throws IOException {
     // Arrange: Create LazyProxyInputStream that hasn't accessed the delegate yet
     LazyProxyInputStream lazyStream =
-        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "clean");
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "clean", false);
 
     // Act & Assert: Close should not throw even if delegate is null
     lazyStream.close();
@@ -181,7 +181,7 @@ class LazyProxyInputStreamTest {
     when(inputStreamSupplier.get()).thenReturn(mockStream);
 
     LazyProxyInputStream lazyStream =
-        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "clean");
+        new LazyProxyInputStream(inputStreamSupplier, statusValidator, "clean", false);
 
     // Access the delegate first
     lazyStream.read();
