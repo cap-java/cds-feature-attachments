@@ -10,17 +10,22 @@ runs:
         java-version: ${{ inputs.java-version }}
         distribution: sapmachine
         cache: maven
-        
+
     - name: Set up Maven ${{ inputs.maven-version }}
       uses: stCarolas/setup-maven@v5
       with:
         maven-version: ${{ inputs.maven-version }}
-        
+
+    - name: Install attachment dependency
+      shell: bash
+      working-directory: ./
+      run: mvn install
+
     - name: Compile sample
       shell: bash
       working-directory: samples/bookshop
       run: mvn compile test-compile -B -V
-      
+
     - name: Run tests
       shell: bash
       working-directory: samples/bookshop
