@@ -39,7 +39,7 @@
   </modules>
 
   <scm>
-    <connection>scm:git:git@github.com:cap-java/cds-feature-attachments.git</connection>
+    <connection>scm:git:https://github.com/cap-java/cds-feature-attachments.git</connection>
     <developerConnection>scm:git:git@github.com:cap-java/cds-feature-attachments.git</developerConnection>
     <url>https://github.com/cap-java/cds-feature-attachments</url>
   </scm>
@@ -58,7 +58,7 @@
   </distributionManagement>
 
   <properties>
-    <revision>1.2.3-SNAPSHOT</revision>
+    <revision>1.2.4-SNAPSHOT</revision>
     <java.version>17</java.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
