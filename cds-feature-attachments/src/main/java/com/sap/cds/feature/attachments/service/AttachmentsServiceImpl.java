@@ -18,8 +18,10 @@ import java.io.InputStream;
 import java.time.Instant;
 
 /**
- * Implementation of the {@link AttachmentService} interface. The main purpose of this class is to
- * set data in the corresponding context and to call the emit method for the AttachmentService.
+ * Implementation of the {@link AttachmentService} interface. The main purpose
+ * of this class is to
+ * set data in the corresponding context and to call the emit method for the
+ * AttachmentService.
  */
 public class AttachmentsServiceImpl extends ServiceDelegator implements AttachmentService {
 
