@@ -25,7 +25,8 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles(Profiles.TEST_HANDLER_ENABLED)
 class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestValidationBase {
 
-  private static final Logger logger = LoggerFactory.getLogger(DraftOdataRequestValidationWithTestHandlerTest.class);
+  private static final Logger logger =
+      LoggerFactory.getLogger(DraftOdataRequestValidationWithTestHandlerTest.class);
 
   @Test
   void serviceHandlerIsNotEmpty() {
@@ -177,18 +178,19 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
     Awaitility.await()
         .atMost(30, TimeUnit.SECONDS)
         .pollDelay(1, TimeUnit.SECONDS)
-        .until(() -> {
-          var eventCalls = serviceHandler.getEventContext().size();
-          logger.info(
-              "Waiting for expected size '{}' in handler context, was '{}'",
-              expectedEvents,
-              eventCalls);
-          var numberMatch = eventCalls >= expectedEvents;
-          if (!numberMatch) {
-            serviceHandler.getEventContext().forEach(event -> logger.info("Event: {}", event));
-          }
-          return numberMatch;
-        });
+        .until(
+            () -> {
+              var eventCalls = serviceHandler.getEventContext().size();
+              logger.info(
+                  "Waiting for expected size '{}' in handler context, was '{}'",
+                  expectedEvents,
+                  eventCalls);
+              var numberMatch = eventCalls >= expectedEvents;
+              if (!numberMatch) {
+                serviceHandler.getEventContext().forEach(event -> logger.info("Event: {}", event));
+              }
+              return numberMatch;
+            });
   }
 
   private void verifyCreateEventFound(List<EventContextHolder> createEvents, String newContent) {
