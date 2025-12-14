@@ -161,7 +161,7 @@ jobs:
           path: ~/.m2/repository/com/sap/cds/
 
       - name: Integration Tests with current CAP Java version
-        run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml
+        run: mvn verify -ntp -B -P integration-tests-current
 
   # Integration tests for Object Store Service (Java 17 only)
   integration-tests-oss:
@@ -191,7 +191,7 @@ jobs:
           path: ~/.m2/repository/com/sap/cds/
 
       - name: Integration Tests for Object Store Service
-        run: mvn clean verify -ntp -B -Pintegration-tests-oss
+        run: mvn verify -ntp -B -P integration-tests-oss
 
   sonarqube-scan:
     name: SonarQube Scan
