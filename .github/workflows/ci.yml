@@ -59,12 +59,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build
-        uses: ./.github/actions/build
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
         with:
           java-version: 17
+          distribution: sapmachine
+          cache: maven
+
+      - name: Set up Maven ${{ env.MAVEN_VERSION }}
+        uses: stCarolas/setup-maven@v5
+        with:
           maven-version: ${{ env.MAVEN_VERSION }}
-          mutation-testing: 'true'
+
+      - name: Build and install artifacts (skip tests)
+        run: |
+          mvn clean install -DskipTests \
+            -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss \
+            -am
+
+      - name: Mutation Testing
+        run: mvn org.pitest:pitest-maven:mutationCoverage -f cds-feature-attachments/pom.xml
 
       - name: Upload Maven local repository artifacts
         uses: actions/upload-artifact@v4
