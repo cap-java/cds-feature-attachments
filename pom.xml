@@ -78,7 +78,7 @@
     <cds.services.latest-test-version>4.5.1</cds.services.latest-test-version>
     <cds.cdsdk.latest-test-version>9.5.0</cds.cdsdk.latest-test-version>
 
-    <spotless.check.skip>true</spotless.check.skip>
+    <spotless.check.skip>false</spotless.check.skip>
   </properties>
 
   <dependencyManagement>
@@ -340,7 +340,7 @@
               <rules>
                 <banDuplicatePomDependencyVersions/>
                 <requireMavenVersion>
-                  <version>3.6.3</version>
+                  <version>3.9.0</version>
                 </requireMavenVersion>
                 <requireJavaVersion>
                   <version>${java.version}</version>
@@ -387,6 +387,28 @@
   </build>
 
   <profiles>
+    <!-- Profile for local development without cloud storage credentials -->
+    <profile>
+      <id>local-testing</id>
+      <properties>
+        <maven.test.skip>false</maven.test.skip>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <systemPropertyVariables>
+                <!-- Use filesystem storage target by default for local testing -->
+                <skipCloudStorageTests>true</skipCloudStorageTests>
+              </systemPropertyVariables>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <profile>
       <id>deploy-release</id>
       <build>

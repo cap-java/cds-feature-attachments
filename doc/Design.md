@@ -90,34 +90,38 @@ In folder `.github/workflows` are the GitHub Actions defined. The following tabl
 
 | File Name                        | Description                                                                                                                                                                                                |
 |----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `pull-requests-build.yaml`       | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 for new pull requests. Each pull request need to have green runs from this workflow to be able to be merged. |
-| `main-build.yaml`                | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 once commits are merged to the master to get an indicator if everything works with the main branch.          |
-| `main-build-and-deploy.yaml`     | Creates a new version for main, builds the project, run all tests and deploy it to maven or artifactory. See also [Build and Deploy](#build-and-deploy)                                                    |
-| `main-build-and-deploy-oss.yaml` | Creates a new version for main, builds the project, run all tests and deploy it to Maven Central. See also [Build and Deploy](#build-and-deploy)                                                    |
+| `ci.yml`                         | Main CI pipeline that builds the project, runs quality checks, unit tests, integration tests, and mutation testing for Java 17 and 21. Runs on pull requests and pushes to main branch.                    |
+| `main-build-and-deploy-oss.yml`  | Creates a new version for main, builds the project, runs all tests and deploys it to Maven Central. See also [Build and Deploy](#build-and-deploy)                                                         |
+| `codeql.yml`                     | Security scanning workflow using GitHub CodeQL for vulnerability detection                                                                                                                                  |
+| `issue.yml`                      | Auto-labels new issues for triage                                                                                                                                                                          |
+| `prevent-issue-labeling.yml`     | Prevents manual application of the "New" label                                                                                                                                                             |
+
+### CI Pipeline
+
+The `ci.yml` workflow is an optimized CI pipeline that eliminates redundant builds and runs tests efficiently. The workflow consists of these jobs:
+
+1. **Quality Checks**: Runs Spotless code formatting check once (Java 17)
+2. **Build & Mutation Testing**: Builds the project once with Java 17 and runs mutation testing with pitest
+3. **Test Java Versions**: Tests the built artifacts against Java 17 and 21 in parallel
+4. **Integration Tests**: Runs three parallel integration test suites:
+   - Current CAP Java version (Java 17 & 21)
+   - Latest CAP Java version (Java 17 only)
+   - Object Store Service tests (Java 17 only)
+5. **SonarQube Scan**: Code quality analysis (runs after unit tests complete)
+6. **BlackDuck Scan**: Security scanning (runs after all integration tests)
+7. **Deploy Snapshot**: Deploys snapshot versions to Artifactory (on main branch only)
+
+The pipeline uses artifact caching to avoid rebuilding dependencies multiple times, significantly reducing build time compared to the previous approach.
+
+#### Trigger
+
+This workflow is triggered when:
+- A pull request is created or updated
+- Code is pushed to the `main` branch
 
 ### Build Action
 
-The build step is implemented in action `.github/actions/build/action.yaml` which is used in the workflows:
-"Pull Requests Build", "Main Build" and "Build and Deploy".
-As the build action does not only run a build of the project, but also the mutations tests this action is used in all
-the mentioned workflows.
-
-### Pull Requests Build
-
-The `pull-requests-build.yaml` starts a workflow to build the project and run all unit and Spring Boot tests for the
-coding in the new branch including the changes in the pull request.
-
-#### Trigger
-
-This workflow is triggered if a new pull request is created or updated in GitHub.
-
-### Main Build
-
-The `main-build.yaml` starts a workflow to build the project and run all unit and Spring Boot tests for the main branch.
-
-#### Trigger
-
-This workflow is triggered if a new commit is pushed to the main branch.
+The build step is implemented in action `.github/actions/build/action.yml` which handles the Maven build using SAP's project-piper-action. It optionally runs mutation testing with pitest.
 
 ### Build and Deploy
 
