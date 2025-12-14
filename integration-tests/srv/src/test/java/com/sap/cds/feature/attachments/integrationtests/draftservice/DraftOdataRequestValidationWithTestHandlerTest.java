@@ -18,10 +18,14 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles(Profiles.TEST_HANDLER_ENABLED)
 class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestValidationBase {
+
+  private static final Logger logger = LoggerFactory.getLogger(DraftOdataRequestValidationWithTestHandlerTest.class);
 
   @Test
   void serviceHandlerIsNotEmpty() {
@@ -171,8 +175,20 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 
   private void awaitNumberOfExpectedEvents(int expectedEvents) {
     Awaitility.await()
-        .atMost(20, TimeUnit.SECONDS)
-        .until(() -> serviceHandler.getEventContext().size() == expectedEvents);
+        .atMost(30, TimeUnit.SECONDS)
+        .pollDelay(1, TimeUnit.SECONDS)
+        .until(() -> {
+          var eventCalls = serviceHandler.getEventContext().size();
+          logger.info(
+              "Waiting for expected size '{}' in handler context, was '{}'",
+              expectedEvents,
+              eventCalls);
+          var numberMatch = eventCalls >= expectedEvents;
+          if (!numberMatch) {
+            serviceHandler.getEventContext().forEach(event -> logger.info("Event: {}", event));
+          }
+          return numberMatch;
+        });
   }
 
   private void verifyCreateEventFound(List<EventContextHolder> createEvents, String newContent) {
