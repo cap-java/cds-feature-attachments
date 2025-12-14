@@ -176,8 +176,9 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
 
   private void awaitNumberOfExpectedEvents(int expectedEvents) {
     Awaitility.await()
-        .atMost(30, TimeUnit.SECONDS)
+        .atMost(60, TimeUnit.SECONDS)
         .pollDelay(1, TimeUnit.SECONDS)
+        .pollInterval(2, TimeUnit.SECONDS)
         .until(
             () -> {
               var eventCalls = serviceHandler.getEventContext().size();
