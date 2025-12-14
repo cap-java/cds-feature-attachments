@@ -66,12 +66,18 @@ jobs:
           maven-version: ${{ env.MAVEN_VERSION }}
           mutation-testing: 'true'
 
-      - name: Upload build artifacts
+      - name: Upload Maven local repository artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: maven-build-artifacts
+          name: maven-repository
+          path: ~/.m2/repository/com/sap/cds/
+          retention-days: 1
+
+      - name: Upload build targets
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-targets
           path: |
-            ~/.m2/repository/com/sap/cds/
             cds-feature-attachments/target/
             storage-targets/cds-feature-attachments-fs/target/
             storage-targets/cds-feature-attachments-oss/target/
@@ -101,10 +107,11 @@ jobs:
         with:
           maven-version: ${{ env.MAVEN_VERSION }}
 
-      - name: Download build artifacts
+      - name: Download Maven repository
         uses: actions/download-artifact@v4
         with:
-          name: maven-build-artifacts
+          name: maven-repository
+          path: ~/.m2/repository/com/sap/cds/
 
       - name: Run tests
         run: mvn test -ntp -B -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss
@@ -133,10 +140,11 @@ jobs:
         with:
           maven-version: ${{ env.MAVEN_VERSION }}
 
-      - name: Download build artifacts
+      - name: Download Maven repository
         uses: actions/download-artifact@v4
         with:
-          name: maven-build-artifacts
+          name: maven-repository
+          path: ~/.m2/repository/com/sap/cds/
 
       - name: Integration Tests with current CAP Java version
         run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml
@@ -162,10 +170,11 @@ jobs:
         with:
           maven-version: ${{ env.MAVEN_VERSION }}
 
-      - name: Download build artifacts
+      - name: Download Maven repository
         uses: actions/download-artifact@v4
         with:
-          name: maven-build-artifacts
+          name: maven-repository
+          path: ~/.m2/repository/com/sap/cds/
 
       - name: Integration Tests with latest CAP Java version
         run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml -P latest-test-version
@@ -191,10 +200,11 @@ jobs:
         with:
           maven-version: ${{ env.MAVEN_VERSION }}
 
-      - name: Download build artifacts
+      - name: Download Maven repository
         uses: actions/download-artifact@v4
         with:
-          name: maven-build-artifacts
+          name: maven-repository
+          path: ~/.m2/repository/com/sap/cds/
 
       - name: Integration Tests for Object Store Service
         run: mvn clean verify -ntp -B -Pintegration-tests-oss
@@ -207,10 +217,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Download build artifacts
+      - name: Download Maven repository
         uses: actions/download-artifact@v4
         with:
-          name: maven-build-artifacts
+          name: maven-repository
+          path: ~/.m2/repository/com/sap/cds/
+
+      - name: Download build targets
+        uses: actions/download-artifact@v4
+        with:
+          name: build-targets
 
       - name: SonarQube Scan
         uses: ./.github/actions/scan-with-sonar
