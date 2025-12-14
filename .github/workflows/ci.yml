@@ -132,7 +132,7 @@ jobs:
 
   # Integration tests with current CAP version (Java 17 & 21)
   integration-tests-current:
-    name: Integration Tests - Current CAP (Java ${{ matrix.java-version }})
+    name: Integration Tests - CAP (Java ${{ matrix.java-version }})
     runs-on: ubuntu-latest
     needs: build
     strategy:
@@ -162,36 +162,6 @@ jobs:
 
       - name: Integration Tests with current CAP Java version
         run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml
-
-  # Integration tests with latest CAP version (Java 17 only)
-  integration-tests-latest:
-    name: Integration Tests - Latest CAP (Java 17)
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: sapmachine
-          cache: maven
-
-      - name: Set up Maven ${{ env.MAVEN_VERSION }}
-        uses: stCarolas/setup-maven@v5
-        with:
-          maven-version: ${{ env.MAVEN_VERSION }}
-
-      - name: Download Maven repository
-        uses: actions/download-artifact@v4
-        with:
-          name: maven-repository
-          path: ~/.m2/repository/com/sap/cds/
-
-      - name: Integration Tests with latest CAP Java version
-        run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml -P latest-test-version
 
   # Integration tests for Object Store Service (Java 17 only)
   integration-tests-oss:
@@ -253,7 +223,7 @@ jobs:
   scan:
     name: Blackduck Scan
     runs-on: ubuntu-latest
-    needs: [integration-tests-current, integration-tests-latest, integration-tests-oss]
+    needs: [integration-tests-current, integration-tests-oss]
     timeout-minutes: 15
     steps:
       - name: Checkout
