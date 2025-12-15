@@ -10,7 +10,6 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments_;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -26,6 +25,7 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,11 +61,12 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   @HandlerOrder(HandlerOrder.LATE)
   void processBeforeDraftCancel(DraftCancelEventContext context) {
     // We only process the draft cancel event if there is no WHERE clause in the CQN
-    // and if the target entity is an attachment entity or has attachment associations.
+    // and if the target entity is an attachment entity or has attachment
+    // associations.
 
     CdsEntity entity = context.getModel().getEntity(context.getTarget().getQualifiedName());
 
-    if ((deepSearchForAttachments(entity)) && context.getEvent().contains("DRAFT_CANCEL")) {
+    if (deepSearchForAttachments(entity) && context.getEvent().contains("DRAFT_CANCEL")) {
       logger.debug(
           "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
 
@@ -110,57 +111,32 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     };
   }
 
-
-
   private boolean deepSearchForAttachments(CdsEntity entity) {
-    return deepSearchForAttachmentsRecursive(entity, new java.util.HashSet<>());
+    return deepSearchForAttachmentsRecursive(entity, new HashSet<>());
   }
 
-  private boolean deepSearchForAttachmentsRecursive(
-      CdsEntity entity, java.util.Set<String> visited) {
-    // Avoid cycles by tracking visited entities
-    String qualifiedName = entity.getQualifiedName();
-    if (visited.contains(qualifiedName)) {
+  private boolean deepSearchForAttachmentsRecursive(CdsEntity entity, HashSet<String> visited) {
+
+    if (visited.contains(entity.getQualifiedName())) {
       return false;
     }
-    visited.add(qualifiedName);
+    visited.add(entity.getQualifiedName());
 
-    // Check if the entity itself is the Attachments entity
-    if (qualifiedName.equals(Attachments_.CDS_NAME)) {
+    if (checkAttachment(entity)) {
       return true;
     }
 
-    // Loop over all elements to find composition associations
-    entity
+    return entity
         .elements()
-        .forEach(
-            element -> {
-              if (element.getType().isAssociation()) {
-                CdsAssociationType association = element.getType().as(CdsAssociationType.class);
+        .filter(element -> element.getType().isAssociation())
+        .map(element -> element.getType().as(CdsAssociationType.class))
+        .filter(CdsAssociationType::isComposition)
+        .anyMatch(
+            association -> deepSearchForAttachmentsRecursive(association.getTarget(), visited));
+  }
 
-                // Only process composition associations
-                if (association.isComposition()) {
-                  CdsEntity targetEntity = association.getTarget();
-                  // Check if the target is the Attachments entity
-                  if (association.getTargetAspect().isPresent()) {
-                    if (association.getTargetAspect().get().getQualifiedName()
-                    if (association.getTargetAspect().get().getQualifiedName()
-                        .equals(Attachments_.CDS_NAME)) {
-                      visited.add("FOUND");
-                    }
-                  }
-                  if (!visited.contains("FOUND")) {
-                  }
-                  if (!visited.contains("FOUND")) {
-                    // Recursively search in the composed entity if not yet visited
-                    deepSearchForAttachmentsRecursive(targetEntity, visited);
-                  }
-                }
-              }
-            });
-
-    // Return true if attachments were found during traversal
-    return visited.contains("FOUND");
+  private boolean checkAttachment(CdsEntity entity) {
+    return ApplicationHandlerHelper.isMediaEntity(entity);
   }
 
   private List<Attachments> readAttachments(
