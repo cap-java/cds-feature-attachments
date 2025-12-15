@@ -5,16 +5,20 @@ package com.sap.cds.feature.attachments.handler.draftservice;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.ArrayList;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments_;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
+import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.DraftCancelEventContext;
@@ -60,8 +64,10 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   void processBeforeDraftCancel(DraftCancelEventContext context) {
     // We only process the draft cancel event if there is no WHERE clause in the CQN
     // and if the target entity is an attachment entity or has attachment associations.
-    if ((isAttachmentEntity(context.getTarget()) || hasAttachmentAssociations(context.getTarget()))
-        && isWhereEmpty(context)) {
+
+    CdsEntity entity = context.getModel().getEntity(context.getTarget().getQualifiedName());
+
+    if ((deepSearchForAttachments(entity)) && context.getEvent().contains("DRAFT_CANCEL")) {
       logger.debug(
           "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
 
@@ -76,6 +82,11 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
       CdsDataProcessor.create()
           .addValidator(contentIdFilter, validator)
           .process(draftAttachments, context.getTarget());
+    } else {
+      logger.debug(
+          "Skipping processing before {} event for entity {}",
+          context.getEvent(),
+          context.getTarget());
     }
   }
 
@@ -106,31 +117,35 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   // Also see here:
   // https://github.com/cap-java/cds-feature-attachments/blob/main/doc/Design.md#events
   // Unfortunately, context.getEvent() does not return a reliable value in this case.
-  private boolean isWhereEmpty(DraftCancelEventContext context) {
-    return context.getCqn().where().isEmpty();
-  }
+  // private boolean isWhereEmpty(DraftCancelEventContext context) {
+  //   return context.getCqn().where().isEmpty();
+  // }
 
   // This function checks if the given entity is of type Attachments
   private boolean isAttachmentEntity(CdsEntity entity) {
-    boolean hasAttachmentInName = entity.getQualifiedName().toLowerCase().contains("attachment");
-
-    boolean hasFileNameElement =
-        entity.elements().anyMatch(element -> Attachments.FILE_NAME.equals(element.getName()));
-
-    logger.debug(
-        "Entity: {}, hasAttachmentInName: {}, hasFileNameElement: {}",
-        entity.getQualifiedName(),
-        hasAttachmentInName,
-        hasFileNameElement);
-
-    return hasAttachmentInName || hasFileNameElement;
+    return entity.getQualifiedName().equals(Attachments_.CDS_NAME);
   }
 
-  // This function checks if the given entity has attachment associations.
-  private boolean hasAttachmentAssociations(CdsEntity entity) {
-    return entity
-        .elements()
-        .anyMatch(element -> element.getName().toLowerCase().contains("attachment"));
+  private boolean deepSearchForAttachments(CdsEntity entity) {
+    if (isAttachmentEntity(entity)) {
+      return true;
+    }
+
+    List<CdsEntity> compositions = new ArrayList<>();
+    entity.elements().forEach(element -> {
+      if (element.getType().isAssociation() && element.getType().as(CdsAssociationType.class).isComposition()) {
+        compositions.add(element.getType().as(CdsAssociationType.class).getTarget());
+      }
+    });
+
+    if (compositions.size() == 0) {
+      return false;
+    } else {
+      for (CdsEntity composition : compositions) {
+        deepSearchForAttachments(composition);
+      }
+      return false;
+    }
   }
 
   private List<Attachments> readAttachments(
