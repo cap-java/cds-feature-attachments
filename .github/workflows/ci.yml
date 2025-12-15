@@ -15,7 +15,6 @@ env:
   GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
   # Tokens
   SONARQ_TOKEN: ${{ secrets.SONARQ_TOKEN }}
-  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
   BLACK_DUCK_TOKEN: ${{ secrets.BLACK_DUCK_TOKEN }}
   # Other
   DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
@@ -218,7 +217,7 @@ jobs:
           java-version: 17
           maven-version: ${{ env.MAVEN_VERSION }}
           sonarq-token: ${{ env.SONARQ_TOKEN }}
-          github-token: ${{ env.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   scan:
     name: Blackduck Scan
@@ -233,7 +232,7 @@ jobs:
         uses: ./.github/actions/scan-with-blackduck
         with:
           blackduck_token: ${{ env.BLACK_DUCK_TOKEN }}
-          github_token: ${{ env.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           maven-version: ${{ env.MAVEN_VERSION }}
 
   deploy-snapshot:
