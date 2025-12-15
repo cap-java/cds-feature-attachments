@@ -110,46 +110,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     };
   }
 
-  // private boolean isAttachmentEntity(CdsEntity entity) {
-  //   return entity.getQualifiedName().equals(Attachments_.CDS_NAME);
-  // }
 
-  // public boolean checkAssociationForAttachments(String association) {
-  //   return association.equals(Attachments_.CDS_NAME);
-  //   // CdsStructuredType targetEntity = association.getTargetAspect().get();
-  //   // return targetEntity.getQualifiedName().equals(Attachments_.CDS_NAME);
-  // }
-
-  // private boolean deepSearchForAttachments(CdsEntity entity, String associationType) {
-  //   if (isAttachmentEntity(entity) || checkAssociationForAttachments(associationType)) {
-  //     return true;
-  //   }
-
-  //   List<Map.Entry<CdsEntity, CdsAssociationType>> compositions = new ArrayList<>();
-  //   entity
-  //       .elements()
-  //       .forEach(
-  //           element -> {
-  //             if (element.getType().isAssociation()
-  //                 && element.getType().as(CdsAssociationType.class).isComposition()) {
-  //               CdsAssociationType association = element.getType().as(CdsAssociationType.class);
-  //               compositions.add(
-  //                   Map.entry(
-  //                       element.getType().as(CdsAssociationType.class).getTarget(),
-  // association));
-  //             }
-  //           });
-
-  //   if (compositions.size() == 0) {
-  //     return false;
-  //   } else {
-  //     for (Map.Entry<CdsEntity, CdsAssociationType> composition : compositions) {
-  //       deepSearchForAttachments(composition.getKey(),
-  // composition.getValue().getQualifiedName());
-  //     }
-  //     return false;
-  //   }
-  // }
 
   private boolean deepSearchForAttachments(CdsEntity entity) {
     return deepSearchForAttachmentsRecursive(entity, new java.util.HashSet<>());
@@ -183,10 +144,12 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
                   // Check if the target is the Attachments entity
                   if (association.getTargetAspect().isPresent()) {
                     if (association.getTargetAspect().get().getQualifiedName()
-                        == Attachments_.CDS_NAME) {
+                    if (association.getTargetAspect().get().getQualifiedName()
+                        .equals(Attachments_.CDS_NAME)) {
                       visited.add("FOUND");
                     }
-                    ;
+                  }
+                  if (!visited.contains("FOUND")) {
                   }
                   if (!visited.contains("FOUND")) {
                     // Recursively search in the composed entity if not yet visited
@@ -197,11 +160,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
             });
 
     // Return true if attachments were found during traversal
-    if (visited.contains("FOUND")) {
-      return true;
-    }
-
-    return false;
+    return visited.contains("FOUND");
   }
 
   private List<Attachments> readAttachments(
