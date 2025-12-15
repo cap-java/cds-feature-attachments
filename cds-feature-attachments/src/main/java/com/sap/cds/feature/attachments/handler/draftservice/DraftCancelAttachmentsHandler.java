@@ -5,8 +5,6 @@ package com.sap.cds.feature.attachments.handler.draftservice;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.ArrayList;
-
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
@@ -28,6 +26,7 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -112,40 +111,90 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     };
   }
 
-  // This function checks if the WHERE clause of the CQN is empty.
-  // This is the current way to verify that we are really cancelling a draft and not doing sth else.
-  // Also see here:
-  // https://github.com/cap-java/cds-feature-attachments/blob/main/doc/Design.md#events
-  // Unfortunately, context.getEvent() does not return a reliable value in this case.
-  // private boolean isWhereEmpty(DraftCancelEventContext context) {
-  //   return context.getCqn().where().isEmpty();
+  // private boolean isAttachmentEntity(CdsEntity entity) {
+  //   return entity.getQualifiedName().equals(Attachments_.CDS_NAME);
   // }
 
-  // This function checks if the given entity is of type Attachments
-  private boolean isAttachmentEntity(CdsEntity entity) {
-    return entity.getQualifiedName().equals(Attachments_.CDS_NAME);
-  }
+  // public boolean checkAssociationForAttachments(String association) {
+  //   return association.equals(Attachments_.CDS_NAME);
+  //   // CdsStructuredType targetEntity = association.getTargetAspect().get();
+  //   // return targetEntity.getQualifiedName().equals(Attachments_.CDS_NAME);
+  // }
+
+  // private boolean deepSearchForAttachments(CdsEntity entity, String associationType) {
+  //   if (isAttachmentEntity(entity) || checkAssociationForAttachments(associationType)) {
+  //     return true;
+  //   }
+
+  //   List<Map.Entry<CdsEntity, CdsAssociationType>> compositions = new ArrayList<>();
+  //   entity
+  //       .elements()
+  //       .forEach(
+  //           element -> {
+  //             if (element.getType().isAssociation()
+  //                 && element.getType().as(CdsAssociationType.class).isComposition()) {
+  //               CdsAssociationType association = element.getType().as(CdsAssociationType.class);
+  //               compositions.add(
+  //                   Map.entry(
+  //                       element.getType().as(CdsAssociationType.class).getTarget(), association));
+  //             }
+  //           });
+
+  //   if (compositions.size() == 0) {
+  //     return false;
+  //   } else {
+  //     for (Map.Entry<CdsEntity, CdsAssociationType> composition : compositions) {
+  //       deepSearchForAttachments(composition.getKey(), composition.getValue().getQualifiedName());
+  //     }
+  //     return false;
+  //   }
+  // }
 
   private boolean deepSearchForAttachments(CdsEntity entity) {
-    if (isAttachmentEntity(entity)) {
+    return deepSearchForAttachmentsRecursive(entity, new java.util.HashSet<>());
+  }
+
+  private boolean deepSearchForAttachmentsRecursive(CdsEntity entity, java.util.Set<String> visited) {
+    // Avoid cycles by tracking visited entities
+    String qualifiedName = entity.getQualifiedName();
+    if (visited.contains(qualifiedName)) {
+      return false;
+    }
+    visited.add(qualifiedName);
+
+    // Check if the entity itself is the Attachments entity
+    if (qualifiedName.equals(Attachments_.CDS_NAME)) {
       return true;
     }
 
-    List<CdsEntity> compositions = new ArrayList<>();
+    // Loop over all elements to find composition associations
     entity.elements().forEach(element -> {
-      if (element.getType().isAssociation() && element.getType().as(CdsAssociationType.class).isComposition()) {
-        compositions.add(element.getType().as(CdsAssociationType.class).getTarget());
+      if (element.getType().isAssociation()) {
+        CdsAssociationType association = element.getType().as(CdsAssociationType.class);
+        
+        // Only process composition associations
+        if (association.isComposition()) {
+          CdsEntity targetEntity = association.getTarget();
+          // Check if the target is the Attachments entity
+          if (association.getTargetAspect().isPresent()) {
+            if (association.getTargetAspect().get().getQualifiedName() == Attachments_.CDS_NAME) {
+              visited.add("FOUND");
+            };
+          }
+          if (!visited.contains("FOUND")) {
+            // Recursively search in the composed entity if not yet visited
+            deepSearchForAttachmentsRecursive(targetEntity, visited);
+          }
+        }
       }
     });
 
-    if (compositions.size() == 0) {
-      return false;
-    } else {
-      for (CdsEntity composition : compositions) {
-        deepSearchForAttachments(composition);
-      }
-      return false;
+    // Return true if attachments were found during traversal
+    if (visited.contains("FOUND")) {
+      return true;
     }
+
+    return false;
   }
 
   private List<Attachments> readAttachments(
