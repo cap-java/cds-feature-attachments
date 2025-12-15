@@ -26,7 +26,6 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -136,7 +135,8 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   //               CdsAssociationType association = element.getType().as(CdsAssociationType.class);
   //               compositions.add(
   //                   Map.entry(
-  //                       element.getType().as(CdsAssociationType.class).getTarget(), association));
+  //                       element.getType().as(CdsAssociationType.class).getTarget(),
+  // association));
   //             }
   //           });
 
@@ -144,7 +144,8 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   //     return false;
   //   } else {
   //     for (Map.Entry<CdsEntity, CdsAssociationType> composition : compositions) {
-  //       deepSearchForAttachments(composition.getKey(), composition.getValue().getQualifiedName());
+  //       deepSearchForAttachments(composition.getKey(),
+  // composition.getValue().getQualifiedName());
   //     }
   //     return false;
   //   }
@@ -154,7 +155,8 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     return deepSearchForAttachmentsRecursive(entity, new java.util.HashSet<>());
   }
 
-  private boolean deepSearchForAttachmentsRecursive(CdsEntity entity, java.util.Set<String> visited) {
+  private boolean deepSearchForAttachmentsRecursive(
+      CdsEntity entity, java.util.Set<String> visited) {
     // Avoid cycles by tracking visited entities
     String qualifiedName = entity.getQualifiedName();
     if (visited.contains(qualifiedName)) {
@@ -168,26 +170,31 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     }
 
     // Loop over all elements to find composition associations
-    entity.elements().forEach(element -> {
-      if (element.getType().isAssociation()) {
-        CdsAssociationType association = element.getType().as(CdsAssociationType.class);
-        
-        // Only process composition associations
-        if (association.isComposition()) {
-          CdsEntity targetEntity = association.getTarget();
-          // Check if the target is the Attachments entity
-          if (association.getTargetAspect().isPresent()) {
-            if (association.getTargetAspect().get().getQualifiedName() == Attachments_.CDS_NAME) {
-              visited.add("FOUND");
-            };
-          }
-          if (!visited.contains("FOUND")) {
-            // Recursively search in the composed entity if not yet visited
-            deepSearchForAttachmentsRecursive(targetEntity, visited);
-          }
-        }
-      }
-    });
+    entity
+        .elements()
+        .forEach(
+            element -> {
+              if (element.getType().isAssociation()) {
+                CdsAssociationType association = element.getType().as(CdsAssociationType.class);
+
+                // Only process composition associations
+                if (association.isComposition()) {
+                  CdsEntity targetEntity = association.getTarget();
+                  // Check if the target is the Attachments entity
+                  if (association.getTargetAspect().isPresent()) {
+                    if (association.getTargetAspect().get().getQualifiedName()
+                        == Attachments_.CDS_NAME) {
+                      visited.add("FOUND");
+                    }
+                    ;
+                  }
+                  if (!visited.contains("FOUND")) {
+                    // Recursively search in the composed entity if not yet visited
+                    deepSearchForAttachmentsRecursive(targetEntity, visited);
+                  }
+                }
+              }
+            });
 
     // Return true if attachments were found during traversal
     if (visited.contains("FOUND")) {
