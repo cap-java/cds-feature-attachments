@@ -58,7 +58,8 @@ class DraftCancelAttachmentsHandlerTest {
 
   @Test
   void entityHasNoAttachmentsAndIsNotAttachmentEntityNothingHappens() {
-    // Test the case where isAttachmentEntity and hasAttachmentAssociations both return false
+    // Test the case where isAttachmentEntity and hasAttachmentAssociations both
+    // return false
     CdsEntity mockEntity = mock(CdsEntity.class);
     // Entity has no elements with name "attachment"
     when(mockEntity.getQualifiedName())
@@ -83,12 +84,16 @@ class DraftCancelAttachmentsHandlerTest {
   }
 
   @Test
-  void entityHasAttachmentsButEventIsNotDraftCancelNothingHappens() {
-    getEntityAndMockContext(Attachment_.CDS_NAME);
-    CqnDelete delete = Delete.from(Attachment_.class);
-    when(eventContext.getCqn()).thenReturn(delete);
+  void entityWithoutAttachmentsIsSkipped() {
+    // Test that entities without attachments are properly skipped
+    CdsEntity mockEntity = mock(CdsEntity.class);
+    when(mockEntity.getQualifiedName()).thenReturn("TestService.RegularEntity");
+    when(mockEntity.getAnnotationValue("_is_media_data", false)).thenReturn(false);
+    when(mockEntity.compositions()).thenReturn(java.util.stream.Stream.empty());
+
+    when(eventContext.getTarget()).thenReturn(mockEntity);
+    when(eventContext.getCqn()).thenReturn(Delete.from("RegularEntity"));
     when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
-    when(eventContext.getEvent()).thenReturn("SOME_OTHER_EVENT"); // Not DRAFT_CANCEL
 
     cut.processBeforeDraftCancel(eventContext);
 
@@ -121,7 +126,8 @@ class DraftCancelAttachmentsHandlerTest {
     CdsEntity target = eventContext.getTarget();
     verify(attachmentsReader)
         .readAttachments(eq(runtime.getCdsModel()), eq(target), deleteArgumentCaptor.capture());
-    // Check if the modified CqnDelete that is passed to readAttachments looks correct
+    // Check if the modified CqnDelete that is passed to readAttachments looks
+    // correct
     CqnDelete modifiedCQN = deleteArgumentCaptor.getValue();
     assertThat(modifiedCQN.toJson())
         .isEqualTo(
@@ -149,7 +155,8 @@ class DraftCancelAttachmentsHandlerTest {
     CdsEntity target = eventContext.getTarget();
     verify(attachmentsReader)
         .readAttachments(eq(runtime.getCdsModel()), eq(target), deleteArgumentCaptor.capture());
-    // Check if the modified CqnDelete that is passed to readAttachments looks correct
+    // Check if the modified CqnDelete that is passed to readAttachments looks
+    // correct
     CqnDelete modifiedCQN = deleteArgumentCaptor.getValue();
     assertThat(modifiedCQN.toJson())
         .isEqualTo(
@@ -238,6 +245,58 @@ class DraftCancelAttachmentsHandlerTest {
 
     cut.processBeforeDraftCancel(eventContext);
 
+    verifyNoInteractions(deleteContentAttachmentEvent);
+  }
+
+  @Test
+  void circularReferenceInCompositionsHandled() {
+    // Test that circular references in entity compositions are handled correctly
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(RootTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    // The deepSearchForAttachmentsRecursive should handle circular references via
+    // the visited set
+    cut.processBeforeDraftCancel(eventContext);
+
+    // Should complete without stack overflow or infinite loop
+    verify(attachmentsReader, atLeastOnce()).readAttachments(any(), any(), any());
+  }
+
+  @Test
+  void noMatchingActiveEntryForDraftAttachment() {
+    getEntityAndMockContext(Attachment_.CDS_NAME);
+    CqnDelete delete = Delete.from(RootTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+    CdsEntity siblingTarget = eventContext.getTarget().getTargetOf(Drafts.SIBLING_ENTITY);
+
+    // Create draft attachment with hasActiveEntity=true but different keys
+    var id = UUID.randomUUID().toString();
+    Attachment draftAttachment = Attachment.create();
+    draftAttachment.setId(id);
+    draftAttachment.setContentId("draft-content");
+    draftAttachment.setHasActiveEntity(true);
+    draftAttachment.setContent(null);
+    when(attachmentsReader.readAttachments(any(), eq(siblingTarget), any()))
+        .thenReturn(List.of(Attachments.of(draftAttachment)));
+
+    // Return active attachment with different ID (no key match)
+    Attachment activeAttachment = Attachment.create();
+    activeAttachment.setId(UUID.randomUUID().toString());
+    activeAttachment.setContentId("active-content");
+    activeAttachment.setHasActiveEntity(false);
+    activeAttachment.setContent(null);
+    CdsEntity activeTarget = eventContext.getTarget();
+    when(attachmentsReader.readAttachments(any(), eq(activeTarget), any()))
+        .thenReturn(List.of(Attachments.of(activeAttachment)));
+
+    cut.processBeforeDraftCancel(eventContext);
+
+    // Should not call deleteEvent since keys don't match
     verifyNoInteractions(deleteContentAttachmentEvent);
   }
 

@@ -60,13 +60,11 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   @Before
   @HandlerOrder(HandlerOrder.LATE)
   void processBeforeDraftCancel(DraftCancelEventContext context) {
-    // We only process the draft cancel event if there is no WHERE clause in the CQN
-    // and if the target entity is an attachment entity or has attachment
-    // associations.
+    CdsEntity entity = context.getTarget();
+    // CdsEntity entity = context.getModel().getEntity(context.getTarget().getQualifiedName());
+    logger.warn("Entity not found: {}", context.getTarget().getQualifiedName());
 
-    CdsEntity entity = context.getModel().getEntity(context.getTarget().getQualifiedName());
-
-    if (deepSearchForAttachments(entity) && context.getEvent().contains("DRAFT_CANCEL")) {
+    if (deepSearchForAttachments(entity)) {
       logger.debug(
           "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
 
@@ -122,21 +120,15 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     }
     visited.add(entity.getQualifiedName());
 
-    if (checkAttachment(entity)) {
+    if (ApplicationHandlerHelper.isMediaEntity(entity)) {
       return true;
     }
 
     return entity
-        .elements()
-        .filter(element -> element.getType().isAssociation())
+        .compositions()
         .map(element -> element.getType().as(CdsAssociationType.class))
-        .filter(CdsAssociationType::isComposition)
         .anyMatch(
             association -> deepSearchForAttachmentsRecursive(association.getTarget(), visited));
-  }
-
-  private boolean checkAttachment(CdsEntity entity) {
-    return ApplicationHandlerHelper.isMediaEntity(entity);
   }
 
   private List<Attachments> readAttachments(

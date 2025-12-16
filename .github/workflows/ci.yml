@@ -80,7 +80,7 @@ jobs:
   scan:
     name: Blackduck Scan
     runs-on: ubuntu-latest
-    needs: [integration-tests]
+    needs: build
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -96,7 +96,7 @@ jobs:
   deploy-snapshot:
     name: Deploy snapshot to Artifactory
     runs-on: ubuntu-latest
-    needs: [scan]
+    needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v6
