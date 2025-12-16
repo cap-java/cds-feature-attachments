@@ -61,8 +61,6 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   @HandlerOrder(HandlerOrder.LATE)
   void processBeforeDraftCancel(DraftCancelEventContext context) {
     CdsEntity entity = context.getTarget();
-    // CdsEntity entity = context.getModel().getEntity(context.getTarget().getQualifiedName());
-    logger.warn("Entity not found: {}", context.getTarget().getQualifiedName());
 
     if (deepSearchForAttachments(entity)) {
       logger.debug(
