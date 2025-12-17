@@ -15,7 +15,7 @@ env:
   GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
   # Tokens
   SONARQ_TOKEN: ${{ secrets.SONARQ_TOKEN }}
-  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   BLACK_DUCK_TOKEN: ${{ secrets.BLACK_DUCK_TOKEN }}
   # Other
   DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
