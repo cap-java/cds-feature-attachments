@@ -1,0 +1,146 @@
+name: CI
+
+env:
+  MAVEN_VERSION: '3.6.3'
+  # Cloud storage environment variables (available to all jobs that need them)
+  AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
+  AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+  AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+  AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
+  AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
+  AZURE_CONTAINER_URI: ${{ secrets.AZURE_CONTAINER_URI }}
+  AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
+  GS_BASE_64_ENCODED_PRIVATE_KEY_DATA: ${{ secrets.GS_BASE_64_ENCODED_PRIVATE_KEY_DATA }}
+  GS_BUCKET: ${{ secrets.GS_BUCKET }}
+  GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
+  # Tokens
+  SONARQ_TOKEN: ${{ secrets.SONARQ_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  BLACK_DUCK_TOKEN: ${{ secrets.BLACK_DUCK_TOKEN }}
+  # Other
+  DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
+  DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: [ 17, 21 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Spotless check
+        run: mvn spotless:check -Dspotless.check.skip=false
+
+      - name: Build
+        uses: ./.github/actions/build
+        with:
+          java-version: ${{ matrix.java-version }}
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+  integration-tests:
+    name: Integration Tests (Java ${{ matrix.java-version }})
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        java-version: [ 17, 21 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Integration Tests
+        uses: ./.github/actions/integration-tests
+        with:
+          java-version: ${{ matrix.java-version }}
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+  sonarqube-scan:
+    name: SonarQube Scan
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: SonarQube Scan
+        uses: ./.github/actions/scan-with-sonar
+        with:
+          java-version: 17
+          maven-version: ${{ env.MAVEN_VERSION }}
+          sonarq-token: ${{ env.SONARQ_TOKEN }}
+          github-token: ${{ env.GITHUB_TOKEN }}
+
+  scan:
+    name: Blackduck Scan
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Scan
+        uses: ./.github/actions/scan-with-blackduck
+        with:
+          blackduck_token: ${{ env.BLACK_DUCK_TOKEN }}
+          github_token: ${{ env.GITHUB_TOKEN }}
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+  deploy-snapshot:
+    name: Deploy snapshot to Artifactory
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'sapmachine'
+          cache: 'maven'
+          server-id: artifactory
+          server-username: DEPLOYMENT_USER
+          server-password: DEPLOYMENT_PASS
+
+      - name: Set up Maven ${{ env.MAVEN_VERSION }}
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+      - name: Set Dry Run for Pull Request
+        if: github.event_name == 'pull_request'
+        run: echo "DRY_RUN_PARAM=-DaltDeploymentRepository=local-repo::default::file:./local-repo" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Get Revision
+        id: get-revision
+        run: |
+          echo "REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Print Revision
+        run: echo "Current revision ${{ steps.get-revision.outputs.REVISION }}"
+        shell: bash
+
+      - name: Deploy snapshot
+        if: ${{ endsWith(steps.get-revision.outputs.REVISION, '-SNAPSHOT') }}
+        run: >
+          mvn -B -ntp -fae
+          -pl !integration-tests,!integration-tests/db,!integration-tests/srv
+          -Dmaven.install.skip=true
+          -Dmaven.test.skip=true
+          -DdeployAtEnd=true
+          deploy ${{ env.DRY_RUN_PARAM }}
+        env:
+          DEPLOYMENT_USER: ${{ env.DEPLOYMENT_USER }}
+          DEPLOYMENT_PASS: ${{ env.DEPLOYMENT_PASS }}
+        shell: bash

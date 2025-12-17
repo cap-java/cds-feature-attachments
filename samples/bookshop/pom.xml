@@ -51,7 +51,7 @@
 			<dependency>
 				<groupId>com.sap.cds</groupId>
 				<artifactId>cds-feature-attachments</artifactId>
-				<version>1.2.2</version>
+				<version>1.2.4-SNAPSHOT</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -182,6 +182,13 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+			<!-- SONARQUBE PLUGIN -->
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>4.0.0.4121</version>
 			</plugin>
 		</plugins>
 	</build>

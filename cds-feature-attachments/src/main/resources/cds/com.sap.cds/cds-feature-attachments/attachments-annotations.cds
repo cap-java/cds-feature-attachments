@@ -14,7 +14,10 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
         title: '{i18n>attachment_mimeType}',
         Core.IsMediaType
     );
-    fileName  @(title: '{i18n>attachment_fileName}');
+    fileName  @(
+        title: '{i18n>attachment_fileName}',
+        UI.MultiLineText
+        );
     status    @(title: '{i18n>attachment_status}', Common.Text : statusNav.name, Common.TextArrangement : #TextOnly);
     contentId @(UI.Hidden: true);
     scannedAt @(UI.Hidden: true);
@@ -34,7 +37,10 @@ annotate Attachments with @UI: {
         {Value: up__ID, @UI.Hidden}
     ]
 } {
-    note       @(title: '{i18n>attachment_note}');
+    note       @(
+        title: '{i18n>attachment_note}',
+        UI.MultiLineText
+    );
     modifiedAt @(odata.etag);
 }
 

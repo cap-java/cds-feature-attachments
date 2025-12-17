@@ -20,7 +20,6 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -82,7 +81,8 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
                 .formatted(binding),
             e);
       }
-      // Redeclaring is needed here to make the variable effectively final for the lambda expression
+      // Redeclaring is needed here to make the variable effectively final for the
+      // lambda expression
       final String dec = decoded;
       if (Stream.of("google", "gcp").anyMatch(dec::contains)) {
         this.osClient = new GoogleClient(binding, executor);
@@ -160,19 +160,19 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
         context.getContentId());
     try {
       Future<InputStream> future = osClient.readContent(context.getContentId());
-      try (InputStream inputStream = future.get()) { // Wait for the content to be read
-        if (inputStream != null) {
-          context.getData().setContent(inputStream);
-        } else {
-          logger.error("Document not found for id {}", context.getContentId());
-          context.getData().setContent(new ByteArrayInputStream(new byte[0]));
-        }
+      InputStream inputStream = future.get(); // Wait for the content to be read
+      if (inputStream != null) {
+        context.getData().setContent(inputStream);
+      } else {
+        logger.error("Document not found for id {}", context.getContentId());
+        throw new ServiceException(
+            "Document not found for id " + context.getContentId(), context.getContentId());
       }
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
       throw new ServiceException(
           "Failed to read file with document id {}", context.getContentId(), ex);
-    } catch (ObjectStoreServiceException | ExecutionException | java.io.IOException ex) {
+    } catch (ObjectStoreServiceException | ExecutionException ex) {
       throw new ServiceException(
           "Failed to read file with document id {}", context.getContentId(), ex);
     } finally {
