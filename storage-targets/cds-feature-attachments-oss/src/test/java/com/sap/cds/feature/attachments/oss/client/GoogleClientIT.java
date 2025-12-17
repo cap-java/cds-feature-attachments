@@ -20,7 +20,8 @@ class GoogleClientIT {
   @Test
   void testCreateReadDeleteAttachmentFlowGoogle() throws Exception {
     ServiceBinding binding = getRealServiceBindingGoogle();
-    assumeTrue(binding != null, "Skipping test: Google Cloud credentials not available in environment");
+    assumeTrue(
+        binding != null, "Skipping test: Google Cloud credentials not available in environment");
     ExecutorService executor = Executors.newCachedThreadPool();
 
     OSSAttachmentsServiceHandlerTestUtils.testCreateReadDeleteAttachmentFlow(binding, executor);
