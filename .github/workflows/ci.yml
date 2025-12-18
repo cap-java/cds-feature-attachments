@@ -22,9 +22,12 @@ env:
   DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request_target:
+    branches: [main]
+    types: [reopened, synchronize, opened]
 
 jobs:
   build:
