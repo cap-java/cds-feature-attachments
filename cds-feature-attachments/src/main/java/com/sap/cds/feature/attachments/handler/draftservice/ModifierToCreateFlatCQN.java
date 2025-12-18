@@ -4,12 +4,10 @@
 package com.sap.cds.feature.attachments.handler.draftservice;
 
 import com.sap.cds.ql.CQL;
-import com.sap.cds.ql.RefBuilder;
-import com.sap.cds.ql.RefBuilder.RefSegment;
-import com.sap.cds.ql.StructuredTypeRef;
 import com.sap.cds.ql.Value;
 import com.sap.cds.ql.cqn.CqnComparisonPredicate.Operator;
 import com.sap.cds.ql.cqn.CqnPredicate;
+import com.sap.cds.ql.cqn.CqnReference.Segment;
 import com.sap.cds.ql.cqn.CqnStructuredTypeRef;
 import com.sap.cds.ql.cqn.Modifier;
 import com.sap.cds.services.draft.Drafts;
@@ -46,8 +44,7 @@ class ModifierToCreateFlatCQN implements Modifier {
 
   @Override
   public CqnStructuredTypeRef ref(CqnStructuredTypeRef original) {
-    RefBuilder<StructuredTypeRef> ref = CQL.copy(original);
-    RefSegment rootSegment = ref.rootSegment();
+    Segment rootSegment = original.rootSegment();
     logger.debug(
         "Modifying ref {} with isActiveEntity: {} and fullEntityName: {}",
         rootSegment,
