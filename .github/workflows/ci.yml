@@ -22,13 +22,25 @@ env:
   DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ "main" ]
-  pull_request:
+    branches: [main]
+  pull_request_target:
+    branches: [main]
+    types: [reopened, synchronize, opened]
 
 jobs:
+  requires-approval:
+    runs-on: ubuntu-latest
+    name: "Waiting for PR approval as this workflow runs on pull_request_target"
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.base.user.login != 'cap-js'
+    environment: pr-approval
+    steps:
+      - name: Approval Step
+        run: echo "This job has been approved!"
   build:
     name: Build
+    needs: requires-approval
     runs-on: ubuntu-latest
     strategy:
       matrix:
