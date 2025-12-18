@@ -33,6 +33,8 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import java.io.InputStream;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -153,9 +155,9 @@ public class ReadAttachmentsHandler implements EventHandler {
           "In verify status for content id {} and status {}",
           attachment.getContentId(),
           currentStatus);
-      if (StatusCode.UNSCANNED.equals(currentStatus)
-          || StatusCode.SCANNING.equals(currentStatus)
-          || currentStatus == null) {
+      if (!StatusCode.INFECTED.equals(currentStatus)
+          && (attachment.getScannedAt() == null
+              || Instant.now().isAfter(attachment.getScannedAt().plus(3, ChronoUnit.DAYS)))) {
         logger.debug(
             "Scanning content with ID {} for malware, has current status {}",
             attachment.getContentId(),
