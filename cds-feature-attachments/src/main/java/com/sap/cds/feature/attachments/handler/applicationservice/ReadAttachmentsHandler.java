@@ -151,13 +151,15 @@ public class ReadAttachmentsHandler implements EventHandler {
   private void verifyStatus(Path path, Attachments attachment) {
     if (areKeysEmpty(path.target().keys())) {
       String currentStatus = attachment.getStatus();
+      Instant scanDate = attachment.getScannedAt();
       logger.debug(
           "In verify status for content id {} and status {}",
           attachment.getContentId(),
           currentStatus);
-      if (!StatusCode.INFECTED.equals(currentStatus)
-          && (attachment.getScannedAt() == null
-              || Instant.now().isAfter(attachment.getScannedAt().plus(3, ChronoUnit.DAYS)))) {
+      if (StatusCode.UNSCANNED.equals(currentStatus)
+        || currentStatus == null
+        || (StatusCode.CLEAN.equals(currentStatus) && scanDate != null && Instant.now().isAfter(scanDate.plus(3, ChronoUnit.DAYS)))
+        || (StatusCode.FAILED.equals(currentStatus) && scanDate != null && Instant.now().isAfter(scanDate.plus(3, ChronoUnit.DAYS)))) {
         logger.debug(
             "Scanning content with ID {} for malware, has current status {}",
             attachment.getContentId(),

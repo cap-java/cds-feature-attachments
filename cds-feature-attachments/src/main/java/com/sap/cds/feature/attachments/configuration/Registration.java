@@ -66,8 +66,15 @@ public class Registration implements CdsRuntimeConfiguration {
     CdsProperties cdsProperties = environment.getCdsProperties();
 
     CdsProperties.DataSource.Csv csvConfig = cdsProperties.getDataSource().getCsv();
+    if (csvConfig.equals(null)) {
+      logger.warn("CSV configuration is not available, skipping CSV path addition");
+      return;
+    }
 
-    List<String> updatedPaths = new ArrayList<>(csvConfig.getPaths());
+    List<String> existingPaths = csvConfig.getPaths();
+    List<String> updatedPaths = existingPaths != null 
+      ? new ArrayList<>(existingPaths)
+      : new ArrayList<>();
 
     updatedPaths.add("../target/cds/com.sap.cds/cds-feature-attachments/**");
 
