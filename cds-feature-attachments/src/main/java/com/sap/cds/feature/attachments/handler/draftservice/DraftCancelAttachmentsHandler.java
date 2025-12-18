@@ -15,6 +15,7 @@ import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
+import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.DraftCancelEventContext;
@@ -24,6 +25,7 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,10 +60,9 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   @Before
   @HandlerOrder(HandlerOrder.LATE)
   void processBeforeDraftCancel(DraftCancelEventContext context) {
-    // We only process the draft cancel event if there is no WHERE clause in the CQN
-    // and if the target entity is an attachment entity or has attachment associations.
-    if ((isAttachmentEntity(context.getTarget()) || hasAttachmentAssociations(context.getTarget()))
-        && isWhereEmpty(context)) {
+    CdsEntity entity = context.getTarget();
+
+    if (deepSearchForAttachments(entity)) {
       logger.debug(
           "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
 
@@ -76,6 +77,11 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
       CdsDataProcessor.create()
           .addValidator(contentIdFilter, validator)
           .process(draftAttachments, context.getTarget());
+    } else {
+      logger.debug(
+          "Skipping processing before {} event for entity {}",
+          context.getEvent(),
+          context.getTarget());
     }
   }
 
@@ -101,36 +107,26 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     };
   }
 
-  // This function checks if the WHERE clause of the CQN is empty.
-  // This is the current way to verify that we are really cancelling a draft and not doing sth else.
-  // Also see here:
-  // https://github.com/cap-java/cds-feature-attachments/blob/main/doc/Design.md#events
-  // Unfortunately, context.getEvent() does not return a reliable value in this case.
-  private boolean isWhereEmpty(DraftCancelEventContext context) {
-    return context.getCqn().where().isEmpty();
+  private boolean deepSearchForAttachments(CdsEntity entity) {
+    return deepSearchForAttachmentsRecursive(entity, new HashSet<>());
   }
 
-  // This function checks if the given entity is of type Attachments
-  private boolean isAttachmentEntity(CdsEntity entity) {
-    boolean hasAttachmentInName = entity.getQualifiedName().toLowerCase().contains("attachment");
+  private boolean deepSearchForAttachmentsRecursive(CdsEntity entity, HashSet<String> visited) {
 
-    boolean hasFileNameElement =
-        entity.elements().anyMatch(element -> Attachments.FILE_NAME.equals(element.getName()));
+    if (visited.contains(entity.getQualifiedName())) {
+      return false;
+    }
+    visited.add(entity.getQualifiedName());
 
-    logger.debug(
-        "Entity: {}, hasAttachmentInName: {}, hasFileNameElement: {}",
-        entity.getQualifiedName(),
-        hasAttachmentInName,
-        hasFileNameElement);
+    if (ApplicationHandlerHelper.isMediaEntity(entity)) {
+      return true;
+    }
 
-    return hasAttachmentInName || hasFileNameElement;
-  }
-
-  // This function checks if the given entity has attachment associations.
-  private boolean hasAttachmentAssociations(CdsEntity entity) {
     return entity
-        .elements()
-        .anyMatch(element -> element.getName().toLowerCase().contains("attachment"));
+        .compositions()
+        .map(element -> element.getType().as(CdsAssociationType.class))
+        .anyMatch(
+            association -> deepSearchForAttachmentsRecursive(association.getTarget(), visited));
   }
 
   private List<Attachments> readAttachments(
