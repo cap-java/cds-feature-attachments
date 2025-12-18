@@ -13,6 +13,13 @@ env:
   GS_BASE_64_ENCODED_PRIVATE_KEY_DATA: ${{ secrets.GS_BASE_64_ENCODED_PRIVATE_KEY_DATA }}
   GS_BUCKET: ${{ secrets.GS_BUCKET }}
   GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
+  # Tokens
+  SONARQ_TOKEN: ${{ secrets.SONARQ_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  BLACK_DUCK_TOKEN: ${{ secrets.BLACK_DUCK_TOKEN }}
+  # Other
+  DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
+  DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
 
 on:
   push:
@@ -28,7 +35,7 @@ jobs:
         java-version: [ 17, 21 ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Spotless check
         run: mvn spotless:check -Dspotless.check.skip=false
@@ -48,7 +55,7 @@ jobs:
         java-version: [ 17, 21 ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Integration Tests
         uses: ./.github/actions/integration-tests
         with:
@@ -61,38 +68,38 @@ jobs:
     needs: build
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: SonarQube Scan
         uses: ./.github/actions/scan-with-sonar
         with:
           java-version: 17
           maven-version: ${{ env.MAVEN_VERSION }}
-          sonarq-token: ${{ secrets.SONARQ_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sonarq-token: ${{ env.SONARQ_TOKEN }}
+          github-token: ${{ env.GITHUB_TOKEN }}
 
   scan:
     name: Blackduck Scan
     runs-on: ubuntu-latest
-    needs: [integration-tests]
+    needs: build
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Scan
         uses: ./.github/actions/scan-with-blackduck
         with:
-          blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          blackduck_token: ${{ env.BLACK_DUCK_TOKEN }}
+          github_token: ${{ env.GITHUB_TOKEN }}
           maven-version: ${{ env.MAVEN_VERSION }}
 
   deploy-snapshot:
     name: Deploy snapshot to Artifactory
     runs-on: ubuntu-latest
-    needs: [scan]
+    needs: build
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Java
         uses: actions/setup-java@v5
@@ -134,6 +141,6 @@ jobs:
           -DdeployAtEnd=true
           deploy ${{ env.DRY_RUN_PARAM }}
         env:
-          DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
-          DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
+          DEPLOYMENT_USER: ${{ env.DEPLOYMENT_USER }}
+          DEPLOYMENT_PASS: ${{ env.DEPLOYMENT_PASS }}
         shell: bash
