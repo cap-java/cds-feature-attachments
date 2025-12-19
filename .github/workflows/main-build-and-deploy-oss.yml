@@ -38,7 +38,7 @@ jobs:
           maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Upload Changed Artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: root-new-version
           path: .
@@ -62,7 +62,7 @@ jobs:
       GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: root-new-version
 
@@ -81,7 +81,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Changed Artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: root-build
           include-hidden-files: true
@@ -94,7 +94,7 @@ jobs:
     needs: [blackduck, build]
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: root-build
 
