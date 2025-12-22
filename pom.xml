@@ -65,7 +65,7 @@
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.40.8</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-s3-version>2.40.13</software.amazon.awssdk-s3-version>
     <software.amazon.awssdk-crt-version>0.41.0</software.amazon.awssdk-crt-version>
 
     <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
@@ -125,7 +125,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.5.22</version>
+        <version>1.5.23</version>
         <scope>test</scope>
       </dependency>
 
