@@ -7,8 +7,10 @@ import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
+import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.FileSizeUtils;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
@@ -30,18 +32,28 @@ import com.sap.cds.services.utils.OrderConstants;
 import com.sap.cds.services.utils.model.CqnUtils;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class {@link UpdateAttachmentsHandler} is an event handler that is called before an update
- * event is executed. As updates in draft entities or non-draft entities can also be create-events,
- * update-events or delete-events the handler needs to distinguish between the different cases.
+ * The class {@link UpdateAttachmentsHandler} is an event handler that is called
+ * before an update
+ * event is executed. As updates in draft entities or non-draft entities can
+ * also be create-events,
+ * update-events or delete-events the handler needs to distinguish between the
+ * different cases.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class UpdateAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
+  public static final Filter VALMAX_FILTER = (path, element, type) -> element.findAnnotation("Validation.Maximum")
+      .isPresent();
 
   private final ModifyAttachmentEventFactory eventFactory;
   private final AttachmentsReader attachmentsReader;
@@ -54,17 +66,16 @@ public class UpdateAttachmentsHandler implements EventHandler {
       AttachmentService attachmentService,
       ThreadDataStorageReader storageReader) {
     this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
-    this.attachmentsReader =
-        requireNonNull(attachmentsReader, "attachmentsReader must not be null");
-    this.attachmentService =
-        requireNonNull(attachmentService, "attachmentService must not be null");
+    this.attachmentsReader = requireNonNull(attachmentsReader, "attachmentsReader must not be null");
+    this.attachmentService = requireNonNull(attachmentService, "attachmentService must not be null");
     this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
   }
 
   @Before
   @HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
   void processBeforeForDraft(CdsUpdateEventContext context, List<CdsData> data) {
-    // before the attachment's readonly fields are removed by the runtime, preserve them in a custom
+    // before the attachment's readonly fields are removed by the runtime, preserve
+    // them in a custom
     // field in data
     ReadonlyDataContextEnhancer.preserveReadonlyFields(
         context.getTarget(), data, storageReader.get());
@@ -77,14 +88,19 @@ public class UpdateAttachmentsHandler implements EventHandler {
     boolean associationsAreUnchanged = associationsAreUnchanged(target, data);
 
     if (ApplicationHandlerHelper.containsContentField(target, data) || !associationsAreUnchanged) {
+
+      // Check here for size of new attachments
+      if (containsValMaxAnnotation(target, data)) {
+        long maxSizeValue = FileSizeUtils.convertValMaxToInt(getValMaxValue(target, data));
+        logger.debug("Validation.Maximum annotation found with value: {}", maxSizeValue);
+      }
+
       logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
 
       CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());
-      List<Attachments> attachments =
-          attachmentsReader.readAttachments(context.getModel(), target, select);
+      List<Attachments> attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
 
-      List<Attachments> condensedAttachments =
-          ApplicationHandlerHelper.condenseAttachments(attachments, target);
+      List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseAttachments(attachments, target);
       ModifyApplicationHandlerHelper.handleAttachmentForEntities(
           target, data, condensedAttachments, eventFactory, context);
 
@@ -94,8 +110,28 @@ public class UpdateAttachmentsHandler implements EventHandler {
     }
   }
 
+  private String getValMaxValue(CdsEntity entity, List<? extends CdsData> data) {
+    AtomicReference<String> annotationValue = new AtomicReference<>();
+    CdsDataProcessor.create()
+        .addValidator(VALMAX_FILTER, (path, element, value) -> {
+          element.findAnnotation("Validation.Maximum")
+              .ifPresent(annotation -> annotationValue.set(annotation.getValue().toString()));
+        })
+        .process(data, entity);
+    return annotationValue.get();
+  }
+
+  private boolean containsValMaxAnnotation(CdsEntity entity, List<? extends CdsData> data) {
+    AtomicBoolean isIncluded = new AtomicBoolean();
+    CdsDataProcessor.create()
+        .addValidator(VALMAX_FILTER, (path, element, value) -> isIncluded.set(true))
+        .process(data, entity);
+    return isIncluded.get();
+  }
+
   private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
-    // TODO: check if this should be replaced with entity.assocations().noneMatch(...)
+    // TODO: check if this should be replaced with
+    // entity.assocations().noneMatch(...)
     return entity
         .compositions()
         .noneMatch(
@@ -107,21 +143,18 @@ public class UpdateAttachmentsHandler implements EventHandler {
       List<CdsData> data,
       CdsEntity entity,
       UserInfo userInfo) {
-    List<Attachments> condensedAttachments =
-        ApplicationHandlerHelper.condenseAttachments(data, entity);
+    List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseAttachments(data, entity);
 
-    Validator validator =
-        (path, element, value) -> {
-          Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-          boolean entryExists =
-              condensedAttachments.stream()
-                  .anyMatch(
-                      updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
-          if (!entryExists) {
-            String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
-            attachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
-          }
-        };
+    Validator validator = (path, element, value) -> {
+      Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
+      boolean entryExists = condensedAttachments.stream()
+          .anyMatch(
+              updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
+      if (!entryExists) {
+        String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+        attachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
+      }
+    };
     CdsDataProcessor.create()
         .addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator)
         .process(existingAttachments, entity);
