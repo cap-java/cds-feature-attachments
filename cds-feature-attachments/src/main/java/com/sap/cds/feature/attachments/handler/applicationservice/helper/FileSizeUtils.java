@@ -1,7 +1,6 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.helper;
 
 import java.math.BigDecimal;
-import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

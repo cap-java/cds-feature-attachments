@@ -5,6 +5,8 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.IOException;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
@@ -34,8 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
 public class UpdateAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
-  public static final Filter VALMAX_FILTER = (path, element, type) -> element.findAnnotation("Validation.Maximum")
+  public static final Filter VALMAX_FILTER = (path, element, type) -> element.getName().contentEquals("content") && element.findAnnotation("Validation.Maximum")
       .isPresent();
 
   private final ModifyAttachmentEventFactory eventFactory;
@@ -88,10 +88,20 @@ public class UpdateAttachmentsHandler implements EventHandler {
     boolean associationsAreUnchanged = associationsAreUnchanged(target, data);
 
     if (ApplicationHandlerHelper.containsContentField(target, data) || !associationsAreUnchanged) {
-
       // Check here for size of new attachments
       if (containsValMaxAnnotation(target, data)) {
+        List<Attachments> attachments = ApplicationHandlerHelper.condenseAttachments(data, target);
         long maxSizeValue = FileSizeUtils.convertValMaxToInt(getValMaxValue(target, data));
+          attachments.forEach(attachment -> {
+            try {
+              int size = attachment.getContent().available();
+              if (size > maxSizeValue) {
+                throw new IllegalArgumentException("Attachment " + attachment.getFileName() + " exceeds the maximum allowed size of " + maxSizeValue + " bytes.");
+              }
+            } catch (IOException e) {
+              throw new RuntimeException("Failed to read attachment content size", e);
+            }
+          });
         logger.debug("Validation.Maximum annotation found with value: {}", maxSizeValue);
       }
 
