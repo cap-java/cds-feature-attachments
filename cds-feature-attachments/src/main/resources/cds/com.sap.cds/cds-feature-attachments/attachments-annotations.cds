@@ -7,6 +7,7 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
     content   @(
         title                           : '{i18n>attachment_content}',
         Core.MediaType                  : mimeType,
+        Core.AcceptableMediaTypes       : ['image/jpeg'],
         Core.ContentDisposition.Filename: fileName,
         Core.ContentDisposition.Type    : 'inline'
     );
