@@ -3,6 +3,7 @@
  */
 package com.sap.cds.feature.attachments.oss.client;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
@@ -19,6 +20,8 @@ class AWSClientIT {
   @Test
   void testCreateReadDeleteAttachmentFlowAWS() throws Exception {
     ServiceBinding binding = getRealServiceBindingAWS();
+    assertTrue(
+        binding != null, "AWS credentials not found in environment variables. Test skipped.");
     ExecutorService executor = Executors.newCachedThreadPool();
     OSSAttachmentsServiceHandlerTestUtils.testCreateReadDeleteAttachmentFlow(binding, executor);
   }

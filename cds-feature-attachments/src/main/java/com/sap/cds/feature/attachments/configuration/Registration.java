@@ -36,6 +36,7 @@ import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.environment.CdsEnvironment;
+import com.sap.cds.services.environment.CdsProperties;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -45,6 +46,8 @@ import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 import com.sap.cds.services.utils.environment.ServiceBindingUtils;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +59,28 @@ import org.slf4j.LoggerFactory;
 public class Registration implements CdsRuntimeConfiguration {
 
   private static final Logger logger = LoggerFactory.getLogger(Registration.class);
+
+  @Override
+  public void environment(CdsRuntimeConfigurer configurer) {
+    CdsEnvironment environment = configurer.getCdsRuntime().getEnvironment();
+    CdsProperties cdsProperties = environment.getCdsProperties();
+
+    CdsProperties.DataSource.Csv csvConfig = cdsProperties.getDataSource().getCsv();
+    if (csvConfig == null) {
+      logger.warn("CSV configuration is not available, skipping CSV path addition");
+      return;
+    }
+
+    List<String> existingPaths = csvConfig.getPaths();
+    List<String> updatedPaths =
+        existingPaths != null ? new ArrayList<>(existingPaths) : new ArrayList<>();
+
+    updatedPaths.add("../target/cds/com.sap.cds/cds-feature-attachments/**");
+
+    logger.info("Adding new CSV path {}", updatedPaths.toString());
+
+    csvConfig.setPaths(updatedPaths);
+  }
 
   @Override
   public void services(CdsRuntimeConfigurer configurer) {
@@ -88,7 +113,8 @@ public class Registration implements CdsRuntimeConfiguration {
           OutboxService.PERSISTENT_UNORDERED_NAME);
     }
 
-    // build malware scanner client, could be null if no service binding is available
+    // build malware scanner client, could be null if no service binding is
+    // available
     MalwareScanClient scanClient = buildMalwareScanClient(runtime.getEnvironment());
 
     AttachmentMalwareScanner malwareScanner =
@@ -111,7 +137,8 @@ public class Registration implements CdsRuntimeConfiguration {
         new AttachmentsReader(new AssociationCascader(), persistenceService);
     ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
-    // register event handlers for application service, if at least one application service is
+    // register event handlers for application service, if at least one application
+    // service is
     // available
     boolean hasApplicationServices =
         serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
@@ -131,7 +158,8 @@ public class Registration implements CdsRuntimeConfiguration {
           "No application service is available. Application service event handlers will not be registered.");
     }
 
-    // register event handlers on draft service, if at least one draft service is available
+    // register event handlers on draft service, if at least one draft service is
+    // available
     boolean hasDraftServices =
         serviceCatalog.getServices(DraftService.class).findFirst().isPresent();
     if (hasDraftServices) {
