@@ -1,7 +1,7 @@
 name: CI
 
 env:
-  MAVEN_VERSION: '3.6.3'
+  MAVEN_VERSION: '3.9.9'
   # Cloud storage environment variables (available to all jobs that need them)
   AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
   AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
@@ -15,7 +15,6 @@ env:
   GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
   # Tokens
   SONARQ_TOKEN: ${{ secrets.SONARQ_TOKEN }}
-  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
   BLACK_DUCK_TOKEN: ${{ secrets.BLACK_DUCK_TOKEN }}
   # Other
   DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
@@ -42,24 +41,75 @@ jobs:
     name: Build
     needs: requires-approval
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java-version: [ 17, 21 ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: sapmachine
+          cache: maven
+
+      - name: Set up Maven ${{ env.MAVEN_VERSION }}
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Spotless check
         run: mvn spotless:check -Dspotless.check.skip=false
 
-      - name: Build
-        uses: ./.github/actions/build
+  # Build once with Java 17, upload artifacts
+  build:
+    name: Build & Mutation Testing
+    runs-on: ubuntu-latest
+    needs: quality-checks
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
         with:
-          java-version: ${{ matrix.java-version }}
+          java-version: 17
+          distribution: sapmachine
+          cache: maven
+
+      - name: Set up Maven ${{ env.MAVEN_VERSION }}
+        uses: stCarolas/setup-maven@v5
+        with:
           maven-version: ${{ env.MAVEN_VERSION }}
 
-  integration-tests:
-    name: Integration Tests (Java ${{ matrix.java-version }})
+      - name: Build and install artifacts (skip tests)
+        run: |
+          mvn clean install -DskipTests \
+            -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss \
+            -am
+
+      - name: Mutation Testing
+        run: mvn org.pitest:pitest-maven:mutationCoverage -f cds-feature-attachments/pom.xml
+
+      - name: Upload Maven local repository artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: maven-repository
+          path: ~/.m2/repository/com/sap/cds/
+          retention-days: 1
+
+      - name: Upload build targets
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-targets
+          path: |
+            cds-feature-attachments/target/
+            storage-targets/cds-feature-attachments-fs/target/
+            storage-targets/cds-feature-attachments-oss/target/
+          retention-days: 1
+
+  # Test with Java 17 and 21
+  test-java-versions:
+    name: Test Java ${{ matrix.java-version }}
     runs-on: ubuntu-latest
     needs: build
     strategy:
@@ -67,42 +117,133 @@ jobs:
         java-version: [ 17, 21 ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - name: Integration Tests
-        uses: ./.github/actions/integration-tests
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
         with:
           java-version: ${{ matrix.java-version }}
+          distribution: sapmachine
+          cache: maven
+
+      - name: Set up Maven ${{ env.MAVEN_VERSION }}
+        uses: stCarolas/setup-maven@v5
+        with:
           maven-version: ${{ env.MAVEN_VERSION }}
 
-  sonarqube-scan:
-    name: SonarQube Scan
+      - name: Download Maven repository
+        uses: actions/download-artifact@v4
+        with:
+          name: maven-repository
+          path: ~/.m2/repository/com/sap/cds/
+
+      - name: Run tests
+        run: mvn test -ntp -B -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss
+
+  # Integration tests with current CAP version (Java 17 & 21)
+  integration-tests-current:
+    name: Integration Tests - CAP (Java ${{ matrix.java-version }})
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        java-version: [ 17, 21 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ matrix.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: sapmachine
+          cache: maven
+
+      - name: Set up Maven ${{ env.MAVEN_VERSION }}
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+      - name: Download Maven repository
+        uses: actions/download-artifact@v4
+        with:
+          name: maven-repository
+          path: ~/.m2/repository/com/sap/cds/
+
+      - name: Integration Tests with current CAP Java version
+        run: mvn verify -ntp -B -P integration-tests-current
+
+  # Integration tests for Object Store Service (Java 17 only)
+  integration-tests-oss:
+    name: Integration Tests - OSS (Java 17)
     runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: sapmachine
+          cache: maven
+
+      - name: Set up Maven ${{ env.MAVEN_VERSION }}
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+      - name: Download Maven repository
+        uses: actions/download-artifact@v4
+        with:
+          name: maven-repository
+          path: ~/.m2/repository/com/sap/cds/
+
+      - name: Integration Tests for Object Store Service
+        run: mvn verify -ntp -B -P integration-tests-oss
+
+  sonarqube-scan:
+    name: SonarQube Scan
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Maven repository
+        uses: actions/download-artifact@v4
+        with:
+          name: maven-repository
+          path: ~/.m2/repository/com/sap/cds/
+
+      - name: Download build targets
+        uses: actions/download-artifact@v4
+        with:
+          name: build-targets
+
       - name: SonarQube Scan
         uses: ./.github/actions/scan-with-sonar
         with:
           java-version: 17
           maven-version: ${{ env.MAVEN_VERSION }}
           sonarq-token: ${{ env.SONARQ_TOKEN }}
-          github-token: ${{ env.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   scan:
     name: Blackduck Scan
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build]
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Scan
         uses: ./.github/actions/scan-with-blackduck
         with:
           blackduck_token: ${{ env.BLACK_DUCK_TOKEN }}
-          github_token: ${{ env.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           maven-version: ${{ env.MAVEN_VERSION }}
 
   deploy-snapshot:
