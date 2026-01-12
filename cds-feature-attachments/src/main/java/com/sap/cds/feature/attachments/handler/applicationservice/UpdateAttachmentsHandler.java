@@ -21,7 +21,6 @@ import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
-import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
@@ -31,7 +30,6 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.utils.OrderConstants;
-import com.sap.cds.services.utils.model.CqnUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -87,12 +85,13 @@ public class UpdateAttachmentsHandler implements EventHandler {
   void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
     CdsEntity target = context.getTarget();
     boolean associationsAreUnchanged = associationsAreUnchanged(target, data);
+    int contentLength = Integer.parseInt(context.getParameterInfo().getHeader("Content-Length"));
 
     if (ApplicationHandlerHelper.containsContentField(target, data) || !associationsAreUnchanged) {
       // Check here for size of new attachments
+      List<Attachments> attachments = ApplicationHandlerHelper.condenseAttachments(data, target);
       if (containsValMaxAnnotation(target, data)) {
         try {
-          List<Attachments> attachments = ApplicationHandlerHelper.condenseAttachments(data, target);
           long maxSizeValue = FileSizeUtils.parseFileSizeToBytes(getValMaxValue(target, data));
           logger.debug("Validation.Maximum annotation found with value: {}", maxSizeValue);
           attachments.forEach(attachment -> {
@@ -112,13 +111,8 @@ public class UpdateAttachmentsHandler implements EventHandler {
       }
 
       logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
-
-      CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());
-      List<Attachments> attachments = attachmentsReader.readAttachments(context.getModel(), target, select);
-
-      List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseAttachments(attachments, target);
       ModifyApplicationHandlerHelper.handleAttachmentForEntities(
-          target, data, condensedAttachments, eventFactory, context);
+          target, data, attachments, eventFactory, context);
 
       if (!associationsAreUnchanged) {
         deleteRemovedAttachments(attachments, data, target, context.getUserInfo());
