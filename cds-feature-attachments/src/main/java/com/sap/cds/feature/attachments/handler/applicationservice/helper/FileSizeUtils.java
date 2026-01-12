@@ -25,7 +25,7 @@ public class FileSizeUtils {
 
     private FileSizeUtils() {}
 
-    public static long convertValMaxToInt(String input) {
+    public static long parseFileSizeToBytes(String input) {
         // First validate string
         if (input == null)
             throw new IllegalArgumentException("Value for Max File Size is null");
@@ -41,7 +41,7 @@ public class FileSizeUtils {
         // if (unit.length() == 1) unit = unit + "B"; // for people using K instead of KB
         Long mul = MULTIPLIER.get(unit);
         if (mul == null) {
-            throw new IllegalArgumentException("Unkown Unit: " + unitRaw);
+            throw new IllegalArgumentException("Unknown Unit: " + unitRaw);
         }
         BigDecimal bytes = value.multiply(BigDecimal.valueOf(mul));
         return bytes.longValueExact();

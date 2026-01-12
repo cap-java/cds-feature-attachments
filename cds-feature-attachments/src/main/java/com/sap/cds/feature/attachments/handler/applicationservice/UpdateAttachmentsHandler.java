@@ -52,7 +52,8 @@ import org.slf4j.LoggerFactory;
 public class UpdateAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
-  public static final Filter VALMAX_FILTER = (path, element, type) -> element.getName().contentEquals("content") && element.findAnnotation("Validation.Maximum")
+  private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
+  private static final Filter VALMAX_FILTER = (path, element, type) -> element.getName().contentEquals("content") && element.findAnnotation("Validation.Maximum")
       .isPresent();
 
   private final ModifyAttachmentEventFactory eventFactory;
@@ -102,7 +103,22 @@ public class UpdateAttachmentsHandler implements EventHandler {
               throw new RuntimeException("Failed to read attachment content size", e);
             }
           });
+      // Check here for size of new attachments
+      if (containsValMaxAnnotation(target, data)) {
+        List<Attachments> attachments = ApplicationHandlerHelper.condenseAttachments(data, target);
+        long maxSizeValue = FileSizeUtils.convertValMaxToInt(getValMaxValue(target, data));
         logger.debug("Validation.Maximum annotation found with value: {}", maxSizeValue);
+          attachments.forEach(attachment -> {
+            try {
+              int size = attachment.getContent().available();
+              if (size > maxSizeValue) {
+                throw new IllegalArgumentException("Attachment " + attachment.getFileName() + " exceeds the maximum allowed size of " + maxSizeValue + " bytes.");
+              }
+            } catch (IOException e) {
+              throw new RuntimeException("Failed to read attachment content size", e);
+            }
+          });
+      }
       }
 
       logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
