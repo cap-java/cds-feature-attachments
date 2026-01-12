@@ -52,9 +52,9 @@ import org.slf4j.LoggerFactory;
 public class UpdateAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
-  private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
-  private static final Filter VALMAX_FILTER = (path, element, type) -> element.getName().contentEquals("content") && element.findAnnotation("Validation.Maximum")
-      .isPresent();
+  private static final Filter VALMAX_FILTER = (path, element, type) -> element.getName().contentEquals("content")
+      && element.findAnnotation("Validation.Maximum")
+          .isPresent();
 
   private final ModifyAttachmentEventFactory eventFactory;
   private final AttachmentsReader attachmentsReader;
@@ -91,34 +91,24 @@ public class UpdateAttachmentsHandler implements EventHandler {
     if (ApplicationHandlerHelper.containsContentField(target, data) || !associationsAreUnchanged) {
       // Check here for size of new attachments
       if (containsValMaxAnnotation(target, data)) {
-        List<Attachments> attachments = ApplicationHandlerHelper.condenseAttachments(data, target);
-        long maxSizeValue = FileSizeUtils.convertValMaxToInt(getValMaxValue(target, data));
+        try {
+          List<Attachments> attachments = ApplicationHandlerHelper.condenseAttachments(data, target);
+          long maxSizeValue = FileSizeUtils.parseFileSizeToBytes(getValMaxValue(target, data));
+          logger.debug("Validation.Maximum annotation found with value: {}", maxSizeValue);
           attachments.forEach(attachment -> {
             try {
               int size = attachment.getContent().available();
               if (size > maxSizeValue) {
-                throw new IllegalArgumentException("Attachment " + attachment.getFileName() + " exceeds the maximum allowed size of " + maxSizeValue + " bytes.");
+                throw new IllegalArgumentException("Attachment " + attachment.getFileName()
+                    + " exceeds the maximum allowed size of " + maxSizeValue + " bytes.");
               }
             } catch (IOException e) {
               throw new RuntimeException("Failed to read attachment content size", e);
             }
           });
-      // Check here for size of new attachments
-      if (containsValMaxAnnotation(target, data)) {
-        List<Attachments> attachments = ApplicationHandlerHelper.condenseAttachments(data, target);
-        long maxSizeValue = FileSizeUtils.convertValMaxToInt(getValMaxValue(target, data));
-        logger.debug("Validation.Maximum annotation found with value: {}", maxSizeValue);
-          attachments.forEach(attachment -> {
-            try {
-              int size = attachment.getContent().available();
-              if (size > maxSizeValue) {
-                throw new IllegalArgumentException("Attachment " + attachment.getFileName() + " exceeds the maximum allowed size of " + maxSizeValue + " bytes.");
-              }
-            } catch (IOException e) {
-              throw new RuntimeException("Failed to read attachment content size", e);
-            }
-          });
-      }
+        } catch (ArithmeticException e) {
+          throw new IllegalArgumentException("Maximum file size value is too large", e);
+        }
       }
 
       logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
