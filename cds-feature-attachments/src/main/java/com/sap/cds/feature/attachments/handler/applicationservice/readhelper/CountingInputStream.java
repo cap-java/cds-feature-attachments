@@ -5,11 +5,9 @@ package com.sap.cds.feature.attachments.handler.applicationservice.readhelper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
-import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.ServiceException;
-import com.sap.cds.services.utils.CdsErrorStatuses;
 
 /**
  * An InputStream wrapper that tracks bytes read and enforces a maximum size
@@ -121,8 +119,9 @@ public class CountingInputStream extends InputStream {
   private void checkLimit(long bytes) {
     bytesRead += bytes;
     if (bytesRead > maxBytes) {
-      throw new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE,
-          "File size exceeds the limit of {} bytes", maxBytes);
+      throw new UncheckedIOException(
+        new IOException(String.format("File size exceeds the limit of %d bytes", maxBytes))
+      );
     }
   }
 }

@@ -5,14 +5,10 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static java.util.Objects.requireNonNull;
 
-import java.io.IOException;
-
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
-import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.FileSizeUtils;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
@@ -28,13 +24,11 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.utils.OrderConstants;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +44,6 @@ import org.slf4j.LoggerFactory;
 public class UpdateAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
-  private static final Filter VALMAX_FILTER = (path, element, type) -> element.getName().contentEquals("content")
-      && element.findAnnotation("Validation.Maximum")
-          .isPresent();
 
   private final ModifyAttachmentEventFactory eventFactory;
   private final AttachmentsReader attachmentsReader;
@@ -83,32 +74,12 @@ public class UpdateAttachmentsHandler implements EventHandler {
   @Before
   @HandlerOrder(HandlerOrder.LATE)
   void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
+
     CdsEntity target = context.getTarget();
     boolean associationsAreUnchanged = associationsAreUnchanged(target, data);
-    int contentLength = Integer.parseInt(context.getParameterInfo().getHeader("Content-Length"));
 
     if (ApplicationHandlerHelper.containsContentField(target, data) || !associationsAreUnchanged) {
-      // Check here for size of new attachments
       List<Attachments> attachments = ApplicationHandlerHelper.condenseAttachments(data, target);
-      if (containsValMaxAnnotation(target, data)) {
-        try {
-          long maxSizeValue = FileSizeUtils.parseFileSizeToBytes(getValMaxValue(target, data));
-          logger.debug("Validation.Maximum annotation found with value: {}", maxSizeValue);
-          attachments.forEach(attachment -> {
-            try {
-              int size = attachment.getContent().available();
-              if (size > maxSizeValue) {
-                throw new IllegalArgumentException("Attachment " + attachment.getFileName()
-                    + " exceeds the maximum allowed size of " + maxSizeValue + " bytes.");
-              }
-            } catch (IOException e) {
-              throw new RuntimeException("Failed to read attachment content size", e);
-            }
-          });
-        } catch (ArithmeticException e) {
-          throw new IllegalArgumentException("Maximum file size value is too large", e);
-        }
-      }
 
       logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
       ModifyApplicationHandlerHelper.handleAttachmentForEntities(
@@ -118,25 +89,6 @@ public class UpdateAttachmentsHandler implements EventHandler {
         deleteRemovedAttachments(attachments, data, target, context.getUserInfo());
       }
     }
-  }
-
-  private String getValMaxValue(CdsEntity entity, List<? extends CdsData> data) {
-    AtomicReference<String> annotationValue = new AtomicReference<>();
-    CdsDataProcessor.create()
-        .addValidator(VALMAX_FILTER, (path, element, value) -> {
-          element.findAnnotation("Validation.Maximum")
-              .ifPresent(annotation -> annotationValue.set(annotation.getValue().toString()));
-        })
-        .process(data, entity);
-    return annotationValue.get();
-  }
-
-  private boolean containsValMaxAnnotation(CdsEntity entity, List<? extends CdsData> data) {
-    AtomicBoolean isIncluded = new AtomicBoolean();
-    CdsDataProcessor.create()
-        .addValidator(VALMAX_FILTER, (path, element, value) -> isIncluded.set(true))
-        .process(data, entity);
-    return isIncluded.get();
   }
 
   private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
