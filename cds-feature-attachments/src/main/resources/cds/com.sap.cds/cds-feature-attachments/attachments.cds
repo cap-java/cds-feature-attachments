@@ -23,5 +23,5 @@ aspect MediaData           @(_is_media_data) {
 }
 
 aspect Attachments : cuid, managed, MediaData {
-    note : String(255);
+    note : String(5000);
 }
