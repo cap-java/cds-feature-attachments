@@ -32,6 +32,7 @@ import com.sap.cds.services.cds.CdsCreateEventContext;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -67,6 +68,9 @@ class CreateAttachmentsHandlerTest {
 
     createContext = mock(CdsCreateEventContext.class);
     event = mock(ModifyAttachmentEvent.class);
+
+    ParameterInfo parameterInfo = mock(ParameterInfo.class);
+    when(createContext.getParameterInfo()).thenReturn(parameterInfo);
   }
 
   @Test

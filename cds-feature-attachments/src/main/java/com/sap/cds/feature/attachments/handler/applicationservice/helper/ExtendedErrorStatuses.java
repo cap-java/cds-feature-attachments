@@ -1,17 +1,19 @@
+/*
+ * © 2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ */
 package com.sap.cds.feature.attachments.handler.applicationservice.helper;
 
 import com.sap.cds.services.ErrorStatus;
 import com.sap.cds.services.ErrorStatuses;
 
 public enum ExtendedErrorStatuses implements ErrorStatus {
+  CONTENT_TOO_LARGE(413, "The content size exceeds the maximum allowed limit.", 413);
 
-    CONTENT_TOO_LARGE(413, "The content size exceeds the maximum allowed limit.", 413);
-    
-    private final int code;
+  private final int code;
   private final String description;
   private final int httpStatus;
 
-  private ExtendedErrorStatuses(int code, String description, int httpStatus) {
+  ExtendedErrorStatuses(int code, String description, int httpStatus) {
     this.code = code;
     this.description = description;
     this.httpStatus = httpStatus;

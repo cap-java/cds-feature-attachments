@@ -24,7 +24,6 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
-import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.utils.OrderConstants;
 import java.util.List;
@@ -33,12 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class {@link UpdateAttachmentsHandler} is an event handler that is called
- * before an update
- * event is executed. As updates in draft entities or non-draft entities can
- * also be create-events,
- * update-events or delete-events the handler needs to distinguish between the
- * different cases.
+ * The class {@link UpdateAttachmentsHandler} is an event handler that is called before an update
+ * event is executed. As updates in draft entities or non-draft entities can also be create-events,
+ * update-events or delete-events the handler needs to distinguish between the different cases.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class UpdateAttachmentsHandler implements EventHandler {
@@ -46,7 +42,6 @@ public class UpdateAttachmentsHandler implements EventHandler {
   private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
 
   private final ModifyAttachmentEventFactory eventFactory;
-  private final AttachmentsReader attachmentsReader;
   private final AttachmentService attachmentService;
   private final ThreadDataStorageReader storageReader;
 
@@ -56,8 +51,8 @@ public class UpdateAttachmentsHandler implements EventHandler {
       AttachmentService attachmentService,
       ThreadDataStorageReader storageReader) {
     this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
-    this.attachmentsReader = requireNonNull(attachmentsReader, "attachmentsReader must not be null");
-    this.attachmentService = requireNonNull(attachmentService, "attachmentService must not be null");
+    this.attachmentService =
+        requireNonNull(attachmentService, "attachmentService must not be null");
     this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
   }
 
@@ -105,18 +100,21 @@ public class UpdateAttachmentsHandler implements EventHandler {
       List<CdsData> data,
       CdsEntity entity,
       UserInfo userInfo) {
-    List<Attachments> condensedAttachments = ApplicationHandlerHelper.condenseAttachments(data, entity);
+    List<Attachments> condensedAttachments =
+        ApplicationHandlerHelper.condenseAttachments(data, entity);
 
-    Validator validator = (path, element, value) -> {
-      Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-      boolean entryExists = condensedAttachments.stream()
-          .anyMatch(
-              updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
-      if (!entryExists) {
-        String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
-        attachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
-      }
-    };
+    Validator validator =
+        (path, element, value) -> {
+          Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
+          boolean entryExists =
+              condensedAttachments.stream()
+                  .anyMatch(
+                      updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
+          if (!entryExists) {
+            String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+            attachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
+          }
+        };
     CdsDataProcessor.create()
         .addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator)
         .process(existingAttachments, entity);
