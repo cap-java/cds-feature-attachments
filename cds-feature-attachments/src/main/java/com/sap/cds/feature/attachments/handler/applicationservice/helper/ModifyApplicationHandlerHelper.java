@@ -10,16 +10,13 @@ import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
-import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.ServiceException;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -77,35 +74,7 @@ public final class ModifyApplicationHandlerHelper {
     Attachments attachment = getExistingAttachment(keys, existingAttachments);
     String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
-    // Wrap the stream with CountingInputStream if a max size is configured
-    InputStream wrappedContent =
-        wrapWithCountingStream(content, path.target().entity(), existingAttachments, contentLength);
-
-    // for the current request find the event to process
-    ModifyAttachmentEvent eventToProcess =
-        eventFactory.getEvent(wrappedContent, contentId, attachment);
-
-    // process the event
-    try {
-      return eventToProcess.processEvent(path, wrappedContent, attachment, eventContext);
-    } catch (UncheckedIOException e) {
-      // Extract the IOException with our custom message
-      IOException cause = e.getCause();
-      throw new ServiceException(ErrorStatuses.BAD_REQUEST, cause.getMessage());
-    } catch (RuntimeException e) {
-      // Check if nested UncheckedIOException
-      Throwable cause = e.getCause();
-      if (cause instanceof UncheckedIOException) {
-        IOException ioCause = ((UncheckedIOException) cause).getCause();
-        throw new ServiceException(ErrorStatuses.BAD_REQUEST, ioCause.getMessage());
-      }
-      throw e;
-    }
-  }
-
-  private static InputStream wrapWithCountingStream(
-      InputStream content, CdsEntity entity, List<? extends CdsData> data, String contentLength) {
-    String maxSizeStr = getValMaxValue(entity, data);
+    String maxSizeStr = getValMaxValue(path.target().entity(), existingAttachments);
 
     if (maxSizeStr != null && content != null) {
       try {
@@ -113,15 +82,22 @@ public final class ModifyApplicationHandlerHelper {
         if (contentLength != null && Long.parseLong(contentLength) > maxSize) {
           throw new RuntimeException("File size exceeds the maximum allowed size of " + maxSizeStr);
         }
-        return new CountingInputStream(content, maxSize);
       } catch (ArithmeticException e) {
         throw new ServiceException("Maximum file size value is too large", e);
       } catch (RuntimeException e) {
         throw new ServiceException(
             ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded", maxSizeStr);
+      } catch (Exception e) {
+        throw new ServiceException(
+            ErrorStatuses.BAD_REQUEST, "Failed to process attachment size", e);
       }
     }
-    return content;
+
+    // for the current request find the event to process
+    ModifyAttachmentEvent eventToProcess = eventFactory.getEvent(content, contentId, attachment);
+
+    // process the event
+    return eventToProcess.processEvent(path, content, attachment, eventContext);
   }
 
   private static String getValMaxValue(CdsEntity entity, List<? extends CdsData> data) {

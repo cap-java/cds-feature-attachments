@@ -51,7 +51,7 @@ abstract class DraftOdataRequestValidationBase {
   protected TestPluginAttachmentsServiceHandler serviceHandler;
 
   @Autowired protected MockHttpRequestHelper requestHelper;
-  @Autowired private PersistenceService persistenceService;
+  @Autowired protected PersistenceService persistenceService;
   @Autowired private TableDataDeleter dataDeleter;
   @Autowired private TestPersistenceHandler testPersistenceHandler;
 

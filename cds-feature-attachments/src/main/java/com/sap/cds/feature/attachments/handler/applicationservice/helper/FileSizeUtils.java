@@ -39,7 +39,7 @@ public class FileSizeUtils {
       throw new IllegalArgumentException("Invalid size: " + input);
     }
     BigDecimal value = new BigDecimal(m.group(1));
-    String unitRaw = m.group(2) == null ? "" : m.group(2);
+    String unitRaw = m.group(2); // Cannot be null due to * quantifier in regex
     String unit = unitRaw.toUpperCase();
 
     // if (unit.length() == 1) unit = unit + "B"; // for people using K instead of KB

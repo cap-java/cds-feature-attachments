@@ -57,11 +57,6 @@ public class LazyProxyInputStream extends InputStream {
     }
   }
 
-  @Override
-  public int available() throws IOException {
-    return delegate != null ? delegate.available() : 0;
-  }
-
   private InputStream getDelegate() {
     attachmentStatusValidator.verifyStatus(status);
 

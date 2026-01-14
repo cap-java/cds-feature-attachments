@@ -130,6 +130,12 @@
       </dependency>
 
       <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-core</artifactId>
+        <version>1.5.23</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-feature-attachments</artifactId>
         <version>${revision}</version>

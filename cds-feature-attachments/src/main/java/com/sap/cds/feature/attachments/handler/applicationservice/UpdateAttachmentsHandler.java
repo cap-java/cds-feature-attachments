@@ -5,8 +5,6 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.HashMap;
-
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
@@ -19,8 +17,6 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.services.ErrorStatuses;
-import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.handler.EventHandler;
@@ -30,19 +26,16 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.utils.OrderConstants;
 import com.sap.cds.services.utils.model.CqnUtils;
-
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class {@link UpdateAttachmentsHandler} is an event handler that is called
- * before an update
- * event is executed. As updates in draft entities or non-draft entities can
- * also be create-events,
- * update-events or delete-events the handler needs to distinguish between the
- * different cases.
+ * The class {@link UpdateAttachmentsHandler} is an event handler that is called before an update
+ * event is executed. As updates in draft entities or non-draft entities can also be create-events,
+ * update-events or delete-events the handler needs to distinguish between the different cases.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class UpdateAttachmentsHandler implements EventHandler {
@@ -60,9 +53,11 @@ public class UpdateAttachmentsHandler implements EventHandler {
       AttachmentService attachmentService,
       ThreadDataStorageReader storageReader) {
     this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
-    this.attachmentService = requireNonNull(attachmentService, "attachmentService must not be null");
+    this.attachmentService =
+        requireNonNull(attachmentService, "attachmentService must not be null");
     this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
-    this.attachmentsReader = requireNonNull(attachmentsReader, "attachmentsReader must not be null");
+    this.attachmentsReader =
+        requireNonNull(attachmentsReader, "attachmentsReader must not be null");
   }
 
   @Before
@@ -83,21 +78,18 @@ public class UpdateAttachmentsHandler implements EventHandler {
     boolean associationsAreUnchanged = associationsAreUnchanged(target, data);
 
     if (ApplicationHandlerHelper.containsContentField(target, data) || !associationsAreUnchanged) {
-      List<Attachments> attachments = ApplicationHandlerHelper.condenseAttachments(data, target);
+      logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
 
       // Query database only for validation (single query for all attachments)
       CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());
-      List<Attachments> dbAttachments = attachmentsReader.readAttachments(context.getModel(), target, select);
+      List<Attachments> attachments =
+          attachmentsReader.readAttachments(context.getModel(), target, select);
 
-      // Validate: ensure request attachments exist in DB or are new (no ID yet)
-      validateAttachments(attachments, dbAttachments, target);
-
-      logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
       ModifyApplicationHandlerHelper.handleAttachmentForEntities(
           target, data, attachments, eventFactory, context);
 
       if (!associationsAreUnchanged) {
-        deleteRemovedAttachments(dbAttachments, data, target, context.getUserInfo());
+        deleteRemovedAttachments(attachments, data, target, context.getUserInfo());
       }
     }
   }
@@ -116,55 +108,32 @@ public class UpdateAttachmentsHandler implements EventHandler {
       List<CdsData> requestData,
       CdsEntity entity,
       UserInfo userInfo) {
-    List<Attachments> requestAttachments = ApplicationHandlerHelper.condenseAttachments(requestData, entity);
+    List<Attachments> requestAttachments =
+        ApplicationHandlerHelper.condenseAttachments(requestData, entity);
 
     for (Attachments dbAttachment : dbAttachments) {
       Map<String, Object> dbKeys = new HashMap<>();
-      entity.keyElements().forEach(keyElement -> {
-        String keyName = keyElement.getName();
-        Object value = dbAttachment.get(keyName);
-        if (value != null) {
-          dbKeys.put(keyName, value);
-        }
-      });
+      entity
+          .keyElements()
+          .forEach(
+              keyElement -> {
+                String keyName = keyElement.getName();
+                Object value = dbAttachment.get(keyName);
+                if (value != null) {
+                  dbKeys.put(keyName, value);
+                }
+              });
       Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(dbKeys);
 
-      boolean existsInRequest = requestAttachments.stream()
-          .anyMatch(requestAttachment -> ApplicationHandlerHelper.areKeysInData(keys, requestAttachment));
+      boolean existsInRequest =
+          requestAttachments.stream()
+              .anyMatch(
+                  requestAttachment ->
+                      ApplicationHandlerHelper.areKeysInData(keys, requestAttachment));
 
       if (!existsInRequest && dbAttachment.getContentId() != null) {
-        attachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(dbAttachment.getContentId(), userInfo));
-      }
-    }
-  }
-
-  private void validateAttachments(List<Attachments> requestAttachments, List<Attachments> dbAttachments,
-      CdsEntity target) {
-    for (Attachments requestAttachment : requestAttachments) {
-      // Build a map of keys from the attachment based on entity key elements
-      Map<String, Object> keysMap = new HashMap<>();
-      target.keyElements().forEach(keyElement -> {
-        String keyName = keyElement.getName();
-        Object value = requestAttachment.get(keyName);
-        if (value != null) {
-          keysMap.put(keyName, value);
-        }
-      });
-
-      Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(keysMap);
-
-      // Skip validation if attachment has no keys (new attachment being created)
-      if (keys.isEmpty()) {
-        continue;
-      }
-
-      // If attachment has keys, verify it exists in the database
-      boolean existsInDb = dbAttachments.stream()
-          .anyMatch(db -> ApplicationHandlerHelper.areKeysInData(keys, db));
-
-      if (!existsInDb) {
-        throw new ServiceException(ErrorStatuses.NOT_FOUND,
-            "Attachment with keys " + keys + " not found");
+        attachmentService.markAttachmentAsDeleted(
+            new MarkAsDeletedInput(dbAttachment.getContentId(), userInfo));
       }
     }
   }
