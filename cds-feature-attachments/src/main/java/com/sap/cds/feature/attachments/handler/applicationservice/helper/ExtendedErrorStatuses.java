@@ -4,7 +4,6 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.helper;
 
 import com.sap.cds.services.ErrorStatus;
-import com.sap.cds.services.ErrorStatuses;
 
 public enum ExtendedErrorStatuses implements ErrorStatus {
   CONTENT_TOO_LARGE(413, "The content size exceeds the maximum allowed limit.", 413);
@@ -34,13 +33,12 @@ public enum ExtendedErrorStatuses implements ErrorStatus {
    * @return the ErrorStatus from this enum, associated with the given code or {@code null}
    */
   public static ErrorStatus getByCode(int code) {
-    for (ExtendedErrorStatuses errorStatus : ExtendedErrorStatuses.values()) {
+    for (ExtendedErrorStatuses errorStatus : values()) {
       if (Integer.parseInt(errorStatus.getCodeString()) == code) {
         return errorStatus;
       }
     }
     return null;
-  }
   }
 
   @Override

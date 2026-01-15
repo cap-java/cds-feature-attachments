@@ -26,7 +26,6 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.utils.OrderConstants;
 import com.sap.cds.services.utils.model.CqnUtils;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;

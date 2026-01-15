@@ -19,7 +19,7 @@ class ExtendedErrorStatusesTest {
 
   @Test
   void getByCode_existingCode_returnsErrorStatus() {
-    var result = ExtendedErrorStatuses.getByCode(400);
+    var result = ExtendedErrorStatuses.getByCode(413);
     assertThat(result).isNotNull();
   }
 
