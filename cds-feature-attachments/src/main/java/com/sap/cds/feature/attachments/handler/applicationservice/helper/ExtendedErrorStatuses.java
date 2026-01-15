@@ -34,12 +34,13 @@ public enum ExtendedErrorStatuses implements ErrorStatus {
    * @return the ErrorStatus from this enum, associated with the given code or {@code null}
    */
   public static ErrorStatus getByCode(int code) {
-    for (ErrorStatus errorStatus : ErrorStatuses.values()) {
-      if (errorStatus.getHttpStatus() == code) {
+    for (ExtendedErrorStatuses errorStatus : ExtendedErrorStatuses.values()) {
+      if (Integer.parseInt(errorStatus.getCodeString()) == code) {
         return errorStatus;
       }
     }
     return null;
+  }
   }
 
   @Override
