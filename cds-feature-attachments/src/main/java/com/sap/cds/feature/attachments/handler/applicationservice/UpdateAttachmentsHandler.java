@@ -112,17 +112,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
         ApplicationHandlerHelper.condenseAttachments(requestData, entity);
 
     for (Attachments dbAttachment : dbAttachments) {
-      Map<String, Object> dbKeys = new HashMap<>();
-      entity
-          .keyElements()
-          .forEach(
-              keyElement -> {
-                String keyName = keyElement.getName();
-                Object value = dbAttachment.get(keyName);
-                if (value != null) {
-                  dbKeys.put(keyName, value);
-                }
-              });
+      Map<String, Object> dbKeys = ApplicationHandlerHelper.extractKeys(dbAttachment, entity);
       Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(dbKeys);
 
       boolean existsInRequest =

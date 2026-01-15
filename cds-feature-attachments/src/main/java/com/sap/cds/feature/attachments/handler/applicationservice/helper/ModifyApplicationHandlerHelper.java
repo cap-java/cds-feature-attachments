@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.M
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.ErrorStatus;
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.ServiceException;
@@ -84,12 +85,8 @@ public final class ModifyApplicationHandlerHelper {
         }
       } catch (ArithmeticException e) {
         throw new ServiceException("Maximum file size value is too large", e);
-      } catch (RuntimeException e) {
-        throw new ServiceException(
-            ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded", maxSizeStr);
-      } catch (Exception e) {
-        throw new ServiceException(
-            ErrorStatuses.BAD_REQUEST, "Failed to process attachment size", e);
+      } catch (IllegalArgumentException e) {
+        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Failed to process attachment size");
       }
     }
 
