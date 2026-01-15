@@ -33,6 +33,8 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import java.io.InputStream;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +61,8 @@ public class ReadAttachmentsHandler implements EventHandler {
   private final AttachmentService attachmentService;
   private final AttachmentStatusValidator statusValidator;
   private final AsyncMalwareScanExecutor scanExecutor;
+
+  private static final int RESCAN_THRESHOLD_DAYS = 3;
 
   public ReadAttachmentsHandler(
       AttachmentService attachmentService,
@@ -148,22 +152,28 @@ public class ReadAttachmentsHandler implements EventHandler {
 
   private void verifyStatus(Path path, Attachments attachment) {
     if (areKeysEmpty(path.target().keys())) {
-      String currentStatus = attachment.getStatus();
       logger.debug(
           "In verify status for content id {} and status {}",
           attachment.getContentId(),
-          currentStatus);
-      if (StatusCode.UNSCANNED.equals(currentStatus)
-          || StatusCode.SCANNING.equals(currentStatus)
-          || currentStatus == null) {
+          attachment.getStatus());
+      if (requiresScanning(attachment.getStatus(), attachment.getScannedAt())) {
         logger.debug(
             "Scanning content with ID {} for malware, has current status {}",
             attachment.getContentId(),
-            currentStatus);
+            attachment.getStatus());
         scanExecutor.scanAsync(path.target().entity(), attachment.getContentId());
       }
       statusValidator.verifyStatus(attachment.getStatus());
     }
+  }
+
+  private boolean requiresScanning(String currentStatus, Instant scanDate) {
+    List<String> allowedStatusCodes = List.of(StatusCode.CLEAN, StatusCode.FAILED);
+    return StatusCode.UNSCANNED.equals(currentStatus)
+        || currentStatus == null
+        || (allowedStatusCodes.contains(currentStatus)
+            && scanDate != null
+            && Instant.now().isAfter(scanDate.plus(RESCAN_THRESHOLD_DAYS, ChronoUnit.DAYS)));
   }
 
   private boolean areKeysEmpty(Map<String, Object> keys) {

@@ -219,6 +219,7 @@ class ReadAttachmentsHandlerTest {
     attachment.setContentId("some ID");
     attachment.setContent(mock(InputStream.class));
     attachment.setStatus(StatusCode.UNSCANNED);
+    attachment.setScannedAt(null);
 
     cut.processAfter(readEventContext, List.of(attachment));
 
@@ -233,6 +234,7 @@ class ReadAttachmentsHandlerTest {
     attachment.setContentId("some ID");
     attachment.setContent(null);
     attachment.setStatus(StatusCode.UNSCANNED);
+    attachment.setScannedAt(null);
 
     cut.processAfter(readEventContext, List.of(attachment));
 

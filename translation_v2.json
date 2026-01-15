@@ -11,6 +11,17 @@
           ]
         }
       ]
+    },
+    {
+      "collectionName": "attachments_data",
+      "folders": [
+        {
+          "startingFolderPath": "cds-feature-attachments/src/main/resources/cds/data",
+          "targetFolderPath": "cds-feature-attachments/src/main/resources/cds/data",
+          "oneQFolderPath": "cds-feature-attachments/src/main/resources/cds/data",
+          "sourceFilters": ["**/*_texts.csv"]
+        }
+      ]
     }
   ],
   "defaultConfiguration": {

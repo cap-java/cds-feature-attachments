@@ -3,6 +3,7 @@
  */
 package com.sap.cds.feature.attachments.oss.client;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
@@ -19,6 +20,8 @@ class GoogleClientIT {
   @Test
   void testCreateReadDeleteAttachmentFlowGoogle() throws Exception {
     ServiceBinding binding = getRealServiceBindingGoogle();
+    assertTrue(
+        binding != null, "Skipping test: Google Cloud credentials not available in environment");
     ExecutorService executor = Executors.newCachedThreadPool();
 
     OSSAttachmentsServiceHandlerTestUtils.testCreateReadDeleteAttachmentFlow(binding, executor);
