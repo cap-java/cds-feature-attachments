@@ -6,8 +6,6 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.CdsDataProcessor;
-import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
@@ -44,9 +42,9 @@ public class UpdateAttachmentsHandler implements EventHandler {
   private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
 
   private final ModifyAttachmentEventFactory eventFactory;
-  private final AttachmentsReader attachmentsReader;
   private final AttachmentService attachmentService;
   private final ThreadDataStorageReader storageReader;
+  private final AttachmentsReader attachmentsReader;
 
   public UpdateAttachmentsHandler(
       ModifyAttachmentEventFactory eventFactory,
@@ -54,17 +52,18 @@ public class UpdateAttachmentsHandler implements EventHandler {
       AttachmentService attachmentService,
       ThreadDataStorageReader storageReader) {
     this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
-    this.attachmentsReader =
-        requireNonNull(attachmentsReader, "attachmentsReader must not be null");
     this.attachmentService =
         requireNonNull(attachmentService, "attachmentService must not be null");
     this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
+    this.attachmentsReader =
+        requireNonNull(attachmentsReader, "attachmentsReader must not be null");
   }
 
   @Before
   @HandlerOrder(OrderConstants.Before.CHECK_CAPABILITIES)
   void processBeforeForDraft(CdsUpdateEventContext context, List<CdsData> data) {
-    // before the attachment's readonly fields are removed by the runtime, preserve them in a custom
+    // before the attachment's readonly fields are removed by the runtime, preserve
+    // them in a custom
     // field in data
     ReadonlyDataContextEnhancer.preserveReadonlyFields(
         context.getTarget(), data, storageReader.get());
@@ -73,20 +72,20 @@ public class UpdateAttachmentsHandler implements EventHandler {
   @Before
   @HandlerOrder(HandlerOrder.LATE)
   void processBefore(CdsUpdateEventContext context, List<CdsData> data) {
+
     CdsEntity target = context.getTarget();
     boolean associationsAreUnchanged = associationsAreUnchanged(target, data);
 
     if (ApplicationHandlerHelper.containsContentField(target, data) || !associationsAreUnchanged) {
       logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
 
+      // Query database only for validation (single query for all attachments)
       CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());
       List<Attachments> attachments =
           attachmentsReader.readAttachments(context.getModel(), target, select);
 
-      List<Attachments> condensedAttachments =
-          ApplicationHandlerHelper.condenseAttachments(attachments, target);
       ModifyApplicationHandlerHelper.handleAttachmentForEntities(
-          target, data, condensedAttachments, eventFactory, context);
+          target, data, attachments, eventFactory, context);
 
       if (!associationsAreUnchanged) {
         deleteRemovedAttachments(attachments, data, target, context.getUserInfo());
@@ -95,7 +94,8 @@ public class UpdateAttachmentsHandler implements EventHandler {
   }
 
   private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
-    // TODO: check if this should be replaced with entity.assocations().noneMatch(...)
+    // TODO: check if this should be replaced with
+    // entity.assocations().noneMatch(...)
     return entity
         .compositions()
         .noneMatch(
@@ -103,27 +103,27 @@ public class UpdateAttachmentsHandler implements EventHandler {
   }
 
   private void deleteRemovedAttachments(
-      List<Attachments> existingAttachments,
-      List<CdsData> data,
+      List<Attachments> dbAttachments,
+      List<CdsData> requestData,
       CdsEntity entity,
       UserInfo userInfo) {
-    List<Attachments> condensedAttachments =
-        ApplicationHandlerHelper.condenseAttachments(data, entity);
+    List<Attachments> requestAttachments =
+        ApplicationHandlerHelper.condenseAttachments(requestData, entity);
 
-    Validator validator =
-        (path, element, value) -> {
-          Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-          boolean entryExists =
-              condensedAttachments.stream()
-                  .anyMatch(
-                      updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData));
-          if (!entryExists) {
-            String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
-            attachmentService.markAttachmentAsDeleted(new MarkAsDeletedInput(contentId, userInfo));
-          }
-        };
-    CdsDataProcessor.create()
-        .addValidator(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, validator)
-        .process(existingAttachments, entity);
+    for (Attachments dbAttachment : dbAttachments) {
+      Map<String, Object> dbKeys = ApplicationHandlerHelper.extractKeys(dbAttachment, entity);
+      Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(dbKeys);
+
+      boolean existsInRequest =
+          requestAttachments.stream()
+              .anyMatch(
+                  requestAttachment ->
+                      ApplicationHandlerHelper.areKeysInData(keys, requestAttachment));
+
+      if (!existsInRequest && dbAttachment.getContentId() != null) {
+        attachmentService.markAttachmentAsDeleted(
+            new MarkAsDeletedInput(dbAttachment.getContentId(), userInfo));
+      }
+    }
   }
 }

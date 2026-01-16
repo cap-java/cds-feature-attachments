@@ -63,6 +63,28 @@ public final class ApplicationHandlerHelper {
   }
 
   /**
+   * Extracts key fields from CdsData based on the entity definition.
+   *
+   * @param data The CdsData to extract keys from
+   * @param entity The entity definition
+   * @return A map of key fields and their values
+   */
+  public static Map<String, Object> extractKeys(CdsData data, CdsEntity entity) {
+    Map<String, Object> keys = new HashMap<>();
+    entity
+        .keyElements()
+        .forEach(
+            keyElement -> {
+              String keyName = keyElement.getName();
+              Object value = data.get(keyName);
+              if (value != null) {
+                keys.put(keyName, value);
+              }
+            });
+    return keys;
+  }
+
+  /**
    * Condenses the attachments from the given data into a list of {@link Attachments attachments}.
    *
    * @param data the list of {@link CdsData} to process

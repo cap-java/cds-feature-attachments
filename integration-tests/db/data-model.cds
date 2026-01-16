@@ -13,6 +13,7 @@ entity Roots : cuid {
                       on attachments.parentKey = $self.ID;
     items       : Composition of many Items
                       on items.parentID = $self.ID;
+    attachments2 : Composition of many Attachments;
 }
 
 entity Items : cuid {

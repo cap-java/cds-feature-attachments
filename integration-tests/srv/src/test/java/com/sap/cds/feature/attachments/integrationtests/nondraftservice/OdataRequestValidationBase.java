@@ -54,7 +54,7 @@ abstract class OdataRequestValidationBase {
   protected TestPluginAttachmentsServiceHandler serviceHandler;
 
   @Autowired protected MockHttpRequestHelper requestHelper;
-  @Autowired private PersistenceService persistenceService;
+  @Autowired protected PersistenceService persistenceService;
   @Autowired private TableDataDeleter dataDeleter;
   @Autowired private TestPersistenceHandler testPersistenceHandler;
 
@@ -696,6 +696,10 @@ abstract class OdataRequestValidationBase {
     return selectedItem.getAttachments().get(0);
   }
 
+  protected Attachments getRandomRootAttachment2(Roots selectedRoot) {
+    return selectedRoot.getAttachments2().get(0);
+  }
+
   private AttachmentEntity getRandomItemAttachmentEntity(Items selectedItem) {
     return selectedItem.getAttachmentEntities().get(0);
   }
@@ -752,6 +756,30 @@ abstract class OdataRequestValidationBase {
         + ",up__ID="
         + itemId
         + ")";
+  }
+
+  protected String buildNavigationAttachment2Url(String rootId, String attachmentId) {
+    return "/odata/v4/TestService/Roots("
+        + rootId
+        + ")/attachments2(ID="
+        + attachmentId
+        + ",up__ID="
+        + rootId
+        + ")";
+  }
+
+  protected String putContentForAttachment2(Roots selectedRoot, Attachments attachment)
+      throws Exception {
+    return putContentForAttachment2(selectedRoot, attachment, status().isNoContent());
+  }
+
+  protected String putContentForAttachment2(
+      Roots selectedRoot, Attachments attachment, ResultMatcher matcher) throws Exception {
+    var url = buildNavigationAttachment2Url(selectedRoot.getId(), attachment.getId()) + "/content";
+    var testContent = "testContent" + attachment.getNote();
+    requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+    requestHelper.executePutWithMatcher(url, testContent.getBytes(StandardCharsets.UTF_8), matcher);
+    return testContent;
   }
 
   protected String buildExpandAttachmentUrl(String rootId, String itemId) {

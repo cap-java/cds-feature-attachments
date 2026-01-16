@@ -7,6 +7,10 @@ extend my.Books with {
   attachments : Composition of many Attachments;
 }
 
+annotate my.Books.attachments with {
+  content @Validation.Maximum: '20MB';
+}
+
 // Add UI component for attachments table to the Browse Books App
 using {CatalogService as service} from '../app/services';
 

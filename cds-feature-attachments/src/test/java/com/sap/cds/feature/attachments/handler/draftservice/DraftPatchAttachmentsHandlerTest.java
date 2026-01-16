@@ -29,6 +29,7 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
+import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.InputStream;
 import java.util.List;
@@ -63,6 +64,8 @@ class DraftPatchAttachmentsHandlerTest {
     event = mock(ModifyAttachmentEvent.class);
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
     selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
+    ParameterInfo parameterInfo = mock(ParameterInfo.class);
+    when(eventContext.getParameterInfo()).thenReturn(parameterInfo);
   }
 
   @Test

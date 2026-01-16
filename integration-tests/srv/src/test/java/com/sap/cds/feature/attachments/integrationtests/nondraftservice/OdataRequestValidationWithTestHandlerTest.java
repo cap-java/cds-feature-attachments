@@ -225,7 +225,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
         .until(
             () -> {
               var eventCalls = serviceHandler.getEventContext().size();
-              logger.info(
+              logger.debug(
                   "Waiting for expected size '{}' in handler context, was '{}'",
                   expectedSize,
                   eventCalls);

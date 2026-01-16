@@ -1,5 +1,9 @@
 using test.data.model as db from '../db/data-model';
 
+annotate db.Roots.attachments2 with {
+    content @Validation.Maximum: '5MB';
+};
+
 service TestService {
     entity Roots            as projection on db.Roots;
     entity AttachmentEntity as projection on db.AttachmentEntity;
