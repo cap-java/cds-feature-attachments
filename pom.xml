@@ -65,12 +65,12 @@
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.40.13</software.amazon.awssdk-s3-version>
-    <software.amazon.awssdk-crt-version>0.41.0</software.amazon.awssdk-crt-version>
+    <software.amazon.awssdk-s3-version>2.41.10</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-crt-version>0.42.2</software.amazon.awssdk-crt-version>
 
     <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
     <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
-    <cds.services.version>3.10.7</cds.services.version>
+    <cds.services.version>3.10.8</cds.services.version>
     <!-- https://www.npmjs.com/package/@sap/cds-dk?activeTab=versions -->
     <cds.cdsdk-version>8.9.8</cds.cdsdk-version>
 
@@ -94,7 +94,7 @@
       <dependency>
         <groupId>com.sap.cloud.sdk</groupId>
         <artifactId>sdk-bom</artifactId>
-        <version>5.24.0</version>
+        <version>5.25.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -102,7 +102,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>6.0.1</version>
+        <version>6.0.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -167,7 +167,7 @@
         <plugin>
           <groupId>org.sonatype.central</groupId>
           <artifactId>central-publishing-maven-plugin</artifactId>
-          <version>0.9.0</version>
+          <version>0.10.0</version>
           <extensions>true</extensions>
         </plugin>
         <plugin>
