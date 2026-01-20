@@ -22,12 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public final class ModifyApplicationHandlerHelper {
 
-  private static final Logger logger = LoggerFactory.getLogger(ModifyApplicationHandlerHelper.class);
   private static final Filter VALMAX_FILTER = (path, element, type) -> element.getName().contentEquals("content")
       && element.findAnnotation("Validation.Maximum").isPresent();
 

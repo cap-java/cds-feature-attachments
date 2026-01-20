@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
@@ -110,7 +111,11 @@ class DraftPatchAttachmentsHandlerTest {
 
     cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
 
-    verify(eventFactory).getEvent(content, attachment.getContentId(), attachment);
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
+    verify(eventFactory).getEvent(streamCaptor.capture(), eq(attachment.getContentId()), eq(attachment));
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(content);
   }
 
   @Test
@@ -126,8 +131,12 @@ class DraftPatchAttachmentsHandlerTest {
 
     cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
 
-    verify(eventFactory).getEvent(content, attachment.getContentId(), attachment);
-    verify(event).processEvent(any(), eq(content), eq(attachment), eq(eventContext));
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
+    verify(eventFactory).getEvent(streamCaptor.capture(), eq(attachment.getContentId()), eq(attachment));
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(content);
+    verify(event).processEvent(any(), eq(captured), eq(attachment), eq(eventContext));
   }
 
   @Test

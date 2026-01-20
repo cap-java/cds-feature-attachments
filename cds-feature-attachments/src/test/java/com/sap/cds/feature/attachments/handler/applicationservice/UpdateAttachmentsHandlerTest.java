@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
@@ -119,7 +120,11 @@ class UpdateAttachmentsHandlerTest {
 
     cut.processBefore(updateContext, List.of(attachment));
 
-    verify(eventFactory).getEvent(testStream, null, attachment);
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
+    verify(eventFactory).getEvent(streamCaptor.capture(), eq((String) null), eq(attachment));
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
   }
 
   @Test
@@ -139,11 +144,15 @@ class UpdateAttachmentsHandlerTest {
 
     cut.processBefore(updateContext, List.of(attachment));
 
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(eventFactory)
         .getEvent(
-            testStream,
-            (String) readonlyUpdateFields.get(Attachment.CONTENT_ID),
-            Attachments.create());
+            streamCaptor.capture(),
+            eq((String) readonlyUpdateFields.get(Attachment.CONTENT_ID)),
+            eq(Attachments.create()));
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
     assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
     assertThat(attachment.getContentId())
         .isEqualTo(readonlyUpdateFields.get(Attachment.CONTENT_ID));
@@ -257,11 +266,19 @@ class UpdateAttachmentsHandlerTest {
 
     cut.processBefore(updateContext, List.of(root));
 
-    verify(eventFactory).getEvent(eq(testStream), eq(null), cdsDataArgumentCaptor.capture());
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
+    verify(eventFactory).getEvent(streamCaptor.capture(), eq((String) null), cdsDataArgumentCaptor.capture());
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
     assertThat(cdsDataArgumentCaptor.getValue()).isEqualTo(root.getAttachments().get(0));
     cdsDataArgumentCaptor.getAllValues().clear();
+    ArgumentCaptor<InputStream> eventStreamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(event)
-        .processEvent(any(), eq(testStream), cdsDataArgumentCaptor.capture(), eq(updateContext));
+        .processEvent(any(), eventStreamCaptor.capture(), cdsDataArgumentCaptor.capture(), eq(updateContext));
+    InputStream eventCaptured = eventStreamCaptor.getValue();
+    assertThat(eventCaptured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) eventCaptured).getDelegate()).isSameAs(testStream);
   }
 
   @Test
@@ -280,7 +297,11 @@ class UpdateAttachmentsHandlerTest {
 
     cut.processBefore(updateContext, List.of(root));
 
-    verify(eventFactory).getEvent(testStream, null, Attachments.create());
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
+    verify(eventFactory).getEvent(streamCaptor.capture(), eq((String) null), eq(Attachments.create()));
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
   }
 
   @Test

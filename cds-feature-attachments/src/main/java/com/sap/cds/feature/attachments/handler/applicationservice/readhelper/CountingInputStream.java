@@ -9,7 +9,7 @@ import com.sap.cds.services.ServiceException;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class CountingInputStream extends InputStream {
+public final class CountingInputStream extends InputStream {
 
     private final InputStream delegate;
     private long byteCount = 0;
@@ -17,13 +17,13 @@ public class CountingInputStream extends InputStream {
     private String maxBytesString;
 
     public CountingInputStream(InputStream delegate, String maxBytesString) {
-        this.delegate = delegate;
-        this.maxBytesString = maxBytesString;
         try {
             this.maxBytes = FileSizeUtils.parseFileSizeToBytes(maxBytesString);
         } catch (ArithmeticException e) {
             throw new ServiceException("Error parsing max size annotation value", e);
         }
+        this.delegate = delegate;
+        this.maxBytesString = maxBytesString;
     }
 
     @Override
@@ -66,6 +66,10 @@ public class CountingInputStream extends InputStream {
     public void close() throws IOException {
         if (delegate != null)
             delegate.close();
+    }
+
+    public InputStream getDelegate() {
+        return delegate;
     }
 
     public boolean isLimitExceeded() {
