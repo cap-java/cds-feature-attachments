@@ -4,6 +4,7 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.readhelper;
 
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.FileSizeUtils;
 import com.sap.cds.services.ServiceException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,10 +14,16 @@ public class CountingInputStream extends InputStream {
     private final InputStream delegate;
     private long byteCount = 0;
     private long maxBytes;
+    private String maxBytesString;
 
-    public CountingInputStream(InputStream delegate, long maxBytes) {
+    public CountingInputStream(InputStream delegate, String maxBytesString) {
         this.delegate = delegate;
-        this.maxBytes = maxBytes;
+        this.maxBytesString = maxBytesString;
+        try {
+            this.maxBytes = FileSizeUtils.parseFileSizeToBytes(maxBytesString);
+        } catch (ArithmeticException e) {
+            throw new ServiceException("Error parsing max size annotation value", e);
+        }
     }
 
     @Override
@@ -61,13 +68,17 @@ public class CountingInputStream extends InputStream {
             delegate.close();
     }
 
+    public boolean isLimitExceeded() {
+        return byteCount > maxBytes;
+    }
+
     private void checkLimit(long bytes) {
         byteCount += bytes;
         if (byteCount > maxBytes) {
             throw new ServiceException(
                     ExtendedErrorStatuses.CONTENT_TOO_LARGE,
                     "AttachmentSizeExceeded",
-                    maxBytes);
+                    maxBytesString);
         }
     }
 }

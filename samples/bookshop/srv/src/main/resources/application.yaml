@@ -20,3 +20,6 @@ cds:
   data-source:
     auto-config:
       enabled: false
+logging:
+  level:
+    com.sap.cds.odata: debug

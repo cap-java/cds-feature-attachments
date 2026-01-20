@@ -14,16 +14,20 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Cou
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.ServiceException;
+
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class ModifyApplicationHandlerHelper {
 
+  private static final Logger logger = LoggerFactory.getLogger(ModifyApplicationHandlerHelper.class);
   private static final Filter VALMAX_FILTER = (path, element, type) -> element.getName().contentEquals("content")
       && element.findAnnotation("Validation.Maximum").isPresent();
 
@@ -75,15 +79,27 @@ public final class ModifyApplicationHandlerHelper {
     Attachments attachment = getExistingAttachment(keys, existingAttachments);
     String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
-    
-    InputStream wrappedContent = wrapWithCountingStream(content, path.target().entity(), existingAttachments,
-        contentLength);
+    String maxSizeStr = getValMaxValue(path.target().entity(), existingAttachments) == null
+        ? Long.toString(Long.MAX_VALUE)
+        : getValMaxValue(path.target().entity(), existingAttachments);
+    eventContext.put("attachment.MaxSize", maxSizeStr); // make max size available in context for error handling later
+    ServiceException TOO_LARGE_EXCEPTION = new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE,
+        "AttachmentSizeExceeded", maxSizeStr);
 
-    // for the current request find the event to process
-    ModifyAttachmentEvent eventToProcess = eventFactory.getEvent(wrappedContent, contentId, attachment);
-
-    // process the event
-    return eventToProcess.processEvent(path, wrappedContent, attachment, eventContext);
+    if (contentLength != null && Long.parseLong(contentLength) > FileSizeUtils.parseFileSizeToBytes(maxSizeStr)) {
+      throw TOO_LARGE_EXCEPTION;
+    }
+    CountingInputStream wrappedContent = content != null ? new CountingInputStream(content, maxSizeStr) : null;
+    ModifyAttachmentEvent eventToProcess = eventFactory.getEvent(wrappedContent,
+        contentId, attachment);
+    try {
+      return eventToProcess.processEvent(path, wrappedContent, attachment, eventContext);
+    } catch (Exception e) {
+      if (wrappedContent != null && wrappedContent.isLimitExceeded()) {
+        throw TOO_LARGE_EXCEPTION;
+      }
+      throw e;
+    }
   }
 
   private static String getValMaxValue(CdsEntity entity, List<? extends CdsData> data) {
@@ -106,27 +122,6 @@ public final class ModifyApplicationHandlerHelper {
         .filter(existingData -> ApplicationHandlerHelper.areKeysInData(keys, existingData))
         .findAny()
         .orElse(Attachments.create());
-  }
-
-  private static InputStream wrapWithCountingStream(
-      InputStream content, CdsEntity entity, List<? extends CdsData> data, String contentLength) {
-    String maxSizeStr = getValMaxValue(entity, data);
-
-    if (maxSizeStr != null && content != null) {
-      try {
-        long maxSize = FileSizeUtils.parseFileSizeToBytes(maxSizeStr);
-        // if (contentLength != null && Long.parseLong(contentLength) > maxSize) {
-        //   throw new RuntimeException();
-        // }
-        return new CountingInputStream(content, maxSize);
-      } catch (ArithmeticException e) {
-        throw new ServiceException("Maximum file size value is too large", e);
-      } catch (RuntimeException e) {
-        throw new ServiceException(
-            ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded", maxSizeStr);
-      }
-    }
-    return content;
   }
 
   private ModifyApplicationHandlerHelper() {
