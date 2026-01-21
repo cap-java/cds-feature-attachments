@@ -5,14 +5,13 @@ using {sap.attachments.Attachments} from '../../../main/resources/cds/com.sap.cd
 using from '@sap/cds/srv/outbox';
 
 entity Attachment : Attachments {
-    parentKey : UUID;
 }
 
 entity Roots : cuid {
-    title       : String;
-    itemTable   : Composition of many Items
-                      on itemTable.rootId = $self.ID;
-    attachments : Composition of many Attachments;
+    title              : String;
+    itemTable          : Composition of many Items
+                             on itemTable.rootId = $self.ID;
+    attachments        : Composition of many Attachments;
 }
 
 entity Items : cuid {
@@ -20,8 +19,7 @@ entity Items : cuid {
     note            : String;
     events          : Composition of many Events
                           on events.id1 = $self.ID;
-    attachments     : Composition of many Attachment
-                          on attachments.parentKey = $self.ID;
+    attachments     : Composition of many Attachment;
     itemAttachments : Composition of many Attachments;
 }
 
@@ -40,4 +38,10 @@ entity Events {
 entity EventItems {
     key id1  : UUID;
         note : String;
+        limitedAttachments : Composition of many Attachments;
 }
+
+annotate EventItems.limitedAttachments with {
+    content @Validation.Maximum: '10KB';
+};
+

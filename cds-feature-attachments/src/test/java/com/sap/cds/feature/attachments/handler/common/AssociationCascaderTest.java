@@ -54,7 +54,7 @@ class AssociationCascaderTest {
     var itemNode = rootChildren.get(1);
     assertThat(itemNode.getIdentifier().associationName()).isEqualTo(RootTable.ITEM_TABLE);
     assertThat(itemNode.getIdentifier().fullEntityName()).isEqualTo(Items_.CDS_NAME);
-    assertThat(itemNode.getChildren()).hasSize(2);
+    assertThat(itemNode.getChildren()).hasSize(3);
     verifyItemAttachments(
         itemNode, Attachment_.CDS_NAME, "unit.test.TestService.Items.itemAttachments");
   }
@@ -67,20 +67,9 @@ class AssociationCascaderTest {
 
     assertThat(itemNode.getIdentifier().associationName()).isEmpty();
     assertThat(itemNode.getIdentifier().fullEntityName()).isEqualTo(Items_.CDS_NAME);
-    assertThat(itemNode.getChildren()).hasSize(2);
+    assertThat(itemNode.getChildren()).hasSize(3);
     verifyItemAttachments(
         itemNode, Attachment_.CDS_NAME, "unit.test.TestService.Items.itemAttachments");
-  }
-
-  @Test
-  void noPathFoundForEvents() {
-    var serviceEntity = runtime.getCdsModel().findEntity(Events_.CDS_NAME);
-
-    var eventNode = cut.findEntityPath(runtime.getCdsModel(), serviceEntity.orElseThrow());
-
-    assertThat(eventNode.getIdentifier().associationName()).isEmpty();
-    assertThat(eventNode.getIdentifier().fullEntityName()).isEqualTo(Events_.CDS_NAME);
-    assertThat(eventNode.getChildren()).isNotNull().isEmpty();
   }
 
   @Test
@@ -105,15 +94,6 @@ class AssociationCascaderTest {
         databaseRootItemNode,
         com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_.CDS_NAME,
         "unit.test.Items.itemAttachments");
-  }
-
-  @Test
-  void noPathFoundForEventItems() {
-    var serviceEntity = runtime.getCdsModel().findEntity(EventItems_.CDS_NAME);
-
-    var eventItems = cut.findEntityPath(runtime.getCdsModel(), serviceEntity.orElseThrow());
-
-    assertThat(eventItems.getChildren()).isNotNull().isEmpty();
   }
 
   private void verifyItemAttachments(

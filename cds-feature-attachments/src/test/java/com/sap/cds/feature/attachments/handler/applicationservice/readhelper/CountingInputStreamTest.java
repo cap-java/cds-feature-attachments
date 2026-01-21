@@ -287,4 +287,17 @@ class CountingInputStreamTest {
       assertThat(cut.isLimitExceeded()).isFalse();
     }
   }
+
+  @Test
+  void constructor_fractionalValue_throwsServiceException() {
+    var delegate = mock(InputStream.class);
+
+    // A fractional value like "1.5KB" results in 1500.0 bytes which cannot be converted exactly to long
+    // via longValueExact() and throws ArithmeticException, which is caught and wrapped in ServiceException
+    ServiceException exception = assertThrows(ServiceException.class,
+        () -> new CountingInputStream(delegate, "1.5"));
+
+    assertThat(exception.getMessage()).contains("Error parsing max size annotation value");
+    assertThat(exception.getCause()).isInstanceOf(ArithmeticException.class);
+  }
 }

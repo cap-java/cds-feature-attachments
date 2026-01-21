@@ -102,4 +102,43 @@ class MarkAsDeletedAttachmentEventTest {
     verifyNoInteractions(attachmentService);
     assertThat(currentData).containsEntry(Attachments.CONTENT_ID, null);
   }
+
+  @Test
+  void processEvent_withNullPath_doesNotModifyPathValues() {
+    var value = new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8));
+    var contentId = "some id";
+    var data = Attachments.create();
+    data.setContentId(contentId);
+
+    var expectedValue = cut.processEvent(null, value, data, context);
+
+    assertThat(expectedValue).isEqualTo(value);
+    // Attachment service should still be called to mark as deleted
+    var deletionInputCaptor = ArgumentCaptor.forClass(MarkAsDeletedInput.class);
+    verify(attachmentService).markAttachmentAsDeleted(deletionInputCaptor.capture());
+    assertThat(deletionInputCaptor.getValue().contentId()).isEqualTo(contentId);
+    // currentData should NOT be modified since path is null
+    assertThat(currentData).isEmpty();
+  }
+
+  @Test
+  void processEvent_withDifferentNewContentId_doesNotClearContentId() {
+    var value = new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8));
+    var oldContentId = "old-content-id";
+    var newContentId = "different-new-content-id";
+    var data = Attachments.create();
+    data.setContentId(oldContentId);
+    // Set a different contentId in the path values
+    currentData.put(Attachments.CONTENT_ID, newContentId);
+
+    var expectedValue = cut.processEvent(path, value, data, context);
+
+    assertThat(expectedValue).isEqualTo(value);
+    // Attachment service should be called to mark old content as deleted
+    var deletionInputCaptor = ArgumentCaptor.forClass(MarkAsDeletedInput.class);
+    verify(attachmentService).markAttachmentAsDeleted(deletionInputCaptor.capture());
+    assertThat(deletionInputCaptor.getValue().contentId()).isEqualTo(oldContentId);
+    // currentData should NOT be cleared since newContentId differs from attachment.getContentId()
+    assertThat(currentData).containsEntry(Attachments.CONTENT_ID, newContentId);
+  }
 }
