@@ -8,12 +8,15 @@ inputs:
   maven-version:
     description: The Maven version the build shall run with.
     required: true
+  test-type:
+    description: 'Which integration test to run: build-version, latest-version, or oss'
+    required: true
 
 runs:
   using: composite
   steps:
     - name: Set up Java ${{ inputs.java-version }}
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: ${{ inputs.java-version }}
         distribution: sapmachine
@@ -29,11 +32,16 @@ runs:
       shell: bash
 
     - name: Integration Tests with version of CAP Java used for build
+      if: inputs.test-type == 'build-version'
       run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml
       shell: bash
+
     - name: Integration Tests with latest version of CAP Java
+      if: inputs.test-type == 'latest-version'
       run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml -P latest-test-version
       shell: bash
+
     - name: Integration Tests for the object store service
+      if: inputs.test-type == 'oss'
       run: mvn clean verify -ntp -B -Pintegration-tests-oss
       shell: bash
