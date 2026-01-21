@@ -5,6 +5,8 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.ArrayList;
+
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
@@ -12,6 +14,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.Readonl
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
@@ -24,13 +27,13 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.utils.OrderConstants;
-import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class {@link CreateAttachmentsHandler} is an event handler that is responsible for creating
+ * The class {@link CreateAttachmentsHandler} is an event handler that is
+ * responsible for creating
  * attachments for entities. It is called before a create event is executed.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
@@ -61,6 +64,13 @@ public class CreateAttachmentsHandler implements EventHandler {
         context.getTarget(), data, storageReader.get());
   }
 
+  @Before(event = { CqnService.EVENT_CREATE, DraftService.EVENT_DRAFT_NEW })
+  @HandlerOrder(HandlerOrder.BEFORE)
+  void processBeforeForMetadata(EventContext context, List<CdsData> data) {
+    CdsEntity target = context.getTarget();
+    ApplicationHandlerHelper.validateAcceptableMediaTypes(target, data);
+  }
+
   @Before
   @HandlerOrder(HandlerOrder.LATE)
   void processBefore(CdsCreateEventContext context, List<CdsData> data) {
@@ -72,7 +82,7 @@ public class CreateAttachmentsHandler implements EventHandler {
     }
   }
 
-  @On(event = {CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE, DraftService.EVENT_DRAFT_PATCH})
+  @On(event = { CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE, DraftService.EVENT_DRAFT_PATCH })
   @HandlerOrder(HandlerOrder.EARLY)
   void restoreError(EventContext context) {
     try {

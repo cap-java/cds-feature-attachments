@@ -75,7 +75,9 @@ class DraftPatchAttachmentsHandlerTest {
   @Test
   void draftEntityReadAndUsed() {
     getEntityAndMockContext(RootTable_.CDS_NAME);
-    var root = buildRooWithAttachment(Attachments.create());
+    Attachments attachment = Attachments.create();
+    var root = buildRooWithAttachment(attachment);
+    attachment.setFileName("test.pdf");
     when(persistence.run(any(CqnSelect.class))).thenReturn(mock(Result.class));
 
     cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
@@ -93,6 +95,7 @@ class DraftPatchAttachmentsHandlerTest {
     getEntityAndMockContext(draftAttachmentName);
     var attachment = Attachments.create();
     attachment.setContent(mock(InputStream.class));
+    attachment.setFileName("test.pdf");
     when(persistence.run(any(CqnSelect.class))).thenReturn(mock(Result.class));
 
     cut.processBeforeDraftPatch(eventContext, List.of(attachment));
@@ -109,6 +112,7 @@ class DraftPatchAttachmentsHandlerTest {
     var root = buildRooWithAttachment(attachment);
     var content = attachment.getContent();
     var result = mock(Result.class);
+    attachment.setFileName("test.pdf");
     when(persistence.run(any(CqnSelect.class))).thenReturn(result);
     when(result.listOf(Attachments.class)).thenReturn(List.of(attachment));
 
@@ -128,6 +132,7 @@ class DraftPatchAttachmentsHandlerTest {
     var attachment = Attachments.create();
     var root = buildRooWithAttachment(attachment);
     attachment.setContentId(UUID.randomUUID().toString());
+    attachment.setFileName("test.pdf");
     var content = attachment.getContent();
     var result = mock(Result.class);
     when(persistence.run(any(CqnSelect.class))).thenReturn(result);
@@ -165,9 +170,8 @@ class DraftPatchAttachmentsHandlerTest {
 
   @Test
   void methodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method =
-        cut.getClass()
-            .getDeclaredMethod("processBeforeDraftPatch", DraftPatchEventContext.class, List.class);
+    var method = cut.getClass()
+        .getDeclaredMethod("processBeforeDraftPatch", DraftPatchEventContext.class, List.class);
     var beforeAnnotation = method.getAnnotation(Before.class);
     var handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 

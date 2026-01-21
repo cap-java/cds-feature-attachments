@@ -53,10 +53,14 @@ abstract class OdataRequestValidationBase {
   @Autowired(required = false)
   protected TestPluginAttachmentsServiceHandler serviceHandler;
 
-  @Autowired protected MockHttpRequestHelper requestHelper;
-  @Autowired protected PersistenceService persistenceService;
-  @Autowired private TableDataDeleter dataDeleter;
-  @Autowired private TestPersistenceHandler testPersistenceHandler;
+  @Autowired
+  protected MockHttpRequestHelper requestHelper;
+  @Autowired
+  protected PersistenceService persistenceService;
+  @Autowired
+  private TableDataDeleter dataDeleter;
+  @Autowired
+  private TestPersistenceHandler testPersistenceHandler;
 
   @AfterEach
   void teardown() {
@@ -117,9 +121,8 @@ abstract class OdataRequestValidationBase {
     var item = getItemWithAttachment(selectedRoot);
 
     var url = buildExpandAttachmentUrl(selectedRoot.getId(), item.getId());
-    var responseItem =
-        requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
-            url, Items.class, HttpStatus.OK);
+    var responseItem = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
+        url, Items.class, HttpStatus.OK);
 
     assertThat(responseItem.getAttachments()).hasSameSizeAs(item.getAttachments());
     assertThat(responseItem.getAttachments())
@@ -143,17 +146,15 @@ abstract class OdataRequestValidationBase {
     var content = putContentForAttachmentWithNavigation(selectedRoot, itemAttachment);
 
     var url = buildExpandAttachmentUrl(selectedRoot.getId(), item.getId());
-    var responseItem =
-        requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
-            url, Items.class, HttpStatus.OK);
+    var responseItem = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
+        url, Items.class, HttpStatus.OK);
 
     assertThat(responseItem.getAttachments()).hasSameSizeAs(item.getAttachments());
 
-    var attachmentWithExpectedContent =
-        responseItem.getAttachments().stream()
-            .filter(attach -> attach.getId().equals(itemAttachment.getId()))
-            .findAny()
-            .orElseThrow();
+    var attachmentWithExpectedContent = responseItem.getAttachments().stream()
+        .filter(attach -> attach.getId().equals(itemAttachment.getId()))
+        .findAny()
+        .orElseThrow();
     assertThat(attachmentWithExpectedContent)
         .containsEntry("content@mediaContentType", "application/octet-stream;charset=UTF-8")
         .containsEntry(Attachments.FILE_NAME, itemAttachment.getFileName());
@@ -176,9 +177,8 @@ abstract class OdataRequestValidationBase {
     var selectedItemAfterChange = selectItem(item);
     var itemAttachmentAfterChange = getRandomItemAttachment(selectedItemAfterChange);
 
-    var url =
-        buildNavigationAttachmentUrl(selectedRoot.getId(), item.getId(), itemAttachment.getId())
-            + "/content";
+    var url = buildNavigationAttachmentUrl(selectedRoot.getId(), item.getId(), itemAttachment.getId())
+        + "/content";
     executeContentRequestAndValidateContent(url, content);
     verifySingleReadEvent(itemAttachmentAfterChange.getContentId());
   }
@@ -201,9 +201,8 @@ abstract class OdataRequestValidationBase {
         itemAttachmentAfterChange.getContentId());
 
     var expandUrl = buildExpandAttachmentUrl(selectedRoot.getId(), item.getId());
-    var responseItem =
-        requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
-            expandUrl, Items.class, HttpStatus.OK);
+    var responseItem = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
+        expandUrl, Items.class, HttpStatus.OK);
 
     assertThat(responseItem.getAttachments()).hasSameSizeAs(item.getAttachments());
     assertThat(responseItem.getAttachments())
@@ -229,13 +228,11 @@ abstract class OdataRequestValidationBase {
     var selectedItemAfterChange = selectItem(item);
     var itemAttachmentAfterChange = getRandomItemAttachment(selectedItemAfterChange);
 
-    var url =
-        buildNavigationAttachmentUrl(selectedRoot.getId(), item.getId(), itemAttachment.getId());
+    var url = buildNavigationAttachmentUrl(selectedRoot.getId(), item.getId(), itemAttachment.getId());
     requestHelper.executeDelete(url);
     var expandUrl = buildExpandAttachmentUrl(selectedRoot.getId(), item.getId());
-    var responseItem =
-        requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
-            expandUrl, Items.class, HttpStatus.OK);
+    var responseItem = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
+        expandUrl, Items.class, HttpStatus.OK);
 
     assertThat(responseItem.getAttachments()).hasSize(1);
     assertThat(responseItem.getAttachments())
@@ -262,8 +259,7 @@ abstract class OdataRequestValidationBase {
     var selectedItemAfterChange = selectItem(item);
     var itemAttachmentAfterChange = getRandomItemAttachment(selectedItemAfterChange);
 
-    var url =
-        buildNavigationAttachmentUrl(selectedRoot.getId(), item.getId(), itemAttachment.getId());
+    var url = buildNavigationAttachmentUrl(selectedRoot.getId(), item.getId(), itemAttachment.getId());
     requestHelper.executeDelete(url);
     var result = requestHelper.executeDelete(url);
 
@@ -281,9 +277,8 @@ abstract class OdataRequestValidationBase {
     var itemAttachment = getRandomItemAttachmentEntity(item);
 
     var url = buildDirectAttachmentEntityUrl(itemAttachment.getId());
-    var responseAttachment =
-        requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
-            url, Attachments.class, HttpStatus.OK);
+    var responseAttachment = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
+        url, Attachments.class, HttpStatus.OK);
 
     assertThat(responseAttachment.get("content@mediaContentType")).isNull();
     assertThat(responseAttachment.getContentId()).isNull();
@@ -303,9 +298,8 @@ abstract class OdataRequestValidationBase {
     clearServiceHandlerContext();
 
     var url = buildDirectAttachmentEntityUrl(itemAttachment.getId());
-    var responseAttachment =
-        requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
-            url, Attachments.class, HttpStatus.OK);
+    var responseAttachment = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
+        url, Attachments.class, HttpStatus.OK);
 
     assertThat(responseAttachment)
         .containsEntry("content@mediaContentType", "application/octet-stream;charset=UTF-8")
@@ -350,9 +344,8 @@ abstract class OdataRequestValidationBase {
         itemAttachmentAfterChange.getContentId());
 
     var expandUrl = buildExpandAttachmentUrl(selectedRoot.getId(), item.getId());
-    var responseItem =
-        requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
-            expandUrl, Items.class, HttpStatus.OK);
+    var responseItem = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
+        expandUrl, Items.class, HttpStatus.OK);
 
     assertThat(responseItem.getAttachmentEntities()).hasSameSizeAs(item.getAttachmentEntities());
     assertThat(responseItem.getAttachmentEntities())
@@ -381,9 +374,8 @@ abstract class OdataRequestValidationBase {
     var url = buildDirectAttachmentEntityUrl(itemAttachment.getId());
     requestHelper.executeDelete(url);
     var expandUrl = buildExpandAttachmentUrl(selectedRoot.getId(), item.getId());
-    var responseItem =
-        requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
-            expandUrl, Items.class, HttpStatus.OK);
+    var responseItem = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
+        expandUrl, Items.class, HttpStatus.OK);
 
     assertThat(responseItem.getAttachmentEntities()).isEmpty();
     verifySingleDeletionEvent(itemAttachmentAfterChange.getContentId());
@@ -431,8 +423,7 @@ abstract class OdataRequestValidationBase {
     var itemAttachmentEntityAfterChange = getRandomItemAttachmentEntity(selectedItemAfterChange);
     var itemAttachmentAfterChange = getRandomItemAttachment(selectedItemAfterChange);
 
-    var url =
-        MockHttpRequestHelper.ODATA_BASE_URL + "TestService/Roots(" + selectedRoot.getId() + ")";
+    var url = MockHttpRequestHelper.ODATA_BASE_URL + "TestService/Roots(" + selectedRoot.getId() + ")";
     requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
 
     verifyTwoDeleteEvents(itemAttachmentEntityAfterChange, itemAttachmentAfterChange);
@@ -541,7 +532,7 @@ abstract class OdataRequestValidationBase {
   }
 
   @ParameterizedTest
-  @CsvSource({"status,INFECTED", "contentId,TEST"})
+  @CsvSource({ "status,INFECTED", "contentId,TEST" })
   void statusCannotBeUpdated(String field, String value) throws Exception {
     var serviceRoot = buildServiceRootWithDeepData();
     postServiceRoot(serviceRoot);
@@ -648,17 +639,15 @@ abstract class OdataRequestValidationBase {
   }
 
   protected Roots selectStoredRootWithDeepData() {
-    CqnSelect select =
-        Select.from(Roots_.class)
-            .columns(
-                StructuredType::_all,
-                root -> root.attachments().expand(),
-                root ->
-                    root.items()
-                        .expand(
-                            StructuredType::_all,
-                            item -> item.attachments().expand(),
-                            item -> item.attachmentEntities().expand()));
+    CqnSelect select = Select.from(Roots_.class)
+        .columns(
+            StructuredType::_all,
+            root -> root.attachments().expand(),
+            root -> root.items()
+                .expand(
+                    StructuredType::_all,
+                    item -> item.attachments().expand(),
+                    item -> item.attachmentEntities().expand()));
     var result = persistenceService.run(select);
     return result.single(Roots.class);
   }
@@ -726,18 +715,15 @@ abstract class OdataRequestValidationBase {
 
   private String putContentForAttachmentWithNavigation(
       Roots selectedRoot, Attachments itemAttachment, ResultMatcher matcher) throws Exception {
-    var selectedItem =
-        selectedRoot.getItems().stream()
-            .filter(
-                item ->
-                    item.getAttachments().stream()
-                        .anyMatch(attach -> attach.getId().equals(itemAttachment.getId())))
-            .findAny()
-            .orElseThrow();
-    var url =
-        buildNavigationAttachmentUrl(
-                selectedRoot.getId(), selectedItem.getId(), itemAttachment.getId())
-            + "/content";
+    var selectedItem = selectedRoot.getItems().stream()
+        .filter(
+            item -> item.getAttachments().stream()
+                .anyMatch(attach -> attach.getId().equals(itemAttachment.getId())))
+        .findAny()
+        .orElseThrow();
+    var url = buildNavigationAttachmentUrl(
+        selectedRoot.getId(), selectedItem.getId(), itemAttachment.getId())
+        + "/content";
 
     var testContent = "testContent" + itemAttachment.getNote();
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -775,9 +761,8 @@ abstract class OdataRequestValidationBase {
 
   protected String putContentForSizeLimitedAttachment(
       Roots selectedRoot, Attachments attachment, ResultMatcher matcher) throws Exception {
-    var url =
-        buildNavigationSizeLimitedAttachmentUrl(selectedRoot.getId(), attachment.getId())
-            + "/content";
+    var url = buildNavigationSizeLimitedAttachmentUrl(selectedRoot.getId(), attachment.getId())
+        + "/content";
     var testContent = "testContent" + attachment.getNote();
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
     requestHelper.executePutWithMatcher(url, testContent.getBytes(StandardCharsets.UTF_8), matcher);
@@ -816,10 +801,9 @@ abstract class OdataRequestValidationBase {
 
   private Attachments selectUpdatedAttachmentWithExpand(
       Roots selectedRoot, Attachments itemAttachment) {
-    CqnSelect attachmentSelect =
-        Select.from(Items_.class)
-            .where(a -> a.ID().eq(selectedRoot.getItems().get(0).getId()))
-            .columns(item -> item.attachments().expand());
+    CqnSelect attachmentSelect = Select.from(Items_.class)
+        .where(a -> a.ID().eq(selectedRoot.getItems().get(0).getId()))
+        .columns(item -> item.attachments().expand());
     var result = persistenceService.run(attachmentSelect);
     var items = result.single(Items.class);
     return items.getAttachments().stream()
@@ -829,8 +813,7 @@ abstract class OdataRequestValidationBase {
   }
 
   private AttachmentEntity selectUpdatedAttachment(AttachmentEntity itemAttachment) {
-    CqnSelect attachmentSelect =
-        Select.from(AttachmentEntity_.class).where(a -> a.ID().eq(itemAttachment.getId()));
+    CqnSelect attachmentSelect = Select.from(AttachmentEntity_.class).where(a -> a.ID().eq(itemAttachment.getId()));
     var result = persistenceService.run(attachmentSelect);
     return result.single(AttachmentEntity.class);
   }

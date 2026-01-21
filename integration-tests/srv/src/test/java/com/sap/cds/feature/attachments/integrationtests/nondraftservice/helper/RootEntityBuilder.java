@@ -38,6 +38,16 @@ public class RootEntityBuilder {
     }
     Arrays.stream(attachments)
         .forEach(attachment -> rootEntity.getSizeLimitedAttachments().add(attachment.build()));
+
+    return this;
+  }
+
+  public RootEntityBuilder addMediaValidatedAttachments(AttachmentsBuilder... attachments) {
+    if (rootEntity.getMediaValidatedAttachments() == null) {
+      rootEntity.setMediaValidatedAttachments(new ArrayList<>());
+    }
+    Arrays.stream(attachments)
+        .forEach(attachment -> rootEntity.getMediaValidatedAttachments().add(attachment.build()));
     return this;
   }
 

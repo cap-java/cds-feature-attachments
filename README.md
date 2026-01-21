@@ -22,6 +22,7 @@ It supports the [AWS, Azure, and Google object stores](storage-targets/cds-featu
   * [Storage Targets](#storage-targets)
   * [Malware Scanner](#malware-scanner)
   * [Specify the maximum file size](#specify-the-maximum-file-size)
+  * [Restrict allowed MIME types](#restrict-allowed-mime-types)
   * [Outbox](#outbox)
   * [Restore Endpoint](#restore-endpoint)
     * [Motivation](#motivation)
@@ -213,6 +214,37 @@ The @Validation.Maximum value is a size string consisting of a number followed b
 - KiB, MiB, GiB, TiB (binary units)
 
 The default is 400MB
+
+### Restrict allowed MIME types
+
+You can restrict which MIME types are allowed for attachments by annotating the content property with @Core.AcceptableMediaTypes. This validation is performed during file upload.
+
+```cds
+entity Books {
+  ...
+  attachments: Composition of many Attachments;
+}
+
+annotate Books.attachments with {
+  content @Core.AcceptableMediaTypes : ['image/jpeg', 'image/png', 'application/pdf'];
+}
+```
+
+Wildcard patterns are supported:
+
+```cds
+annotate Books.attachments with {
+  content @Core.AcceptableMediaTypes : ['image/*', 'application/pdf'];
+}
+```
+
+To allow all MIME types (default behavior), either omit the annotation or use:
+
+```cds
+annotate Books.attachments with {
+  content @Core.AcceptableMediaTypes : ['*/*'];
+}
+```
 
 ### Outbox
 

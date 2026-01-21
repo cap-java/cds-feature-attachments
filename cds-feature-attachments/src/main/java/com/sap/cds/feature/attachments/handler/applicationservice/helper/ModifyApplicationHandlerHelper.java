@@ -27,23 +27,26 @@ public final class ModifyApplicationHandlerHelper {
   /** Default max size when malware scanner binding is present (400 MB). */
   public static final String DEFAULT_SIZE_WITH_SCANNER = "400MB";
 
-  /** Effectively unlimited max size when no malware scanner binding is present. */
+  /**
+   * Effectively unlimited max size when no malware scanner binding is present.
+   */
   public static final String UNLIMITED_SIZE = String.valueOf(Long.MAX_VALUE);
 
-  private static final Filter VALMAX_FILTER =
-      (path, element, type) ->
-          element.getName().contentEquals("content")
-              && element.findAnnotation("Validation.Maximum").isPresent();
+  private static final Filter VALMAX_FILTER = (path, element, type) -> element.getName().contentEquals("content")
+      && element.findAnnotation("Validation.Maximum").isPresent();
 
   /**
    * Handles attachments for entities.
    *
-   * @param entity the {@link CdsEntity entity} to handle attachments for
-   * @param data the given list of {@link CdsData data}
+   * @param entity              the {@link CdsEntity entity} to handle attachments
+   *                            for
+   * @param data                the given list of {@link CdsData data}
    * @param existingAttachments the given list of existing {@link CdsData data}
-   * @param eventFactory the {@link ModifyAttachmentEventFactory} to create the corresponding event
-   * @param eventContext the current {@link EventContext}
-   * @param defaultMaxSize the default max size to use when no annotation is present
+   * @param eventFactory        the {@link ModifyAttachmentEventFactory} to create
+   *                            the corresponding event
+   * @param eventContext        the current {@link EventContext}
+   * @param defaultMaxSize      the default max size to use when no annotation is
+   *                            present
    */
   public static void handleAttachmentForEntities(
       CdsEntity entity,
@@ -53,18 +56,16 @@ public final class ModifyApplicationHandlerHelper {
       EventContext eventContext,
       String defaultMaxSize) {
     // Condense existing attachments to get a flat list for matching
-    List<Attachments> condensedExistingAttachments =
-        ApplicationHandlerHelper.condenseAttachments(existingAttachments, entity);
+    List<Attachments> condensedExistingAttachments = ApplicationHandlerHelper.condenseAttachments(existingAttachments,
+        entity);
 
-    Converter converter =
-        (path, element, value) ->
-            handleAttachmentForEntity(
-                condensedExistingAttachments,
-                eventFactory,
-                eventContext,
-                path,
-                (InputStream) value,
-                defaultMaxSize);
+    Converter converter = (path, element, value) -> handleAttachmentForEntity(
+        condensedExistingAttachments,
+        eventFactory,
+        eventContext,
+        path,
+        (InputStream) value,
+        defaultMaxSize);
 
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
@@ -74,12 +75,15 @@ public final class ModifyApplicationHandlerHelper {
   /**
    * Handles attachments for a single entity.
    *
-   * @param existingAttachments the list of existing {@link Attachments} to check against
-   * @param eventFactory the {@link ModifyAttachmentEventFactory} to create the corresponding event
-   * @param eventContext the current {@link EventContext}
-   * @param path the {@link Path} of the attachment
-   * @param content the content of the attachment
-   * @param defaultMaxSize the default max size to use when no annotation is present
+   * @param existingAttachments the list of existing {@link Attachments} to check
+   *                            against
+   * @param eventFactory        the {@link ModifyAttachmentEventFactory} to create
+   *                            the corresponding event
+   * @param eventContext        the current {@link EventContext}
+   * @param path                the {@link Path} of the attachment
+   * @param content             the content of the attachment
+   * @param defaultMaxSize      the default max size to use when no annotation is
+   *                            present
    * @return the processed content as an {@link InputStream}
    */
   public static InputStream handleAttachmentForEntity(
@@ -98,9 +102,8 @@ public final class ModifyApplicationHandlerHelper {
     eventContext.put(
         "attachment.MaxSize",
         maxSizeStr); // make max size available in context for error handling later
-    ServiceException TOO_LARGE_EXCEPTION =
-        new ServiceException(
-            ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded", maxSizeStr);
+    ServiceException TOO_LARGE_EXCEPTION = new ServiceException(
+        ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded", maxSizeStr);
 
     if (contentLength != null) {
       try {
@@ -111,10 +114,9 @@ public final class ModifyApplicationHandlerHelper {
         throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Invalid Content-Length header");
       }
     }
-    CountingInputStream wrappedContent =
-        content != null ? new CountingInputStream(content, maxSizeStr) : null;
-    ModifyAttachmentEvent eventToProcess =
-        eventFactory.getEvent(wrappedContent, contentId, attachment);
+    CountingInputStream wrappedContent = content != null ? new CountingInputStream(content, maxSizeStr) : null;
+
+    ModifyAttachmentEvent eventToProcess = eventFactory.getEvent(wrappedContent, contentId, attachment);
     try {
       return eventToProcess.processEvent(path, wrappedContent, attachment, eventContext);
     } catch (Exception e) {

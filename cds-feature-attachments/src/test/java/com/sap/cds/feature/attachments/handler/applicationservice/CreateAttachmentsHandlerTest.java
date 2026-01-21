@@ -120,6 +120,7 @@ class CreateAttachmentsHandlerTest {
     try (var testStream = new ByteArrayInputStream("testString".getBytes(StandardCharsets.UTF_8))) {
       var attachment = Attachments.create();
       attachment.setContent(testStream);
+      attachment.setFileName("test.pdf");
       when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
       cut.processBefore(createContext, List.of(attachment));
@@ -234,6 +235,7 @@ class CreateAttachmentsHandlerTest {
     var attachment = Attachments.create();
     var content = mock(InputStream.class);
     attachment.setContent(content);
+    attachment.setFileName("test.pdf");
     items.setAttachments(List.of(attachment));
     events.setItems(List.of(items));
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
@@ -260,7 +262,7 @@ class CreateAttachmentsHandlerTest {
     var attachment = Attachments.create();
     attachment.setContent(testStream);
     attachment.put("DRAFT_READONLY_CONTEXT", readonlyFields);
-
+    attachment.setFileName("test.pdf");
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
     cut.processBefore(createContext, List.of(attachment));
@@ -310,8 +312,7 @@ class CreateAttachmentsHandlerTest {
 
   @Test
   void methodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method =
-        cut.getClass().getDeclaredMethod("processBefore", CdsCreateEventContext.class, List.class);
+    var method = cut.getClass().getDeclaredMethod("processBefore", CdsCreateEventContext.class, List.class);
 
     var createBeforeAnnotation = method.getAnnotation(Before.class);
     var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
