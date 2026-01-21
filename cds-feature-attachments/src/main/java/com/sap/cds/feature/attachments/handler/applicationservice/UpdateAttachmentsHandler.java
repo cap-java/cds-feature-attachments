@@ -42,9 +42,9 @@ public class UpdateAttachmentsHandler implements EventHandler {
   private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
 
   private final ModifyAttachmentEventFactory eventFactory;
+  private final AttachmentsReader attachmentsReader;
   private final AttachmentService attachmentService;
   private final ThreadDataStorageReader storageReader;
-  private final AttachmentsReader attachmentsReader;
 
   public UpdateAttachmentsHandler(
       ModifyAttachmentEventFactory eventFactory,
@@ -52,11 +52,11 @@ public class UpdateAttachmentsHandler implements EventHandler {
       AttachmentService attachmentService,
       ThreadDataStorageReader storageReader) {
     this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
+    this.attachmentsReader =
+        requireNonNull(attachmentsReader, "attachmentsReader must not be null");
     this.attachmentService =
         requireNonNull(attachmentService, "attachmentService must not be null");
     this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
-    this.attachmentsReader =
-        requireNonNull(attachmentsReader, "attachmentsReader must not be null");
   }
 
   @Before
