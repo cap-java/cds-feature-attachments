@@ -75,14 +75,24 @@ public final class ModifyApplicationHandlerHelper {
     Attachments attachment = getExistingAttachment(keys, existingAttachments);
     String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
-    String maxSizeStr = getValMaxValue(path.target().entity(), existingAttachments) == null
-        ? Long.toString(Long.MAX_VALUE)
-        : getValMaxValue(path.target().entity(), existingAttachments);
+    String maxSizeStr = getValMaxValue(path.target().entity(), existingAttachments);
+    if (maxSizeStr == null) {
+        maxSizeStr = Long.toString(Long.MAX_VALUE);
+    }
     eventContext.put("attachment.MaxSize", maxSizeStr); // make max size available in context for error handling later
     ServiceException TOO_LARGE_EXCEPTION = new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE,
         "AttachmentSizeExceeded", maxSizeStr);
 
-    if (contentLength != null && Long.parseLong(contentLength) > FileSizeUtils.parseFileSizeToBytes(maxSizeStr)) {
+    if (contentLength != null) {
+      try {
+        if (Long.parseLong(contentLength) > FileSizeUtils.parseFileSizeToBytes(maxSizeStr)) {
+          throw TOO_LARGE_EXCEPTION;
+        }
+      } catch (NumberFormatException e) {
+        throw new ServiceException(com.sap.cds.services.ErrorStatuses.BAD_REQUEST, 
+            "Invalid Content-Length header");
+      }
+    }
       throw TOO_LARGE_EXCEPTION;
     }
     CountingInputStream wrappedContent = content != null ? new CountingInputStream(content, maxSizeStr) : null;

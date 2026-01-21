@@ -63,9 +63,12 @@ public final class CountingInputStream extends InputStream {
     }
 
     @Override
+    @Override
     public void close() throws IOException {
-        if (delegate != null)
+        if (delegate != null) {
             delegate.close();
+        }
+    }
     }
 
     public InputStream getDelegate() {
