@@ -81,9 +81,8 @@ class UpdateAttachmentsHandlerTest {
     attachmentsReader = mock(AttachmentsReader.class);
     attachmentService = mock(AttachmentService.class);
     storageReader = mock(ThreadDataStorageReader.class);
-    cut =
-        new UpdateAttachmentsHandler(
-            eventFactory, attachmentsReader, attachmentService, storageReader);
+    cut = new UpdateAttachmentsHandler(
+        eventFactory, attachmentsReader, attachmentService, storageReader);
 
     event = mock(ModifyAttachmentEvent.class);
     updateContext = mock(CdsUpdateEventContext.class);
@@ -115,6 +114,7 @@ class UpdateAttachmentsHandlerTest {
     var attachment = Attachments.create();
     attachment.setContent(testStream);
     attachment.setId(id);
+    attachment.setFileName("test.pdf");
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(attachment));
 
@@ -138,6 +138,7 @@ class UpdateAttachmentsHandlerTest {
     var testStream = mock(InputStream.class);
     var attachment = Attachments.create();
     attachment.setContent(testStream);
+    attachment.setFileName("test.pdf");
     attachment.put("DRAFT_READONLY_CONTEXT", readonlyUpdateFields);
 
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
@@ -262,7 +263,7 @@ class UpdateAttachmentsHandlerTest {
     var target = updateContext.getTarget();
     // Return root with nested attachments so condenseAttachments can find them
     when(attachmentsReader.readAttachments(
-            eq(model), eq(target), any(CqnFilterableStatement.class)))
+        eq(model), eq(target), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(Attachments.of(root)));
 
     cut.processBefore(updateContext, List.of(root));
@@ -299,6 +300,7 @@ class UpdateAttachmentsHandlerTest {
     root.setId(id);
     var attachment = Attachments.create();
     // No ID set - this is a new attachment
+    attachment.setFileName("test.pdf");
     attachment.setContent(testStream);
     root.setAttachments(List.of(attachment));
 
@@ -321,6 +323,7 @@ class UpdateAttachmentsHandlerTest {
     var attachment = Attachments.create();
     var testStream = mock(InputStream.class);
     attachment.setContent(testStream);
+    attachment.setFileName("test.pdf");
     root.setAttachments(List.of(attachment));
 
     List<CdsData> roots = List.of(root);
@@ -333,6 +336,7 @@ class UpdateAttachmentsHandlerTest {
     attachment.setId(UUID.randomUUID().toString());
     attachment.put(UP_ID, "test_full");
     attachment.setContent(mock(InputStream.class));
+    attachment.setFileName("test.pdf");
     var entityWithKeys = CQL.entity(Attachment_.CDS_NAME).matching(getAttachmentKeyMap(attachment));
     CqnUpdate update = Update.entity(entityWithKeys).byId("test");
     var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
@@ -356,6 +360,7 @@ class UpdateAttachmentsHandlerTest {
     attachment.setId(UUID.randomUUID().toString());
     attachment.put(UP_ID, "test_filter");
     attachment.setContent(mock(InputStream.class));
+    attachment.setFileName("test.pdf");
     var entityWithKeys = CQL.entity(Attachment_.CDS_NAME).matching(getAttachmentKeyMap(attachment));
     CqnUpdate update = Update.entity(entityWithKeys);
     var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
@@ -378,6 +383,7 @@ class UpdateAttachmentsHandlerTest {
     attachment.setId(UUID.randomUUID().toString());
     attachment.put(UP_ID, "test_where");
     attachment.setContent(mock(InputStream.class));
+    attachment.setFileName("test.pdf");
     CqnUpdate update = Update.entity(Attachment_.CDS_NAME).byId("test");
     var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
     mockTargetInUpdateContext(serviceEntity, update);
@@ -400,9 +406,9 @@ class UpdateAttachmentsHandlerTest {
     attachment.setId(UUID.randomUUID().toString());
     attachment.put(UP_ID, "test_up_id");
     attachment.setContent(mock(InputStream.class));
+    attachment.setFileName("test.pdf");
     var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
-    CqnUpdate update =
-        Update.entity(Attachment_.class).where(entity -> entity.ID().eq(attachment.getId()));
+    CqnUpdate update = Update.entity(Attachment_.class).where(entity -> entity.ID().eq(attachment.getId()));
     mockTargetInUpdateContext(serviceEntity, update);
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(attachment));
@@ -422,18 +428,20 @@ class UpdateAttachmentsHandlerTest {
     attachment1.setId(UUID.randomUUID().toString());
     attachment1.put(UP_ID, "test_multiple 2");
     attachment1.setContent(mock(InputStream.class));
+    attachment1.setFileName("test_1.pdf");
+
     var attachment2 = Attachments.create();
     attachment2.setId(UUID.randomUUID().toString());
     attachment2.put(UP_ID, "test_multiple 2");
     attachment2.setContent(mock(InputStream.class));
-    CqnUpdate update =
-        Update.entity(Attachment_.class)
-            .where(
-                attachment ->
-                    attachment
-                        .ID()
-                        .eq(attachment1.getId())
-                        .or(attachment.ID().eq(attachment2.getId())));
+    attachment2.setFileName("test_2.pdf");
+
+    CqnUpdate update = Update.entity(Attachment_.class)
+        .where(
+            attachment -> attachment
+                .ID()
+                .eq(attachment1.getId())
+                .or(attachment.ID().eq(attachment2.getId())));
     var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
     mockTargetInUpdateContext(serviceEntity, update);
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
@@ -504,8 +512,7 @@ class UpdateAttachmentsHandlerTest {
 
   @Test
   void methodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method =
-        cut.getClass().getDeclaredMethod("processBefore", CdsUpdateEventContext.class, List.class);
+    var method = cut.getClass().getDeclaredMethod("processBefore", CdsUpdateEventContext.class, List.class);
 
     var updateBeforeAnnotation = method.getAnnotation(Before.class);
     var updateHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
@@ -521,6 +528,7 @@ class UpdateAttachmentsHandlerTest {
     attachment.setId(UUID.randomUUID().toString());
     attachment.put("up__ID", root.getId());
     attachment.setContent(testStream);
+    attachment.setFileName("test.pdf");
     root.setAttachments(List.of(attachment));
     return root;
   }
@@ -532,8 +540,8 @@ class UpdateAttachmentsHandlerTest {
 
   private String mockTargetInUpdateContext(CdsEntity serviceEntity) {
     var id = UUID.randomUUID().toString();
-    var update =
-        Update.entity(serviceEntity.getQualifiedName()).where(entity -> entity.get("ID").eq(id));
+    var update = Update.entity(serviceEntity.getQualifiedName())
+        .where(entity -> entity.get("ID").eq(id));
     mockTargetInUpdateContext(serviceEntity, update);
     return id;
   }
