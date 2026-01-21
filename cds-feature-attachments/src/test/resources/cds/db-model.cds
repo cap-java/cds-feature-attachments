@@ -39,9 +39,14 @@ entity EventItems {
     key id1  : UUID;
         note : String;
         sizeLimitedAttachments : Composition of many Attachments;
+        defaultSizeLimitedAttachments : Composition of many Attachments;
 }
 
 annotate EventItems.sizeLimitedAttachments with {
     content @Validation.Maximum: '10KB';
+};
+
+annotate EventItems.defaultSizeLimitedAttachments with {
+    content @Validation.Maximum;
 };
 

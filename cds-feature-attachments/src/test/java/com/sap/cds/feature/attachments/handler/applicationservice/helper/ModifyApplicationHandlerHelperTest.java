@@ -17,6 +17,7 @@ import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.request.ParameterInfo;
@@ -145,8 +146,9 @@ class ModifyApplicationHandlerHelperTest {
   }
 
   @Test
-  void noValMaxValueFound() {
-    String attachmentEntityName = "unit.test.TestService.Items.itemAttachments";
+  void defaultValMaxValueUsed() {
+    String attachmentEntityName =
+        "unit.test.TestService.EventItems.defaultSizeLimitedAttachments";
     CdsEntity entity = runtime.getCdsModel().findEntity(attachmentEntityName).orElseThrow();
 
     var attachment = Attachments.create();
@@ -158,14 +160,43 @@ class ModifyApplicationHandlerHelperTest {
     when(target.values()).thenReturn(attachment);
     when(target.keys()).thenReturn(Map.of(Attachments.ID, attachment.getId()));
 
-    when(parameterInfo.getHeader("Content-Length")).thenReturn(null);
+    when(parameterInfo.getHeader("Content-Length")).thenReturn("399000000"); // 399MB
 
     var existingAttachments = List.<Attachments>of();
 
-    // Act & Assert: No exception should be thrown
+    // Act & Assert: No exception should be thrown as default is 400MB
     assertDoesNotThrow(
         () ->
             ModifyApplicationHandlerHelper.handleAttachmentForEntity(
                 existingAttachments, eventFactory, eventContext, path, content));
+  }
+
+  @Test
+  void malformedContentLengthHeader() {
+    String attachmentEntityName = "unit.test.TestService.EventItems.sizeLimitedAttachments";
+    CdsEntity entity = runtime.getCdsModel().findEntity(attachmentEntityName).orElseThrow();
+
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    var content = mock(InputStream.class);
+    attachment.setContent(content);
+
+    when(target.entity()).thenReturn(entity);
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of(Attachments.ID, attachment.getId()));
+
+    when(parameterInfo.getHeader("Content-Length")).thenReturn("invalid-number");
+
+    var existingAttachments = List.<Attachments>of();
+
+    // Act & Assert
+    var exception =
+        assertThrows(
+            ServiceException.class,
+            () ->
+                ModifyApplicationHandlerHelper.handleAttachmentForEntity(
+                    existingAttachments, eventFactory, eventContext, path, content));
+
+    assertThat(exception.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
   }
 }
