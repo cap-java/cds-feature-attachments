@@ -89,11 +89,12 @@ class CountingInputStreamTest {
     var delegate = new ByteArrayInputStream(data);
     var cut = new CountingInputStream(delegate, "10");
 
-    assertDoesNotThrow(() -> {
-      while (cut.read() != -1) {
-        // read all bytes
-      }
-    });
+    assertDoesNotThrow(
+        () -> {
+          while (cut.read() != -1) {
+            // read all bytes
+          }
+        });
     assertThat(cut.isLimitExceeded()).isFalse();
   }
 
@@ -103,11 +104,12 @@ class CountingInputStreamTest {
     var delegate = new ByteArrayInputStream(data);
     var cut = new CountingInputStream(delegate, "5");
 
-    assertDoesNotThrow(() -> {
-      while (cut.read() != -1) {
-        // read all bytes
-      }
-    });
+    assertDoesNotThrow(
+        () -> {
+          while (cut.read() != -1) {
+            // read all bytes
+          }
+        });
     assertThat(cut.isLimitExceeded()).isFalse();
   }
 
@@ -117,11 +119,14 @@ class CountingInputStreamTest {
     var delegate = new ByteArrayInputStream(data);
     var cut = new CountingInputStream(delegate, "5");
 
-    ServiceException exception = assertThrows(ServiceException.class, () -> {
-      while (cut.read() != -1) {
-        // read until exception
-      }
-    });
+    ServiceException exception =
+        assertThrows(
+            ServiceException.class,
+            () -> {
+              while (cut.read() != -1) {
+                // read until exception
+              }
+            });
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
     assertThat(cut.isLimitExceeded()).isTrue();
@@ -133,12 +138,15 @@ class CountingInputStreamTest {
     var delegate = new ByteArrayInputStream(data);
     var cut = new CountingInputStream(delegate, "5"); // limit is 5 bytes
 
-    ServiceException exception = assertThrows(ServiceException.class, () -> {
-      byte[] buffer = new byte[1024];
-      while (cut.read(buffer) != -1) {
-        // read until exception
-      }
-    });
+    ServiceException exception =
+        assertThrows(
+            ServiceException.class,
+            () -> {
+              byte[] buffer = new byte[1024];
+              while (cut.read(buffer) != -1) {
+                // read until exception
+              }
+            });
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -149,12 +157,15 @@ class CountingInputStreamTest {
     var delegate = new ByteArrayInputStream(data);
     var cut = new CountingInputStream(delegate, "10");
 
-    ServiceException exception = assertThrows(ServiceException.class, () -> {
-      byte[] buffer = new byte[1024];
-      while (cut.read(buffer) != -1) {
-        // read until exception
-      }
-    });
+    ServiceException exception =
+        assertThrows(
+            ServiceException.class,
+            () -> {
+              byte[] buffer = new byte[1024];
+              while (cut.read(buffer) != -1) {
+                // read until exception
+              }
+            });
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
     assertThat(cut.isLimitExceeded()).isTrue();
@@ -166,10 +177,13 @@ class CountingInputStreamTest {
     var delegate = new ByteArrayInputStream(data);
     var cut = new CountingInputStream(delegate, "5");
 
-    ServiceException exception = assertThrows(ServiceException.class, () -> {
-      long skipped = cut.skip(10);
-      assertThat(skipped).isPositive(); // use value to satisfy SpotBugs
-    });
+    ServiceException exception =
+        assertThrows(
+            ServiceException.class,
+            () -> {
+              long skipped = cut.skip(10);
+              assertThat(skipped).isPositive(); // use value to satisfy SpotBugs
+            });
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
     assertThat(cut.isLimitExceeded()).isTrue();
@@ -206,7 +220,8 @@ class CountingInputStreamTest {
   void constructor_invalidMaxSize_throwsIllegalArgumentException() {
     var delegate = mock(InputStream.class);
 
-    assertThrows(IllegalArgumentException.class, () -> new CountingInputStream(delegate, "invalid"));
+    assertThrows(
+        IllegalArgumentException.class, () -> new CountingInputStream(delegate, "invalid"));
   }
 
   @Test
@@ -222,12 +237,13 @@ class CountingInputStreamTest {
     var delegate = new ByteArrayInputStream(data);
     var cut = new CountingInputStream(delegate, "2KB"); // 2000 bytes limit
 
-    assertDoesNotThrow(() -> {
-      byte[] buffer = new byte[1024];
-      while (cut.read(buffer) != -1) {
-        // read all bytes
-      }
-    });
+    assertDoesNotThrow(
+        () -> {
+          byte[] buffer = new byte[1024];
+          while (cut.read(buffer) != -1) {
+            // read all bytes
+          }
+        });
   }
 
   @Test
@@ -292,10 +308,12 @@ class CountingInputStreamTest {
   void constructor_fractionalValue_throwsServiceException() {
     var delegate = mock(InputStream.class);
 
-    // A fractional value like "1.5KB" results in 1500.0 bytes which cannot be converted exactly to long
-    // via longValueExact() and throws ArithmeticException, which is caught and wrapped in ServiceException
-    ServiceException exception = assertThrows(ServiceException.class,
-        () -> new CountingInputStream(delegate, "1.5"));
+    // A fractional value like "1.5KB" results in 1500.0 bytes which cannot be converted exactly to
+    // long
+    // via longValueExact() and throws ArithmeticException, which is caught and wrapped in
+    // ServiceException
+    ServiceException exception =
+        assertThrows(ServiceException.class, () -> new CountingInputStream(delegate, "1.5"));
 
     assertThat(exception.getMessage()).contains("Error parsing max size annotation value");
     assertThat(exception.getCause()).isInstanceOf(ArithmeticException.class);

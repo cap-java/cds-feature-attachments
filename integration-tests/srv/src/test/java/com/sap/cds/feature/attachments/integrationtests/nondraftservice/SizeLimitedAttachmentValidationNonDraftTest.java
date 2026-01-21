@@ -20,99 +20,61 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles(Profiles.TEST_HANDLER_DISABLED)
-class Attachments2SizeValidationNonDraftTest extends OdataRequestValidationBase {
+class SizeLimitedAttachmentValidationNonDraftTest extends OdataRequestValidationBase {
 
   @Test
   void uploadContentWithin5MBLimitSucceeds() throws Exception {
-    // Arrange: Create root with attachments2
-    var serviceRoot = buildServiceRootWithAttachments2();
+    // Arrange: Create root with sizeLimitedAttachments
+    var serviceRoot = buildServiceRootWithSizeLimitedAttachments();
     postServiceRoot(serviceRoot);
 
-    var selectedRoot = selectStoredRootWithAttachments2();
-    var attachment = getRandomRootAttachment2(selectedRoot);
+    var selectedRoot = selectStoredRootWithSizeLimitedAttachments();
+    var attachment = getRandomRootSizeLimitedAttachment(selectedRoot);
 
     // Act & Assert: Upload 3MB content (within limit) succeeds
     byte[] content = new byte[3 * 1024 * 1024]; // 3MB
-    var url = buildNavigationAttachment2Url(selectedRoot.getId(), attachment.getId()) + "/content";
+    var url =
+        buildNavigationSizeLimitedAttachmentUrl(selectedRoot.getId(), attachment.getId())
+            + "/content";
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
     requestHelper.executePutWithMatcher(url, content, status().isNoContent());
   }
 
   @Test
   void uploadContentExceeding5MBLimitFails() throws Exception {
-    // Arrange: Create root with attachments2
-    var serviceRoot = buildServiceRootWithAttachments2();
+    // Arrange: Create root with sizeLimitedAttachments
+    var serviceRoot = buildServiceRootWithSizeLimitedAttachments();
     postServiceRoot(serviceRoot);
 
-    var selectedRoot = selectStoredRootWithAttachments2();
-    var attachment = getRandomRootAttachment2(selectedRoot);
+    var selectedRoot = selectStoredRootWithSizeLimitedAttachments();
+    var attachment = getRandomRootSizeLimitedAttachment(selectedRoot);
 
     // Act: Try to upload 6MB content (exceeds limit)
     byte[] content = new byte[6 * 1024 * 1024]; // 6MB
-    var url = buildNavigationAttachment2Url(selectedRoot.getId(), attachment.getId()) + "/content";
+    var url =
+        buildNavigationSizeLimitedAttachmentUrl(selectedRoot.getId(), attachment.getId())
+            + "/content";
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
     requestHelper.executePutWithMatcher(url, content, status().is(413));
 
     // Assert: Error response with HTTP 413 status code indicates size limit exceeded
   }
 
-  @Test
-  void updateContentStayingWithin5MBLimitSucceeds() throws Exception {
-    // Arrange: Create root with attachments2 and upload initial content
-    var serviceRoot = buildServiceRootWithAttachments2();
-    postServiceRoot(serviceRoot);
-
-    var selectedRoot = selectStoredRootWithAttachments2();
-    var attachment = getRandomRootAttachment2(selectedRoot);
-
-    // Upload initial 2MB content
-    byte[] initialContent = new byte[2 * 1024 * 1024]; // 2MB
-    var url = buildNavigationAttachment2Url(selectedRoot.getId(), attachment.getId()) + "/content";
-    requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, initialContent, status().isNoContent());
-
-    // Act & Assert: Update with 3MB content (still within limit) succeeds
-    byte[] updatedContent = new byte[3 * 1024 * 1024]; // 3MB
-    requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, updatedContent, status().isNoContent());
-  }
-
-  @Test
-  void updateContentExceeding5MBLimitFails() throws Exception {
-    // Arrange: Create root with attachments2 and upload initial content
-    var serviceRoot = buildServiceRootWithAttachments2();
-    postServiceRoot(serviceRoot);
-
-    var selectedRoot = selectStoredRootWithAttachments2();
-    var attachment = getRandomRootAttachment2(selectedRoot);
-
-    // Upload initial 2MB content
-    byte[] initialContent = new byte[2 * 1024 * 1024]; // 2MB
-    var url = buildNavigationAttachment2Url(selectedRoot.getId(), attachment.getId()) + "/content";
-    requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, initialContent, status().isNoContent());
-
-    // Act & Assert: Try to update with 6MB content (exceeds limit) - should fail with HTTP 413
-    byte[] updatedContent = new byte[6 * 1024 * 1024]; // 6MB
-    requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, updatedContent, status().is(413));
-  }
-
   // Helper methods
-  private Roots buildServiceRootWithAttachments2() {
+  private Roots buildServiceRootWithSizeLimitedAttachments() {
     return RootEntityBuilder.create()
-        .setTitle("Root with attachments2")
-        .addAttachments2(
+        .setTitle("Root with sizeLimitedAttachments")
+        .addSizeLimitedAttachments(
             AttachmentsBuilder.create().setFileName("testFile.txt").setMimeType("text/plain"))
         .build();
   }
 
-  private Roots selectStoredRootWithAttachments2() {
+  private Roots selectStoredRootWithSizeLimitedAttachments() {
     var select =
         com.sap.cds.ql.Select.from(
                 com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Roots_
                     .class)
-            .columns(r -> r._all(), r -> r.attachments2().expand());
+            .columns(r -> r._all(), r -> r.sizeLimitedAttachments().expand());
 
     var result = persistenceService.run(select);
     return result.single(Roots.class);

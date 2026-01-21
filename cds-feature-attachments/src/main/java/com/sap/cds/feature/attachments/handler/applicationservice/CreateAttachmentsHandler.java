@@ -26,13 +26,11 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.utils.OrderConstants;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class {@link CreateAttachmentsHandler} is an event handler that is
- * responsible for creating
+ * The class {@link CreateAttachmentsHandler} is an event handler that is responsible for creating
  * attachments for entities. It is called before a create event is executed.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
@@ -70,7 +68,7 @@ public class CreateAttachmentsHandler implements EventHandler {
     }
   }
 
-  @On(event = { CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE, DraftService.EVENT_DRAFT_PATCH })
+  @On(event = {CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE, DraftService.EVENT_DRAFT_PATCH})
   @HandlerOrder(HandlerOrder.EARLY)
   void restoreError(EventContext context) {
     try {
@@ -79,11 +77,11 @@ public class CreateAttachmentsHandler implements EventHandler {
       if (e.getErrorStatus() == ExtendedErrorStatuses.CONTENT_TOO_LARGE) {
         String maxSizeStr = (String) context.get("attachment.MaxSize");
         if (maxSizeStr != null) {
-          throw new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE,
-              "AttachmentSizeExceeded", maxSizeStr);
+          throw new ServiceException(
+              ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded", maxSizeStr);
         }
-        throw new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE,
-            "AttachmentSizeExceeded");
+        throw new ServiceException(
+            ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded");
       }
       throw e;
     }

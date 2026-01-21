@@ -5,10 +5,8 @@ package com.sap.cds.feature.attachments.handler.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
-import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.EventItems_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;

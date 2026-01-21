@@ -32,12 +32,12 @@ public class RootEntityBuilder {
     return this;
   }
 
-  public RootEntityBuilder addAttachments2(AttachmentsBuilder... attachments) {
-    if (rootEntity.getAttachments2() == null) {
-      rootEntity.setAttachments2(new ArrayList<>());
+  public RootEntityBuilder addSizeLimitedAttachments(AttachmentsBuilder... attachments) {
+    if (rootEntity.getSizeLimitedAttachments() == null) {
+      rootEntity.setSizeLimitedAttachments(new ArrayList<>());
     }
     Arrays.stream(attachments)
-        .forEach(attachment -> rootEntity.getAttachments2().add(attachment.build()));
+        .forEach(attachment -> rootEntity.getSizeLimitedAttachments().add(attachment.build()));
     return this;
   }
 

@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class FileSizeUtils {
   private static final Pattern SIZE =
       Pattern.compile("^\\s*([0-9]+(?:\\.[0-9]+)?)\\s*([a-zA-Z]*)\\s*$");
-  private static final Map<String, Long> MULTIPLIER =
+  private static final Map<String, Long> MULTIPLIER_TO_BYTES =
       Map.ofEntries(
           Map.entry("", 1L),
           Map.entry("B", 1L),
@@ -43,7 +43,7 @@ public class FileSizeUtils {
     String unit = unitRaw.toUpperCase();
 
     // if (unit.length() == 1) unit = unit + "B"; // for people using K instead of KB
-    Long mul = MULTIPLIER.get(unit);
+    Long mul = MULTIPLIER_TO_BYTES.get(unit);
     if (mul == null) {
       throw new IllegalArgumentException("Unknown Unit: " + unitRaw);
     }

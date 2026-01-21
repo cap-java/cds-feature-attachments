@@ -13,7 +13,7 @@ class ExtendedErrorStatusesTest {
   void contentTooLargeHasCorrectProperties() {
     assertThat(ExtendedErrorStatuses.CONTENT_TOO_LARGE.getCodeString()).isEqualTo("413");
     assertThat(ExtendedErrorStatuses.CONTENT_TOO_LARGE.getDescription())
-        .isEqualTo("The content size exceeds the maximum allowed limit.");
+        .isEqualTo("Content Too Large");
     assertThat(ExtendedErrorStatuses.CONTENT_TOO_LARGE.getHttpStatus()).isEqualTo(413);
   }
 

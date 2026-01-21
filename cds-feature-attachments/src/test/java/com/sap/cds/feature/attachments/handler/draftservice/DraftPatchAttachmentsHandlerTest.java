@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
@@ -21,6 +20,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
@@ -112,7 +112,8 @@ class DraftPatchAttachmentsHandlerTest {
     cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
 
     ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
-    verify(eventFactory).getEvent(streamCaptor.capture(), eq(attachment.getContentId()), eq(attachment));
+    verify(eventFactory)
+        .getEvent(streamCaptor.capture(), eq(attachment.getContentId()), eq(attachment));
     InputStream captured = streamCaptor.getValue();
     assertThat(captured).isInstanceOf(CountingInputStream.class);
     assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(content);
@@ -132,7 +133,8 @@ class DraftPatchAttachmentsHandlerTest {
     cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
 
     ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
-    verify(eventFactory).getEvent(streamCaptor.capture(), eq(attachment.getContentId()), eq(attachment));
+    verify(eventFactory)
+        .getEvent(streamCaptor.capture(), eq(attachment.getContentId()), eq(attachment));
     InputStream captured = streamCaptor.getValue();
     assertThat(captured).isInstanceOf(CountingInputStream.class);
     assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(content);

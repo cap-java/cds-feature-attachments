@@ -1,6 +1,6 @@
 using test.data.model as db from '../db/data-model';
 
-annotate db.Roots.attachments2 with {
+annotate db.Roots.sizeLimitedAttachments with {
     content @Validation.Maximum: '5MB';
 };
 

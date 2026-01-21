@@ -5,10 +5,12 @@ using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
 // Each book can have multiple attachments via composition relationship
 extend my.Books with {
   attachments : Composition of many Attachments;
+  @UI.Hidden
+  sizeLimitedAttachments : Composition of many Attachments;
 }
 
-annotate my.Books.attachments with {
-  content @Validation.Maximum: '20MB';
+annotate my.Books.sizeLimitedAttachments with {
+  content @Validation.Maximum: '5MB';
 }
 
 // Add UI component for attachments table to the Browse Books App

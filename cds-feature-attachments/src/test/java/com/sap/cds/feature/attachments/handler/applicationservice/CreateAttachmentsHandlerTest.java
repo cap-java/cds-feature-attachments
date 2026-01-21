@@ -51,9 +51,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
-import org.mockito.ArgumentCaptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class CreateAttachmentsHandlerTest {
 
@@ -122,7 +122,8 @@ class CreateAttachmentsHandlerTest {
       cut.processBefore(createContext, List.of(attachment));
 
       ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
-      verify(eventFactory).getEvent(streamCaptor.capture(), eq((String) null), eq(Attachments.create()));
+      verify(eventFactory)
+          .getEvent(streamCaptor.capture(), eq((String) null), eq(Attachments.create()));
       InputStream captured = streamCaptor.getValue();
       assertThat(captured).isInstanceOf(CountingInputStream.class);
       assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
@@ -264,7 +265,9 @@ class CreateAttachmentsHandlerTest {
     ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(eventFactory)
         .getEvent(
-            streamCaptor.capture(), eq((String) readonlyFields.get(Attachment.CONTENT_ID)), eq(Attachments.create()));
+            streamCaptor.capture(),
+            eq((String) readonlyFields.get(Attachment.CONTENT_ID)),
+            eq(Attachments.create()));
     InputStream captured = streamCaptor.getValue();
     assertThat(captured).isInstanceOf(CountingInputStream.class);
     assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
@@ -326,7 +329,8 @@ class CreateAttachmentsHandlerTest {
   @Test
   void restoreError_contentTooLargeWithMaxSize_throwsWithMaxSize() {
     var context = mock(EventContext.class);
-    var originalException = new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE, "original message");
+    var originalException =
+        new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE, "original message");
     doThrow(originalException).when(context).proceed();
     when(context.get("attachment.MaxSize")).thenReturn("10MB");
 
@@ -340,7 +344,8 @@ class CreateAttachmentsHandlerTest {
   @Test
   void restoreError_contentTooLargeWithoutMaxSize_throwsWithoutMaxSize() {
     var context = mock(EventContext.class);
-    var originalException = new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE, "original message");
+    var originalException =
+        new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE, "original message");
     doThrow(originalException).when(context).proceed();
     when(context.get("attachment.MaxSize")).thenReturn(null);
 
@@ -369,8 +374,9 @@ class CreateAttachmentsHandlerTest {
     var onAnnotation = method.getAnnotation(On.class);
     var handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-    assertThat(onAnnotation.event()).containsExactlyInAnyOrder(
-        CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE, DraftService.EVENT_DRAFT_PATCH);
+    assertThat(onAnnotation.event())
+        .containsExactlyInAnyOrder(
+            CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE, DraftService.EVENT_DRAFT_PATCH);
     assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
   }
 

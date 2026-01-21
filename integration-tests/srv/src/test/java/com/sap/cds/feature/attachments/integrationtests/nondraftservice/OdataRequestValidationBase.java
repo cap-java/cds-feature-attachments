@@ -696,8 +696,8 @@ abstract class OdataRequestValidationBase {
     return selectedItem.getAttachments().get(0);
   }
 
-  protected Attachments getRandomRootAttachment2(Roots selectedRoot) {
-    return selectedRoot.getAttachments2().get(0);
+  protected Attachments getRandomRootSizeLimitedAttachment(Roots selectedRoot) {
+    return selectedRoot.getSizeLimitedAttachments().get(0);
   }
 
   private AttachmentEntity getRandomItemAttachmentEntity(Items selectedItem) {
@@ -758,24 +758,26 @@ abstract class OdataRequestValidationBase {
         + ")";
   }
 
-  protected String buildNavigationAttachment2Url(String rootId, String attachmentId) {
+  protected String buildNavigationSizeLimitedAttachmentUrl(String rootId, String attachmentId) {
     return "/odata/v4/TestService/Roots("
         + rootId
-        + ")/attachments2(ID="
+        + ")/sizeLimitedAttachments(ID="
         + attachmentId
         + ",up__ID="
         + rootId
         + ")";
   }
 
-  protected String putContentForAttachment2(Roots selectedRoot, Attachments attachment)
+  protected String putContentForSizeLimitedAttachment(Roots selectedRoot, Attachments attachment)
       throws Exception {
-    return putContentForAttachment2(selectedRoot, attachment, status().isNoContent());
+    return putContentForSizeLimitedAttachment(selectedRoot, attachment, status().isNoContent());
   }
 
-  protected String putContentForAttachment2(
+  protected String putContentForSizeLimitedAttachment(
       Roots selectedRoot, Attachments attachment, ResultMatcher matcher) throws Exception {
-    var url = buildNavigationAttachment2Url(selectedRoot.getId(), attachment.getId()) + "/content";
+    var url =
+        buildNavigationSizeLimitedAttachmentUrl(selectedRoot.getId(), attachment.getId())
+            + "/content";
     var testContent = "testContent" + attachment.getNote();
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
     requestHelper.executePutWithMatcher(url, testContent.getBytes(StandardCharsets.UTF_8), matcher);
