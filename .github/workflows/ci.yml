@@ -17,9 +17,6 @@ env:
   SONARQ_TOKEN: ${{ secrets.SONARQ_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
   BLACK_DUCK_TOKEN: ${{ secrets.BLACK_DUCK_TOKEN }}
-  # Other
-  DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
-  DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
 
 on:
   workflow_dispatch:
@@ -165,6 +162,6 @@ jobs:
           -DdeployAtEnd=true
           deploy ${{ env.DRY_RUN_PARAM }}
         env:
-          DEPLOYMENT_USER: ${{ env.DEPLOYMENT_USER }}
-          DEPLOYMENT_PASS: ${{ env.DEPLOYMENT_PASS }}
+          DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
+          DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
         shell: bash
