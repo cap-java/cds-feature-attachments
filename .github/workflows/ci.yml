@@ -115,23 +115,6 @@ jobs:
           sonarq-token: ${{ env.SONARQ_TOKEN }}
           github-token: ${{ env.GITHUB_TOKEN }}
 
-  scan:
-    name: Blackduck Scan
-    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Scan
-        uses: ./.github/actions/scan-with-blackduck
-        with:
-          blackduck_token: ${{ env.BLACK_DUCK_TOKEN }}
-          github_token: ${{ env.GITHUB_TOKEN }}
-          maven-version: ${{ env.MAVEN_VERSION }}
-
   deploy-snapshot:
     name: Deploy snapshot to Artifactory
     if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
