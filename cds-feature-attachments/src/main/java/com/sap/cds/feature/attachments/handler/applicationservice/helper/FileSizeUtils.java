@@ -42,7 +42,6 @@ public class FileSizeUtils {
     String unitRaw = m.group(2); // Cannot be null due to * quantifier in regex
     String unit = unitRaw.toUpperCase();
 
-    // if (unit.length() == 1) unit = unit + "B"; // for people using K instead of KB
     Long mul = MULTIPLIER_TO_BYTES.get(unit);
     if (mul == null) {
       throw new IllegalArgumentException("Unknown Unit: " + unitRaw);
