@@ -17,6 +17,9 @@ steps:
     versioningModel: "major-minor"
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
     installArtifacts: true
+    buildDescriptorExcludeList:
+      - 'samples/bookshop/pom.xml'
+      - 'samples/bookshop/srv/pom.xml'
     repository: '/cap-java/cds-feature-attachments'
     verbose: true
     scanProperties:
