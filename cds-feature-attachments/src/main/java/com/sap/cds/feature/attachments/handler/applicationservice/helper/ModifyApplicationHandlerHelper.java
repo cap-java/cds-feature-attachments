@@ -114,11 +114,12 @@ public final class ModifyApplicationHandlerHelper {
             (path, element, value) -> {
               element
                   .findAnnotation("Validation.Maximum")
-                  .ifPresent(annotation -> {
-                    if (annotation.getValue() != null && annotation.getValue() != "true") {
-                      annotationValue.set(annotation.getValue().toString());
-                    }
-                  });
+                  .ifPresent(
+                      annotation -> {
+                        if (annotation.getValue() != null && annotation.getValue() != "true") {
+                          annotationValue.set(annotation.getValue().toString());
+                        }
+                      });
             })
         .process(data, entity);
     return annotationValue.get() == null ? "400MB" : annotationValue.get();

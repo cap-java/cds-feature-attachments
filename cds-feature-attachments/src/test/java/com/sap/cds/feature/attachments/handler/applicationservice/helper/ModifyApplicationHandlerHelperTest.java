@@ -147,8 +147,7 @@ class ModifyApplicationHandlerHelperTest {
 
   @Test
   void defaultValMaxValueUsed() {
-    String attachmentEntityName =
-        "unit.test.TestService.EventItems.defaultSizeLimitedAttachments";
+    String attachmentEntityName = "unit.test.TestService.EventItems.defaultSizeLimitedAttachments";
     CdsEntity entity = runtime.getCdsModel().findEntity(attachmentEntityName).orElseThrow();
 
     var attachment = Attachments.create();
