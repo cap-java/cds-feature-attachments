@@ -1,5 +1,5 @@
 /*
- * © 2024-2025 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.handler.draftservice;
 
@@ -20,6 +20,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
@@ -29,6 +30,7 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
+import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.InputStream;
 import java.util.List;
@@ -63,6 +65,8 @@ class DraftPatchAttachmentsHandlerTest {
     event = mock(ModifyAttachmentEvent.class);
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
     selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
+    ParameterInfo parameterInfo = mock(ParameterInfo.class);
+    when(eventContext.getParameterInfo()).thenReturn(parameterInfo);
   }
 
   @Test
@@ -107,7 +111,12 @@ class DraftPatchAttachmentsHandlerTest {
 
     cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
 
-    verify(eventFactory).getEvent(content, attachment.getContentId(), attachment);
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
+    verify(eventFactory)
+        .getEvent(streamCaptor.capture(), eq(attachment.getContentId()), eq(attachment));
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(content);
   }
 
   @Test
@@ -123,8 +132,13 @@ class DraftPatchAttachmentsHandlerTest {
 
     cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(root)));
 
-    verify(eventFactory).getEvent(content, attachment.getContentId(), attachment);
-    verify(event).processEvent(any(), eq(content), eq(attachment), eq(eventContext));
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
+    verify(eventFactory)
+        .getEvent(streamCaptor.capture(), eq(attachment.getContentId()), eq(attachment));
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(content);
+    verify(event).processEvent(any(), eq(captured), eq(attachment), eq(eventContext));
   }
 
   @Test

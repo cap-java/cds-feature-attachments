@@ -1,5 +1,5 @@
 /*
- * © 2024-2025 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.handler.common;
 
@@ -60,6 +60,28 @@ public final class ApplicationHandlerHelper {
    */
   public static boolean isMediaEntity(CdsStructuredType baseEntity) {
     return baseEntity.getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false);
+  }
+
+  /**
+   * Extracts key fields from CdsData based on the entity definition.
+   *
+   * @param data The CdsData to extract keys from
+   * @param entity The entity definition
+   * @return A map of key fields and their values
+   */
+  public static Map<String, Object> extractKeys(CdsData data, CdsEntity entity) {
+    Map<String, Object> keys = new HashMap<>();
+    entity
+        .keyElements()
+        .forEach(
+            keyElement -> {
+              String keyName = keyElement.getName();
+              Object value = data.get(keyName);
+              if (value != null) {
+                keys.put(keyName, value);
+              }
+            });
+    return keys;
   }
 
   /**

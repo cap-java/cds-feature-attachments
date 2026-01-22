@@ -1,5 +1,5 @@
 /*
- * © 2024-2024 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.integrationtests.nondraftservice;
 
@@ -54,7 +54,7 @@ abstract class OdataRequestValidationBase {
   protected TestPluginAttachmentsServiceHandler serviceHandler;
 
   @Autowired protected MockHttpRequestHelper requestHelper;
-  @Autowired private PersistenceService persistenceService;
+  @Autowired protected PersistenceService persistenceService;
   @Autowired private TableDataDeleter dataDeleter;
   @Autowired private TestPersistenceHandler testPersistenceHandler;
 
@@ -696,6 +696,10 @@ abstract class OdataRequestValidationBase {
     return selectedItem.getAttachments().get(0);
   }
 
+  protected Attachments getRandomRootSizeLimitedAttachment(Roots selectedRoot) {
+    return selectedRoot.getSizeLimitedAttachments().get(0);
+  }
+
   private AttachmentEntity getRandomItemAttachmentEntity(Items selectedItem) {
     return selectedItem.getAttachmentEntities().get(0);
   }
@@ -752,6 +756,32 @@ abstract class OdataRequestValidationBase {
         + ",up__ID="
         + itemId
         + ")";
+  }
+
+  protected String buildNavigationSizeLimitedAttachmentUrl(String rootId, String attachmentId) {
+    return "/odata/v4/TestService/Roots("
+        + rootId
+        + ")/sizeLimitedAttachments(ID="
+        + attachmentId
+        + ",up__ID="
+        + rootId
+        + ")";
+  }
+
+  protected String putContentForSizeLimitedAttachment(Roots selectedRoot, Attachments attachment)
+      throws Exception {
+    return putContentForSizeLimitedAttachment(selectedRoot, attachment, status().isNoContent());
+  }
+
+  protected String putContentForSizeLimitedAttachment(
+      Roots selectedRoot, Attachments attachment, ResultMatcher matcher) throws Exception {
+    var url =
+        buildNavigationSizeLimitedAttachmentUrl(selectedRoot.getId(), attachment.getId())
+            + "/content";
+    var testContent = "testContent" + attachment.getNote();
+    requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+    requestHelper.executePutWithMatcher(url, testContent.getBytes(StandardCharsets.UTF_8), matcher);
+    return testContent;
   }
 
   protected String buildExpandAttachmentUrl(String rootId, String itemId) {

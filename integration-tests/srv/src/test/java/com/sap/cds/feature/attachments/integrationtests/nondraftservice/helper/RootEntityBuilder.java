@@ -1,5 +1,5 @@
 /*
- * © 2024-2024 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper;
 
@@ -29,6 +29,15 @@ public class RootEntityBuilder {
   public RootEntityBuilder addAttachments(AttachmentsEntityBuilder... attachments) {
     Arrays.stream(attachments)
         .forEach(attachment -> rootEntity.getAttachments().add(attachment.build()));
+    return this;
+  }
+
+  public RootEntityBuilder addSizeLimitedAttachments(AttachmentsBuilder... attachments) {
+    if (rootEntity.getSizeLimitedAttachments() == null) {
+      rootEntity.setSizeLimitedAttachments(new ArrayList<>());
+    }
+    Arrays.stream(attachments)
+        .forEach(attachment -> rootEntity.getSizeLimitedAttachments().add(attachment.build()));
     return this;
   }
 

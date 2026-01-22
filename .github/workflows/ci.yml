@@ -1,7 +1,7 @@
 name: CI
 
 env:
-  MAVEN_VERSION: '3.6.3'
+  MAVEN_VERSION: '3.9.12'
   # Cloud storage environment variables (available to all jobs that need them)
   AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
   AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
@@ -32,17 +32,20 @@ on:
 jobs:
   requires-approval:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     name: "Waiting for PR approval as this workflow runs on pull_request_target"
     if: github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.owner.login != 'cap-java'
     environment: pr-approval
     steps:
       - name: Approval Step
         run: echo "This job has been approved!"
+
   build:
-    name: Build
+    name: Build (Java ${{ matrix.java-version }})
     if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     needs: requires-approval
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       matrix:
         java-version: [ 17, 21 ]
@@ -59,27 +62,47 @@ jobs:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: build-artifacts-java-${{ matrix.java-version }}
+          path: |
+            **/target/*.jar
+            **/pom.xml
+            .mvn/
+          retention-days: 1
+
   integration-tests:
-    name: Integration Tests (Java ${{ matrix.java-version }})
+    name: Integration Tests (Java ${{ matrix.java-version }}, ${{ matrix.test-type }})
     if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: build
     strategy:
       matrix:
         java-version: [ 17, 21 ]
+        test-type: [ build-version, latest-version, oss ]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: build-artifacts-java-${{ matrix.java-version }}
+
       - name: Integration Tests
         uses: ./.github/actions/integration-tests
         with:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
+          test-type: ${{ matrix.test-type }}
 
   sonarqube-scan:
     name: SonarQube Scan
     if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: build
     steps:
       - name: Checkout
@@ -96,8 +119,8 @@ jobs:
     name: Blackduck Scan
     if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: build
-    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -113,7 +136,8 @@ jobs:
     name: Deploy snapshot to Artifactory
     if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     runs-on: ubuntu-latest
-    needs: build
+    timeout-minutes: 30
+    needs: [build, integration-tests]
     steps:
       - name: Checkout
         uses: actions/checkout@v6

@@ -19,6 +19,7 @@ It supports the [AWS, Azure, and Google object stores](storage-targets/cds-featu
   * [Try the Bookshop Sample](#try-the-bookshop-sample)
   * [Storage Targets](#storage-targets)
   * [Malware Scanner](#malware-scanner)
+  * [Specify the maximum file size](#specify-the-maximum-file-size)
   * [Outbox](#outbox)
   * [Restore Endpoint](#restore-endpoint)
     * [Motivation](#motivation)
@@ -187,6 +188,23 @@ Scan status codes:
 - `Unscanned`: Attachment is still unscanned.
 - `Failed`: Scanning failed.
 - `Infected`: The attachment is infected.
+
+### Specify the maximum file size
+
+You can specify the maximum file size by annotating the attachments content property with @Validation.Maximum
+
+```cds
+entity Books {
+  ...
+  attachments: Composition of many Attachments;
+}
+
+annotate Books.attachments with {
+  content @Validation.Maximum : '20MB';
+}
+```
+
+The default is 400MB
 
 ### Outbox
 

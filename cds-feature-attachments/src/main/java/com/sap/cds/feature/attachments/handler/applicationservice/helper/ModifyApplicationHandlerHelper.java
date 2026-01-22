@@ -1,23 +1,33 @@
 /*
- * © 2024-2025 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.handler.applicationservice.helper;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
+import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.EventContext;
+import com.sap.cds.services.ServiceException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class ModifyApplicationHandlerHelper {
+
+  private static final Filter VALMAX_FILTER =
+      (path, element, type) ->
+          element.getName().contentEquals("content")
+              && element.findAnnotation("Validation.Maximum").isPresent();
 
   /**
    * Handles attachments for entities.
@@ -64,12 +74,54 @@ public final class ModifyApplicationHandlerHelper {
     ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values());
     Attachments attachment = getExistingAttachment(keys, existingAttachments);
     String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+    String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
+    String maxSizeStr = getValMaxValue(path.target().entity(), existingAttachments);
+    eventContext.put(
+        "attachment.MaxSize",
+        maxSizeStr); // make max size available in context for error handling later
+    ServiceException TOO_LARGE_EXCEPTION =
+        new ServiceException(
+            ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded", maxSizeStr);
 
-    // for the current request find the event to process
-    ModifyAttachmentEvent eventToProcess = eventFactory.getEvent(content, contentId, attachment);
+    if (contentLength != null) {
+      try {
+        if (Long.parseLong(contentLength) > FileSizeUtils.parseFileSizeToBytes(maxSizeStr)) {
+          throw TOO_LARGE_EXCEPTION;
+        }
+      } catch (NumberFormatException e) {
+        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Invalid Content-Length header");
+      }
+    }
+    CountingInputStream wrappedContent =
+        content != null ? new CountingInputStream(content, maxSizeStr) : null;
+    ModifyAttachmentEvent eventToProcess =
+        eventFactory.getEvent(wrappedContent, contentId, attachment);
+    try {
+      return eventToProcess.processEvent(path, wrappedContent, attachment, eventContext);
+    } catch (Exception e) {
+      if (wrappedContent != null && wrappedContent.isLimitExceeded()) {
+        throw TOO_LARGE_EXCEPTION;
+      }
+      throw e;
+    }
+  }
 
-    // process the event
-    return eventToProcess.processEvent(path, content, attachment, eventContext);
+  private static String getValMaxValue(CdsEntity entity, List<? extends CdsData> data) {
+    AtomicReference<String> annotationValue = new AtomicReference<>();
+    CdsDataProcessor.create()
+        .addValidator(
+            VALMAX_FILTER,
+            (path, element, value) -> {
+              element
+                  .findAnnotation("Validation.Maximum")
+                  .ifPresent(annotation -> {
+                    if (annotation.getValue() != null && annotation.getValue() != "true") {
+                      annotationValue.set(annotation.getValue().toString());
+                    }
+                  });
+            })
+        .process(data, entity);
+    return annotationValue.get() == null ? "400MB" : annotationValue.get();
   }
 
   private static Attachments getExistingAttachment(
