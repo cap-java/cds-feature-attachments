@@ -17,10 +17,10 @@ annotate my.Books.sizeLimitedAttachments with {
 
 // Media type validation for attachments
 annotate my.Books.mediaValidatedAttachments with {
-  content @(Core.AcceptableMediaTypes: [
+  content @Core.AcceptableMediaTypes: [
     'image/jpeg',
     'image/png'
-  ]);
+  ];
 }
 
 // Add UI component for attachments table to the Browse Books App
