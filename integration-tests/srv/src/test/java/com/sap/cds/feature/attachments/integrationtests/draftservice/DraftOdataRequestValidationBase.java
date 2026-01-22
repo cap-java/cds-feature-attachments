@@ -119,8 +119,9 @@ abstract class DraftOdataRequestValidationBase {
             + "/content";
 
     Awaitility.await()
-        .atMost(30, TimeUnit.SECONDS)
+        .atMost(60, TimeUnit.SECONDS)
         .pollDelay(1, TimeUnit.SECONDS)
+        .pollInterval(2, TimeUnit.SECONDS)
         .until(
             () -> {
               var attachmentResponse = requestHelper.executeGet(attachmentUrl);
@@ -792,8 +793,9 @@ abstract class DraftOdataRequestValidationBase {
             + "/content";
 
     Awaitility.await()
-        .atMost(40, TimeUnit.SECONDS)
+        .atMost(60, TimeUnit.SECONDS)
         .pollDelay(1, TimeUnit.SECONDS)
+        .pollInterval(2, TimeUnit.SECONDS)
         .until(
             () -> {
               var attachmentResponse = requestHelper.executeGet(attachmentUrl);

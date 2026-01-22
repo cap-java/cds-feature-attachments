@@ -260,9 +260,10 @@ class UpdateAttachmentsHandlerTest {
     var root = fillRootData(testStream, id);
     var model = runtime.getCdsModel();
     var target = updateContext.getTarget();
+    // Return root with nested attachments so condenseAttachments can find them
     when(attachmentsReader.readAttachments(
             eq(model), eq(target), any(CqnFilterableStatement.class)))
-        .thenReturn(root.getAttachments().stream().map(Attachments::of).toList());
+        .thenReturn(List.of(Attachments.of(root)));
 
     cut.processBefore(updateContext, List.of(root));
 
@@ -272,7 +273,11 @@ class UpdateAttachmentsHandlerTest {
     InputStream captured = streamCaptor.getValue();
     assertThat(captured).isInstanceOf(CountingInputStream.class);
     assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
-    assertThat(cdsDataArgumentCaptor.getValue()).isEqualTo(root.getAttachments().get(0));
+    // After condenseAttachments, the object is a copy with same key values
+    var expectedAttachment = root.getAttachments().get(0);
+    var actualAttachment = cdsDataArgumentCaptor.getValue();
+    assertThat(actualAttachment.get(Attachments.ID)).isEqualTo(expectedAttachment.getId());
+    assertThat(actualAttachment.get("up__ID")).isEqualTo(expectedAttachment.get("up__ID"));
     cdsDataArgumentCaptor.getAllValues().clear();
     ArgumentCaptor<InputStream> eventStreamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(event)
@@ -474,8 +479,9 @@ class UpdateAttachmentsHandlerTest {
     var existingRoot = RootTable.create();
     existingRoot.setId(id);
     existingRoot.setAttachments(List.of(attachment));
+    // Return root with nested attachments so condenseAttachments can find them
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
-        .thenReturn(existingRoot.getAttachments().stream().map(Attachments::of).toList());
+        .thenReturn(List.of(Attachments.of(existingRoot)));
     when(updateContext.getUserInfo()).thenReturn(userInfo);
 
     cut.processBefore(updateContext, List.of(root));

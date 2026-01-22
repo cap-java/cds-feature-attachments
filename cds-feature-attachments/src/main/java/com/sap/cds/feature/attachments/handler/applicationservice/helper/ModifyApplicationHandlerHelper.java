@@ -44,10 +44,18 @@ public final class ModifyApplicationHandlerHelper {
       List<Attachments> existingAttachments,
       ModifyAttachmentEventFactory eventFactory,
       EventContext eventContext) {
+    // Condense existing attachments to get a flat list for matching
+    List<Attachments> condensedExistingAttachments =
+        ApplicationHandlerHelper.condenseAttachments(existingAttachments, entity);
+
     Converter converter =
         (path, element, value) ->
             handleAttachmentForEntity(
-                existingAttachments, eventFactory, eventContext, path, (InputStream) value);
+                condensedExistingAttachments,
+                eventFactory,
+                eventContext,
+                path,
+                (InputStream) value);
 
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)

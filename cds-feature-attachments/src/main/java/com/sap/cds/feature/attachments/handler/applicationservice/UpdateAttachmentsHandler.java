@@ -75,8 +75,9 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
     CdsEntity target = context.getTarget();
     boolean associationsAreUnchanged = associationsAreUnchanged(target, data);
+    boolean containsContent = ApplicationHandlerHelper.containsContentField(target, data);
 
-    if (ApplicationHandlerHelper.containsContentField(target, data) || !associationsAreUnchanged) {
+    if (containsContent || !associationsAreUnchanged) {
       logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
 
       // Query database only for validation (single query for all attachments)
@@ -107,10 +108,13 @@ public class UpdateAttachmentsHandler implements EventHandler {
       List<CdsData> requestData,
       CdsEntity entity,
       UserInfo userInfo) {
+    // Condense both dbAttachments and requestData to get flat lists of actual attachment entities
+    List<Attachments> condensedDbAttachments =
+        ApplicationHandlerHelper.condenseAttachments(dbAttachments, entity);
     List<Attachments> requestAttachments =
         ApplicationHandlerHelper.condenseAttachments(requestData, entity);
 
-    for (Attachments dbAttachment : dbAttachments) {
+    for (Attachments dbAttachment : condensedDbAttachments) {
       Map<String, Object> dbKeys = ApplicationHandlerHelper.extractKeys(dbAttachment, entity);
       Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(dbKeys);
 
