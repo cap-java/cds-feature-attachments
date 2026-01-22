@@ -17,9 +17,6 @@ env:
   SONARQ_TOKEN: ${{ secrets.SONARQ_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
   BLACK_DUCK_TOKEN: ${{ secrets.BLACK_DUCK_TOKEN }}
-  # Other
-  DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
-  DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
 
 on:
   workflow_dispatch:
@@ -115,23 +112,6 @@ jobs:
           sonarq-token: ${{ env.SONARQ_TOKEN }}
           github-token: ${{ env.GITHUB_TOKEN }}
 
-  scan:
-    name: Blackduck Scan
-    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Scan
-        uses: ./.github/actions/scan-with-blackduck
-        with:
-          blackduck_token: ${{ env.BLACK_DUCK_TOKEN }}
-          github_token: ${{ env.GITHUB_TOKEN }}
-          maven-version: ${{ env.MAVEN_VERSION }}
-
   deploy-snapshot:
     name: Deploy snapshot to Artifactory
     if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
@@ -158,7 +138,7 @@ jobs:
           maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Set Dry Run for Pull Request
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request_target'
         run: echo "DRY_RUN_PARAM=-DaltDeploymentRepository=local-repo::default::file:./local-repo" >> $GITHUB_ENV
         shell: bash
 
@@ -182,6 +162,6 @@ jobs:
           -DdeployAtEnd=true
           deploy ${{ env.DRY_RUN_PARAM }}
         env:
-          DEPLOYMENT_USER: ${{ env.DEPLOYMENT_USER }}
-          DEPLOYMENT_PASS: ${{ env.DEPLOYMENT_PASS }}
+          DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
+          DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
         shell: bash

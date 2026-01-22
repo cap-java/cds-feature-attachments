@@ -6,15 +6,12 @@
 
 	<groupId>customer</groupId>
 	<artifactId>bookshop-parent</artifactId>
-	<version>${revision}</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>bookshop parent</name>
 
 	<properties>
-		<!-- OUR VERSION -->
-		<revision>1.0.0-SNAPSHOT</revision>
-
 		<!-- DEPENDENCIES VERSION -->
 		<jdk.version>17</jdk.version>
 		<cds.services.version>4.4.2</cds.services.version>

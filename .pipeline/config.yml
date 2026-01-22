@@ -16,7 +16,7 @@ steps:
     failOn: [ 'NONE' ]
     versioningModel: "major-minor"
     detectTools: [ 'DETECTOR', 'BINARY_SCAN' ]
-    installArtifacts: true
+    installArtifacts: false
     repository: '/cap-java/cds-feature-attachments'
     verbose: true
     scanProperties:
