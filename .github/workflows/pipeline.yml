@@ -1,46 +1,33 @@
-name: CI
+name: Reusable Workflow
 
 env:
   MAVEN_VERSION: '3.9.12'
   # Cloud storage environment variables (available to all jobs that need them)
+  ## AWS
   AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
   AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
   AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
   AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
   AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
+  ## Azure
   AZURE_CONTAINER_URI: ${{ secrets.AZURE_CONTAINER_URI }}
   AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
+  ## GCP
   GS_BASE_64_ENCODED_PRIVATE_KEY_DATA: ${{ secrets.GS_BASE_64_ENCODED_PRIVATE_KEY_DATA }}
   GS_BUCKET: ${{ secrets.GS_BUCKET }}
   GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
-  # Tokens
-  SONARQ_TOKEN: ${{ secrets.SONARQ_TOKEN }}
-  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-  BLACK_DUCK_TOKEN: ${{ secrets.BLACK_DUCK_TOKEN }}
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [main]
-  pull_request_target:
-    branches: [main]
-    types: [reopened, synchronize, opened]
+  workflow_call:
+    inputs:
+      deploy-snapshot:
+        required: true
+        type: boolean
+        default: false
 
 jobs:
-  requires-approval:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    name: "Waiting for PR approval as this workflow runs on pull_request_target"
-    if: github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.owner.login != 'cap-java'
-    environment: pr-approval
-    steps:
-      - name: Approval Step
-        run: echo "This job has been approved!"
-
   build:
     name: Build (Java ${{ matrix.java-version }})
-    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
-    needs: requires-approval
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -71,7 +58,6 @@ jobs:
 
   integration-tests:
     name: Integration Tests (Java ${{ matrix.java-version }}, ${{ matrix.test-type }})
-    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: build
@@ -97,7 +83,6 @@ jobs:
 
   sonarqube-scan:
     name: SonarQube Scan
-    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: build
@@ -109,15 +94,50 @@ jobs:
         with:
           java-version: 17
           maven-version: ${{ env.MAVEN_VERSION }}
-          sonarq-token: ${{ env.SONARQ_TOKEN }}
-          github-token: ${{ env.GITHUB_TOKEN }}
+          sonarq-token: ${{ secrets.SONARQ_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN }}
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 30
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'sapmachine'
+          cache: 'maven'
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: java-kotlin
+          build-mode: manual
+
+      - name: Build Java code
+        run: mvn clean compile -DskipTests -B -ntp
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:java-kotlin"
 
   deploy-snapshot:
     name: Deploy snapshot to Artifactory
-    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [build, integration-tests]
+    if: ${{ inputs.deploy-snapshot == true }}
+    needs: [build, integration-tests, codeql]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -154,13 +174,7 @@ jobs:
 
       - name: Deploy snapshot
         if: ${{ endsWith(steps.get-revision.outputs.REVISION, '-SNAPSHOT') }}
-        run: >
-          mvn -B -ntp -fae
-          -pl !integration-tests,!integration-tests/db,!integration-tests/srv
-          -Dmaven.install.skip=true
-          -Dmaven.test.skip=true
-          -DdeployAtEnd=true
-          deploy ${{ env.DRY_RUN_PARAM }}
+        run: mvn -B -ntp -fae -pl !integration-tests,!integration-tests/db,!integration-tests/srv -Dmaven.install.skip=true -Dmaven.test.skip=true -DdeployAtEnd=true deploy
         env:
           DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
           DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
