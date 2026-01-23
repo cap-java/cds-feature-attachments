@@ -174,7 +174,7 @@ jobs:
 
       - name: Deploy snapshot
         if: ${{ endsWith(steps.get-revision.outputs.REVISION, '-SNAPSHOT') }}
-        run: mvn -B -ntp -fae -pl !integration-tests,!integration-tests/db,!integration-tests/srv -Dmaven.install.skip=true -Dmaven.test.skip=true -DdeployAtEnd=true deploy ${{ env.DRY_RUN_PARAM }}
+        run: mvn -B -ntp -fae -pl !integration-tests,!integration-tests/db,!integration-tests/srv -Dmaven.install.skip=true -Dmaven.test.skip=true -DdeployAtEnd=true deploy
         env:
           DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
           DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
