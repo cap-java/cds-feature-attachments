@@ -1,0 +1,13 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    uses: ./.github/workflows/pipeline.yml
+    with:
+      deploy-snapshot: true
+    secrets: inherit
