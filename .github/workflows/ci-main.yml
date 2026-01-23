@@ -1,3 +1,4 @@
+<<<<<<< HEAD:.github/workflows/ci-main.yml
 # For most projects, this workflow file will not need changing; you simply need
 # to commit it to your repository.
 #
@@ -10,6 +11,27 @@
 # supported CodeQL languages.
 #
 name: "CodeQL Advanced"
+=======
+name: CI
+
+env:
+  MAVEN_VERSION: '3.9.12'
+  # Cloud storage environment variables (available to all jobs that need them)
+  AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
+  AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+  AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+  AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
+  AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
+  AZURE_CONTAINER_URI: ${{ secrets.AZURE_CONTAINER_URI }}
+  AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
+  GS_BASE_64_ENCODED_PRIVATE_KEY_DATA: ${{ secrets.GS_BASE_64_ENCODED_PRIVATE_KEY_DATA }}
+  GS_BUCKET: ${{ secrets.GS_BUCKET }}
+  GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
+  # Tokens
+  SONARQ_TOKEN: ${{ secrets.SONARQ_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+  BLACK_DUCK_TOKEN: ${{ secrets.BLACK_DUCK_TOKEN }}
+>>>>>>> main:.github/workflows/ci.yml
 
 on:
   push:
