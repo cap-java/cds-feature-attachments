@@ -6,13 +6,29 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.2.3 - tbd
+## Version 1.3.0 - tbd
+
+## Version 1.2.4 - 2025-12-17
 
 ### Added
 
 ### Changed
 
 ### Fixed
+- DraftCancel not registering attachments as compositions
+- fix overflowing filename
+
+
+## Version 1.2.3 - 2025-12-01
+
+### Added
+
+### Changed
+- Sample: Replaced cap-notebook with a bookshop sample
+
+### Fixed
+- "Attempted read on closed stream" error for usage via api in oss
+- Make up__ID field invisible in UI
 
 ## Version 1.2.2 - 2025-11-14
 

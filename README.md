@@ -1,4 +1,6 @@
-[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml) [![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg?branch=main)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml) [![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
+[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main.yml) 
+[![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/release.yml) 
+[![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
 
 # Attachments Plugin for SAP Cloud Application Programming Model (CAP)
 
@@ -118,8 +120,7 @@ The easiest way to get started is with the included [bookshop sample](samples/bo
 
 ```bash
 cd samples/bookshop
-npm install
-mvn clean install
+mvn compile
 mvn spring-boot:run
 ```
 
@@ -340,7 +341,7 @@ the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
 ### Multitenancy
 
 - When using SAP HANA as the storage target, multitenancy support depends on the consuming application. In most cases, multitenancy is achieved by using a dedicated schema for each tenant, providing strong data isolation at the database level.
-- When using an [object store](storage-targets/cds-feature-attachments-oss) as the storage target, true multitenancy is not yet implemented (as of version 1.2.1). In this case, all blobs are stored in a single bucket, and tenant data is not separated.
+- When using an [object store](storage-targets/cds-feature-attachments-oss) as the storage target, true multitenancy is not yet implemented (as of version 1.2.4). In this case, all blobs are stored in a single bucket, and tenant data is not separated.
 
 ### Object Stores
 
