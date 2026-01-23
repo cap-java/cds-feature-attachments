@@ -1,35 +1,25 @@
-name: CI
-
-env:
-  MAVEN_VERSION: '3.9.12'
-  # Cloud storage environment variables (available to all jobs that need them)
-  AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
-  AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-  AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
-  AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
-  AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
-  AZURE_CONTAINER_URI: ${{ secrets.AZURE_CONTAINER_URI }}
-  AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
-  GS_BASE_64_ENCODED_PRIVATE_KEY_DATA: ${{ secrets.GS_BASE_64_ENCODED_PRIVATE_KEY_DATA }}
-  GS_BUCKET: ${{ secrets.GS_BUCKET }}
-  GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
-  # Tokens
-  SONARQ_TOKEN: ${{ secrets.SONARQ_TOKEN }}
-  GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-  BLACK_DUCK_TOKEN: ${{ secrets.BLACK_DUCK_TOKEN }}
+# For most projects, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# You may wish to alter this file to override the set of languages analyzed,
+# or to provide custom queries or build logic.
+#
+# ******** NOTE ********
+# We have attempted to detect the languages in your repository. Please check
+# the `language` matrix defined below to confirm you have the correct set of
+# supported CodeQL languages.
+#
+name: "CodeQL Advanced"
 
 on:
-  workflow_dispatch:
   push:
-    branches: [main]
-  pull_request_target:
-    branches: [main]
-    types: [reopened, synchronize, opened]
+    branches: [ "main" ]
+  schedule:
+    - cron: '24 18 * * 2'
 
 jobs:
   requires-approval:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     name: "Waiting for PR approval as this workflow runs on pull_request_target"
     if: github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.owner.login != 'cap-java'
     environment: pr-approval
@@ -154,13 +144,7 @@ jobs:
 
       - name: Deploy snapshot
         if: ${{ endsWith(steps.get-revision.outputs.REVISION, '-SNAPSHOT') }}
-        run: >
-          mvn -B -ntp -fae
-          -pl !integration-tests,!integration-tests/db,!integration-tests/srv
-          -Dmaven.install.skip=true
-          -Dmaven.test.skip=true
-          -DdeployAtEnd=true
-          deploy ${{ env.DRY_RUN_PARAM }}
+        run: mvn -B -ntp -fae -pl !integration-tests,!integration-tests/db,!integration-tests/srv -Dmaven.install.skip=true -Dmaven.test.skip=true -DdeployAtEnd=true deploy ${{ env.DRY_RUN_PARAM }}
         env:
           DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
           DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}

@@ -406,7 +406,6 @@
                 <excludeArtifact>cds-feature-attachments-integration-tests-parent</excludeArtifact>
                 <excludeArtifact>cds-feature-attachments-integration-tests-db</excludeArtifact>
                 <excludeArtifact>cds-feature-attachments-integration-tests-srv</excludeArtifact>
-                <excludeArtifact>cds-feature-attachments-fs</excludeArtifact>
               </excludeArtifacts>
             </configuration>
           </plugin>
