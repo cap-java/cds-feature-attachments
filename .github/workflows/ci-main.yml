@@ -29,18 +29,8 @@ on:
     - cron: '24 18 * * 2'
 
 jobs:
-  requires-approval:
-    runs-on: ubuntu-latest
-    name: "Waiting for PR approval as this workflow runs on pull_request_target"
-    if: github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.owner.login != 'cap-java'
-    environment: pr-approval
-    steps:
-      - name: Approval Step
-        run: echo "This job has been approved!"
-
   build:
     name: Build (Java ${{ matrix.java-version }})
-    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     needs: requires-approval
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -72,7 +62,6 @@ jobs:
 
   integration-tests:
     name: Integration Tests (Java ${{ matrix.java-version }}, ${{ matrix.test-type }})
-    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: build
@@ -98,7 +87,6 @@ jobs:
 
   sonarqube-scan:
     name: SonarQube Scan
-    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: build
@@ -115,7 +103,6 @@ jobs:
 
   deploy-snapshot:
     name: Deploy snapshot to Artifactory
-    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [build, integration-tests]
