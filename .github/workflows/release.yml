@@ -44,12 +44,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: root-new-version
-          path: |
-            **/pom.xml
-            .mvn/
-            .github/
-            src/
-            **/src/
+          path: .
           include-hidden-files: true
           retention-days: 1
 
@@ -71,7 +66,7 @@ jobs:
       GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v6
         with:
           name: root-new-version
 
@@ -89,18 +84,12 @@ jobs:
           sonarq-token: ${{ secrets.SONARQ_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v6
+      - name: Upload Changed Artifacts
+        uses: actions/upload-artifact@v5
         with:
           name: root-build
-          path: |
-            **/target/*.jar
-            **/target/*.pom
-            **/target/classes/
-            **/pom.xml
-            .mvn/
-            .github/
           include-hidden-files: true
+          path: .
           retention-days: 1
 
   deploy:
