@@ -1,5 +1,5 @@
 [![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main.yml) 
-[![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/release.yml) 
+[![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/release.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/release.yml) 
 [![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
 
 # Attachments Plugin for SAP Cloud Application Programming Model (CAP)
