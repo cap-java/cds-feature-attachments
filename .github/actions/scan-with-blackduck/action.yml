@@ -15,6 +15,10 @@ inputs:
   maven-version:
     description: The Maven version the build shall run with.
     required: true
+  scan_mode:
+    description: The scan mode to use (FULL or RAPID)
+    default: 'FULL'
+    required: false
 
 runs:
   using: composite
@@ -51,4 +55,4 @@ runs:
       env:
         PIPER_token: ${{ inputs.blackduck_token }}
         GITHUB_token: ${{ inputs.github_token }}
-        SCAN_MODE: FULL
+        SCAN_MODE: ${{ inputs.scan_mode }}

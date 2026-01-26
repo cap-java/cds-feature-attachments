@@ -135,7 +135,9 @@ By default, the plugin operates without a dedicated storage target, storing atta
 Other available storage targets:
 
 - [Amazon, Azure, and Google Object Stores](storage-targets/cds-feature-attachments-oss)
-- [local file system as a storage backend](storage-targets/cds-feature-attachments-fs) (only for testing scenarios)
+- [local file system as a storage backend](storage-targets/cds-feature-attachments-fs)
+
+> **Warning:** The [file system storage target](storage-targets/cds-feature-attachments-fs) (`cds-feature-attachments-fs`) is intended **only for local development and testing purposes**. It is **not suitable for production or deployed environments**. For production use, configure one of the supported object stores (AWS, Azure, or Google).
 
 When using a dedicated storage target, the attachment is not stored in the underlying database; instead, it is saved on the specified storage target and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
 
