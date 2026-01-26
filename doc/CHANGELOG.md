@@ -6,7 +6,16 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.3.0 - tbd
+## Version 1.3.0 - 2026-01-26
+
+### Added
+- Added @Validation.Maximum Annotation for setting max file size (default: 400MB)
+
+### Changed
+- Included the filestorage(fs) module in the deployment process for dev purposes
+
+### Fixed
+- fix "no proper error message when exceeding char limit on note field" (also: default char limit for note is now 5000)
 
 ## Version 1.2.4 - 2025-12-17
 
@@ -17,7 +26,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 - DraftCancel not registering attachments as compositions
 - fix overflowing filename
-
 
 ## Version 1.2.3 - 2025-12-01
 
