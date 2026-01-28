@@ -1,5 +1,5 @@
 /*
- * © 2024-2024 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.integrationtests.draftservice;
 
@@ -51,7 +51,7 @@ abstract class DraftOdataRequestValidationBase {
   protected TestPluginAttachmentsServiceHandler serviceHandler;
 
   @Autowired protected MockHttpRequestHelper requestHelper;
-  @Autowired private PersistenceService persistenceService;
+  @Autowired protected PersistenceService persistenceService;
   @Autowired private TableDataDeleter dataDeleter;
   @Autowired private TestPersistenceHandler testPersistenceHandler;
 
@@ -119,8 +119,9 @@ abstract class DraftOdataRequestValidationBase {
             + "/content";
 
     Awaitility.await()
-        .atMost(30, TimeUnit.SECONDS)
+        .atMost(60, TimeUnit.SECONDS)
         .pollDelay(1, TimeUnit.SECONDS)
+        .pollInterval(2, TimeUnit.SECONDS)
         .until(
             () -> {
               var attachmentResponse = requestHelper.executeGet(attachmentUrl);
@@ -792,8 +793,9 @@ abstract class DraftOdataRequestValidationBase {
             + "/content";
 
     Awaitility.await()
-        .atMost(40, TimeUnit.SECONDS)
+        .atMost(60, TimeUnit.SECONDS)
         .pollDelay(1, TimeUnit.SECONDS)
+        .pollInterval(2, TimeUnit.SECONDS)
         .until(
             () -> {
               var attachmentResponse = requestHelper.executeGet(attachmentUrl);

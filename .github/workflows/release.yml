@@ -2,7 +2,7 @@ name: Deploy to Maven Central
 
 env:
   JAVA_VERSION: '17'
-  MAVEN_VERSION: '3.6.3'
+  MAVEN_VERSION: '3.9.12'
 
 on:
   release:
@@ -12,7 +12,7 @@ jobs:
   blackduck:
     name: Blackduck Scan
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -27,6 +27,7 @@ jobs:
   update-version:
     name: Update Version
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -50,6 +51,7 @@ jobs:
   build:
     name: Build and Sonar Scan
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: update-version
     env:
       AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
@@ -64,7 +66,7 @@ jobs:
       GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v6
         with:
           name: root-new-version
 
@@ -83,7 +85,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Changed Artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v5
         with:
           name: root-build
           include-hidden-files: true
@@ -93,6 +95,7 @@ jobs:
   deploy:
     name: Deploy to Maven Central
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [blackduck, build]
     steps:
       - name: Download artifact

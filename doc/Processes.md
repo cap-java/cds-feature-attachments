@@ -165,14 +165,14 @@ calling the attachment service.
 ### Status
 
 The attachment entity get a field `status` which indicates the status of the scan of the content.
-The default value is `UNSCANNED`.
+The default value is `Unscanned`.
 All possible status values are:
 
-- `UNSCANNED`
-- `INFECTED`
-- `CLEAN`
-- `NO_SCANNER`
-- `FAILED`
+- `Unscanned` - Content has not been scanned yet
+- `Scanning` - Content is currently being scanned
+- `Clean` - Content was scanned and found to be clean
+- `Infected` - Content was scanned and found to be infected
+- `Failed` - An error occurred during scanning
 
 ### Database Storage
 
@@ -186,7 +186,7 @@ After that the external malware scanner is called and the status of the content 
 
 ![Malware Scan](./img/Malware_Scan.png)
 
-If there is no external scanner available the status will be set to `NO_SCANNER`.
+If there is no external scanner available the status will be set to `Clean` (since there is no scanner to detect issues).
 
 ## Read
 
@@ -233,11 +233,6 @@ The following sequence diagram shows the process of reading a content with an er
 ### No Scanner Available
 
 If there is no malware scanner available, because there is no dependency to the malware scanner service,
-the status will be set to `NO_SCANNER`.
-In this case also an exception is thrown if the bytes of the stream are requested.
+the status will be set to `Clean`.
 
-To give consumers the chance to anyway access the content an environment property is introduced:
-
-- `cds.attachment.noScannerAccess` (default: `false`)
-
-If it set to `true` the content can be accessed even if the status is `NO_SCANNER`. 
+Note: With a scanner available, content in `Unscanned` or `Scanning` status cannot be accessed until scanning completes. 

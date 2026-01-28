@@ -1,5 +1,5 @@
 /*
- * © 2024-2025 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
@@ -22,6 +22,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -38,6 +39,7 @@ import com.sap.cds.services.cds.CdsUpdateEventContext;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.InputStream;
@@ -89,6 +91,9 @@ class UpdateAttachmentsHandlerTest {
     selectCaptor = ArgumentCaptor.forClass(CqnSelect.class);
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
     userInfo = mock(UserInfo.class);
+
+    ParameterInfo parameterInfo = mock(ParameterInfo.class);
+    when(updateContext.getParameterInfo()).thenReturn(parameterInfo);
   }
 
   @Test
@@ -115,7 +120,11 @@ class UpdateAttachmentsHandlerTest {
 
     cut.processBefore(updateContext, List.of(attachment));
 
-    verify(eventFactory).getEvent(testStream, null, attachment);
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
+    verify(eventFactory).getEvent(streamCaptor.capture(), eq((String) null), eq(attachment));
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
   }
 
   @Test
@@ -135,11 +144,15 @@ class UpdateAttachmentsHandlerTest {
 
     cut.processBefore(updateContext, List.of(attachment));
 
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(eventFactory)
         .getEvent(
-            testStream,
-            (String) readonlyUpdateFields.get(Attachment.CONTENT_ID),
-            Attachments.create());
+            streamCaptor.capture(),
+            eq((String) readonlyUpdateFields.get(Attachment.CONTENT_ID)),
+            eq(Attachments.create()));
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
     assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
     assertThat(attachment.getContentId())
         .isEqualTo(readonlyUpdateFields.get(Attachment.CONTENT_ID));
@@ -247,31 +260,56 @@ class UpdateAttachmentsHandlerTest {
     var root = fillRootData(testStream, id);
     var model = runtime.getCdsModel();
     var target = updateContext.getTarget();
+    // Return root with nested attachments so condenseAttachments can find them
     when(attachmentsReader.readAttachments(
             eq(model), eq(target), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(Attachments.of(root)));
 
     cut.processBefore(updateContext, List.of(root));
 
-    verify(eventFactory).getEvent(eq(testStream), eq(null), cdsDataArgumentCaptor.capture());
-    assertThat(cdsDataArgumentCaptor.getValue()).isEqualTo(root.getAttachments().get(0));
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
+    verify(eventFactory)
+        .getEvent(streamCaptor.capture(), eq((String) null), cdsDataArgumentCaptor.capture());
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
+    // After condenseAttachments, the object is a copy with same key values
+    var expectedAttachment = root.getAttachments().get(0);
+    var actualAttachment = cdsDataArgumentCaptor.getValue();
+    assertThat(actualAttachment.get(Attachments.ID)).isEqualTo(expectedAttachment.getId());
+    assertThat(actualAttachment.get("up__ID")).isEqualTo(expectedAttachment.get("up__ID"));
     cdsDataArgumentCaptor.getAllValues().clear();
+    ArgumentCaptor<InputStream> eventStreamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(event)
-        .processEvent(any(), eq(testStream), cdsDataArgumentCaptor.capture(), eq(updateContext));
+        .processEvent(
+            any(), eventStreamCaptor.capture(), cdsDataArgumentCaptor.capture(), eq(updateContext));
+    InputStream eventCaptured = eventStreamCaptor.getValue();
+    assertThat(eventCaptured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) eventCaptured).getDelegate()).isSameAs(testStream);
   }
 
   @Test
   void noExistingDataFound() {
     var id = getEntityAndMockContext(RootTable_.CDS_NAME);
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
-        .thenReturn(List.of(Attachments.create()));
+        .thenReturn(List.of());
 
     var testStream = mock(InputStream.class);
-    var root = fillRootData(testStream, id);
+    var root = RootTable.create();
+    root.setId(id);
+    var attachment = Attachments.create();
+    // No ID set - this is a new attachment
+    attachment.setContent(testStream);
+    root.setAttachments(List.of(attachment));
 
     cut.processBefore(updateContext, List.of(root));
 
-    verify(eventFactory).getEvent(testStream, null, Attachments.create());
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
+    verify(eventFactory)
+        .getEvent(streamCaptor.capture(), eq((String) null), eq(Attachments.create()));
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
   }
 
   @Test
@@ -299,6 +337,8 @@ class UpdateAttachmentsHandlerTest {
     CqnUpdate update = Update.entity(entityWithKeys).byId("test");
     var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
     mockTargetInUpdateContext(serviceEntity, update);
+    when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
+        .thenReturn(List.of(attachment));
 
     cut.processBefore(updateContext, List.of(attachment));
 
@@ -320,6 +360,8 @@ class UpdateAttachmentsHandlerTest {
     CqnUpdate update = Update.entity(entityWithKeys);
     var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
     mockTargetInUpdateContext(serviceEntity, update);
+    when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
+        .thenReturn(List.of(attachment));
 
     cut.processBefore(updateContext, List.of(attachment));
 
@@ -339,6 +381,8 @@ class UpdateAttachmentsHandlerTest {
     CqnUpdate update = Update.entity(Attachment_.CDS_NAME).byId("test");
     var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
     mockTargetInUpdateContext(serviceEntity, update);
+    when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
+        .thenReturn(List.of(attachment));
 
     cut.processBefore(updateContext, List.of(attachment));
 
@@ -360,6 +404,8 @@ class UpdateAttachmentsHandlerTest {
     CqnUpdate update =
         Update.entity(Attachment_.class).where(entity -> entity.ID().eq(attachment.getId()));
     mockTargetInUpdateContext(serviceEntity, update);
+    when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
+        .thenReturn(List.of(attachment));
 
     cut.processBefore(updateContext, List.of(attachment));
 
@@ -390,6 +436,8 @@ class UpdateAttachmentsHandlerTest {
                         .or(attachment.ID().eq(attachment2.getId())));
     var serviceEntity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
     mockTargetInUpdateContext(serviceEntity, update);
+    when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
+        .thenReturn(List.of(attachment1, attachment2));
 
     cut.processBefore(updateContext, List.of(attachment1, attachment2));
 
@@ -425,10 +473,13 @@ class UpdateAttachmentsHandlerTest {
 
     var attachment = Attachments.create();
     attachment.setId(UUID.randomUUID().toString());
+    attachment.put(UP_ID, id); // Set parent key so deletion logic can match it
     attachment.setContent(mock(InputStream.class));
     attachment.setContentId("document id");
     var existingRoot = RootTable.create();
+    existingRoot.setId(id);
     existingRoot.setAttachments(List.of(attachment));
+    // Return root with nested attachments so condenseAttachments can find them
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(Attachments.of(existingRoot)));
     when(updateContext.getUserInfo()).thenReturn(userInfo);
@@ -499,8 +550,8 @@ class UpdateAttachmentsHandlerTest {
 
   private String getRefString(String key, String value) {
     return """
-				{"ref":["%s"]},"=",{"val":"%s"}
-				"""
+        {"ref":["%s"]},"=",{"val":"%s"}
+        """
         .formatted(key, value)
         .replace(" ", "")
         .replace("\n", "");
@@ -508,8 +559,8 @@ class UpdateAttachmentsHandlerTest {
 
   private String getOrCondition(String key1, String key2) {
     return """
-				[{"ref":["ID"]},"=",{"val":"%s"},"or",{"ref":["ID"]},"=",{"val":"%s"}]
-				"""
+        [{"ref":["ID"]},"=",{"val":"%s"},"or",{"ref":["ID"]},"=",{"val":"%s"}]
+        """
         .formatted(key1, key2)
         .replace(" ", "")
         .replace("\n", "");

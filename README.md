@@ -1,4 +1,6 @@
-[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml) [![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml/badge.svg?branch=main)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main-build.yml) [![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
+[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main.yml) 
+[![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/release.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/release.yml) 
+[![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
 
 # Attachments Plugin for SAP Cloud Application Programming Model (CAP)
 
@@ -19,6 +21,7 @@ It supports the [AWS, Azure, and Google object stores](storage-targets/cds-featu
   * [Try the Bookshop Sample](#try-the-bookshop-sample)
   * [Storage Targets](#storage-targets)
   * [Malware Scanner](#malware-scanner)
+  * [Specify the maximum file size](#specify-the-maximum-file-size)
   * [Outbox](#outbox)
   * [Restore Endpoint](#restore-endpoint)
     * [Motivation](#motivation)
@@ -117,8 +120,7 @@ The easiest way to get started is with the included [bookshop sample](samples/bo
 
 ```bash
 cd samples/bookshop
-npm install
-mvn clean install
+mvn compile
 mvn spring-boot:run
 ```
 
@@ -133,7 +135,9 @@ By default, the plugin operates without a dedicated storage target, storing atta
 Other available storage targets:
 
 - [Amazon, Azure, and Google Object Stores](storage-targets/cds-feature-attachments-oss)
-- [local file system as a storage backend](storage-targets/cds-feature-attachments-fs) (only for testing scenarios)
+- [local file system as a storage backend](storage-targets/cds-feature-attachments-fs)
+
+> **Warning:** The [file system storage target](storage-targets/cds-feature-attachments-fs) (`cds-feature-attachments-fs`) is intended **only for local development and testing purposes**. It is **not suitable for production or deployed environments**. For production use, configure one of the supported object stores (AWS, Azure, or Google).
 
 When using a dedicated storage target, the attachment is not stored in the underlying database; instead, it is saved on the specified storage target and only a reference to the file is kept in the database, as defined in the [CDS model](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L20).
 
@@ -187,6 +191,28 @@ Scan status codes:
 - `Unscanned`: Attachment is still unscanned.
 - `Failed`: Scanning failed.
 - `Infected`: The attachment is infected.
+
+### Specify the maximum file size
+
+You can specify the maximum file size by annotating the attachments content property with @Validation.Maximum
+
+```cds
+entity Books {
+  ...
+  attachments: Composition of many Attachments;
+}
+
+annotate Books.attachments with {
+  content @Validation.Maximum : '20MB';
+}
+```
+
+The @Validation.Maximum value is a size string consisting of a number followed by a unit. The following units are supported:
+- B (bytes)
+- KB, MB, GB, TB (decimal units)
+- KiB, MiB, GiB, TiB (binary units)
+
+The default is 400MB
 
 ### Outbox
 
@@ -322,7 +348,7 @@ the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
 ### Multitenancy
 
 - When using SAP HANA as the storage target, multitenancy support depends on the consuming application. In most cases, multitenancy is achieved by using a dedicated schema for each tenant, providing strong data isolation at the database level.
-- When using an [object store](storage-targets/cds-feature-attachments-oss) as the storage target, true multitenancy is not yet implemented (as of version 1.2.1). In this case, all blobs are stored in a single bucket, and tenant data is not separated.
+- When using an [object store](storage-targets/cds-feature-attachments-oss) as the storage target, true multitenancy is not yet implemented (as of version 1.3.0). In this case, all blobs are stored in a single bucket, and tenant data is not separated.
 
 ### Object Stores
 

@@ -73,47 +73,60 @@
 
 The following tables shows the folder structure of the project.
 
-| Folder                  | Description                                                                                                                 |
-|-------------------------|-----------------------------------------------------------------------------------------------------------------------------|
-| .github                 | GitHub Actions definitions and the configuration of the dependabot                                                          |
-| .pipeline               | Project Piper configuration, which is used in the GitHub Actions. Piper per default search in this folder for `config.yaml` |
-| .reuse                  | Copyright information regarding to [Bulk License Documentation](https://reuse.software/faq/#bulk-license)                   |
-| cap-notebook            | CAP notebook for creation of a test application, see [README](../cap-notebook/README.md)                                    |
-| cds-feature-attachments | Implementation of the attachments feature                                                                                   |
-| doc                     | Design documents and process description                                                                                    |
-| integration-tests       | Spring Boot tests for the feature                                                                                           |
-| LICENSES                | License description                                                                                                         |
+| Folder                                         | Description                                                                                                                  |
+|------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| .github                                        | GitHub Actions definitions and the configuration of the dependabot                                                           |
+| .pipeline                                      | Project Piper configuration, which is used in the GitHub Actions. Piper per default searches in this folder for `config.yml` |
+| cds-feature-attachments                        | Core implementation of the attachments feature                                                                               |
+| doc                                            | Design documents and process descriptions                                                                                    |
+| integration-tests                              | Spring Boot integration tests for the feature                                                                                |
+| LICENSES                                       | License descriptions                                                                                                         |
+| samples/bookshop                               | Sample CAP Java application demonstrating attachments usage                                                                  |
+| storage-targets/cds-feature-attachments-fs     | File system storage target (for testing scenarios only)                                                                      |
+| storage-targets/cds-feature-attachments-oss    | Object Store storage target (AWS S3, Azure Blob, Google Cloud Storage)                                                       |
 
 ## GitHub Actions
 
 In folder `.github/workflows` are the GitHub Actions defined. The following table shows the actions and their purpose.
 
-| File Name                        | Description                                                                                                                                                                                                |
-|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `pull-requests-build.yaml`       | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 for new pull requests. Each pull request need to have green runs from this workflow to be able to be merged. |
-| `main-build.yaml`                | Build the project and run unit tests, integration tests and mutation tests for Java 17 and 21 once commits are merged to the master to get an indicator if everything works with the main branch.          |
-| `main-build-and-deploy.yaml`     | Creates a new version for main, builds the project, run all tests and deploy it to maven or artifactory. See also [Build and Deploy](#build-and-deploy)                                                    |
-| `main-build-and-deploy-oss.yaml` | Creates a new version for main, builds the project, run all tests and deploy it to Maven Central. See also [Build and Deploy](#build-and-deploy)                                                    |
+| File Name      | Description                                                                                                                                                                                                           |
+|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `pr.yml`       | Builds and tests pull requests for Java 17 and 21. Requires approval for external forks. Each pull request needs green runs from this workflow to be merged.                                                          |
+| `main.yml`     | Builds, tests, and deploys snapshots when commits are merged to main. Runs unit tests, integration tests, and mutation tests for Java 17 and 21.                                                                       |
+| `release.yml`  | Triggered on GitHub releases. Updates version, runs BlackDuck scan, builds, tests, and deploys to Maven Central. See also [Build and Deploy](#build-and-deploy).                                                      |
+| `pipeline.yml` | Reusable workflow containing shared build, test, integration test, SonarQube scan, CodeQL analysis, and snapshot deployment logic. Called by `pr.yml` and `main.yml`.                                                  |
 
 ### Build Action
 
-The build step is implemented in action `.github/actions/build/action.yaml` which is used in the workflows:
-"Pull Requests Build", "Main Build" and "Build and Deploy".
-As the build action does not only run a build of the project, but also the mutations tests this action is used in all
+The build step is implemented in action `.github/actions/build/action.yml` which is used in the workflows via `pipeline.yml`.
+As the build action does not only run a build of the project, but also the mutation tests, this action is used in all
 the mentioned workflows.
+
+Additional reusable actions are defined in `.github/actions/`:
+
+| Action                  | Description                                                    |
+|-------------------------|----------------------------------------------------------------|
+| `build`                 | Builds the project and runs unit/mutation tests                |
+| `integration-tests`     | Runs integration tests (build-version, latest-version, oss)    |
+| `deploy-release`        | Deploys release artifacts to Maven Central                     |
+| `newrelease`            | Updates version in pom.xml for new releases                    |
+| `scan-with-blackduck`   | Runs BlackDuck vulnerability scans                             |
+| `scan-with-sonar`       | Runs SonarQube code analysis                                   |
 
 ### Pull Requests Build
 
-The `pull-requests-build.yaml` starts a workflow to build the project and run all unit and Spring Boot tests for the
+The `pr.yml` starts a workflow to build the project and run all unit and Spring Boot tests for the
 coding in the new branch including the changes in the pull request.
 
 #### Trigger
 
 This workflow is triggered if a new pull request is created or updated in GitHub.
+For pull requests from external forks, manual approval is required before the workflow runs.
 
 ### Main Build
 
-The `main-build.yaml` starts a workflow to build the project and run all unit and Spring Boot tests for the main branch.
+The `main.yml` starts a workflow to build the project and run all unit and Spring Boot tests for the main branch.
+It also deploys snapshot versions to Artifactory.
 
 #### Trigger
 
@@ -121,8 +134,8 @@ This workflow is triggered if a new commit is pushed to the main branch.
 
 ### Build and Deploy
 
-The [`main-build-and-deploy.yaml`](../.github/workflows/main-build-and-deploy.yml) and [`main-build-and-deploy-oss.yaml`](../.github/workflows/main-build-and-deploy-oss.yml) start a workflow to build the project, run all tests and deploy it to public Maven repository or SAP's Artifactory.
-The workflows are started if a new release or pre-release is created in GitHub. The tags used in the release are used as new version for the project.
+The [`release.yml`](../.github/workflows/release.yml) starts a workflow to build the project, run all tests and deploy it to Maven Central.
+The workflow is started if a new release is created in GitHub. The tag used in the release is used as the new version for the project.
 
 The following steps are executed in the workflow:
 
@@ -144,7 +157,7 @@ During deploy the following properties are used:
 #### Trigger
 
 This workflow is triggered if a new release is created in GitHub.
-With this a new version is published to maven or artifactory once a new release is created in GitHub.
+With this a new version is published to Maven Central once a new release is created in GitHub.
 
 #### Repository for Deploy
 
@@ -152,32 +165,30 @@ In the root `pom.xml` the repository for the deployment is defined. The followin
 
 ```xml
 <distributionManagement>
+    <repository>
+        <id>central</id>
+        <name>MavenCentral</name>
+        <url>https://central.sonatype.com</url>
+    </repository>
     <snapshotRepository>
         <id>artifactory</id>
         <name>Artifactory_DMZ-snapshots</name>
         <url>https://common.repositories.cloud.sap/artifactory/cap-java</url>
     </snapshotRepository>
-    <repository>
-        <id>ossrh</id>
-        <name>MavenCentral</name>
-        <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
 </distributionManagement>
 ```
 
-In this example the repositories for snapshots and releases are the same but could be defined differently.
+Release versions are deployed to Maven Central, while snapshot versions are deployed to SAP's Artifactory.
 Only the root `pom.xml` and the `cds-feature-attachments/pom.xml` have defined these repositories as
-only these modules shall be deployed.
+only these modules shall be deployed. The storage target modules (`cds-feature-attachments-oss`, `cds-feature-attachments-fs`) are also deployed.
 If the root `pom.xml` is not deployed the usage of the `cds-feature-attachments/pom.xml` is not possible.
 
 #### Update Version
 
-Inside the `main-build-and-deploy.yaml` a action is called to create a new project version in the parent `pom.xml`
+Inside the `release.yml` an action is called to create a new project version in the parent `pom.xml`
 of the project.
-The version is taken from the token of the new created release in GitHub.
-The version is updated in the parent `pom.xml` file but in addition the version is written in the
-`version.txt` file in the `cap-notebook` folder.
-This file is used if an example project created by the CAP notebook.
+The version is taken from the tag of the newly created release in GitHub.
+The version is updated in the `revision` property in the parent `pom.xml` file.
 
 ##### Token for Version Update
 
@@ -187,36 +198,45 @@ As the default GitHub token which is used in GitHub actions this is not possible
 token was created and stored in the GitHub secrets under `GH_TOKEN`.
 This token is used in the workflow to update the version in the `pom.xml` files.
 
-### BlackDuck
+<!-- ### BlackDuck
 
-The BlackDuck action is called in the `main-build.yaml`, `main-build-and-deploy.yaml` and `main-build-and-deploy-oss.yaml` to check the project for vulnerabilities.
+The BlackDuck action is called in the `main.yaml`, `main-build-and-deploy.yaml` and `main-build-and-deploy-oss.yaml` to check the project for vulnerabilities.
 The action is defined in the `../.github/actions/scan-with-blackduck/action.yaml` file. The action uses the project piper action to call BlackDuck.
 
 The following user group is used for the BackDuck scan:
 
 - `CDSJAVA-OPEN-SOURCE`
 
-The group and other settings are defined in the project piper [config](../.pipeline/config.yml) file.
+The group and other settings are defined in the project piper [config](../.pipeline/config.yml) file. -->
 
-#### Pull Requests
+<!-- #### Pull Requests
 The scan is not used in pull request builds as for the scan a token is needed and this token is
 not available in the pull request builds from fork projects or dependabot pull requests.
 
 #### BlackDuck Links
 
 - [Scan Results](https://sap.blackducksoftware.com/api/projects/480aae67-284b-42cf-840c-ba021be84378)
-- [User Groud Self Service](https://svmprod-zdohvhnx0v.dispatcher.int.sap.eu2.hana.ondemand.com/webapp/index.html)
+- [User Groud Self Service](https://svmprod-zdohvhnx0v.dispatcher.int.sap.eu2.hana.ondemand.com/webapp/index.html) -->
 
 ### Secrets
 
-The following secrets are stored and GitHub and used in the GitHub-actions:
+The following secrets are stored in GitHub and used in the GitHub-actions:
 
-| Secret Name      | Description                                                                                                                                                               |
-|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| BLACK_DUCK_TOKEN | Token for calling BlackDuck to execute BlackDuck scans.                                                                                                                   |
-| DEPLOYMENT_PASS  | Password for the deployment in the [artifactory](https://common.repositories.cloud.sap/ui/repos/tree/General/cap-java).                                                   |
-| DEPLOYMENT_USER  | User for the deployment in the [artifactory](https://common.repositories.cloud.sap/ui/repos/tree/General/cap-java).                                                       |
-| GH_TOKEN         | Token to update the version in the `pom.xml` files. Used because the origin token created by GitHub has not enough rights to update the main branch without pull request. |
+| Secret Name                | Description                                                                                                                                                               |
+|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| BLACK_DUCK_TOKEN           | Token for calling BlackDuck to execute BlackDuck scans.                                                                                                                   |
+| DEPLOYMENT_USER            | User for snapshot deployment to [Artifactory](https://common.repositories.cloud.sap/ui/repos/tree/General/cap-java).                                                      |
+| DEPLOYMENT_PASS            | Password for snapshot deployment to [Artifactory](https://common.repositories.cloud.sap/ui/repos/tree/General/cap-java).                                                  |
+| GH_TOKEN                   | Token to update the version in the `pom.xml` files. Used because the default GitHub token has insufficient rights to update the main branch without a pull request.       |
+| CENTRAL_REPOSITORY_USER    | User for release deployment to Maven Central.                                                                                                                             |
+| CENTRAL_REPOSITORY_PASS    | Password for release deployment to Maven Central.                                                                                                                         |
+| PGP_PUBKEY_ID              | GPG public key ID for signing release artifacts.                                                                                                                          |
+| PGP_PRIVATE_KEY            | GPG private key for signing release artifacts.                                                                                                                            |
+| PGP_PASSPHRASE             | GPG passphrase for signing release artifacts.                                                                                                                             |
+| SONARQ_TOKEN               | Token for SonarQube code analysis.                                                                                                                                        |
+| AWS_S3_*                   | AWS S3 credentials (HOST, BUCKET, REGION, ACCESS_KEY_ID, SECRET_ACCESS_KEY) for OSS integration tests.                                                                    |
+| AZURE_*                    | Azure Blob credentials (CONTAINER_URI, SAS_TOKEN) for OSS integration tests.                                                                                              |
+| GS_*                       | Google Cloud Storage credentials (BUCKET, PROJECT_ID, BASE_64_ENCODED_PRIVATE_KEY_DATA) for OSS integration tests.                                                        |
 
 ## Feature
 
@@ -618,12 +638,10 @@ an `AttachmentStatusException`.
 
 ### Texts
 
-Texts are not delivered with the feature but can be added.
-For more information see the following sections in the README.md file:
+Default texts are delivered with the feature in [35 languages](https://github.com/cap-java/cds-feature-attachments/tree/main/cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/_i18n).
+These can be overwritten by applications with custom texts or translations.
 
-- [Model Texts](../README.md#model-texts)
-- [Status Texts](../README.md#status-texts)
-- [Error Messages](../README.md#error-messages)
+For more information see the [Model Texts](../README.md#model-texts) section in the README.md file.
 
 ## Tests
 
@@ -682,6 +700,12 @@ The profile `malware-scan-enabled` is used to test the malware scan. To enable a
 is registered in the `application.yaml` of the tests if this profile is active which contains the settings for the
 malware scanner.
 
+#### Object Store Integration Tests
+
+Integration tests for object stores (AWS S3, Azure Blob, Google Cloud Storage) are run in the CI pipeline using the
+`oss` test type. These tests require cloud storage credentials to be configured as secrets (see [Secrets](#secrets)).
+The tests verify that attachments can be stored and retrieved from external object stores.
+
 The main tests are implemented in the following two packages:
 
 - `draftservice`: Tests for the draft service
@@ -706,5 +730,6 @@ The following quality tools are used in the project to ensure the quality of the
 | Mutation Tests        | Defined in `cds-feature-attachments/pom.xml`                                | See section [mutation tests](#mutation-tests).                                                                                                             |
 | Jacoco                | Defined in `cds-feature-attachments/pom.xml`                                | See section [unit tests](#unit-tests).                                                                                                                     |
 | Dependabot            | Config is defined in the `.github/dependabot.yml`                           | Checks for new versions of dependencies.                                                                                                                   |
-| CodeQl                | Defined in the GitHub project                                               | Checks for vulnerabilities in the coding. Executed as GitHub action with the default settings, so no action needs to be implemented in the project itself. |
-| BlackDuck             | As GitHub action is defined in folder `.github/actions/scan-with-blackduck` | Scans the coding with BlackDuck. See [design](#blackduck).                                                                                                 |
+| CodeQL                | Defined in `pipeline.yml`                                                   | Checks for vulnerabilities in the coding. Executed as part of the CI pipeline.                                                                             |
+| SonarQube             | Defined in `.pipeline/config.yml` and `.github/actions/scan-with-sonar`     | Static code analysis and code quality metrics. Reports are available at SAP's SonarQube instance.                                                          |
+| BlackDuck             | As GitHub action defined in folder `.github/actions/scan-with-blackduck`    | Scans the coding with BlackDuck for vulnerabilities. See [design](#blackduck).                                                                             |
