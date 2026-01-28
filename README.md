@@ -207,6 +207,11 @@ annotate Books.attachments with {
 }
 ```
 
+The @Validation.Maximum value is a size string consisting of a number followed by a unit. The following units are supported:
+- B (bytes)
+- KB, MB, GB, TB (decimal units)
+- KiB, MiB, GiB, TiB (binary units)
+
 The default is 400MB
 
 ### Outbox
