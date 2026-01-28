@@ -7,6 +7,10 @@ extend my.Books with {
   attachments : Composition of many Attachments;
   @UI.Hidden
   sizeLimitedAttachments : Composition of many Attachments;
+  @UI.Hidden
+  @Validation.MinItems: 2
+  @Validation.MaxItems: 3
+  minMaxAttachments : Composition of many Attachments;
 }
 
 annotate my.Books.sizeLimitedAttachments with {
