@@ -19,7 +19,7 @@ entity Items : cuid {
     note            : String;
     events          : Composition of many Events
                           on events.id1 = $self.ID;
-    attachments     : Composition of many Attachment;
+    attachments     : Composition of many Attachment on attachments.ID = $self.ID;
     itemAttachments : Composition of many Attachments;
 }
 
