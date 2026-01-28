@@ -1,4 +1,4 @@
-name: CI
+name: CI - MAIN
 
 env:
   MAVEN_VERSION: '3.9.12'
