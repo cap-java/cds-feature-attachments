@@ -17,6 +17,7 @@ jobs:
         run: echo "This job has been approved!"
 
   build-and-test:
+    needs: requires-approval
     if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     uses: ./.github/workflows/pipeline.yml
     with:
