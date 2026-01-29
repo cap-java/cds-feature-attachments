@@ -62,5 +62,8 @@ entity CountValidatedEntity : cuid {
     minMaxAttachments        : Composition of many Attachments;
     // No validation annotations
     unlimitedAttachments     : Composition of many Attachments;
+    // Association (not composition) with validation annotation - should be ignored by validator
+    @Validation.MaxItems: 1
+    associationNotComposition : Association to many Attachment on associationNotComposition.ID = $self.ID;
 }
 
