@@ -50,3 +50,20 @@ annotate EventItems.defaultSizeLimitedAttachments with {
     content @Validation.Maximum;
 };
 
+// Entity for testing @Validation.MaxItems and @Validation.MinItems
+entity CountValidatedEntity : cuid {
+    title                    : String;
+    @Validation.MaxItems: 3
+    maxOnlyAttachments       : Composition of many Attachments;
+    @Validation.MinItems: 2
+    minOnlyAttachments       : Composition of many Attachments;
+    @Validation.MaxItems: 3
+    @Validation.MinItems: 2
+    minMaxAttachments        : Composition of many Attachments;
+    // No validation annotations
+    unlimitedAttachments     : Composition of many Attachments;
+    // Association (not composition) with validation annotation - should be ignored by validator
+    @Validation.MaxItems: 1
+    associationNotComposition : Association to many Attachment on associationNotComposition.ID = $self.ID;
+}
+

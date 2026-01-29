@@ -6,6 +6,7 @@ package com.sap.cds.feature.attachments.handler.applicationservice.readhelper;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -209,11 +210,12 @@ class CountingInputStreamTest {
 
   @Test
   void close_nullDelegate_noException() {
-    // This tests the null check in close(), though delegate is never null in practice
     var delegate = mock(InputStream.class);
-    var cut = new CountingInputStream(delegate, "100");
-
-    assertDoesNotThrow(cut::close);
+    try (var cut = new CountingInputStream(delegate, "100")) {
+      assertDoesNotThrow(cut::close);
+    } catch (IOException e) {
+      fail("Unexpected IOException");
+    }
   }
 
   @Test
@@ -308,9 +310,11 @@ class CountingInputStreamTest {
   void constructor_fractionalValue_throwsServiceException() {
     var delegate = mock(InputStream.class);
 
-    // A fractional value like "1.5KB" results in 1500.0 bytes which cannot be converted exactly to
+    // A fractional value like "1.5KB" results in 1500.0 bytes which cannot be
+    // converted exactly to
     // long
-    // via longValueExact() and throws ArithmeticException, which is caught and wrapped in
+    // via longValueExact() and throws ArithmeticException, which is caught and
+    // wrapped in
     // ServiceException
     ServiceException exception =
         assertThrows(ServiceException.class, () -> new CountingInputStream(delegate, "1.5"));

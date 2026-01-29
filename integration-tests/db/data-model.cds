@@ -16,6 +16,17 @@ entity Roots : cuid {
     sizeLimitedAttachments : Composition of many Attachments;
 }
 
+/**
+ * Separate entity for testing @Validation.MinItems and @Validation.MaxItems annotations.
+ * This entity is not used by other tests to avoid side effects.
+ */
+entity CountValidatedRoots : cuid {
+    title : String;
+    @Validation.MinItems: 1
+    @Validation.MaxItems: 3
+    countValidatedAttachments : Composition of many Attachments;
+}
+
 entity Items : cuid {
     parentID           : UUID;
     title              : String;

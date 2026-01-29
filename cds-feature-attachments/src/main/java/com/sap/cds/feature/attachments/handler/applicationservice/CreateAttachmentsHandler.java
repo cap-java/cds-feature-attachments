@@ -12,6 +12,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.Readonl
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentCountValidator;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
@@ -40,11 +41,15 @@ public class CreateAttachmentsHandler implements EventHandler {
 
   private final ModifyAttachmentEventFactory eventFactory;
   private final ThreadDataStorageReader storageReader;
+  private final AttachmentCountValidator validator;
 
   public CreateAttachmentsHandler(
-      ModifyAttachmentEventFactory eventFactory, ThreadDataStorageReader storageReader) {
+      ModifyAttachmentEventFactory eventFactory,
+      ThreadDataStorageReader storageReader,
+      AttachmentCountValidator validator) {
     this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
     this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
+    this.validator = requireNonNull(validator, "validator must not be null");
   }
 
   @Before
@@ -60,9 +65,11 @@ public class CreateAttachmentsHandler implements EventHandler {
   @Before
   @HandlerOrder(HandlerOrder.LATE)
   void processBefore(CdsCreateEventContext context, List<CdsData> data) {
+    logger.debug(
+        "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
+    // Validate attachment count regardless of content field presence
+    validator.validateForCreate(context.getTarget(), data);
     if (ApplicationHandlerHelper.containsContentField(context.getTarget(), data)) {
-      logger.debug(
-          "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
       ModifyApplicationHandlerHelper.handleAttachmentForEntities(
           context.getTarget(), data, new ArrayList<>(), eventFactory, context);
     }

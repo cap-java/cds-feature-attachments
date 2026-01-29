@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageSetter;
+import com.sap.cds.feature.attachments.handler.common.AttachmentCountValidator;
 import com.sap.cds.services.draft.DraftSaveEventContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,12 +19,14 @@ class DraftActiveAttachmentsHandlerTest {
 
   private DraftActiveAttachmentsHandler cut;
   private ThreadDataStorageSetter threadLocalSetter;
+  private AttachmentCountValidator validator;
   private ArgumentCaptor<Runnable> runnableCaptor;
 
   @BeforeEach
   void setup() {
     threadLocalSetter = mock(ThreadDataStorageSetter.class);
-    cut = new DraftActiveAttachmentsHandler(threadLocalSetter);
+    validator = mock(AttachmentCountValidator.class);
+    cut = new DraftActiveAttachmentsHandler(threadLocalSetter, validator);
 
     runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
   }
