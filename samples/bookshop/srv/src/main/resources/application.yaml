@@ -20,6 +20,3 @@ cds:
   data-source:
     auto-config:
       enabled: false
-logging:
-  level:
-    com.sap.cds.feature.attachments.handler.common.AttachmentCountValidator: DEBUG
