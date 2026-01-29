@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Builder for creating {@link CountValidatedRoots} entities for count validation tests. This
- * entity has @Validation.MinItems: 1 and @Validation.MaxItems: 3 annotations.
+ * Builder for creating {@link CountValidatedRoots} entities for count validation tests. This entity
+ * has @Validation.MinItems: 1 and @Validation.MaxItems: 3 annotations.
  */
 public class CountValidatedRootEntityBuilder {
 

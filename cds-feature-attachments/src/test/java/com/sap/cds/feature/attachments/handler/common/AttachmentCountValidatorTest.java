@@ -364,7 +364,8 @@ class AttachmentCountValidatorTest {
       List<CdsData> parentData = createValidParentData();
       when(result.listOf(CdsData.class)).thenReturn(parentData);
 
-      assertThatNoException().isThrownBy(() -> cut.validateForDraftSave(entity, statement, service));
+      assertThatNoException()
+          .isThrownBy(() -> cut.validateForDraftSave(entity, statement, service));
 
       verify(service).run(any(CqnSelect.class));
     }

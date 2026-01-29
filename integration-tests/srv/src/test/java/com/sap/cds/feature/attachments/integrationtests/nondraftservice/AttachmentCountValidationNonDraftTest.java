@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.AttachmentEntity;
-import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.CountValidatedRoots;
 import com.sap.cds.feature.attachments.integrationtests.common.MockHttpRequestHelper;
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.AttachmentsBuilder;
