@@ -184,7 +184,7 @@ public class AttachmentCountValidator {
                     maxItems);
                 throw new ServiceException(
                     ErrorStatuses.BAD_REQUEST,
-                    "MaxItemsExceeded",
+                    "MaximumAmountExceeded",
                     maxItems,
                     compositionName,
                     count);
@@ -204,7 +204,7 @@ public class AttachmentCountValidator {
                     minItems);
                 throw new ServiceException(
                     ErrorStatuses.BAD_REQUEST,
-                    "MinItemsNotReached",
+                    "MinimumAmountNotFulfilled",
                     minItems,
                     compositionName,
                     count);

@@ -76,7 +76,7 @@ class AttachmentCountValidatorTest {
 
       assertThatThrownBy(() -> cut.validateForCreate(entity, data))
           .isInstanceOf(ServiceException.class)
-          .hasMessageContaining("MaxItemsExceeded");
+          .hasMessageContaining("MaximumAmountExceeded");
     }
 
     @Test
@@ -87,7 +87,7 @@ class AttachmentCountValidatorTest {
 
       assertThatThrownBy(() -> cut.validateForCreate(entity, data))
           .isInstanceOf(ServiceException.class)
-          .hasMessageContaining("MinItemsNotReached");
+          .hasMessageContaining("MinimumAmountNotFulfilled");
     }
 
     @Test
@@ -105,7 +105,7 @@ class AttachmentCountValidatorTest {
 
       assertThatThrownBy(() -> cut.validateForCreate(entity, data))
           .isInstanceOf(ServiceException.class)
-          .hasMessageContaining("MinItemsNotReached");
+          .hasMessageContaining("MinimumAmountNotFulfilled");
     }
 
     @Test
@@ -140,7 +140,7 @@ class AttachmentCountValidatorTest {
 
       assertThatThrownBy(() -> cut.validateForCreate(entity, data))
           .isInstanceOf(ServiceException.class)
-          .hasMessageContaining("MaxItemsExceeded");
+          .hasMessageContaining("MaximumAmountExceeded");
     }
 
     @Test
@@ -197,7 +197,7 @@ class AttachmentCountValidatorTest {
 
       assertThatThrownBy(() -> cut.validateForUpdate(entity, data))
           .isInstanceOf(ServiceException.class)
-          .hasMessageContaining("MaxItemsExceeded");
+          .hasMessageContaining("MaximumAmountExceeded");
     }
 
     @Test
@@ -207,7 +207,7 @@ class AttachmentCountValidatorTest {
 
       assertThatThrownBy(() -> cut.validateForUpdate(entity, data))
           .isInstanceOf(ServiceException.class)
-          .hasMessageContaining("MinItemsNotReached");
+          .hasMessageContaining("MinimumAmountNotFulfilled");
     }
 
     @Test
@@ -233,7 +233,7 @@ class AttachmentCountValidatorTest {
 
       assertThatThrownBy(() -> cut.validateForUpdate(entity, data))
           .isInstanceOf(ServiceException.class)
-          .hasMessageContaining("MinItemsNotReached");
+          .hasMessageContaining("MinimumAmountNotFulfilled");
     }
 
     @Test
@@ -270,7 +270,7 @@ class AttachmentCountValidatorTest {
 
       assertThatThrownBy(() -> cut.validateForUpdate(entity, data))
           .isInstanceOf(ServiceException.class)
-          .hasMessageContaining("MaxItemsExceeded");
+          .hasMessageContaining("MaximumAmountExceeded");
     }
 
     @Test

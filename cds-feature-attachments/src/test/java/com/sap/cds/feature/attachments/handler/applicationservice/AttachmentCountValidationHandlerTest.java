@@ -81,7 +81,7 @@ class AttachmentCountValidationHandlerTest {
 
       assertThatThrownBy(() -> cut.validateOnCreate(context, data))
           .isInstanceOf(ServiceException.class)
-          .hasMessageContaining("MaxItemsExceeded");
+          .hasMessageContaining("MaximumAmountExceeded");
     }
 
     @Test
@@ -131,7 +131,7 @@ class AttachmentCountValidationHandlerTest {
 
       assertThatThrownBy(() -> cut.validateOnUpdate(context, data))
           .isInstanceOf(ServiceException.class)
-          .hasMessageContaining("MaxItemsExceeded");
+          .hasMessageContaining("MaximumAmountExceeded");
     }
 
     @Test
@@ -144,7 +144,7 @@ class AttachmentCountValidationHandlerTest {
 
       assertThatThrownBy(() -> cut.validateOnUpdate(context, data))
           .isInstanceOf(ServiceException.class)
-          .hasMessageContaining("MinItemsNotReached");
+          .hasMessageContaining("MinimumAmountNotFulfilled");
     }
   }
 }
