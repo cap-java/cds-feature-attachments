@@ -5,11 +5,15 @@ annotate db.Roots.sizeLimitedAttachments with {
 };
 
 service TestService {
-    entity Roots            as projection on db.Roots;
-    entity AttachmentEntity as projection on db.AttachmentEntity;
+    entity Roots                as projection on db.Roots;
+    entity AttachmentEntity     as projection on db.AttachmentEntity;
+    entity CountValidatedRoots  as projection on db.CountValidatedRoots;
 }
 
 service TestDraftService {
     @odata.draft.enabled
     entity DraftRoots as projection on db.Roots;
+
+    @odata.draft.enabled
+    entity DraftCountValidatedRoots as projection on db.CountValidatedRoots;
 }

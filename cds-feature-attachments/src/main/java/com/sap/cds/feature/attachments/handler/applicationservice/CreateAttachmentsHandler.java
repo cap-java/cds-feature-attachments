@@ -65,10 +65,11 @@ public class CreateAttachmentsHandler implements EventHandler {
   @Before
   @HandlerOrder(HandlerOrder.LATE)
   void processBefore(CdsCreateEventContext context, List<CdsData> data) {
+    logger.debug(
+        "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
+    // Validate attachment count regardless of content field presence
+    validator.validateForCreate(context.getTarget(), data);
     if (ApplicationHandlerHelper.containsContentField(context.getTarget(), data)) {
-      logger.debug(
-          "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
-      validator.validateForCreate(context.getTarget(), data);
       ModifyApplicationHandlerHelper.handleAttachmentForEntities(
           context.getTarget(), data, new ArrayList<>(), eventFactory, context);
     }
