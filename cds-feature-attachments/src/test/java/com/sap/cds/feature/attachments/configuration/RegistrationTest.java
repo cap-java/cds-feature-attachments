@@ -11,11 +11,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.sap.cds.feature.attachments.handler.applicationservice.AttachmentCountValidationHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftAttachmentCountValidationHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -108,7 +110,7 @@ class RegistrationTest {
 
     cut.eventHandlers(configurer);
 
-    var handlerSize = 8;
+    var handlerSize = 10;
     verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
     checkHandlers(handlerArgumentCaptor.getAllValues(), handlerSize);
   }
@@ -128,7 +130,7 @@ class RegistrationTest {
 
     cut.eventHandlers(configurer);
 
-    var handlerSize = 8;
+    var handlerSize = 10;
     verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
     checkHandlers(handlerArgumentCaptor.getAllValues(), handlerSize);
   }
@@ -140,9 +142,11 @@ class RegistrationTest {
     isHandlerForClassIncluded(handlers, UpdateAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, DeleteAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, ReadAttachmentsHandler.class);
+    isHandlerForClassIncluded(handlers, AttachmentCountValidationHandler.class);
     isHandlerForClassIncluded(handlers, DraftPatchAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, DraftCancelAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, DraftActiveAttachmentsHandler.class);
+    isHandlerForClassIncluded(handlers, DraftAttachmentCountValidationHandler.class);
   }
 
   @Test

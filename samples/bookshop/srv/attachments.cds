@@ -4,13 +4,13 @@ using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
 // Extend Books entity to support file attachments (images, PDFs, documents)
 // Each book can have multiple attachments via composition relationship
 extend my.Books with {
-  attachments : Composition of many Attachments;
+  @Validation.MinItems: 2
+  @Validation.MaxItems: 3
+  attachments            : Composition of many Attachments;
   @UI.Hidden
   sizeLimitedAttachments : Composition of many Attachments;
   @UI.Hidden
-  @Validation.MinItems: 2
-  @Validation.MaxItems: 3
-  minMaxAttachments : Composition of many Attachments;
+  minMaxAttachments      : Composition of many Attachments;
 }
 
 annotate my.Books.sizeLimitedAttachments with {

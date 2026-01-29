@@ -157,11 +157,6 @@ jobs:
         with:
           maven-version: ${{ env.MAVEN_VERSION }}
 
-      - name: Set Dry Run for Pull Request
-        if: github.event_name == 'pull_request_target'
-        run: echo "DRY_RUN_PARAM=-DaltDeploymentRepository=local-repo::default::file:./local-repo" >> $GITHUB_ENV
-        shell: bash
-
       - name: Get Revision
         id: get-revision
         run: |

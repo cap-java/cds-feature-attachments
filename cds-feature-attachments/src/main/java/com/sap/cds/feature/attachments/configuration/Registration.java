@@ -3,6 +3,7 @@
  */
 package com.sap.cds.feature.attachments.configuration;
 
+import com.sap.cds.feature.attachments.handler.applicationservice.AttachmentCountValidationHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
@@ -17,8 +18,10 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Att
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.CreationChangeSetListener;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
+import com.sap.cds.feature.attachments.handler.common.AttachmentCountValidator;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftAttachmentCountValidationHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
@@ -109,6 +112,7 @@ public class Registration implements CdsRuntimeConfiguration {
         buildAttachmentEventFactory(attachmentService, deleteEvent, outboxedAttachmentService);
     AttachmentsReader attachmentsReader =
         new AttachmentsReader(new AssociationCascader(), persistenceService);
+    AttachmentCountValidator countValidator = new AttachmentCountValidator();
     ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
     // register event handlers for application service, if at least one application service is
@@ -126,6 +130,7 @@ public class Registration implements CdsRuntimeConfiguration {
       configurer.eventHandler(
           new ReadAttachmentsHandler(
               attachmentService, new AttachmentStatusValidator(), scanRunner));
+      configurer.eventHandler(new AttachmentCountValidationHandler(countValidator));
     } else {
       logger.debug(
           "No application service is available. Application service event handlers will not be registered.");
@@ -138,6 +143,7 @@ public class Registration implements CdsRuntimeConfiguration {
       configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
       configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteEvent));
       configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
+      configurer.eventHandler(new DraftAttachmentCountValidationHandler(countValidator));
     } else {
       logger.debug("No draft service is available. Draft event handlers will not be registered.");
     }
