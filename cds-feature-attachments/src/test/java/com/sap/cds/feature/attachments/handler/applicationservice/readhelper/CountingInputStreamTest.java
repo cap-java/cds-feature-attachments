@@ -208,12 +208,12 @@ class CountingInputStreamTest {
   }
 
   @Test
-  void close_nullDelegate_noException() {
+  void close_nullDelegate_noException() throws IOException {
     // This tests the null check in close(), though delegate is never null in practice
     var delegate = mock(InputStream.class);
-    var cut = new CountingInputStream(delegate, "100");
-
-    assertDoesNotThrow(cut::close);
+    try (var cut = new CountingInputStream(delegate, "100")) {
+      // Stream is closed by try-with-resources, verifying no exception is thrown
+    }
   }
 
   @Test

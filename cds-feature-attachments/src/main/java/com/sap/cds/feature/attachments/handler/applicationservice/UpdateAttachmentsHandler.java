@@ -45,18 +45,21 @@ public class UpdateAttachmentsHandler implements EventHandler {
   private final AttachmentsReader attachmentsReader;
   private final AttachmentService attachmentService;
   private final ThreadDataStorageReader storageReader;
+  private final String defaultMaxSize;
 
   public UpdateAttachmentsHandler(
       ModifyAttachmentEventFactory eventFactory,
       AttachmentsReader attachmentsReader,
       AttachmentService attachmentService,
-      ThreadDataStorageReader storageReader) {
+      ThreadDataStorageReader storageReader,
+      String defaultMaxSize) {
     this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
     this.attachmentsReader =
         requireNonNull(attachmentsReader, "attachmentsReader must not be null");
     this.attachmentService =
         requireNonNull(attachmentService, "attachmentService must not be null");
     this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
+    this.defaultMaxSize = requireNonNull(defaultMaxSize, "defaultMaxSize must not be null");
   }
 
   @Before
@@ -86,7 +89,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
           attachmentsReader.readAttachments(context.getModel(), target, select);
 
       ModifyApplicationHandlerHelper.handleAttachmentForEntities(
-          target, data, attachments, eventFactory, context);
+          target, data, attachments, eventFactory, context, defaultMaxSize);
 
       if (!associationsAreUnchanged) {
         deleteRemovedAttachments(attachments, data, target, context.getUserInfo());

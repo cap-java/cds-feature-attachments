@@ -7,6 +7,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachme
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.CreateAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.DoNothingAttachmentEvent;
@@ -91,6 +92,12 @@ public class Registration implements CdsRuntimeConfiguration {
     // build malware scanner client, could be null if no service binding is available
     MalwareScanClient scanClient = buildMalwareScanClient(runtime.getEnvironment());
 
+    // determine default max size based on malware scanner binding availability
+    String defaultMaxSize =
+        scanClient != null
+            ? ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER
+            : ModifyApplicationHandlerHelper.UNLIMITED_SIZE;
+
     AttachmentMalwareScanner malwareScanner =
         new DefaultAttachmentMalwareScanner(persistenceService, attachmentService, scanClient);
 
@@ -116,10 +123,10 @@ public class Registration implements CdsRuntimeConfiguration {
     boolean hasApplicationServices =
         serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
     if (hasApplicationServices) {
-      configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage));
+      configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage, defaultMaxSize));
       configurer.eventHandler(
           new UpdateAttachmentsHandler(
-              eventFactory, attachmentsReader, outboxedAttachmentService, storage));
+              eventFactory, attachmentsReader, outboxedAttachmentService, storage, defaultMaxSize));
       configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteEvent));
       EndTransactionMalwareScanRunner scanRunner =
           new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
@@ -135,7 +142,8 @@ public class Registration implements CdsRuntimeConfiguration {
     boolean hasDraftServices =
         serviceCatalog.getServices(DraftService.class).findFirst().isPresent();
     if (hasDraftServices) {
-      configurer.eventHandler(new DraftPatchAttachmentsHandler(persistenceService, eventFactory));
+      configurer.eventHandler(
+          new DraftPatchAttachmentsHandler(persistenceService, eventFactory, defaultMaxSize));
       configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteEvent));
       configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
     } else {

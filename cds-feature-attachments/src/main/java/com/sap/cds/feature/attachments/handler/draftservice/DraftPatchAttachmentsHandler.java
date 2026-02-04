@@ -40,11 +40,15 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
 
   private final PersistenceService persistence;
   private final ModifyAttachmentEventFactory eventFactory;
+  private final String defaultMaxSize;
 
   public DraftPatchAttachmentsHandler(
-      PersistenceService persistence, ModifyAttachmentEventFactory eventFactory) {
+      PersistenceService persistence,
+      ModifyAttachmentEventFactory eventFactory,
+      String defaultMaxSize) {
     this.persistence = requireNonNull(persistence, "persistence must not be null");
     this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
+    this.defaultMaxSize = requireNonNull(defaultMaxSize, "defaultMaxSize must not be null");
   }
 
   @Before
@@ -60,7 +64,12 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
           Result result = persistence.run(select);
 
           return ModifyApplicationHandlerHelper.handleAttachmentForEntity(
-              result.listOf(Attachments.class), eventFactory, context, path, (InputStream) value);
+              result.listOf(Attachments.class),
+              eventFactory,
+              context,
+              path,
+              (InputStream) value,
+              defaultMaxSize);
         };
 
     CdsDataProcessor.create()
