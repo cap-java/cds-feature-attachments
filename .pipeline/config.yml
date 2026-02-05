@@ -6,6 +6,8 @@ steps:
     # https://www.project-piper.io/steps/mavenBuild/#dockerimage
     # If empty, Docker is not used and the command is executed directly on the Jenkins system.
     dockerImage: ''
+    profiles:
+      - 'skip-integration-tests'
 
   detectExecuteScan:
     projectName: 'com.sap.cds.feature.attachments'

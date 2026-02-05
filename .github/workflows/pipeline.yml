@@ -62,6 +62,7 @@ jobs:
     timeout-minutes: 30
     needs: build
     strategy:
+      fail-fast: false
       matrix:
         java-version: [ 17, 21 ]
         test-type: [ build-version, latest-version, oss ]
