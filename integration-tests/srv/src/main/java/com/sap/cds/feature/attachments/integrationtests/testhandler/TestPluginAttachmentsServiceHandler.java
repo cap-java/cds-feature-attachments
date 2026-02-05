@@ -113,6 +113,6 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
   }
 
   public void clearDocuments() {
-    eventContextHolder.clear();
+    documents.clear();
   }
 }

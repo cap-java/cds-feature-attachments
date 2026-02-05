@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class TestPersistenceHandler implements EventHandler {
 
-  private boolean throwExceptionOnUpdate = false;
-  private boolean throwExceptionOnCreate = false;
+  private volatile boolean throwExceptionOnUpdate = false;
+  private volatile boolean throwExceptionOnCreate = false;
 
   @Before(event = EVENT_UPDATE)
   public void throwExceptionOnUpdate() {
