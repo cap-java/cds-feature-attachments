@@ -12,6 +12,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.Readonl
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentCountValidator;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
@@ -45,18 +46,21 @@ public class UpdateAttachmentsHandler implements EventHandler {
   private final AttachmentsReader attachmentsReader;
   private final AttachmentService attachmentService;
   private final ThreadDataStorageReader storageReader;
+  private final AttachmentCountValidator validator;
 
   public UpdateAttachmentsHandler(
       ModifyAttachmentEventFactory eventFactory,
       AttachmentsReader attachmentsReader,
       AttachmentService attachmentService,
-      ThreadDataStorageReader storageReader) {
+      ThreadDataStorageReader storageReader,
+      AttachmentCountValidator validator) {
     this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
     this.attachmentsReader =
         requireNonNull(attachmentsReader, "attachmentsReader must not be null");
     this.attachmentService =
         requireNonNull(attachmentService, "attachmentService must not be null");
     this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
+    this.validator = requireNonNull(validator, "validator must not be null");
   }
 
   @Before
@@ -79,6 +83,7 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
     if (containsContent || !associationsAreUnchanged) {
       logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
+      validator.validateForUpdate(target, data);
 
       // Query database only for validation (single query for all attachments)
       CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());

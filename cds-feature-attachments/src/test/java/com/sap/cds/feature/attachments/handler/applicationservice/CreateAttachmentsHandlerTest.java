@@ -29,6 +29,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadD
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
+import com.sap.cds.feature.attachments.handler.common.AttachmentCountValidator;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ErrorStatuses;
@@ -65,6 +66,7 @@ class CreateAttachmentsHandlerTest {
   private CdsCreateEventContext createContext;
   private ModifyAttachmentEvent event;
   private ThreadDataStorageReader storageReader;
+  private AttachmentCountValidator validator;
 
   @BeforeAll
   static void classSetup() {
@@ -75,7 +77,8 @@ class CreateAttachmentsHandlerTest {
   void setup() {
     eventFactory = mock(ModifyAttachmentEventFactory.class);
     storageReader = mock(ThreadDataStorageReader.class);
-    cut = new CreateAttachmentsHandler(eventFactory, storageReader);
+    validator = mock(AttachmentCountValidator.class);
+    cut = new CreateAttachmentsHandler(eventFactory, storageReader, validator);
 
     createContext = mock(CdsCreateEventContext.class);
     event = mock(ModifyAttachmentEvent.class);
