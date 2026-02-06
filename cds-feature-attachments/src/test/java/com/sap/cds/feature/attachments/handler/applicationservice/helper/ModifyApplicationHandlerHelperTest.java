@@ -91,7 +91,8 @@ class ModifyApplicationHandlerHelperTest {
                     eventFactory,
                     eventContext,
                     path,
-                    attachment.getContent()));
+                    attachment.getContent(),
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -140,7 +141,12 @@ class ModifyApplicationHandlerHelperTest {
             ServiceException.class,
             () ->
                 ModifyApplicationHandlerHelper.handleAttachmentForEntity(
-                    existingAttachments, eventFactory, eventContext, path, content));
+                    existingAttachments,
+                    eventFactory,
+                    eventContext,
+                    path,
+                    content,
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -167,7 +173,12 @@ class ModifyApplicationHandlerHelperTest {
     assertDoesNotThrow(
         () ->
             ModifyApplicationHandlerHelper.handleAttachmentForEntity(
-                existingAttachments, eventFactory, eventContext, path, content));
+                existingAttachments,
+                eventFactory,
+                eventContext,
+                path,
+                content,
+                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
   }
 
   @Test
@@ -194,7 +205,12 @@ class ModifyApplicationHandlerHelperTest {
             ServiceException.class,
             () ->
                 ModifyApplicationHandlerHelper.handleAttachmentForEntity(
-                    existingAttachments, eventFactory, eventContext, path, content));
+                    existingAttachments,
+                    eventFactory,
+                    eventContext,
+                    path,
+                    content,
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
   }

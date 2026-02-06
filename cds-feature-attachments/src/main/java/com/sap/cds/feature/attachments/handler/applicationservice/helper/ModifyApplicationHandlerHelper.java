@@ -24,6 +24,12 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public final class ModifyApplicationHandlerHelper {
 
+  /** Default max size when malware scanner binding is present (400 MB). */
+  public static final String DEFAULT_SIZE_WITH_SCANNER = "400MB";
+
+  /** Effectively unlimited max size when no malware scanner binding is present. */
+  public static final String UNLIMITED_SIZE = String.valueOf(Long.MAX_VALUE);
+
   private static final Filter VALMAX_FILTER =
       (path, element, type) ->
           element.getName().contentEquals("content")
@@ -37,13 +43,15 @@ public final class ModifyApplicationHandlerHelper {
    * @param existingAttachments the given list of existing {@link CdsData data}
    * @param eventFactory the {@link ModifyAttachmentEventFactory} to create the corresponding event
    * @param eventContext the current {@link EventContext}
+   * @param defaultMaxSize the default max size to use when no annotation is present
    */
   public static void handleAttachmentForEntities(
       CdsEntity entity,
       List<CdsData> data,
       List<Attachments> existingAttachments,
       ModifyAttachmentEventFactory eventFactory,
-      EventContext eventContext) {
+      EventContext eventContext,
+      String defaultMaxSize) {
     // Condense existing attachments to get a flat list for matching
     List<Attachments> condensedExistingAttachments =
         ApplicationHandlerHelper.condenseAttachments(existingAttachments, entity);
@@ -55,7 +63,8 @@ public final class ModifyApplicationHandlerHelper {
                 eventFactory,
                 eventContext,
                 path,
-                (InputStream) value);
+                (InputStream) value,
+                defaultMaxSize);
 
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
@@ -70,6 +79,7 @@ public final class ModifyApplicationHandlerHelper {
    * @param eventContext the current {@link EventContext}
    * @param path the {@link Path} of the attachment
    * @param content the content of the attachment
+   * @param defaultMaxSize the default max size to use when no annotation is present
    * @return the processed content as an {@link InputStream}
    */
   public static InputStream handleAttachmentForEntity(
@@ -77,13 +87,14 @@ public final class ModifyApplicationHandlerHelper {
       ModifyAttachmentEventFactory eventFactory,
       EventContext eventContext,
       Path path,
-      InputStream content) {
+      InputStream content,
+      String defaultMaxSize) {
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
     ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values());
     Attachments attachment = getExistingAttachment(keys, existingAttachments);
     String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
-    String maxSizeStr = getValMaxValue(path.target().entity(), existingAttachments);
+    String maxSizeStr = getValMaxValue(path.target().entity(), existingAttachments, defaultMaxSize);
     eventContext.put(
         "attachment.MaxSize",
         maxSizeStr); // make max size available in context for error handling later
@@ -114,7 +125,8 @@ public final class ModifyApplicationHandlerHelper {
     }
   }
 
-  private static String getValMaxValue(CdsEntity entity, List<? extends CdsData> data) {
+  private static String getValMaxValue(
+      CdsEntity entity, List<? extends CdsData> data, String defaultMaxSize) {
     AtomicReference<String> annotationValue = new AtomicReference<>();
     CdsDataProcessor.create()
         .addValidator(
@@ -130,7 +142,7 @@ public final class ModifyApplicationHandlerHelper {
                       });
             })
         .process(data, entity);
-    return annotationValue.get() == null ? "400MB" : annotationValue.get();
+    return annotationValue.get() == null ? defaultMaxSize : annotationValue.get();
   }
 
   private static Attachments getExistingAttachment(

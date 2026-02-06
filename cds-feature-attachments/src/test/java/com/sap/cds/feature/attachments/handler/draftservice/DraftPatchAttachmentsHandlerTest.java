@@ -18,6 +18,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
@@ -60,7 +61,9 @@ class DraftPatchAttachmentsHandlerTest {
   void setup() {
     persistence = mock(PersistenceService.class);
     eventFactory = mock(ModifyAttachmentEventFactory.class);
-    cut = new DraftPatchAttachmentsHandler(persistence, eventFactory);
+    cut =
+        new DraftPatchAttachmentsHandler(
+            persistence, eventFactory, ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
     eventContext = mock(DraftPatchEventContext.class);
     event = mock(ModifyAttachmentEvent.class);
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);

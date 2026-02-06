@@ -208,15 +208,6 @@ class CountingInputStreamTest {
   }
 
   @Test
-  void close_nullDelegate_noException() {
-    // This tests the null check in close(), though delegate is never null in practice
-    var delegate = mock(InputStream.class);
-    var cut = new CountingInputStream(delegate, "100");
-
-    assertDoesNotThrow(cut::close);
-  }
-
-  @Test
   void constructor_invalidMaxSize_throwsIllegalArgumentException() {
     var delegate = mock(InputStream.class);
 

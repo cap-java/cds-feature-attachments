@@ -40,11 +40,15 @@ public class CreateAttachmentsHandler implements EventHandler {
 
   private final ModifyAttachmentEventFactory eventFactory;
   private final ThreadDataStorageReader storageReader;
+  private final String defaultMaxSize;
 
   public CreateAttachmentsHandler(
-      ModifyAttachmentEventFactory eventFactory, ThreadDataStorageReader storageReader) {
+      ModifyAttachmentEventFactory eventFactory,
+      ThreadDataStorageReader storageReader,
+      String defaultMaxSize) {
     this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
     this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
+    this.defaultMaxSize = requireNonNull(defaultMaxSize, "defaultMaxSize must not be null");
   }
 
   @Before
@@ -64,7 +68,7 @@ public class CreateAttachmentsHandler implements EventHandler {
       logger.debug(
           "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
       ModifyApplicationHandlerHelper.handleAttachmentForEntities(
-          context.getTarget(), data, new ArrayList<>(), eventFactory, context);
+          context.getTarget(), data, new ArrayList<>(), eventFactory, context, defaultMaxSize);
     }
   }
 

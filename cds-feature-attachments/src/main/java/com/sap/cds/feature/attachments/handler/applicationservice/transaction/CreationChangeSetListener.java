@@ -7,6 +7,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
+import com.sap.cds.services.changeset.ChangeSetContext;
 import com.sap.cds.services.changeset.ChangeSetListener;
 import com.sap.cds.services.request.RequestContext;
 import com.sap.cds.services.runtime.CdsRuntime;
@@ -41,13 +42,22 @@ public class CreationChangeSetListener implements ChangeSetListener {
   @Override
   public void afterClose(boolean completed) {
     if (!completed) {
+      // Run in a dedicated ChangeSetContext to ensure the DELETE is committed
+      // independently of the failed parent transaction. This is necessary because
+      // the outbox only processes messages when the changeset completes successfully.
       cdsRuntime
           .requestContext()
           .run(
               (Consumer<RequestContext>)
                   requestContext ->
-                      attachmentService.markAttachmentAsDeleted(
-                          new MarkAsDeletedInput(contentId, requestContext.getUserInfo())));
+                      cdsRuntime
+                          .changeSetContext()
+                          .run(
+                              (Consumer<ChangeSetContext>)
+                                  changeSetContext ->
+                                      attachmentService.markAttachmentAsDeleted(
+                                          new MarkAsDeletedInput(
+                                              contentId, requestContext.getUserInfo()))));
     }
   }
 }

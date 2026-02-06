@@ -16,11 +16,11 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -37,8 +37,9 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
   private static final Logger logger =
       LoggerFactory.getLogger(TestPluginAttachmentsServiceHandler.class);
 
-  private static final Map<String, byte[]> documents = new HashMap<>();
-  private static final List<EventContextHolder> eventContextHolder = new ArrayList<>();
+  private static final Map<String, byte[]> documents = new ConcurrentHashMap<>();
+  private static final List<EventContextHolder> eventContextHolder =
+      Collections.synchronizedList(new ArrayList<>());
 
   @On(event = AttachmentService.EVENT_CREATE_ATTACHMENT)
   public void createAttachment(AttachmentCreateEventContext context) throws IOException {
@@ -69,8 +70,9 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
         marker,
         "READ Attachment called in dummy handler for content id {}",
         context.getContentId());
-    var content = documents.get(context.getContentId());
-    var stream = Objects.nonNull(content) ? new ByteArrayInputStream(content) : null;
+    var contentId = context.getContentId();
+    var content = contentId != null ? documents.get(contentId) : null;
+    var stream = content != null ? new ByteArrayInputStream(content) : null;
     context.getData().setContent(stream);
     context.setCompleted();
     eventContextHolder.add(
@@ -111,6 +113,6 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
   }
 
   public void clearDocuments() {
-    eventContextHolder.clear();
+    documents.clear();
   }
 }
