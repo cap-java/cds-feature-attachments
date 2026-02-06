@@ -6,6 +6,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Version 1.3.1 - 2026-02-06
+
+### Added
+
+### Changed
+- Changed default max file size value to only be enforced when using the malware scanner
+
+### Fixed
+
 ## Version 1.3.0 - 2026-01-26
 
 ### Added
