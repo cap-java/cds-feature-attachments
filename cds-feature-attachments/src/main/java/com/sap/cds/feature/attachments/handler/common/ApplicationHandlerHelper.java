@@ -140,13 +140,22 @@ public final class ApplicationHandlerHelper {
     return keyMap;
   }
 
+  /**
+   * Validates if the media type of the attachment in the given fileName is
+   * acceptable
+   *
+   * @param entity the {@link CdsEntity entity} type of the given data
+   * @param data   the list of {@link CdsData} to process
+   * @throws ServiceException if the media type of the attachment is not
+   *                          acceptable
+   */
   public static void validateAcceptableMediaTypes(CdsEntity entity, List<CdsData> data) {
     List<String> allowedTypes = getEntityAcceptableMediaTypes(entity);
     String fileName = extractFileName(entity, data);
     AttachmentValidationHelper.validateMediaTypeForAttachment(fileName, allowedTypes);
   }
 
-  private static List<String> getEntityAcceptableMediaTypes(CdsEntity entity) {
+  protected static List<String> getEntityAcceptableMediaTypes(CdsEntity entity) {
     Optional<CdsAnnotation<Object>> acceptableMediaTypeFromContent = entity.getElement("content")
         .findAnnotation("Core.AcceptableMediaTypes");
 
@@ -158,7 +167,7 @@ public final class ApplicationHandlerHelper {
         .orElse(List.of("*/*"));
   }
 
-  private static String extractFileName(CdsEntity entity, List<? extends CdsData> data) {
+  protected static String extractFileName(CdsEntity entity, List<? extends CdsData> data) {
     CdsDataProcessor processor = CdsDataProcessor.create();
     AtomicReference<String> fileNameRef = new AtomicReference<>();
     Validator validator = (path, element, value) -> {
