@@ -21,12 +21,15 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Update;
@@ -37,12 +40,14 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
+import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
+import com.sap.cds.services.utils.OrderConstants;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.Collections;
@@ -60,16 +65,22 @@ class UpdateAttachmentsHandlerTest {
   private static final String DRAFT_READONLY_CONTEXT = "DRAFT_READONLY_CONTEXT";
   private static CdsRuntime runtime;
 
-  private UpdateAttachmentsHandler cut;
+  private ApplicationServiceAttachmentsHandler cut;
   private ModifyAttachmentEventFactory eventFactory;
   private AttachmentsReader attachmentsReader;
-  private AttachmentService attachmentService;
+  private AttachmentService outboxedAttachmentService;
   private CdsUpdateEventContext updateContext;
   private ModifyAttachmentEvent event;
   private ArgumentCaptor<Attachments> cdsDataArgumentCaptor;
   private ArgumentCaptor<CqnSelect> selectCaptor;
   private ThreadDataStorageReader storageReader;
   private UserInfo userInfo;
+
+  // Additional mocks required for ApplicationServiceAttachmentsHandler
+  private AttachmentService attachmentService;
+  private AttachmentStatusValidator statusValidator;
+  private AsyncMalwareScanExecutor scanExecutor;
+  private MarkAsDeletedAttachmentEvent deleteEvent;
 
   @BeforeAll
   static void classSetup() {
@@ -80,15 +91,24 @@ class UpdateAttachmentsHandlerTest {
   void setup() {
     eventFactory = mock(ModifyAttachmentEventFactory.class);
     attachmentsReader = mock(AttachmentsReader.class);
-    attachmentService = mock(AttachmentService.class);
+    outboxedAttachmentService = mock(AttachmentService.class);
     storageReader = mock(ThreadDataStorageReader.class);
+    attachmentService = mock(AttachmentService.class);
+    statusValidator = mock(AttachmentStatusValidator.class);
+    scanExecutor = mock(AsyncMalwareScanExecutor.class);
+    deleteEvent = mock(MarkAsDeletedAttachmentEvent.class);
+
     cut =
-        new UpdateAttachmentsHandler(
+        new ApplicationServiceAttachmentsHandler(
             eventFactory,
-            attachmentsReader,
-            attachmentService,
             storageReader,
-            ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+            ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+            attachmentService,
+            statusValidator,
+            scanExecutor,
+            attachmentsReader,
+            outboxedAttachmentService,
+            deleteEvent);
 
     event = mock(ModifyAttachmentEvent.class);
     updateContext = mock(CdsUpdateEventContext.class);
@@ -106,11 +126,11 @@ class UpdateAttachmentsHandlerTest {
     getEntityAndMockContext(Attachment_.CDS_NAME);
     var attachment = Attachments.create();
 
-    cut.processBefore(updateContext, List.of(attachment));
+    cut.processBeforeUpdate(updateContext, List.of(attachment));
 
     verifyNoInteractions(eventFactory);
     verifyNoInteractions(attachmentsReader);
-    verifyNoInteractions(attachmentService);
+    verifyNoInteractions(outboxedAttachmentService);
   }
 
   @Test
@@ -123,7 +143,7 @@ class UpdateAttachmentsHandlerTest {
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(attachment));
 
-    cut.processBefore(updateContext, List.of(attachment));
+    cut.processBeforeUpdate(updateContext, List.of(attachment));
 
     ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(eventFactory).getEvent(streamCaptor.capture(), eq((String) null), eq(attachment));
@@ -147,7 +167,7 @@ class UpdateAttachmentsHandlerTest {
 
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-    cut.processBefore(updateContext, List.of(attachment));
+    cut.processBeforeUpdate(updateContext, List.of(attachment));
 
     ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(eventFactory)
@@ -177,7 +197,7 @@ class UpdateAttachmentsHandlerTest {
     updateAttachment.setContent(null);
     when(storageReader.get()).thenReturn(true);
 
-    cut.processBeforeForDraft(updateContext, List.of(updateAttachment));
+    cut.preserveReadonlyFieldsOnUpdate(updateContext, List.of(updateAttachment));
 
     verifyNoInteractions(eventFactory, event);
     assertThat(updateAttachment.get(DRAFT_READONLY_CONTEXT)).isNotNull();
@@ -203,7 +223,7 @@ class UpdateAttachmentsHandlerTest {
     updateAttachment.put("DRAFT_READONLY_CONTEXT", readonlyData);
     when(storageReader.get()).thenReturn(false);
 
-    cut.processBeforeForDraft(updateContext, List.of(updateAttachment));
+    cut.preserveReadonlyFieldsOnUpdate(updateContext, List.of(updateAttachment));
 
     verifyNoInteractions(eventFactory, event);
     assertThat(updateAttachment.get(DRAFT_READONLY_CONTEXT)).isNull();
@@ -223,7 +243,7 @@ class UpdateAttachmentsHandlerTest {
     updateAttachment.setScannedAt(Instant.now());
     when(storageReader.get()).thenReturn(false);
 
-    cut.processBeforeForDraft(updateContext, List.of(updateAttachment));
+    cut.preserveReadonlyFieldsOnUpdate(updateContext, List.of(updateAttachment));
 
     verifyNoInteractions(eventFactory, event);
     assertThat(updateAttachment.get(DRAFT_READONLY_CONTEXT)).isNull();
@@ -235,11 +255,11 @@ class UpdateAttachmentsHandlerTest {
     when(updateContext.getTarget())
         .thenReturn(runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow());
 
-    cut.processBeforeForDraft(updateContext, Collections.emptyList());
+    cut.preserveReadonlyFieldsOnUpdate(updateContext, Collections.emptyList());
 
     verifyNoInteractions(eventFactory);
     verifyNoInteractions(attachmentsReader);
-    verifyNoInteractions(attachmentService);
+    verifyNoInteractions(outboxedAttachmentService);
     verifyNoInteractions(event);
   }
 
@@ -255,7 +275,7 @@ class UpdateAttachmentsHandlerTest {
         .thenReturn(List.of(attachment));
 
     List<CdsData> input = List.of(attachment);
-    assertThrows(ServiceException.class, () -> cut.processBefore(updateContext, input));
+    assertThrows(ServiceException.class, () -> cut.processBeforeUpdate(updateContext, input));
   }
 
   @Test
@@ -270,7 +290,7 @@ class UpdateAttachmentsHandlerTest {
             eq(model), eq(target), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(Attachments.of(root)));
 
-    cut.processBefore(updateContext, List.of(root));
+    cut.processBeforeUpdate(updateContext, List.of(root));
 
     ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(eventFactory)
@@ -307,7 +327,7 @@ class UpdateAttachmentsHandlerTest {
     attachment.setContent(testStream);
     root.setAttachments(List.of(attachment));
 
-    cut.processBefore(updateContext, List.of(root));
+    cut.processBeforeUpdate(updateContext, List.of(root));
 
     ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(eventFactory)
@@ -329,7 +349,7 @@ class UpdateAttachmentsHandlerTest {
     root.setAttachments(List.of(attachment));
 
     List<CdsData> roots = List.of(root);
-    assertDoesNotThrow(() -> cut.processBefore(updateContext, roots));
+    assertDoesNotThrow(() -> cut.processBeforeUpdate(updateContext, roots));
   }
 
   @Test
@@ -345,7 +365,7 @@ class UpdateAttachmentsHandlerTest {
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(attachment));
 
-    cut.processBefore(updateContext, List.of(attachment));
+    cut.processBeforeUpdate(updateContext, List.of(attachment));
 
     verify(attachmentsReader)
         .readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
@@ -368,7 +388,7 @@ class UpdateAttachmentsHandlerTest {
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(attachment));
 
-    cut.processBefore(updateContext, List.of(attachment));
+    cut.processBeforeUpdate(updateContext, List.of(attachment));
 
     verify(attachmentsReader)
         .readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
@@ -389,7 +409,7 @@ class UpdateAttachmentsHandlerTest {
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(attachment));
 
-    cut.processBefore(updateContext, List.of(attachment));
+    cut.processBeforeUpdate(updateContext, List.of(attachment));
 
     verify(attachmentsReader)
         .readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
@@ -412,7 +432,7 @@ class UpdateAttachmentsHandlerTest {
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(attachment));
 
-    cut.processBefore(updateContext, List.of(attachment));
+    cut.processBeforeUpdate(updateContext, List.of(attachment));
 
     verify(attachmentsReader)
         .readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
@@ -444,7 +464,7 @@ class UpdateAttachmentsHandlerTest {
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(attachment1, attachment2));
 
-    cut.processBefore(updateContext, List.of(attachment1, attachment2));
+    cut.processBeforeUpdate(updateContext, List.of(attachment1, attachment2));
 
     verify(attachmentsReader)
         .readAttachments(eq(runtime.getCdsModel()), eq(serviceEntity), selectCaptor.capture());
@@ -461,11 +481,11 @@ class UpdateAttachmentsHandlerTest {
     root.setId(id);
     root.setAttachments(Collections.emptyList());
 
-    cut.processBefore(updateContext, List.of(root));
+    cut.processBeforeUpdate(updateContext, List.of(root));
 
     verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
     verifyNoInteractions(eventFactory);
-    verifyNoInteractions(attachmentService);
+    verifyNoInteractions(outboxedAttachmentService);
   }
 
   @Test
@@ -489,12 +509,12 @@ class UpdateAttachmentsHandlerTest {
         .thenReturn(List.of(Attachments.of(existingRoot)));
     when(updateContext.getUserInfo()).thenReturn(userInfo);
 
-    cut.processBefore(updateContext, List.of(root));
+    cut.processBeforeUpdate(updateContext, List.of(root));
 
     verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
     verifyNoInteractions(eventFactory);
     var deletionInputCaptor = ArgumentCaptor.forClass(MarkAsDeletedInput.class);
-    verify(attachmentService).markAttachmentAsDeleted(deletionInputCaptor.capture());
+    verify(outboxedAttachmentService).markAttachmentAsDeleted(deletionInputCaptor.capture());
     assertThat(deletionInputCaptor.getValue().contentId()).isEqualTo(attachment.getContentId());
     assertThat(deletionInputCaptor.getValue().userInfo()).isEqualTo(userInfo);
   }
@@ -510,13 +530,28 @@ class UpdateAttachmentsHandlerTest {
   @Test
   void methodHasCorrectAnnotations() throws NoSuchMethodException {
     var method =
-        cut.getClass().getDeclaredMethod("processBefore", CdsUpdateEventContext.class, List.class);
+        cut.getClass()
+            .getDeclaredMethod("processBeforeUpdate", CdsUpdateEventContext.class, List.class);
 
     var updateBeforeAnnotation = method.getAnnotation(Before.class);
     var updateHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-    assertThat(updateBeforeAnnotation.event()).isEmpty();
+    assertThat(updateBeforeAnnotation.event()).containsOnly(CqnService.EVENT_UPDATE);
     assertThat(updateHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
+  }
+
+  @Test
+  void preserveReadonlyFieldsMethodHasCorrectAnnotations() throws NoSuchMethodException {
+    var method =
+        cut.getClass()
+            .getDeclaredMethod(
+                "preserveReadonlyFieldsOnUpdate", CdsUpdateEventContext.class, List.class);
+
+    var beforeAnnotation = method.getAnnotation(Before.class);
+    var handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
+
+    assertThat(beforeAnnotation.event()).containsOnly(CqnService.EVENT_UPDATE);
+    assertThat(handlerOrderAnnotation.value()).isEqualTo(OrderConstants.Before.CHECK_CAPABILITIES);
   }
 
   private RootTable fillRootData(InputStream testStream, String id) {

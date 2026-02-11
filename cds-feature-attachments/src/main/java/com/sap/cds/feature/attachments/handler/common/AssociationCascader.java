@@ -3,8 +3,6 @@
  */
 package com.sap.cds.feature.attachments.handler.common;
 
-import com.sap.cds.reflect.CdsAssociationType;
-import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import java.util.ArrayList;
@@ -12,7 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,25 +59,15 @@ public class AssociationCascader {
       return internalResultList;
     }
 
-    Map<String, CdsEntity> associations =
-        entity
-            .elements()
-            .filter(
-                element ->
-                    element.getType().isAssociation()
-                        && element.getType().as(CdsAssociationType.class).isComposition())
-            .collect(
-                Collectors.toMap(
-                    CdsElementDefinition::getName,
-                    element -> element.getType().as(CdsAssociationType.class).getTarget()));
+    Map<String, CdsEntity> compositions = AttachmentEntityScanner.getCompositions(entity);
 
-    if (associations.isEmpty()) {
+    if (compositions.isEmpty()) {
       return internalResultList;
     }
 
     var newListNeeded = false;
-    for (var associatedElement : associations.entrySet()) {
-      if (!processedEntities.contains(associatedElement.getValue().getQualifiedName())) {
+    for (Map.Entry<String, CdsEntity> compositionEntry : compositions.entrySet()) {
+      if (!processedEntities.contains(compositionEntry.getValue().getQualifiedName())) {
         if (newListNeeded) {
           currentList.set(new LinkedList<>());
           currentList.get().addAll(firstList);
@@ -90,13 +77,13 @@ public class AssociationCascader {
           currentList.get().addAll(firstList);
           localProcessEntities = new ArrayList<>(processedEntities);
         }
-        processedEntities.add(associatedElement.getValue().getQualifiedName());
+        processedEntities.add(compositionEntry.getValue().getQualifiedName());
         newListNeeded = true;
         var result =
             getAttachmentAssociationPath(
                 model,
-                associatedElement.getValue(),
-                associatedElement.getKey(),
+                compositionEntry.getValue(),
+                compositionEntry.getKey(),
                 currentList.get(),
                 processedEntities);
         internalResultList.addAll(result);

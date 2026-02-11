@@ -27,10 +27,15 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
+import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
+import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.EventContext;
@@ -45,6 +50,7 @@ import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
+import com.sap.cds.services.utils.OrderConstants;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,11 +67,19 @@ class CreateAttachmentsHandlerTest {
   private static final String DRAFT_READONLY_CONTEXT = "DRAFT_READONLY_CONTEXT";
   private static CdsRuntime runtime;
 
-  private CreateAttachmentsHandler cut;
+  private ApplicationServiceAttachmentsHandler cut;
   private ModifyAttachmentEventFactory eventFactory;
   private CdsCreateEventContext createContext;
   private ModifyAttachmentEvent event;
   private ThreadDataStorageReader storageReader;
+
+  // Additional mocks required for ApplicationServiceAttachmentsHandler
+  private AttachmentService attachmentService;
+  private AttachmentStatusValidator statusValidator;
+  private AsyncMalwareScanExecutor scanExecutor;
+  private AttachmentsReader attachmentsReader;
+  private AttachmentService outboxedAttachmentService;
+  private MarkAsDeletedAttachmentEvent deleteEvent;
 
   @BeforeAll
   static void classSetup() {
@@ -76,9 +90,24 @@ class CreateAttachmentsHandlerTest {
   void setup() {
     eventFactory = mock(ModifyAttachmentEventFactory.class);
     storageReader = mock(ThreadDataStorageReader.class);
+    attachmentService = mock(AttachmentService.class);
+    statusValidator = mock(AttachmentStatusValidator.class);
+    scanExecutor = mock(AsyncMalwareScanExecutor.class);
+    attachmentsReader = mock(AttachmentsReader.class);
+    outboxedAttachmentService = mock(AttachmentService.class);
+    deleteEvent = mock(MarkAsDeletedAttachmentEvent.class);
+
     cut =
-        new CreateAttachmentsHandler(
-            eventFactory, storageReader, ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+        new ApplicationServiceAttachmentsHandler(
+            eventFactory,
+            storageReader,
+            ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+            attachmentService,
+            statusValidator,
+            scanExecutor,
+            attachmentsReader,
+            outboxedAttachmentService,
+            deleteEvent);
 
     createContext = mock(CdsCreateEventContext.class);
     event = mock(ModifyAttachmentEvent.class);
@@ -92,7 +121,7 @@ class CreateAttachmentsHandlerTest {
     getEntityAndMockContext(Attachment_.CDS_NAME);
     var attachment = Attachments.create();
 
-    cut.processBefore(createContext, List.of(attachment));
+    cut.processBeforeCreate(createContext, List.of(attachment));
 
     verifyNoInteractions(eventFactory);
   }
@@ -108,7 +137,7 @@ class CreateAttachmentsHandlerTest {
     roots.setAttachments(List.of(attachment));
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-    cut.processBefore(createContext, List.of(roots));
+    cut.processBeforeCreate(createContext, List.of(roots));
 
     verify(eventFactory).getEvent(null, null, Attachments.create());
   }
@@ -122,7 +151,7 @@ class CreateAttachmentsHandlerTest {
       attachment.setContent(testStream);
       when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-      cut.processBefore(createContext, List.of(attachment));
+      cut.processBeforeCreate(createContext, List.of(attachment));
 
       ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
       verify(eventFactory)
@@ -144,7 +173,7 @@ class CreateAttachmentsHandlerTest {
     attachment.setContent(null);
     when(storageReader.get()).thenReturn(true);
 
-    cut.processBeforeForDraft(createContext, List.of(attachment));
+    cut.preserveReadonlyFieldsOnCreate(createContext, List.of(attachment));
 
     verifyNoInteractions(eventFactory, event);
     assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNotNull();
@@ -170,7 +199,7 @@ class CreateAttachmentsHandlerTest {
     createAttachment.put(DRAFT_READONLY_CONTEXT, readonlyData);
     when(storageReader.get()).thenReturn(false);
 
-    cut.processBeforeForDraft(createContext, List.of(createAttachment));
+    cut.preserveReadonlyFieldsOnCreate(createContext, List.of(createAttachment));
 
     verifyNoInteractions(eventFactory, event);
     assertThat(createAttachment.get(DRAFT_READONLY_CONTEXT)).isNull();
@@ -190,7 +219,7 @@ class CreateAttachmentsHandlerTest {
     attachment.setScannedAt(Instant.now());
     when(storageReader.get()).thenReturn(false);
 
-    cut.processBeforeForDraft(createContext, List.of(attachment));
+    cut.preserveReadonlyFieldsOnCreate(createContext, List.of(attachment));
 
     verifyNoInteractions(eventFactory, event);
     assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
@@ -206,7 +235,7 @@ class CreateAttachmentsHandlerTest {
       when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
       when(createContext.getService()).thenReturn(mock(ApplicationService.class));
 
-      cut.processBeforeForDraft(createContext, List.of(attachment));
+      cut.preserveReadonlyFieldsOnCreate(createContext, List.of(attachment));
 
       verifyNoInteractions(eventFactory);
     }
@@ -222,7 +251,7 @@ class CreateAttachmentsHandlerTest {
     when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));
 
     List<CdsData> input = List.of(attachment);
-    assertThrows(ServiceException.class, () -> cut.processBefore(createContext, input));
+    assertThrows(ServiceException.class, () -> cut.processBeforeCreate(createContext, input));
   }
 
   @Test
@@ -239,7 +268,7 @@ class CreateAttachmentsHandlerTest {
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
     List<CdsData> input = List.of(events);
-    cut.processBefore(createContext, input);
+    cut.processBeforeCreate(createContext, input);
 
     ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(eventFactory).getEvent(streamCaptor.capture(), any(), any());
@@ -263,7 +292,7 @@ class CreateAttachmentsHandlerTest {
 
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
-    cut.processBefore(createContext, List.of(attachment));
+    cut.processBeforeCreate(createContext, List.of(attachment));
 
     ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(eventFactory)
@@ -293,7 +322,7 @@ class CreateAttachmentsHandlerTest {
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
     List<CdsData> input = List.of(events);
-    cut.processBefore(createContext, input);
+    cut.processBeforeCreate(createContext, input);
 
     verifyNoInteractions(eventFactory);
     assertThat(events.getId1()).isNull();
@@ -311,33 +340,48 @@ class CreateAttachmentsHandlerTest {
   @Test
   void methodHasCorrectAnnotations() throws NoSuchMethodException {
     var method =
-        cut.getClass().getDeclaredMethod("processBefore", CdsCreateEventContext.class, List.class);
+        cut.getClass()
+            .getDeclaredMethod("processBeforeCreate", CdsCreateEventContext.class, List.class);
 
     var createBeforeAnnotation = method.getAnnotation(Before.class);
     var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-    assertThat(createBeforeAnnotation.event()).isEmpty();
+    assertThat(createBeforeAnnotation.event()).containsOnly(CqnService.EVENT_CREATE);
     assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
   }
 
   @Test
-  void restoreError_proceedsSuccessfully_noException() {
+  void preserveReadonlyFieldsMethodHasCorrectAnnotations() throws NoSuchMethodException {
+    var method =
+        cut.getClass()
+            .getDeclaredMethod(
+                "preserveReadonlyFieldsOnCreate", CdsCreateEventContext.class, List.class);
+
+    var beforeAnnotation = method.getAnnotation(Before.class);
+    var handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
+
+    assertThat(beforeAnnotation.event()).containsOnly(CqnService.EVENT_CREATE);
+    assertThat(handlerOrderAnnotation.value()).isEqualTo(OrderConstants.Before.CHECK_CAPABILITIES);
+  }
+
+  @Test
+  void handleContentTooLargeError_proceedsSuccessfully_noException() {
     var context = mock(EventContext.class);
     doNothing().when(context).proceed();
 
-    assertDoesNotThrow(() -> cut.restoreError(context));
+    assertDoesNotThrow(() -> cut.handleContentTooLargeError(context));
     verify(context).proceed();
   }
 
   @Test
-  void restoreError_contentTooLargeWithMaxSize_throwsWithMaxSize() {
+  void handleContentTooLargeError_contentTooLargeWithMaxSize_throwsWithMaxSize() {
     var context = mock(EventContext.class);
     var originalException =
         new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE, "original message");
     doThrow(originalException).when(context).proceed();
     when(context.get("attachment.MaxSize")).thenReturn("10MB");
 
-    var exception = assertThrows(ServiceException.class, () -> cut.restoreError(context));
+    var exception = assertThrows(ServiceException.class, () -> cut.handleContentTooLargeError(context));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
     assertThat(exception.getMessage()).contains("AttachmentSizeExceeded");
@@ -345,14 +389,14 @@ class CreateAttachmentsHandlerTest {
   }
 
   @Test
-  void restoreError_contentTooLargeWithoutMaxSize_throwsWithoutMaxSize() {
+  void handleContentTooLargeError_contentTooLargeWithoutMaxSize_throwsWithoutMaxSize() {
     var context = mock(EventContext.class);
     var originalException =
         new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE, "original message");
     doThrow(originalException).when(context).proceed();
     when(context.get("attachment.MaxSize")).thenReturn(null);
 
-    var exception = assertThrows(ServiceException.class, () -> cut.restoreError(context));
+    var exception = assertThrows(ServiceException.class, () -> cut.handleContentTooLargeError(context));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
     assertThat(exception.getMessage()).contains("AttachmentSizeExceeded");
@@ -360,19 +404,19 @@ class CreateAttachmentsHandlerTest {
   }
 
   @Test
-  void restoreError_otherServiceException_rethrowsOriginal() {
+  void handleContentTooLargeError_otherServiceException_rethrowsOriginal() {
     var context = mock(EventContext.class);
     var originalException = new ServiceException(ErrorStatuses.BAD_REQUEST, "some other error");
     doThrow(originalException).when(context).proceed();
 
-    var exception = assertThrows(ServiceException.class, () -> cut.restoreError(context));
+    var exception = assertThrows(ServiceException.class, () -> cut.handleContentTooLargeError(context));
 
     assertThat(exception).isSameAs(originalException);
   }
 
   @Test
-  void restoreError_methodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method = cut.getClass().getDeclaredMethod("restoreError", EventContext.class);
+  void handleContentTooLargeError_methodHasCorrectAnnotations() throws NoSuchMethodException {
+    var method = cut.getClass().getDeclaredMethod("handleContentTooLargeError", EventContext.class);
 
     var onAnnotation = method.getAnnotation(On.class);
     var handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
