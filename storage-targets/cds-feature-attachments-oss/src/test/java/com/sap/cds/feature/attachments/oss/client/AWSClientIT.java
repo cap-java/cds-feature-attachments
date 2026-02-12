@@ -17,7 +17,7 @@ class AWSClientIT {
   // They require a valid ServiceBinding with credentials set up in the environment.
 
   @Test
-  void testCreateReadDeleteAttachmentFlowAWS() throws Exception {
+  void testCreateReadDeleteAttachmentFlowAWS() {
     ServiceBinding binding = getRealServiceBindingAWS();
     ExecutorService executor = Executors.newCachedThreadPool();
     OSSAttachmentsServiceHandlerTestUtils.testCreateReadDeleteAttachmentFlow(binding, executor);

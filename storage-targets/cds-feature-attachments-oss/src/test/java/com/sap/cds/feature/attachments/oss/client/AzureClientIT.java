@@ -17,7 +17,7 @@ class AzureClientIT {
   // They require a valid ServiceBinding with credentials set up in the environment.
 
   @Test
-  void testCreateReadDeleteAttachmentFlowAzure() throws Exception {
+  void testCreateReadDeleteAttachmentFlowAzure() {
     ServiceBinding binding = getRealServiceBindingAzure();
     ExecutorService executor = Executors.newCachedThreadPool();
 
