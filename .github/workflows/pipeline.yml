@@ -74,7 +74,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          ref: ${​{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
 
       - name: Download build artifacts
         uses: actions/download-artifact@v7
@@ -97,7 +97,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          ref: ${​{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
       - name: SonarQube Scan
         uses: ./.github/actions/scan-with-sonar
         with:
@@ -120,7 +120,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          ref: ${​{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Java
         uses: actions/setup-java@v5
@@ -153,7 +153,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          ref: ${​{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Java
         uses: actions/setup-java@v5
