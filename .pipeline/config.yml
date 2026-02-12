@@ -6,8 +6,6 @@ steps:
     # https://www.project-piper.io/steps/mavenBuild/#dockerimage
     # If empty, Docker is not used and the command is executed directly on the Jenkins system.
     dockerImage: ''
-    profiles:
-      - 'skip-integration-tests'
 
   detectExecuteScan:
     projectName: 'com.sap.cds.feature.attachments'
@@ -38,8 +36,8 @@ steps:
       - sonar.java.source=17
       - sonar.exclusions=**/node_modules/**,**/target/**,**/test/**
       - sonar.modules=cds-feature-attachments,cds-feature-attachments-fs,cds-feature-attachments-oss
-      - sonar.coverage.jacoco.xmlReportPaths=cds-feature-attachments/target/site/jacoco/jacoco.xml,storage-targets/cds-feature-attachments-oss/target/site/jacoco/jacoco.xml
-      - sonar.coverage.exclusions=cds-feature-attachments/src/test/**,cds-feature-attachments/src/gen/**,storage-targets/cds-feature-attachments-fs/**,storage-targets/cds-feature-attachments-oss/src/test/**
+      - sonar.coverage.jacoco.xmlReportPaths=cds-feature-attachments/target/site/jacoco/jacoco.xml,storage-targets/cds-feature-attachments-fs/target/site/jacoco/jacoco.xml,storage-targets/cds-feature-attachments-oss/target/site/jacoco/jacoco.xml
+      - sonar.coverage.exclusions=cds-feature-attachments/src/test/**,cds-feature-attachments/src/gen/**,storage-targets/cds-feature-attachments-fs/src/test/**,storage-targets/cds-feature-attachments-oss/src/test/**
       - cds-feature-attachments.sonar.projectBaseDir=cds-feature-attachments
       - cds-feature-attachments.sonar.sources=src/main/java
       - cds-feature-attachments.sonar.tests=src/test/java

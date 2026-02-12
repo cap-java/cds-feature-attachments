@@ -48,6 +48,19 @@ runs:
           -am
       shell: bash
 
+    - name: Verify JaCoCo reports exist
+      run: |
+        echo "=== Checking JaCoCo reports ==="
+        find . -name "jacoco.xml" -type f
+        for module in cds-feature-attachments storage-targets/cds-feature-attachments-fs storage-targets/cds-feature-attachments-oss; do
+          if [ -f "$module/target/site/jacoco/jacoco.xml" ]; then
+            echo "Found: $module/target/site/jacoco/jacoco.xml"
+          else
+            echo "Missing: $module/target/site/jacoco/jacoco.xml"
+          fi
+        done
+      shell: bash
+
     - name: SonarQube Scan
       uses: SAP/project-piper-action@main
       with:
@@ -57,4 +70,4 @@ runs:
           --githubToken=${{ inputs.github-token }}
           --version=${{ steps.get-revision.outputs.REVISION }}
           --inferJavaBinaries=true
-          --options=-Dsonar.exclusions=**/samples/**
+          --options=-Dsonar.exclusions=**/samples/**,-Dsonar.coverage.jacoco.xmlReportPaths=cds-feature-attachments/target/site/jacoco/jacoco.xml,storage-targets/cds-feature-attachments-fs/target/site/jacoco/jacoco.xml,storage-targets/cds-feature-attachments-oss/target/site/jacoco/jacoco.xml
