@@ -30,12 +30,12 @@ class SizeLimitedAttachmentValidationNonDraftTest extends OdataRequestValidation
 
     var selectedRoot = selectStoredRootWithSizeLimitedAttachments();
     var attachment = getRandomRootSizeLimitedAttachment(selectedRoot);
+    attachment.setFileName("test.txt");
 
     // Act & Assert: Upload 3MB content (within limit) succeeds
     byte[] content = new byte[3 * 1024 * 1024]; // 3MB
-    var url =
-        buildNavigationSizeLimitedAttachmentUrl(selectedRoot.getId(), attachment.getId())
-            + "/content";
+    var url = buildNavigationSizeLimitedAttachmentUrl(selectedRoot.getId(), attachment.getId())
+        + "/content";
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
     requestHelper.executePutWithMatcher(url, content, status().isNoContent());
   }
@@ -48,16 +48,16 @@ class SizeLimitedAttachmentValidationNonDraftTest extends OdataRequestValidation
 
     var selectedRoot = selectStoredRootWithSizeLimitedAttachments();
     var attachment = getRandomRootSizeLimitedAttachment(selectedRoot);
-
+    attachment.setFileName("test.txt");
     // Act: Try to upload 6MB content (exceeds limit)
     byte[] content = new byte[6 * 1024 * 1024]; // 6MB
-    var url =
-        buildNavigationSizeLimitedAttachmentUrl(selectedRoot.getId(), attachment.getId())
-            + "/content";
+    var url = buildNavigationSizeLimitedAttachmentUrl(selectedRoot.getId(), attachment.getId())
+        + "/content";
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
     requestHelper.executePutWithMatcher(url, content, status().is(413));
 
-    // Assert: Error response with HTTP 413 status code indicates size limit exceeded
+    // Assert: Error response with HTTP 413 status code indicates size limit
+    // exceeded
   }
 
   // Helper methods
@@ -70,11 +70,9 @@ class SizeLimitedAttachmentValidationNonDraftTest extends OdataRequestValidation
   }
 
   private Roots selectStoredRootWithSizeLimitedAttachments() {
-    var select =
-        com.sap.cds.ql.Select.from(
-                com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Roots_
-                    .class)
-            .columns(r -> r._all(), r -> r.sizeLimitedAttachments().expand());
+    var select = com.sap.cds.ql.Select.from(
+        com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Roots_.class)
+        .columns(r -> r._all(), r -> r.sizeLimitedAttachments().expand());
 
     var result = persistenceService.run(select);
     return result.single(Roots.class);
