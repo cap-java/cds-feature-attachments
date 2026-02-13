@@ -98,14 +98,14 @@ public final class ModifyApplicationHandlerHelper {
     eventContext.put(
         "attachment.MaxSize",
         maxSizeStr); // make max size available in context for error handling later
-    ServiceException TOO_LARGE_EXCEPTION =
+    ServiceException tooLargeException =
         new ServiceException(
             ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded", maxSizeStr);
 
     if (contentLength != null) {
       try {
         if (Long.parseLong(contentLength) > FileSizeUtils.parseFileSizeToBytes(maxSizeStr)) {
-          throw TOO_LARGE_EXCEPTION;
+          throw tooLargeException;
         }
       } catch (NumberFormatException e) {
         throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Invalid Content-Length header");
@@ -119,7 +119,7 @@ public final class ModifyApplicationHandlerHelper {
       return eventToProcess.processEvent(path, wrappedContent, attachment, eventContext);
     } catch (Exception e) {
       if (wrappedContent != null && wrappedContent.isLimitExceeded()) {
-        throw TOO_LARGE_EXCEPTION;
+        throw tooLargeException;
       }
       throw e;
     }
@@ -131,16 +131,15 @@ public final class ModifyApplicationHandlerHelper {
     CdsDataProcessor.create()
         .addValidator(
             VALMAX_FILTER,
-            (path, element, value) -> {
-              element
-                  .findAnnotation("Validation.Maximum")
-                  .ifPresent(
-                      annotation -> {
-                        if (annotation.getValue() != null && annotation.getValue() != "true") {
-                          annotationValue.set(annotation.getValue().toString());
-                        }
-                      });
-            })
+            (path, element, value) ->
+                element
+                    .findAnnotation("Validation.Maximum")
+                    .ifPresent(
+                        annotation -> {
+                          if (annotation.getValue() != null && annotation.getValue() != "true") {
+                            annotationValue.set(annotation.getValue().toString());
+                          }
+                        }))
         .process(data, entity);
     return annotationValue.get() == null ? defaultMaxSize : annotationValue.get();
   }

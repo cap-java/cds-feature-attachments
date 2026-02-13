@@ -24,10 +24,12 @@ import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 public class OSSAttachmentsServiceHandlerTestUtils {
+
+  private OSSAttachmentsServiceHandlerTestUtils() {}
 
   // This methods tests the complete flow of creating, reading, and deleting an attachment
   // for all OS clients. It uses a mock ServiceBinding to simulate the attachment service.
@@ -51,13 +53,7 @@ public class OSSAttachmentsServiceHandlerTestUtils {
     AttachmentCreateEventContext createContext = mock(AttachmentCreateEventContext.class);
     when(createContext.getData()).thenReturn(createMediaData);
     when(createContext.getAttachmentEntity()).thenReturn(attachmentEntity);
-    when(createContext.getAttachmentIds())
-        .thenReturn(
-            new HashMap<>() {
-              {
-                put(Attachments.ID, testFileName);
-              }
-            });
+    when(createContext.getAttachmentIds()).thenReturn(Map.of(Attachments.ID, testFileName));
     doNothing().when(createContext).setCompleted();
 
     handler.createAttachment(createContext);

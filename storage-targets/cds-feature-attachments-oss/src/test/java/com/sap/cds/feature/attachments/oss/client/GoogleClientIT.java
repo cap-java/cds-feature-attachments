@@ -17,7 +17,7 @@ class GoogleClientIT {
   // They require a valid ServiceBinding with credentials set up in the environment.
 
   @Test
-  void testCreateReadDeleteAttachmentFlowGoogle() throws Exception {
+  void testCreateReadDeleteAttachmentFlowGoogle() {
     ServiceBinding binding = getRealServiceBindingGoogle();
     ExecutorService executor = Executors.newCachedThreadPool();
 

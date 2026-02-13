@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 public class FileSizeUtils {
   private static final Pattern SIZE =
-      Pattern.compile("^\\s*([0-9]+(?:\\.[0-9]+)?)\\s*([a-zA-Z]*)\\s*$");
+      Pattern.compile("^\\s*(\\d+(?:\\.\\d+)?)\\s*([a-zA-Z]*)\\s*$");
   private static final Map<String, Long> MULTIPLIER_TO_BYTES =
       Map.ofEntries(
           Map.entry("", 1L),

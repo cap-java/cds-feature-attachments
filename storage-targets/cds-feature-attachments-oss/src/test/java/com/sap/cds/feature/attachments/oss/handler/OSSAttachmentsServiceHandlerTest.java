@@ -179,9 +179,7 @@ class OSSAttachmentsServiceHandlerTest {
 
     assertThrows(
         ObjectStoreServiceException.class,
-        () -> {
-          new OSSAttachmentsServiceHandler(binding, executor);
-        });
+        () -> new OSSAttachmentsServiceHandler(binding, executor));
   }
 
   @Test
@@ -197,9 +195,7 @@ class OSSAttachmentsServiceHandlerTest {
 
     assertThrows(
         ObjectStoreServiceException.class,
-        () -> {
-          new OSSAttachmentsServiceHandler(binding, executor);
-        });
+        () -> new OSSAttachmentsServiceHandler(binding, executor));
   }
 
   @Test
@@ -211,9 +207,7 @@ class OSSAttachmentsServiceHandlerTest {
 
     assertThrows(
         ObjectStoreServiceException.class,
-        () -> {
-          new OSSAttachmentsServiceHandler(binding, executor);
-        });
+        () -> new OSSAttachmentsServiceHandler(binding, executor));
   }
 
   @Test
@@ -227,9 +221,7 @@ class OSSAttachmentsServiceHandlerTest {
 
     assertThrows(
         ObjectStoreServiceException.class,
-        () -> {
-          new OSSAttachmentsServiceHandler(binding, executor);
-        });
+        () -> new OSSAttachmentsServiceHandler(binding, executor));
   }
 
   // Helper method to setup common mocks for createAttachment exception tests
