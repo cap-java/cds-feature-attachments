@@ -22,9 +22,14 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusException;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
+import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
@@ -32,6 +37,7 @@ import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
+import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -55,12 +61,19 @@ class ReadAttachmentsHandlerTest {
 
   private static CdsRuntime runtime;
 
-  private ReadAttachmentsHandler cut;
+  private ApplicationServiceAttachmentsHandler cut;
 
   private AttachmentService attachmentService;
   private AttachmentStatusValidator attachmentStatusValidator;
   private CdsReadEventContext readEventContext;
   private AsyncMalwareScanExecutor asyncMalwareScanExecutor;
+
+  // Additional mocks required for ApplicationServiceAttachmentsHandler
+  private ModifyAttachmentEventFactory eventFactory;
+  private ThreadDataStorageReader storageReader;
+  private AttachmentsReader attachmentsReader;
+  private AttachmentService outboxedAttachmentService;
+  private MarkAsDeletedAttachmentEvent deleteEvent;
 
   @BeforeAll
   static void classSetup() {
@@ -72,9 +85,23 @@ class ReadAttachmentsHandlerTest {
     attachmentService = mock(AttachmentService.class);
     attachmentStatusValidator = mock(AttachmentStatusValidator.class);
     asyncMalwareScanExecutor = mock(AsyncMalwareScanExecutor.class);
+    eventFactory = mock(ModifyAttachmentEventFactory.class);
+    storageReader = mock(ThreadDataStorageReader.class);
+    attachmentsReader = mock(AttachmentsReader.class);
+    outboxedAttachmentService = mock(AttachmentService.class);
+    deleteEvent = mock(MarkAsDeletedAttachmentEvent.class);
+
     cut =
-        new ReadAttachmentsHandler(
-            attachmentService, attachmentStatusValidator, asyncMalwareScanExecutor);
+        new ApplicationServiceAttachmentsHandler(
+            eventFactory,
+            storageReader,
+            ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+            attachmentService,
+            attachmentStatusValidator,
+            asyncMalwareScanExecutor,
+            attachmentsReader,
+            outboxedAttachmentService,
+            deleteEvent);
 
     readEventContext = mock(CdsReadEventContext.class);
   }
@@ -84,7 +111,7 @@ class ReadAttachmentsHandlerTest {
     var select = Select.from(RootTable_.class).columns(RootTable_::ID);
     mockEventContext(RootTable_.CDS_NAME, select);
 
-    cut.processBefore(readEventContext);
+    cut.processBeforeRead(readEventContext);
   }
 
   @Test
@@ -92,7 +119,7 @@ class ReadAttachmentsHandlerTest {
     var select = Select.from(Attachment_.class).columns(Attachment_::ID);
     mockEventContext(Attachment_.CDS_NAME, select);
 
-    cut.processBefore(readEventContext);
+    cut.processBeforeRead(readEventContext);
   }
 
   @Test
@@ -100,7 +127,7 @@ class ReadAttachmentsHandlerTest {
     var select = Select.from(EventItems_.class).columns(EventItems_::note);
     mockEventContext(EventItems_.CDS_NAME, select);
 
-    cut.processBefore(readEventContext);
+    cut.processBeforeRead(readEventContext);
   }
 
   @Test
@@ -141,7 +168,7 @@ class ReadAttachmentsHandlerTest {
       var select = Select.from(RootTable_.class);
       mockEventContext(RootTable_.CDS_NAME, select);
 
-      cut.processAfter(readEventContext, List.of(root1, root2));
+      cut.processAfterRead(readEventContext, List.of(root1, root2));
 
       assertThat(attachmentWithNullValueContent.getContent())
           .isInstanceOf(LazyProxyInputStream.class);
@@ -165,7 +192,7 @@ class ReadAttachmentsHandlerTest {
       attachment.setContent(null);
       attachment.setStatus(StatusCode.CLEAN);
 
-      cut.processAfter(readEventContext, List.of(attachment));
+      cut.processAfterRead(readEventContext, List.of(attachment));
 
       assertThat(attachment.getContent()).isInstanceOf(LazyProxyInputStream.class);
       verifyNoInteractions(attachmentService);
@@ -189,7 +216,7 @@ class ReadAttachmentsHandlerTest {
 
     List<CdsData> attachments = List.of(attachment);
     assertThrows(
-        AttachmentStatusException.class, () -> cut.processAfter(readEventContext, attachments));
+        AttachmentStatusException.class, () -> cut.processAfterRead(readEventContext, attachments));
   }
 
   @ParameterizedTest
@@ -203,7 +230,7 @@ class ReadAttachmentsHandlerTest {
     attachment.setContent(null);
     attachment.setStatus(status);
 
-    assertDoesNotThrow(() -> cut.processAfter(readEventContext, List.of(attachment)));
+    assertDoesNotThrow(() -> cut.processAfterRead(readEventContext, List.of(attachment)));
 
     doThrow(AttachmentStatusException.class).when(attachmentStatusValidator).verifyStatus(status);
     var content = attachment.getContent();
@@ -220,7 +247,7 @@ class ReadAttachmentsHandlerTest {
     attachment.setContent(mock(InputStream.class));
     attachment.setStatus(StatusCode.UNSCANNED);
 
-    cut.processAfter(readEventContext, List.of(attachment));
+    cut.processAfterRead(readEventContext, List.of(attachment));
 
     verify(asyncMalwareScanExecutor)
         .scanAsync(readEventContext.getTarget(), attachment.getContentId());
@@ -234,7 +261,7 @@ class ReadAttachmentsHandlerTest {
     attachment.setContent(null);
     attachment.setStatus(StatusCode.UNSCANNED);
 
-    cut.processAfter(readEventContext, List.of(attachment));
+    cut.processAfterRead(readEventContext, List.of(attachment));
 
     verify(asyncMalwareScanExecutor)
         .scanAsync(readEventContext.getTarget(), attachment.getContentId());
@@ -248,7 +275,7 @@ class ReadAttachmentsHandlerTest {
     attachment.setContent(null);
     attachment.setStatus(StatusCode.INFECTED);
 
-    cut.processAfter(readEventContext, List.of(attachment));
+    cut.processAfterRead(readEventContext, List.of(attachment));
 
     verifyNoInteractions(asyncMalwareScanExecutor);
   }
@@ -259,7 +286,7 @@ class ReadAttachmentsHandlerTest {
     eventItem.setId1("test");
     mockEventContext(EventItems_.CDS_NAME, mock(CqnSelect.class));
 
-    cut.processAfter(readEventContext, List.of(eventItem));
+    cut.processAfterRead(readEventContext, List.of(eventItem));
 
     verifyNoInteractions(attachmentService);
   }
@@ -275,23 +302,23 @@ class ReadAttachmentsHandlerTest {
   @Test
   void afterMethodAfterHasCorrectAnnotations() throws NoSuchMethodException {
     var method =
-        cut.getClass().getDeclaredMethod("processAfter", CdsReadEventContext.class, List.class);
+        cut.getClass().getDeclaredMethod("processAfterRead", CdsReadEventContext.class, List.class);
 
     var readAfterAnnotation = method.getAnnotation(After.class);
     var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-    assertThat(readAfterAnnotation.event()).isEmpty();
+    assertThat(readAfterAnnotation.event()).containsOnly(CqnService.EVENT_READ);
     assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
   }
 
   @Test
   void beforeMethodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method = cut.getClass().getDeclaredMethod("processBefore", CdsReadEventContext.class);
+    var method = cut.getClass().getDeclaredMethod("processBeforeRead", CdsReadEventContext.class);
 
     var readBeforeAnnotation = method.getAnnotation(Before.class);
     var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-    assertThat(readBeforeAnnotation.event()).isEmpty();
+    assertThat(readBeforeAnnotation.event()).containsOnly(CqnService.EVENT_READ);
     assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
   }
 
@@ -304,7 +331,7 @@ class ReadAttachmentsHandlerTest {
     attachment.setStatus(StatusCode.INFECTED);
     attachment.setId(UUID.randomUUID().toString());
 
-    cut.processAfter(readEventContext, List.of(attachment));
+    cut.processAfterRead(readEventContext, List.of(attachment));
 
     verifyNoInteractions(attachmentStatusValidator);
   }
@@ -316,7 +343,7 @@ class ReadAttachmentsHandlerTest {
     attachment.setStatus(StatusCode.INFECTED);
     attachment.setContent(null);
 
-    cut.processAfter(readEventContext, List.of(attachment));
+    cut.processAfterRead(readEventContext, List.of(attachment));
 
     verifyNoInteractions(attachmentStatusValidator);
     assertThat(attachment.getContent()).isNull();

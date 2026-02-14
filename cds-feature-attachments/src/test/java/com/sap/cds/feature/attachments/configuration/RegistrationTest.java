@@ -11,10 +11,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.ApplicationServiceAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
@@ -108,7 +105,7 @@ class RegistrationTest {
 
     cut.eventHandlers(configurer);
 
-    var handlerSize = 8;
+    var handlerSize = 5;
     verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
     checkHandlers(handlerArgumentCaptor.getAllValues(), handlerSize);
   }
@@ -128,7 +125,7 @@ class RegistrationTest {
 
     cut.eventHandlers(configurer);
 
-    var handlerSize = 8;
+    var handlerSize = 5;
     verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
     checkHandlers(handlerArgumentCaptor.getAllValues(), handlerSize);
   }
@@ -136,10 +133,7 @@ class RegistrationTest {
   private void checkHandlers(List<EventHandler> handlers, int handlerSize) {
     assertThat(handlers).hasSize(handlerSize);
     isHandlerForClassIncluded(handlers, DefaultAttachmentsServiceHandler.class);
-    isHandlerForClassIncluded(handlers, CreateAttachmentsHandler.class);
-    isHandlerForClassIncluded(handlers, UpdateAttachmentsHandler.class);
-    isHandlerForClassIncluded(handlers, DeleteAttachmentsHandler.class);
-    isHandlerForClassIncluded(handlers, ReadAttachmentsHandler.class);
+    isHandlerForClassIncluded(handlers, ApplicationServiceAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, DraftPatchAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, DraftCancelAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, DraftActiveAttachmentsHandler.class);
@@ -162,10 +156,7 @@ class RegistrationTest {
     assertThat(handlers).hasSize(handlerSize);
     isHandlerForClassIncluded(handlers, DefaultAttachmentsServiceHandler.class);
     // event handlers for application services are not registered
-    isHandlerForClassMissing(handlers, CreateAttachmentsHandler.class);
-    isHandlerForClassMissing(handlers, UpdateAttachmentsHandler.class);
-    isHandlerForClassMissing(handlers, DeleteAttachmentsHandler.class);
-    isHandlerForClassMissing(handlers, ReadAttachmentsHandler.class);
+    isHandlerForClassMissing(handlers, ApplicationServiceAttachmentsHandler.class);
     // event handlers for draft services are not registered
     isHandlerForClassMissing(handlers, DraftPatchAttachmentsHandler.class);
     isHandlerForClassMissing(handlers, DraftCancelAttachmentsHandler.class);

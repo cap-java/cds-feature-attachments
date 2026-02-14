@@ -12,10 +12,10 @@ import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentEntityScanner;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
-import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.DraftCancelEventContext;
@@ -25,7 +25,6 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,7 +61,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   void processBeforeDraftCancel(DraftCancelEventContext context) {
     CdsEntity entity = context.getTarget();
 
-    if (deepSearchForAttachments(entity)) {
+    if (AttachmentEntityScanner.hasAttachments(entity)) {
       logger.debug(
           "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
 
@@ -105,28 +104,6 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
             }
           });
     };
-  }
-
-  private boolean deepSearchForAttachments(CdsEntity entity) {
-    return deepSearchForAttachmentsRecursive(entity, new HashSet<>());
-  }
-
-  private boolean deepSearchForAttachmentsRecursive(CdsEntity entity, HashSet<String> visited) {
-
-    if (visited.contains(entity.getQualifiedName())) {
-      return false;
-    }
-    visited.add(entity.getQualifiedName());
-
-    if (ApplicationHandlerHelper.isMediaEntity(entity)) {
-      return true;
-    }
-
-    return entity
-        .compositions()
-        .map(element -> element.getType().as(CdsAssociationType.class))
-        .anyMatch(
-            association -> deepSearchForAttachmentsRecursive(association.getTarget(), visited));
   }
 
   private List<Attachments> readAttachments(

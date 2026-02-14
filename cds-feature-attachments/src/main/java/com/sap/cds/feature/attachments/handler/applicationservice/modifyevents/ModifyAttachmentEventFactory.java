@@ -9,7 +9,6 @@ import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import java.io.InputStream;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -62,38 +61,32 @@ public class ModifyAttachmentEventFactory {
 
   private Optional<ModifyAttachmentEvent> handleExistingContentId(
       InputStream content, String contentId, String existingContentId) {
-    ModifyAttachmentEvent event = null;
-    if (contentId.equals(existingContentId) && Objects.nonNull(content)) {
-      event = updateEvent;
-    }
-    if (Objects.nonNull(existingContentId)
-        && !contentId.equals(existingContentId)
-        && Objects.isNull(content)) {
-      event = deleteEvent;
-    }
-    if (Objects.nonNull(existingContentId)
-        && !contentId.equals(existingContentId)
-        && Objects.nonNull(content)) {
-      event = updateEvent;
-    }
+    boolean sameContentId = contentId.equals(existingContentId);
+    boolean hasContent = content != null;
+    boolean hasExistingContent = existingContentId != null;
 
-    return Optional.ofNullable(event);
+    if (sameContentId && hasContent) {
+      // Same content ID with new content -> update existing attachment
+      return Optional.of(updateEvent);
+    } else if (hasExistingContent && !sameContentId) {
+      // Different content ID with existing content -> update or delete
+      return Optional.of(hasContent ? updateEvent : deleteEvent);
+    }
+    return Optional.empty();
   }
 
   private Optional<ModifyAttachmentEvent> handleNonExistingContentId(
       Object content, Object existingContentId) {
-    ModifyAttachmentEvent event = null;
-    if (Objects.nonNull(existingContentId)) {
-      if (Objects.nonNull(content)) {
-        event = updateEvent;
-      } else {
-        event = deleteEvent;
-      }
-    } else {
-      if (Objects.nonNull(content)) {
-        event = createEvent;
-      }
+    boolean hasContent = content != null;
+    boolean hasExistingContent = existingContentId != null;
+
+    if (hasExistingContent) {
+      // Existing content -> update or delete based on new content presence
+      return Optional.of(hasContent ? updateEvent : deleteEvent);
+    } else if (hasContent) {
+      // No existing content but new content provided -> create
+      return Optional.of(createEvent);
     }
-    return Optional.ofNullable(event);
+    return Optional.empty();
   }
 }

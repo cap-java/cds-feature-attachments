@@ -3,10 +3,7 @@
  */
 package com.sap.cds.feature.attachments.configuration;
 
-import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
-import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.ApplicationServiceAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadLocalDataStorage;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.CreateAttachmentEvent;
@@ -123,16 +120,19 @@ public class Registration implements CdsRuntimeConfiguration {
     boolean hasApplicationServices =
         serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
     if (hasApplicationServices) {
-      configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage, defaultMaxSize));
-      configurer.eventHandler(
-          new UpdateAttachmentsHandler(
-              eventFactory, attachmentsReader, outboxedAttachmentService, storage, defaultMaxSize));
-      configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteEvent));
       EndTransactionMalwareScanRunner scanRunner =
           new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
       configurer.eventHandler(
-          new ReadAttachmentsHandler(
-              attachmentService, new AttachmentStatusValidator(), scanRunner));
+          new ApplicationServiceAttachmentsHandler(
+              eventFactory,
+              storage,
+              defaultMaxSize,
+              attachmentService,
+              new AttachmentStatusValidator(),
+              scanRunner,
+              attachmentsReader,
+              outboxedAttachmentService,
+              deleteEvent));
     } else {
       logger.debug(
           "No application service is available. Application service event handlers will not be registered.");

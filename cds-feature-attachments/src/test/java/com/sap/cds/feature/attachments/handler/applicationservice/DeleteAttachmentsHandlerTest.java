@@ -17,12 +17,19 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
+import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
+import com.sap.cds.services.cds.CqnService;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
@@ -38,10 +45,18 @@ class DeleteAttachmentsHandlerTest {
 
   private static CdsRuntime runtime;
 
-  private DeleteAttachmentsHandler cut;
+  private ApplicationServiceAttachmentsHandler cut;
   private AttachmentsReader attachmentsReader;
   private MarkAsDeletedAttachmentEvent modifyAttachmentEvent;
   private CdsDeleteEventContext context;
+
+  // Additional mocks required for ApplicationServiceAttachmentsHandler
+  private ModifyAttachmentEventFactory eventFactory;
+  private ThreadDataStorageReader storageReader;
+  private AttachmentService attachmentService;
+  private AttachmentStatusValidator statusValidator;
+  private AsyncMalwareScanExecutor scanExecutor;
+  private AttachmentService outboxedAttachmentService;
 
   @BeforeAll
   static void classSetup() {
@@ -52,7 +67,24 @@ class DeleteAttachmentsHandlerTest {
   void setup() {
     attachmentsReader = mock(AttachmentsReader.class);
     modifyAttachmentEvent = mock(MarkAsDeletedAttachmentEvent.class);
-    cut = new DeleteAttachmentsHandler(attachmentsReader, modifyAttachmentEvent);
+    eventFactory = mock(ModifyAttachmentEventFactory.class);
+    storageReader = mock(ThreadDataStorageReader.class);
+    attachmentService = mock(AttachmentService.class);
+    statusValidator = mock(AttachmentStatusValidator.class);
+    scanExecutor = mock(AsyncMalwareScanExecutor.class);
+    outboxedAttachmentService = mock(AttachmentService.class);
+
+    cut =
+        new ApplicationServiceAttachmentsHandler(
+            eventFactory,
+            storageReader,
+            ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+            attachmentService,
+            statusValidator,
+            scanExecutor,
+            attachmentsReader,
+            outboxedAttachmentService,
+            modifyAttachmentEvent);
 
     context = mock(CdsDeleteEventContext.class);
   }
@@ -63,7 +95,7 @@ class DeleteAttachmentsHandlerTest {
     when(context.getTarget()).thenReturn(entity);
     when(context.getModel()).thenReturn(runtime.getCdsModel());
 
-    cut.processBefore(context);
+    cut.processBeforeDelete(context);
 
     verifyNoInteractions(modifyAttachmentEvent);
   }
@@ -82,7 +114,7 @@ class DeleteAttachmentsHandlerTest {
             context.getModel(), context.getTarget(), context.getCqn()))
         .thenReturn(List.of(data));
 
-    cut.processBefore(context);
+    cut.processBeforeDelete(context);
 
     verify(modifyAttachmentEvent).processEvent(any(), eq(inputStream), eq(data), eq(context));
     assertThat(data.getContent()).isNull();
@@ -104,7 +136,7 @@ class DeleteAttachmentsHandlerTest {
             context.getModel(), context.getTarget(), context.getCqn()))
         .thenReturn(List.of(Attachments.of(root)));
 
-    cut.processBefore(context);
+    cut.processBeforeDelete(context);
 
     verify(modifyAttachmentEvent)
         .processEvent(
@@ -126,12 +158,12 @@ class DeleteAttachmentsHandlerTest {
 
   @Test
   void methodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method = cut.getClass().getDeclaredMethod("processBefore", CdsDeleteEventContext.class);
+    var method = cut.getClass().getDeclaredMethod("processBeforeDelete", CdsDeleteEventContext.class);
 
     var deleteBeforeAnnotation = method.getAnnotation(Before.class);
     var deleteHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
-    assertThat(deleteBeforeAnnotation.event()).isEmpty();
+    assertThat(deleteBeforeAnnotation.event()).containsOnly(CqnService.EVENT_DELETE);
     assertThat(deleteHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
   }
 
