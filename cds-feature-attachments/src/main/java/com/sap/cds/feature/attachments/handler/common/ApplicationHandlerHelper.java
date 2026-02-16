@@ -156,19 +156,19 @@ public final class ApplicationHandlerHelper {
    */
   public static void validateAcceptableMediaTypes(
       CdsEntity entity, List<CdsData> data, CdsRuntime cdsRuntime) {
-    List<String> allowedTypes = getEntityAcceptableMediaTypes(entity, cdsRuntime);
+    CdsModel cdsModel = cdsRuntime.getCdsModel();
+    CdsEntity serviceEntity = cdsModel.findEntity(entity.getQualifiedName()).orElse(null);
+    if (serviceEntity == null || !isMediaEntity(serviceEntity)) {
+      return;
+    }
+    List<String> allowedTypes = getEntityAcceptableMediaTypes(serviceEntity, cdsModel);
     String fileName = extractFileName(entity, data);
     AttachmentValidationHelper.validateMediaTypeForAttachment(fileName, allowedTypes);
   }
 
-  protected static List<String> getEntityAcceptableMediaTypes(
-      CdsEntity entity, CdsRuntime cdsRuntime) {
-    CdsModel cdsModel = cdsRuntime.getCdsModel();
-    Optional<CdsEntity> retrievedEntity = cdsModel.findEntity(entity.getQualifiedName());
+  protected static List<String> getEntityAcceptableMediaTypes(CdsEntity entity, CdsModel cdsModel) {
     Optional<CdsAnnotation<Object>> flatMap =
-        retrievedEntity.flatMap(
-            serviceEntity ->
-                serviceEntity.getElement("content").findAnnotation("Core.AcceptableMediaTypes"));
+        entity.getElement("content").findAnnotation("Core.AcceptableMediaTypes");
     List<String> result =
         flatMap
             .map(

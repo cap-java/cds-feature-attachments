@@ -26,7 +26,6 @@ import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.runtime.CdsRuntime;
 import com.sap.cds.services.utils.OrderConstants;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -70,12 +69,6 @@ public class CreateAttachmentsHandler implements EventHandler {
   @Before(event = {CqnService.EVENT_CREATE, DraftService.EVENT_DRAFT_NEW})
   @HandlerOrder(HandlerOrder.BEFORE)
   void processBeforeForMetadata(EventContext context, List<CdsData> data) {
-    data.forEach(
-        entry -> {
-          if (!entry.containsKey("content")) {
-            entry.put("content", InputStream.nullInputStream());
-          }
-        });
     CdsEntity target = context.getTarget();
     ApplicationHandlerHelper.validateAcceptableMediaTypes(target, data, cdsRuntime);
   }
