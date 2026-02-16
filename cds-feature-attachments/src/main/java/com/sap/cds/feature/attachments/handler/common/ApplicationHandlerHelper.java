@@ -156,7 +156,7 @@ public final class ApplicationHandlerHelper {
    */
   public static void validateAcceptableMediaTypes(
       CdsEntity entity, List<CdsData> data, CdsRuntime cdsRuntime) {
-    List<String> allowedTypes = List.of("image/jpeg", "image/png");
+    List<String> allowedTypes = getEntityAcceptableMediaTypes(entity, cdsRuntime);
     String fileName = extractFileName(entity, data);
     AttachmentValidationHelper.validateMediaTypeForAttachment(fileName, allowedTypes);
   }
