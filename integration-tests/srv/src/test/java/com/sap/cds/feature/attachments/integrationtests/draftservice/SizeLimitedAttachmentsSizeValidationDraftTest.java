@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.integrationtests.common.MockHttpRequestHe
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
@@ -28,7 +29,7 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     // Arrange: Create draft with sizeLimitedAttachments
     var draftRoot = createNewDraftWithSizeLimitedAttachments();
     var attachment = draftRoot.getSizeLimitedAttachments().get(0);
-
+    attachment.setFileName("test.txt");
     // Act & Assert: Upload 3MB content (within limit) succeeds
     byte[] content = new byte[3 * 1024 * 1024]; // 3MB
     var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
@@ -41,21 +42,22 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     // Arrange: Create draft with sizeLimitedAttachments
     var draftRoot = createNewDraftWithSizeLimitedAttachments();
     var attachment = draftRoot.getSizeLimitedAttachments().get(0);
-
+    attachment.setFileName("test.txt");
     // Act: Try to upload 6MB content (exceeds limit)
     byte[] content = new byte[6 * 1024 * 1024]; // 6MB
     var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
     requestHelper.executePutWithMatcher(url, content, status().is(413));
 
-    // Assert: Error response with HTTP 413 status code indicates size limit exceeded
+    // Assert: Error response with HTTP 413 status code indicates size limit
+    // exceeded
   }
 
   // Helper methods
   private DraftRoots createNewDraftWithSizeLimitedAttachments() throws Exception {
     // Create new draft
-    var responseRootCdsData =
-        requestHelper.executePostWithODataResponseAndAssertStatusCreated(BASE_ROOT_URL, "{}");
+    var responseRootCdsData = requestHelper.executePostWithODataResponseAndAssertStatusCreated(BASE_ROOT_URL,
+        "{}");
     var draftRoot = Struct.access(responseRootCdsData).as(DraftRoots.class);
 
     // Update root with title
@@ -68,13 +70,12 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     attachment.setFileName("testFile.txt");
     attachment.setMimeType("text/plain");
     var attachmentUrl = rootUrl + "/sizeLimitedAttachments";
-    var responseAttachmentCdsData =
-        requestHelper.executePostWithODataResponseAndAssertStatusCreated(
-            attachmentUrl, attachment.toJson());
+    var responseAttachmentCdsData = requestHelper.executePostWithODataResponseAndAssertStatusCreated(
+        attachmentUrl, attachment.toJson());
     var createdAttachment = Struct.access(responseAttachmentCdsData).as(Attachments.class);
 
     // Build result with the attachment
-    draftRoot.setSizeLimitedAttachments(java.util.List.of(createdAttachment));
+    draftRoot.setSizeLimitedAttachments(List.of(createdAttachment));
     return draftRoot;
   }
 

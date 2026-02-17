@@ -37,19 +37,11 @@ public final class ApplicationHandlerHelper {
   private static final String ANNOTATION_IS_MEDIA_DATA = "_is_media_data";
   private static final String ANNOTATION_CORE_MEDIA_TYPE = "Core.MediaType";
   private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final TypeReference<List<String>> STRING_LIST_TYPE_REF = new TypeReference<>() {};
 
   /** Filter to support extraction of file name for attachment validation */
   public static final Filter FILE_NAME_FILTER =
       (path, element, type) -> element.getName().contentEquals("fileName");
-
-  /**
-   * A filter for acceptable media types. The filter checks if the entity is a media entity and if
-   * the element has the annotation "Core.AcceptableMediaTypes".
-   */
-  public static final Filter ACCEPTABLE_MEDIA_TYPE_FILTER =
-      (path, element, type) ->
-          element.getName().contentEquals("content")
-              && element.findAnnotation("Core.AcceptableMediaTypes").isPresent();
 
   /**
    * A filter for media content fields. The filter checks if the entity is a media entity and if the
@@ -161,20 +153,19 @@ public final class ApplicationHandlerHelper {
     if (serviceEntity == null || !isMediaEntity(serviceEntity)) {
       return;
     }
-    List<String> allowedTypes = getEntityAcceptableMediaTypes(serviceEntity, cdsModel);
+    List<String> allowedTypes = getEntityAcceptableMediaTypes(serviceEntity);
     String fileName = extractFileName(entity, data);
     AttachmentValidationHelper.validateMediaTypeForAttachment(fileName, allowedTypes);
   }
 
-  protected static List<String> getEntityAcceptableMediaTypes(CdsEntity entity, CdsModel cdsModel) {
+  protected static List<String> getEntityAcceptableMediaTypes(CdsEntity entity) {
     Optional<CdsAnnotation<Object>> flatMap =
         entity.getElement("content").findAnnotation("Core.AcceptableMediaTypes");
     List<String> result =
         flatMap
             .map(
                 annotation ->
-                    objectMapper.convertValue(
-                        annotation.getValue(), new TypeReference<List<String>>() {}))
+                    objectMapper.convertValue(annotation.getValue(), STRING_LIST_TYPE_REF))
             .orElse(List.of("*/*"));
     return result;
   }

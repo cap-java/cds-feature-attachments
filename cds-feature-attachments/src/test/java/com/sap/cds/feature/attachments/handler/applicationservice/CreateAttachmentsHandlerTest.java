@@ -80,8 +80,12 @@ class CreateAttachmentsHandlerTest {
   void setup() {
     eventFactory = mock(ModifyAttachmentEventFactory.class);
     storageReader = mock(ThreadDataStorageReader.class);
-    cut = new CreateAttachmentsHandler(
-        eventFactory, storageReader, ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+    cut =
+        new CreateAttachmentsHandler(
+            eventFactory,
+            storageReader,
+            ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+            runtime);
 
     createContext = mock(CdsCreateEventContext.class);
     event = mock(ModifyAttachmentEvent.class);
@@ -335,7 +339,8 @@ class CreateAttachmentsHandlerTest {
   @Test
   void restoreError_contentTooLargeWithMaxSize_throwsWithMaxSize() {
     var context = mock(EventContext.class);
-    var originalException = new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE, "original message");
+    var originalException =
+        new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE, "original message");
     doThrow(originalException).when(context).proceed();
     when(context.get("attachment.MaxSize")).thenReturn("10MB");
 
@@ -349,7 +354,8 @@ class CreateAttachmentsHandlerTest {
   @Test
   void restoreError_contentTooLargeWithoutMaxSize_throwsWithoutMaxSize() {
     var context = mock(EventContext.class);
-    var originalException = new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE, "original message");
+    var originalException =
+        new ServiceException(ExtendedErrorStatuses.CONTENT_TOO_LARGE, "original message");
     doThrow(originalException).when(context).proceed();
     when(context.get("attachment.MaxSize")).thenReturn(null);
 
@@ -386,14 +392,15 @@ class CreateAttachmentsHandlerTest {
 
   @Test
   void processBeforeForMetadata_methodHasCorrectAnnotations() throws NoSuchMethodException {
-    Method method = cut.getClass().getDeclaredMethod("processBeforeForMetadata", EventContext.class, List.class);
+    Method method =
+        cut.getClass()
+            .getDeclaredMethod("processBeforeForMetadata", EventContext.class, List.class);
 
     Before beforeAnnotation = method.getAnnotation(Before.class);
     HandlerOrder handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
     assertThat(beforeAnnotation.event())
-        .containsExactlyInAnyOrder(
-            CqnService.EVENT_CREATE, DraftService.EVENT_DRAFT_NEW);
+        .containsExactlyInAnyOrder(CqnService.EVENT_CREATE, DraftService.EVENT_DRAFT_NEW);
     assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.BEFORE);
   }
 
@@ -404,13 +411,17 @@ class CreateAttachmentsHandlerTest {
     List<CdsData> data = List.of(mock(CdsData.class));
     when(context.getTarget()).thenReturn(entity);
 
-    try (MockedStatic<ApplicationHandlerHelper> helper = mockStatic(ApplicationHandlerHelper.class)) {
-      helper.when(() -> ApplicationHandlerHelper.validateAcceptableMediaTypes(entity, data))
+    try (MockedStatic<ApplicationHandlerHelper> helper =
+        mockStatic(ApplicationHandlerHelper.class)) {
+      helper
+          .when(() -> ApplicationHandlerHelper.validateAcceptableMediaTypes(entity, data, runtime))
           .thenAnswer(invocation -> null);
       // when
-      new CreateAttachmentsHandler(eventFactory, storageReader, "400MB").processBeforeForMetadata(context, data);
+      new CreateAttachmentsHandler(eventFactory, storageReader, "400MB", runtime)
+          .processBeforeForMetadata(context, data);
       // then
-      helper.verify(() -> ApplicationHandlerHelper.validateAcceptableMediaTypes(entity, data));
+      helper.verify(
+          () -> ApplicationHandlerHelper.validateAcceptableMediaTypes(entity, data, runtime));
     }
   }
 

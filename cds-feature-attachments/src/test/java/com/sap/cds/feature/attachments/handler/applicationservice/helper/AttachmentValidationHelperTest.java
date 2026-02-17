@@ -1,148 +1,140 @@
 /*
-* © 2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
-*/
+ * © 2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ */
 package com.sap.cds.feature.attachments.handler.applicationservice.helper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.ServiceException;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class AttachmentValidationHelperTest {
 
-    // ---------- constructor ----------
+  @Test
+  void constructor_shouldBeCallable_forCoverage() {
+    new AttachmentValidationHelper();
+  }
 
-    @Test
-    void constructorShouldBeCallableForCoverage() {
-        new AttachmentValidationHelper();
-    }
+  @Test
+  void shouldDetectMimeTypeFromURLConnection() {
+    assertMediaType("document.pdf", List.of("application/pdf"), "application/pdf");
+  }
 
-    // ---------- validateMimeTypeForAttachment ----------
-    @Test
-    void shouldAcceptMimeTypeFromURLConnection() {
-        String result = AttachmentValidationHelper.validateMediaTypeForAttachment(
-                "document.pdf",
-                List.of("application/pdf"));
-        assertEquals("application/pdf", result);
-    }
+  @Test
+  void shouldUseExtensionFallbackWhenURLConnectionFails() {
+    assertMediaType("image.webp", List.of("image/webp"), "image/webp");
+  }
 
-    @Test
-    void shouldUseExtensionMapWhenURLConnectionDoesNotDetectMimeType() {
-        String result = AttachmentValidationHelper.validateMediaTypeForAttachment(
-                "image.webp",
-                List.of("image/webp"));
-        assertEquals("image/webp", result);
-    }
+  @Test
+  void shouldSupportWildcardSubtype() {
+    assertMediaType("image.jpeg", List.of("image/*"), "image/jpeg");
+  }
 
-    @Test
-    void shouldSupportWildCardTypes() {
-        String result = AttachmentValidationHelper.validateMediaTypeForAttachment(
-                "image.jpeg",
-                List.of("image/*"));
-        assertEquals("image/jpeg", result);
-    }
+  @Test
+  void shouldAllowAllWithStarSlashStar() {
+    assertMediaType("anyfile.jpeg", List.of("*/*"), "image/jpeg");
+  }
 
-    @Test
-    void shouldAllowAllMimeTypesWithStarSlashStar() {
-        String result = AttachmentValidationHelper.validateMediaTypeForAttachment(
-                "anyfile.jpeg",
-                List.of("*/*"));
-        assertEquals("image/jpeg", result);
-    }
+  @Test
+  void shouldAllowUnknownExtensionWithStarSlashStar() {
+    assertMediaType(
+        "anyfile.anyext",
+        List.of("*/*"),
+        AttachmentValidationHelper.DEFAULT_MEDIA_TYPE);
+  }
 
-    @Test
-    void shouldAllowRandomInvalidExtensionWithStarSlashStar() {
-        String result = AttachmentValidationHelper.validateMediaTypeForAttachment(
-                "anyfile.anyext",
-                List.of("*/*"));
-        assertEquals(AttachmentValidationHelper.DEFAULT_MEDIA_TYPE, result);
-    }
+  @Test
+  void shouldAllowUnknownExtensionWhenAcceptableTypesNull() {
+    assertMediaType(
+        "anyfile.anyext",
+        null,
+        AttachmentValidationHelper.DEFAULT_MEDIA_TYPE);
+  }
 
-    @Test
-    void shouldAllowRandomInvalidExtensionWithNullAcceptableMediaTypes() {
-        String result = AttachmentValidationHelper.validateMediaTypeForAttachment(
-                "anyfile.anyext",
-                null);
-        assertEquals(AttachmentValidationHelper.DEFAULT_MEDIA_TYPE, result);
-    }
+  @Test
+  void shouldAllowAllWhenAcceptableTypesEmpty() {
+    assertMediaType(
+        "anyfile.anyext",
+        List.of(),
+        AttachmentValidationHelper.DEFAULT_MEDIA_TYPE);
+  }
 
-    @Test
-    void shouldNotAllowRandomInvalidExtensionWithStarSlashStar() {
-        ServiceException ex = assertThrows(ServiceException.class,
-                () -> AttachmentValidationHelper.validateMediaTypeForAttachment(
-                        "anyfile.anyext",
-                        List.of("application/pdf")));
+  @Test
+  void shouldUseDefaultWhenUnknownExtensionExplicitlyAllowed() {
+    assertMediaType(
+        "file.unknownext",
+        List.of(AttachmentValidationHelper.DEFAULT_MEDIA_TYPE),
+        AttachmentValidationHelper.DEFAULT_MEDIA_TYPE);
+  }
 
-        assertTrue(ex.getErrorStatus().equals(ErrorStatuses.UNSUPPORTED_MEDIA_TYPE));
-    }
+  @Test
+  void shouldHandleUppercaseExtension() {
+    assertMediaType("photo.JPG", List.of("image/jpeg"), "image/jpeg");
+  }
 
-    @Test
-    void shouldAllowAllMimeTypesIfNoRestrictionsGiven() {
-        String result = AttachmentValidationHelper.validateMediaTypeForAttachment(
-                "anyfile.anyext",
-                List.of());
-        assertEquals(AttachmentValidationHelper.DEFAULT_MEDIA_TYPE, result);
-    }
+  @Test
+  void shouldRejectUnknownExtensionWhenNotAllowed() {
+    assertUnsupported(
+        "anyfile.anyext",
+        List.of("application/pdf"));
+  }
 
-    @Test
-    void shouldUseDefaultMimeTypeWhenExtensionIsUnknown() {
-        String result = AttachmentValidationHelper.validateMediaTypeForAttachment(
-                "file.unknownext",
-                List.of(AttachmentValidationHelper.DEFAULT_MEDIA_TYPE));
-        assertEquals(AttachmentValidationHelper.DEFAULT_MEDIA_TYPE, result);
-    }
+  @Test
+  void shouldThrowWhenFilenameHasNoExtension() {
+    assertUnsupported(
+        "invalidfilename",
+        List.of("application/pdf"));
+  }
 
-    @Test
-    void shouldThrowExceptionWhenInvalidFileName() {
-        ServiceException ex = assertThrows(ServiceException.class,
-                () -> AttachmentValidationHelper.validateMediaTypeForAttachment(
-                        "invalidfilename",
-                        List.of("application/pdf")));
+  @Test
+  void shouldThrowWhenFilenameEndsWithDot() {
+    assertUnsupported(
+        "file.",
+        List.of("application/pdf"));
+  }
 
-        assertTrue(ex.getErrorStatus().equals(ErrorStatuses.UNSUPPORTED_MEDIA_TYPE));
-    }
+  @Test
+  void shouldThrowWhenMimeTypeNotAllowed() {
+    ServiceException ex = assertThrows(
+        ServiceException.class,
+        () -> AttachmentValidationHelper.validateMediaTypeForAttachment(
+            "document.pdf",
+            List.of("image/png")));
 
-    @Test
-    void shouldThrowExceptionWhenFilenameEndsWithDot() {
-        ServiceException ex = assertThrows(ServiceException.class,
-                () -> AttachmentValidationHelper.validateMediaTypeForAttachment(
-                        "file.",
-                        List.of("application/pdf")));
+    assertTrue(ex.getMessage().contains("not allowed"));
+  }
 
-        assertEquals(ErrorStatuses.UNSUPPORTED_MEDIA_TYPE, ex.getErrorStatus());
-    }
+  @Test
+  void shouldThrowWhenDefaultMimeTypeNotAllowed() {
+    ServiceException ex = assertThrows(
+        ServiceException.class,
+        () -> AttachmentValidationHelper.validateMediaTypeForAttachment(
+            "file.unknownext",
+            List.of("application/pdf")));
 
-    @Test
-    void shouldHandleUppercaseExtension() {
-        String result = AttachmentValidationHelper.validateMediaTypeForAttachment(
-                "photo.JPG",
-                List.of("image/jpeg"));
+    assertTrue(ex.getMessage().contains("not allowed"));
+  }
 
-        assertEquals("image/jpeg", result);
-    }
+  private void assertMediaType(
+      String fileName,
+      List<String> allowed,
+      String expectedType) {
 
-    @Test
-    void shouldThrowExceptionWhenMimeTypeNotAllowed() {
-        ServiceException ex = assertThrows(ServiceException.class,
-                () -> AttachmentValidationHelper.validateMediaTypeForAttachment(
-                        "document.pdf",
-                        List.of("image/png")));
+    String result = AttachmentValidationHelper.validateMediaTypeForAttachment(fileName, allowed);
 
-        assertTrue(ex.getMessage().contains("not allowed"));
-    }
+    assertEquals(expectedType, result);
+  }
 
-    @Test
-    void shouldThrowExceptionWhenDefaultMimeTypeNotAllowed() {
-        ServiceException ex = assertThrows(ServiceException.class,
-                () -> AttachmentValidationHelper.validateMediaTypeForAttachment(
-                        "file.unknownext",
-                        List.of("application/pdf")));
+  private void assertUnsupported(
+      String fileName,
+      List<String> allowed) {
 
-        assertTrue(ex.getMessage().contains("not allowed"));
-    }
+    ServiceException ex = assertThrows(
+        ServiceException.class,
+        () -> AttachmentValidationHelper.validateMediaTypeForAttachment(fileName, allowed));
 
+    assertEquals(ErrorStatuses.UNSUPPORTED_MEDIA_TYPE, ex.getErrorStatus());
+  }
 }
