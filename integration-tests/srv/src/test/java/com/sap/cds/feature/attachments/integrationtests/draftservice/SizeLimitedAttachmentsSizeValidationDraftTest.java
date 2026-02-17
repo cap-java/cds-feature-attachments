@@ -56,8 +56,8 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
   // Helper methods
   private DraftRoots createNewDraftWithSizeLimitedAttachments() throws Exception {
     // Create new draft
-    var responseRootCdsData = requestHelper.executePostWithODataResponseAndAssertStatusCreated(BASE_ROOT_URL,
-        "{}");
+    var responseRootCdsData =
+        requestHelper.executePostWithODataResponseAndAssertStatusCreated(BASE_ROOT_URL, "{}");
     var draftRoot = Struct.access(responseRootCdsData).as(DraftRoots.class);
 
     // Update root with title
@@ -70,8 +70,9 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     attachment.setFileName("testFile.txt");
     attachment.setMimeType("text/plain");
     var attachmentUrl = rootUrl + "/sizeLimitedAttachments";
-    var responseAttachmentCdsData = requestHelper.executePostWithODataResponseAndAssertStatusCreated(
-        attachmentUrl, attachment.toJson());
+    var responseAttachmentCdsData =
+        requestHelper.executePostWithODataResponseAndAssertStatusCreated(
+            attachmentUrl, attachment.toJson());
     var createdAttachment = Struct.access(responseAttachmentCdsData).as(Attachments.class);
 
     // Build result with the attachment
