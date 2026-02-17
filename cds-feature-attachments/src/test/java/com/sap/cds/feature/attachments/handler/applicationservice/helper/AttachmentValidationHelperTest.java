@@ -117,6 +117,49 @@ class AttachmentValidationHelperTest {
     assertTrue(ex.getMessage().contains("not allowed"));
   }
 
+  @Test
+  void shouldThrowWhenFileNameIsNull() {
+    ServiceException ex = assertThrows(
+        ServiceException.class,
+        () -> AttachmentValidationHelper.validateMediaTypeForAttachment(
+            null,
+            List.of("application/pdf")));
+
+    assertEquals(ErrorStatuses.UNSUPPORTED_MEDIA_TYPE, ex.getErrorStatus());
+    assertTrue(ex.getMessage().contains("must not be null or blank"));
+  }
+
+  @Test
+  void shouldThrowWhenFileNameIsEmpty() {
+    ServiceException ex = assertThrows(
+        ServiceException.class,
+        () -> AttachmentValidationHelper.validateMediaTypeForAttachment(
+            "",
+            List.of("application/pdf")));
+
+    assertEquals(ErrorStatuses.UNSUPPORTED_MEDIA_TYPE, ex.getErrorStatus());
+  }
+
+  @Test
+  void shouldThrowWhenFileNameIsBlank() {
+    ServiceException ex = assertThrows(
+        ServiceException.class,
+        () -> AttachmentValidationHelper.validateMediaTypeForAttachment(
+            "   ",
+            List.of("application/pdf")));
+
+    assertEquals(ErrorStatuses.UNSUPPORTED_MEDIA_TYPE, ex.getErrorStatus());
+  }
+
+  @Test
+  void shouldReturnFalseWhenMimeTypeIsNull() {
+    boolean result = AttachmentValidationHelper.checkMimeTypeMatch(
+        List.of("image/png"),
+        null);
+
+    assertFalse(result);
+  }
+
   private void assertMediaType(
       String fileName,
       List<String> allowed,

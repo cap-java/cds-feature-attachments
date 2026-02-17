@@ -148,6 +148,9 @@ public final class ApplicationHandlerHelper {
    */
   public static void validateAcceptableMediaTypes(
       CdsEntity entity, List<CdsData> data, CdsRuntime cdsRuntime) {
+    if (entity == null) {
+      return;
+    }
     CdsModel cdsModel = cdsRuntime.getCdsModel();
     CdsEntity serviceEntity = cdsModel.findEntity(entity.getQualifiedName()).orElse(null);
     if (serviceEntity == null || !isMediaEntity(serviceEntity)) {

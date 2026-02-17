@@ -28,14 +28,22 @@ import org.mockito.MockitoAnnotations;
 
 class ApplicationHandlerHelperTest {
 
-  @Mock private CdsEntity entity;
-  @Mock private CdsData data;
-  @Mock private CdsRuntime cdsRuntime;
-  @Mock private CdsModel cdsModel;
-  @Mock private CdsEntity serviceEntity;
-  @Mock private CdsElement cdsElement;
-  @Mock private CdsAnnotation<Object> annotation;
-  @Mock private CdsDataProcessor processor;
+  @Mock
+  private CdsEntity entity;
+  @Mock
+  private CdsData data;
+  @Mock
+  private CdsRuntime cdsRuntime;
+  @Mock
+  private CdsModel cdsModel;
+  @Mock
+  private CdsEntity serviceEntity;
+  @Mock
+  private CdsElement cdsElement;
+  @Mock
+  private CdsAnnotation<Object> annotation;
+  @Mock
+  private CdsDataProcessor processor;
 
   @BeforeEach
   void setUp() {
@@ -89,6 +97,21 @@ class ApplicationHandlerHelperTest {
   }
 
   @Test
+  void validateAcceptableMediaTypes_shouldReturnWhenEntityIsNull() {
+    // given
+    CdsRuntime runtime = mock(CdsRuntime.class);
+
+    // when / then
+    assertDoesNotThrow(() -> ApplicationHandlerHelper.validateAcceptableMediaTypes(
+        null,
+        List.of(),
+        runtime));
+
+    // ensure no further interaction happens
+    verifyNoInteractions(runtime);
+  }
+
+  @Test
   void getEntityAcceptableMediaTypes_returnsAnnotationValue() {
     List<String> expectedTypes = List.of("image/png", "application/pdf");
 
@@ -121,16 +144,16 @@ class ApplicationHandlerHelperTest {
     try (MockedStatic<CdsDataProcessor> mocked = mockStatic(CdsDataProcessor.class)) {
       mocked.when(CdsDataProcessor::create).thenReturn(processor);
       doAnswer(
-              invocation -> {
-                Filter filter = invocation.getArgument(0);
-                Validator validator = invocation.getArgument(1);
+          invocation -> {
+            Filter filter = invocation.getArgument(0);
+            Validator validator = invocation.getArgument(1);
 
-                // Simulate processor visiting fileName with String value
-                if (filter.test(null, cdsElement, null)) {
-                  validator.validate(null, cdsElement, "test.pdf");
-                }
-                return processor;
-              })
+            // Simulate processor visiting fileName with String value
+            if (filter.test(null, cdsElement, null)) {
+              validator.validate(null, cdsElement, "test.pdf");
+            }
+            return processor;
+          })
           .when(processor)
           .addValidator(any(), any());
 
@@ -146,14 +169,14 @@ class ApplicationHandlerHelperTest {
     try (MockedStatic<CdsDataProcessor> mocked = mockStatic(CdsDataProcessor.class)) {
       mocked.when(CdsDataProcessor::create).thenReturn(processor);
       doAnswer(
-              invocation -> {
-                Filter filter = invocation.getArgument(0);
-                Validator validator = invocation.getArgument(1);
-                if (filter.test(null, cdsElement, null)) {
-                  validator.validate(null, cdsElement, "test.pdf");
-                }
-                return processor;
-              })
+          invocation -> {
+            Filter filter = invocation.getArgument(0);
+            Validator validator = invocation.getArgument(1);
+            if (filter.test(null, cdsElement, null)) {
+              validator.validate(null, cdsElement, "test.pdf");
+            }
+            return processor;
+          })
           .when(processor)
           .addValidator(any(), any());
 
@@ -170,14 +193,14 @@ class ApplicationHandlerHelperTest {
     try (MockedStatic<CdsDataProcessor> mocked = mockStatic(CdsDataProcessor.class)) {
       mocked.when(CdsDataProcessor::create).thenReturn(processor);
       doAnswer(
-              invocation -> {
-                Filter filter = invocation.getArgument(0);
-                Validator validator = invocation.getArgument(1);
-                if (filter.test(null, cdsElement, null)) {
-                  validator.validate(null, cdsElement, 42); // non-String
-                }
-                return processor;
-              })
+          invocation -> {
+            Filter filter = invocation.getArgument(0);
+            Validator validator = invocation.getArgument(1);
+            if (filter.test(null, cdsElement, null)) {
+              validator.validate(null, cdsElement, 42); // non-String
+            }
+            return processor;
+          })
           .when(processor)
           .addValidator(any(), any());
       doNothing().when(processor).process(anyList(), any());
@@ -203,8 +226,7 @@ class ApplicationHandlerHelperTest {
     when(cdsModel.findEntity("TestService.Roots")).thenReturn(Optional.of(serviceEntity));
     when(serviceEntity.getAnnotationValue("_is_media_data", false)).thenReturn(false);
 
-    try (MockedStatic<AttachmentValidationHelper> mocked =
-        mockStatic(AttachmentValidationHelper.class)) {
+    try (MockedStatic<AttachmentValidationHelper> mocked = mockStatic(AttachmentValidationHelper.class)) {
       ApplicationHandlerHelper.validateAcceptableMediaTypes(entity, List.of(), cdsRuntime);
       mocked.verifyNoInteractions();
     }
@@ -222,8 +244,8 @@ class ApplicationHandlerHelperTest {
   @Test
   void validateAcceptableMediaTypes_mediaTypeMatches_succeeds() {
     setupMediaEntity(List.of("image/png"));
-    try (MockedStatic<ApplicationHandlerHelper> helperStatic =
-        mockStatic(ApplicationHandlerHelper.class, CALLS_REAL_METHODS)) {
+    try (MockedStatic<ApplicationHandlerHelper> helperStatic = mockStatic(ApplicationHandlerHelper.class,
+        CALLS_REAL_METHODS)) {
 
       // file.png → media type image/png → allowed
       helperStatic
@@ -231,17 +253,16 @@ class ApplicationHandlerHelperTest {
           .thenReturn("file.png");
 
       assertDoesNotThrow(
-          () ->
-              ApplicationHandlerHelper.validateAcceptableMediaTypes(
-                  entity, List.of(data), cdsRuntime));
+          () -> ApplicationHandlerHelper.validateAcceptableMediaTypes(
+              entity, List.of(data), cdsRuntime));
     }
   }
 
   @Test
   void validateAcceptableMediaTypes_mediaTypeMismatch_throws() {
     setupMediaEntity(List.of("image/png"));
-    try (MockedStatic<ApplicationHandlerHelper> helperStatic =
-        mockStatic(ApplicationHandlerHelper.class, CALLS_REAL_METHODS)) {
+    try (MockedStatic<ApplicationHandlerHelper> helperStatic = mockStatic(ApplicationHandlerHelper.class,
+        CALLS_REAL_METHODS)) {
 
       // file.jpg → media type image/jpeg → NOT allowed
       helperStatic
@@ -250,9 +271,8 @@ class ApplicationHandlerHelperTest {
 
       assertThrows(
           ServiceException.class,
-          () ->
-              ApplicationHandlerHelper.validateAcceptableMediaTypes(
-                  entity, List.of(data), cdsRuntime));
+          () -> ApplicationHandlerHelper.validateAcceptableMediaTypes(
+              entity, List.of(data), cdsRuntime));
     }
   }
 

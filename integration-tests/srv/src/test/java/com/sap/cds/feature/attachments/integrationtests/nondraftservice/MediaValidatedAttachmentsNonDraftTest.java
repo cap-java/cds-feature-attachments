@@ -46,14 +46,15 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
 
     @ParameterizedTest
     @CsvSource({
-            "image/jpeg,201",
-            "image/png,201",
-            "application/pdf,415",
-            "text/plain,415"
+            "image.jpg,image/jpeg,201",
+            "image.png,image/png,201",
+            "document.pdf,application/pdf,415",
+            "notes.txt,text/plain,415"
     })
-    void shouldValidateMediaTypes(String mediaType, int expectedStatus) throws Exception {
+    void shouldValidateMediaTypes(String fileName,
+            String mediaType,
+            int expectedStatus) throws Exception {
         String rootId = createRootAndReturnId();
-        String fileName = "test." + mediaType.split("/")[1];
         String attachmentMetadata = createAttachmentMetadata(fileName);
 
         requestHelper.executePostWithMatcher(
