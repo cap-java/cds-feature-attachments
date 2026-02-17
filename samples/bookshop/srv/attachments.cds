@@ -40,9 +40,5 @@ annotate adminService.Books with @(UI.Facets: [{
   $Type : 'UI.ReferenceFacet',
   ID    : 'AttachmentsFacet',
   Label : '{i18n>attachments}',
-  Target: 'mediaValidatedAttachments/@UI.LineItem'
+  Target: 'attachments/@UI.LineItem'
 }]);
-
-service nonDraft {
-  entity Books as projection on my.Books;
-}
