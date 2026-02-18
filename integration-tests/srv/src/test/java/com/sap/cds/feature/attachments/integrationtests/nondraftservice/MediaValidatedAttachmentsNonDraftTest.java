@@ -5,6 +5,8 @@ package com.sap.cds.feature.attachments.integrationtests.nondraftservice;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.AttachmentEntity;
@@ -15,6 +17,7 @@ import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.AttachmentsBuilder;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.RootEntityBuilder;
 import com.sap.cds.ql.Select;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,6 +29,7 @@ import org.springframework.test.context.ActiveProfiles;
 class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
   private static final String BASE_URL = MockHttpRequestHelper.ODATA_BASE_URL + "TestService/Roots";
   private static final String MEDIA_VALIDATED_ATTACHMENTS = "mediaValidatedAttachments";
+  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   protected void postServiceRoot(Roots serviceRoot) throws Exception {
     String url = MockHttpRequestHelper.ODATA_BASE_URL + "TestService/Roots";
@@ -93,14 +97,8 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
     return BASE_URL + "(" + rootId + ")/" + path;
   }
 
-  private String createAttachmentMetadata(String fileName) {
-    return String.format(
-        """
-                {
-                  "fileName": "%s"
-                }
-                """,
-        fileName);
+  private String createAttachmentMetadata(String fileName) throws JsonProcessingException {
+    return objectMapper.writeValueAsString(Map.of("fileName", fileName));
   }
 
   // helper method

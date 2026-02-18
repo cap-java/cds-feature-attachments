@@ -13,11 +13,6 @@ import org.junit.jupiter.api.Test;
 class AttachmentValidationHelperTest {
 
   @Test
-  void constructor_shouldBeCallable_forCoverage() {
-    new AttachmentValidationHelper();
-  }
-
-  @Test
   void shouldDetectMimeTypeFromURLConnection() {
     assertMediaType("document.pdf", List.of("application/pdf"), "application/pdf");
   }

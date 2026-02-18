@@ -6,6 +6,7 @@ package com.sap.cds.feature.attachments.integrationtests.draftservice;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.cds.CdsData;
 import com.sap.cds.Struct;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testdraftservice.DraftRoots;
@@ -13,6 +14,7 @@ import com.sap.cds.feature.attachments.integrationtests.common.MockHttpRequestHe
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,6 +27,7 @@ public class MediaValidatedAttachmentsDraftTest extends DraftOdataRequestValidat
 
   private static final String BASE_URL = MockHttpRequestHelper.ODATA_BASE_URL + "TestDraftService/";
   private static final String BASE_ROOT_URL = BASE_URL + "DraftRoots";
+  private static final ObjectMapper objectMapper = new ObjectMapper();
 
   @BeforeEach
   void setup() {
@@ -35,15 +38,8 @@ public class MediaValidatedAttachmentsDraftTest extends DraftOdataRequestValidat
   @CsvSource({"test.png,201", "test.jpeg,201", "test.pdf,415", "test.txt,415"})
   void shouldValidateMediaType_whenCreatingAttachmentInDraft(String fileName, int expectedStatus)
       throws Exception {
-
     String rootId = createDraftRootAndReturnId();
-    String metadata =
-        """
-                {
-                  "fileName": "%s"
-                }
-                """
-            .formatted(fileName);
+    String metadata = objectMapper.writeValueAsString(Map.of("fileName", fileName));
 
     requestHelper.executePostWithMatcher(
         buildDraftAttachmentCreationUrl(rootId), metadata, status().is(expectedStatus));
@@ -63,14 +59,10 @@ public class MediaValidatedAttachmentsDraftTest extends DraftOdataRequestValidat
         requestHelper.executePostWithODataResponseAndAssertStatusCreated(BASE_ROOT_URL, "{}");
 
     DraftRoots draftRoot = Struct.access(response).as(DraftRoots.class);
-
+    String payload =
+        objectMapper.writeValueAsString(Map.of("title", "Draft with mediaValidatedAttachments"));
     requestHelper.executePatchWithODataResponseAndAssertStatusOk(
-        getRootUrl(draftRoot.getId(), false),
-        """
-                        {
-                          "title": "Draft with mediaValidatedAttachments"
-                        }
-                        """);
+        getRootUrl(draftRoot.getId(), false), payload);
 
     return draftRoot.getId();
   }

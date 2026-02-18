@@ -12,7 +12,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AttachmentValidationHelper {
+public final class AttachmentValidationHelper {
 
   public static final String DEFAULT_MEDIA_TYPE = "application/octet-stream";
   public static final Map<String, String> EXT_TO_MEDIA_TYPE =
@@ -161,5 +161,9 @@ public class AttachmentValidationHelper {
                       normalizedType.substring(0, normalizedType.length() - 2) + "/")
                   : baseMimeType.equals(normalizedType);
             });
+  }
+
+  private AttachmentValidationHelper() {
+    // prevent instantiation
   }
 }
