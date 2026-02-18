@@ -80,6 +80,46 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
         status().isBadRequest());
   }
 
+  @Test
+  void shouldAcceptUppercaseExtension_whenMimeTypeIsAllowed() throws Exception {
+    String rootId = createRootAndReturnId();
+    String attachmentMetadata = createAttachmentMetadata("IMAGE.JPG");
+
+    requestHelper.executePostWithMatcher(
+        createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS), attachmentMetadata, status().isCreated());
+  }
+
+  @Test
+  void shouldAcceptMixedCaseExtension() throws Exception {
+    String rootId = createRootAndReturnId();
+    String attachmentMetadata = createAttachmentMetadata("image.JpEg");
+
+    requestHelper.executePostWithMatcher(
+        createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS), attachmentMetadata, status().isCreated());
+  }
+
+  @Test
+  void shouldRejectAttachment_whenFileHasNoExtension() throws Exception {
+    String rootId = createRootAndReturnId();
+    String attachmentMetadata = createAttachmentMetadata("filename");
+
+    requestHelper.executePostWithMatcher(
+        createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS),
+        attachmentMetadata,
+        status().isUnsupportedMediaType());
+  }
+
+  @Test
+  void shouldRejectHiddenFile_whenFileStartsWithDot() throws Exception {
+    String rootId = createRootAndReturnId();
+    String attachmentMetadata = createAttachmentMetadata(".gitignore");
+
+    requestHelper.executePostWithMatcher(
+        createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS),
+        attachmentMetadata,
+        status().isUnsupportedMediaType());
+  }
+
   private String createRootAndReturnId() throws Exception {
     // Build the initial Java object.. Root
     Roots serviceRoot = buildServiceRootWithMediaValidatedAttachments();

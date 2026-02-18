@@ -126,6 +126,18 @@ class AttachmentValidationHelperTest {
   }
 
   @Test
+  void shouldThrowWhenMimeTypeDoesNotMatchWildcard() {
+    ServiceException ex =
+        assertThrows(
+            ServiceException.class,
+            () ->
+                AttachmentValidationHelper.validateMediaTypeForAttachment(
+                    "test.pdf", List.of("image/*")));
+
+    assertEquals(ErrorStatuses.UNSUPPORTED_MEDIA_TYPE, ex.getErrorStatus());
+  }
+
+  @Test
   void shouldThrowWhenFileNameIsBlank() {
     ServiceException ex =
         assertThrows(
@@ -159,5 +171,13 @@ class AttachmentValidationHelperTest {
             () -> AttachmentValidationHelper.validateMediaTypeForAttachment(fileName, allowed));
 
     assertEquals(ErrorStatuses.UNSUPPORTED_MEDIA_TYPE, ex.getErrorStatus());
+  }
+
+  @Test
+  void shouldHandleDotFiles() {
+    assertUnsupported(".gitignore", List.of("text/plain", "application/octet-stream"));
+    assertUnsupported(".ssh", List.of("application/octet-stream"));
+    assertUnsupported(".dockerignore", List.of("text/plain", "application/octet-stream"));
+    assertUnsupported(".invalid.ext", List.of("application/pdf"));
   }
 }

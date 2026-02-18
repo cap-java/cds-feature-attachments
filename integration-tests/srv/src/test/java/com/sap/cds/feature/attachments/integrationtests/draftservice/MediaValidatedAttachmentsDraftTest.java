@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.MediaType;
@@ -35,7 +36,17 @@ public class MediaValidatedAttachmentsDraftTest extends DraftOdataRequestValidat
   }
 
   @ParameterizedTest
-  @CsvSource({"test.png,201", "test.jpeg,201", "test.pdf,415", "test.txt,415"})
+  @CsvSource({
+    "test.png,201",
+    "test.jpeg,201",
+    "test.pdf,415",
+    "test.txt,415",
+    "'',400",
+    "'   ',400",
+    ".gitignore,415",
+    ".env,415",
+    ".hiddenfile,415"
+  })
   void shouldValidateMediaType_whenCreatingAttachmentInDraft(String fileName, int expectedStatus)
       throws Exception {
     String rootId = createDraftRootAndReturnId();
@@ -51,6 +62,14 @@ public class MediaValidatedAttachmentsDraftTest extends DraftOdataRequestValidat
         + rootId
         + ",IsActiveEntity=false)"
         + "/mediaValidatedAttachments";
+  }
+
+  @Test
+  void shouldFail_whenFileNameMissing_inDraft() throws Exception {
+    String rootId = createDraftRootAndReturnId();
+    String metadata = "{}";
+    requestHelper.executePostWithMatcher(
+        buildDraftAttachmentCreationUrl(rootId), metadata, status().isBadRequest());
   }
 
   // Helper methods
