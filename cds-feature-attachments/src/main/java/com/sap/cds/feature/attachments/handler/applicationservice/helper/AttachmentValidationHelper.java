@@ -124,11 +124,12 @@ public final class AttachmentValidationHelper {
   }
 
   private static String resolveMimeType(String fileName) {
-    String actualMimeType = URLConnection.guessContentTypeFromName(fileName);
 
+    String fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+    String actualMimeType = EXT_TO_MEDIA_TYPE.get(fileExtension);
     if (actualMimeType == null) {
-      String fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-      actualMimeType = EXT_TO_MEDIA_TYPE.get(fileExtension);
+
+      actualMimeType = URLConnection.guessContentTypeFromName(fileName);
 
       if (actualMimeType == null) {
         logger.warn(
