@@ -6,6 +6,7 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.AttachmentValidationHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
@@ -70,7 +71,7 @@ public class CreateAttachmentsHandler implements EventHandler {
   @HandlerOrder(HandlerOrder.BEFORE)
   void processBeforeForMetadata(EventContext context, List<CdsData> data) {
     CdsEntity target = context.getTarget();
-    ApplicationHandlerHelper.validateAcceptableMediaTypes(target, data, cdsRuntime);
+    AttachmentValidationHelper.validateAcceptableMediaTypes(target, data, cdsRuntime);
   }
 
   @Before

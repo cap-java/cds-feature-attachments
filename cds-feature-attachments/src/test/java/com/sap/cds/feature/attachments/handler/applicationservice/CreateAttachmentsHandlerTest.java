@@ -25,13 +25,13 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.AttachmentValidationHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
-import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ErrorStatuses;
@@ -411,17 +411,18 @@ class CreateAttachmentsHandlerTest {
     List<CdsData> data = List.of(mock(CdsData.class));
     when(context.getTarget()).thenReturn(entity);
 
-    try (MockedStatic<ApplicationHandlerHelper> helper =
-        mockStatic(ApplicationHandlerHelper.class)) {
+    try (MockedStatic<AttachmentValidationHelper> helper =
+        mockStatic(AttachmentValidationHelper.class)) {
       helper
-          .when(() -> ApplicationHandlerHelper.validateAcceptableMediaTypes(entity, data, runtime))
+          .when(
+              () -> AttachmentValidationHelper.validateAcceptableMediaTypes(entity, data, runtime))
           .thenAnswer(invocation -> null);
       // when
       new CreateAttachmentsHandler(eventFactory, storageReader, "400MB", runtime)
           .processBeforeForMetadata(context, data);
       // then
       helper.verify(
-          () -> ApplicationHandlerHelper.validateAcceptableMediaTypes(entity, data, runtime));
+          () -> AttachmentValidationHelper.validateAcceptableMediaTypes(entity, data, runtime));
     }
   }
 

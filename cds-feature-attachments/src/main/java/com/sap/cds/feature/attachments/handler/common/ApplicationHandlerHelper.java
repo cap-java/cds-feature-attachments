@@ -5,29 +5,19 @@ package com.sap.cds.feature.attachments.handler.common;
 
 import static java.util.Objects.nonNull;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.AttachmentValidationHelper;
-import com.sap.cds.reflect.CdsAnnotation;
 import com.sap.cds.reflect.CdsEntity;
-import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.reflect.CdsStructuredType;
-import com.sap.cds.services.ErrorStatuses;
-import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.draft.Drafts;
-import com.sap.cds.services.runtime.CdsRuntime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The class {@link ApplicationHandlerHelper} provides helper methods for the attachment application
@@ -36,12 +26,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public final class ApplicationHandlerHelper {
   private static final String ANNOTATION_IS_MEDIA_DATA = "_is_media_data";
   private static final String ANNOTATION_CORE_MEDIA_TYPE = "Core.MediaType";
-  private static final ObjectMapper objectMapper = new ObjectMapper();
-  private static final TypeReference<List<String>> STRING_LIST_TYPE_REF = new TypeReference<>() {};
-
-  /** Filter to support extraction of file name for attachment validation */
-  public static final Filter FILE_NAME_FILTER =
-      (path, element, type) -> element.getName().contentEquals("fileName");
 
   /**
    * A filter for media content fields. The filter checks if the entity is a media entity and if the
@@ -137,58 +121,6 @@ public final class ApplicationHandlerHelper {
     Map<String, Object> keyMap = new HashMap<>(keys);
     keyMap.entrySet().removeIf(entry -> entry.getKey().equals(Drafts.IS_ACTIVE_ENTITY));
     return keyMap;
-  }
-
-  /**
-   * Validates if the media type of the attachment in the given fileName is acceptable
-   *
-   * @param entity the {@link CdsEntity entity} type of the given data
-   * @param data the list of {@link CdsData} to process
-   * @throws ServiceException if the media type of the attachment is not acceptable
-   */
-  public static void validateAcceptableMediaTypes(
-      CdsEntity entity, List<CdsData> data, CdsRuntime cdsRuntime) {
-    if (entity == null) {
-      return;
-    }
-    CdsModel cdsModel = cdsRuntime.getCdsModel();
-    CdsEntity serviceEntity = cdsModel.findEntity(entity.getQualifiedName()).orElse(null);
-    if (serviceEntity == null || !isMediaEntity(serviceEntity)) {
-      return;
-    }
-    List<String> allowedTypes = getEntityAcceptableMediaTypes(serviceEntity);
-    String fileName = extractFileName(entity, data);
-    AttachmentValidationHelper.validateMediaTypeForAttachment(fileName, allowedTypes);
-  }
-
-  protected static List<String> getEntityAcceptableMediaTypes(CdsEntity entity) {
-    Optional<CdsAnnotation<Object>> flatMap =
-        entity.getElement("content").findAnnotation("Core.AcceptableMediaTypes");
-    List<String> result =
-        flatMap
-            .map(
-                annotation ->
-                    objectMapper.convertValue(annotation.getValue(), STRING_LIST_TYPE_REF))
-            .orElse(List.of("*/*"));
-    return result;
-  }
-
-  protected static String extractFileName(CdsEntity entity, List<? extends CdsData> data) {
-    CdsDataProcessor processor = CdsDataProcessor.create();
-    AtomicReference<String> fileNameRef = new AtomicReference<>();
-    Validator validator =
-        (path, element, value) -> {
-          if (element.getName().contentEquals("fileName") && value instanceof String) {
-            fileNameRef.set((String) value);
-          }
-        };
-
-    processor.addValidator(FILE_NAME_FILTER, validator).process(data, entity);
-
-    if (fileNameRef.get() == null || fileNameRef.get().isBlank()) {
-      throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Filename is missing");
-    }
-    return fileNameRef.get();
   }
 
   private ApplicationHandlerHelper() {

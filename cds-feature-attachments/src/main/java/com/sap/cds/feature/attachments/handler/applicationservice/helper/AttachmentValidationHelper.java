@@ -3,12 +3,25 @@
  */
 package com.sap.cds.feature.attachments.handler.applicationservice.helper;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sap.cds.CdsData;
+import com.sap.cds.CdsDataProcessor;
+import com.sap.cds.CdsDataProcessor.Filter;
+import com.sap.cds.CdsDataProcessor.Validator;
+import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.reflect.CdsAnnotation;
+import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.ServiceException;
+import com.sap.cds.services.runtime.CdsRuntime;
 import java.net.URLConnection;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,16 +94,65 @@ public final class AttachmentValidationHelper {
           Map.entry("webp", "image/webp"));
 
   private static final Logger logger = LoggerFactory.getLogger(AttachmentValidationHelper.class);
+  private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final TypeReference<List<String>> STRING_LIST_TYPE_REF = new TypeReference<>() {};
+
+  /** Filter to support extraction of file name for attachment validation */
+  public static final Filter FILE_NAME_FILTER =
+      (path, element, type) -> element.getName().contentEquals("fileName");
 
   /**
-   * Validates the file name and resolves its media type. Ensures that the detected media type is
-   * part of the list of acceptable media types.
+   * Validates if the media type of the attachment in the given fileName is acceptable
    *
-   * @param fileName the name of the attachment file
-   * @param acceptableMediaTypes list of allowed media types (e.g. "image/*", "application/pdf")
-   * @return the detected media type
-   * @throws ServiceException if the file name is invalid or the media type is not allowed
+   * @param entity the {@link CdsEntity entity} type of the given data
+   * @param data the list of {@link CdsData} to process
+   * @throws ServiceException if the media type of the attachment is not acceptable
    */
+  public static void validateAcceptableMediaTypes(
+      CdsEntity entity, List<CdsData> data, CdsRuntime cdsRuntime) {
+    if (entity == null) {
+      return;
+    }
+    CdsModel cdsModel = cdsRuntime.getCdsModel();
+    CdsEntity serviceEntity = cdsModel.findEntity(entity.getQualifiedName()).orElse(null);
+    if (serviceEntity == null || !ApplicationHandlerHelper.isMediaEntity(serviceEntity)) {
+      return;
+    }
+    List<String> allowedTypes = getEntityAcceptableMediaTypes(serviceEntity);
+    String fileName = extractFileName(entity, data);
+    validateMediaTypeForAttachment(fileName, allowedTypes);
+  }
+
+  protected static List<String> getEntityAcceptableMediaTypes(CdsEntity entity) {
+    Optional<CdsAnnotation<Object>> flatMap =
+        entity.getElement("content").findAnnotation("Core.AcceptableMediaTypes");
+    List<String> result =
+        flatMap
+            .map(
+                annotation ->
+                    objectMapper.convertValue(annotation.getValue(), STRING_LIST_TYPE_REF))
+            .orElse(List.of("*/*"));
+    return result;
+  }
+
+  protected static String extractFileName(CdsEntity entity, List<? extends CdsData> data) {
+    CdsDataProcessor processor = CdsDataProcessor.create();
+    AtomicReference<String> fileNameRef = new AtomicReference<>();
+    Validator validator =
+        (path, element, value) -> {
+          if (element.getName().contentEquals("fileName") && value instanceof String) {
+            fileNameRef.set((String) value);
+          }
+        };
+
+    processor.addValidator(FILE_NAME_FILTER, validator).process(data, entity);
+
+    if (fileNameRef.get() == null || fileNameRef.get().isBlank()) {
+      throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Filename is missing");
+    }
+    return fileNameRef.get();
+  }
+
   public static String validateMediaTypeForAttachment(
       String fileName, List<String> acceptableMediaTypes) {
     validateFileName(fileName);
