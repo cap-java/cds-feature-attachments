@@ -16,7 +16,6 @@ import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.runtime.CdsRuntime;
-import java.net.URLConnection;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -190,16 +189,11 @@ public final class AttachmentValidationHelper {
     String fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
     String actualMimeType = EXT_TO_MEDIA_TYPE.get(fileExtension);
     if (actualMimeType == null) {
-
-      actualMimeType = URLConnection.guessContentTypeFromName(fileName);
-
-      if (actualMimeType == null) {
-        logger.warn(
-            "Could not determine mime type for file: {}. Setting mime type to default: {}",
-            fileName,
-            DEFAULT_MEDIA_TYPE);
-        actualMimeType = DEFAULT_MEDIA_TYPE;
-      }
+      logger.warn(
+          "Could not determine mime type for file: {}. Setting mime type to default: {}",
+          fileName,
+          DEFAULT_MEDIA_TYPE);
+      actualMimeType = DEFAULT_MEDIA_TYPE;
     }
     return actualMimeType;
   }
