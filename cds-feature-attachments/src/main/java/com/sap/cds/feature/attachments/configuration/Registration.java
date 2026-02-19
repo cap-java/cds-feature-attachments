@@ -1,5 +1,5 @@
 /*
- * © 2024-2025 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.configuration;
 
@@ -89,7 +89,8 @@ public class Registration implements CdsRuntimeConfiguration {
           OutboxService.PERSISTENT_UNORDERED_NAME);
     }
 
-    // build malware scanner client, could be null if no service binding is available
+    // build malware scanner client, could be null if no service binding is
+    // available
     MalwareScanClient scanClient = buildMalwareScanClient(runtime.getEnvironment());
 
     // determine default max size based on malware scanner binding availability
@@ -118,12 +119,14 @@ public class Registration implements CdsRuntimeConfiguration {
         new AttachmentsReader(new AssociationCascader(), persistenceService);
     ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
-    // register event handlers for application service, if at least one application service is
+    // register event handlers for application service, if at least one application
+    // service is
     // available
     boolean hasApplicationServices =
         serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
     if (hasApplicationServices) {
-      configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage, defaultMaxSize));
+      configurer.eventHandler(
+          new CreateAttachmentsHandler(eventFactory, storage, defaultMaxSize, runtime));
       configurer.eventHandler(
           new UpdateAttachmentsHandler(
               eventFactory, attachmentsReader, outboxedAttachmentService, storage, defaultMaxSize));
@@ -138,7 +141,8 @@ public class Registration implements CdsRuntimeConfiguration {
           "No application service is available. Application service event handlers will not be registered.");
     }
 
-    // register event handlers on draft service, if at least one draft service is available
+    // register event handlers on draft service, if at least one draft service is
+    // available
     boolean hasDraftServices =
         serviceCatalog.getServices(DraftService.class).findFirst().isPresent();
     if (hasDraftServices) {
