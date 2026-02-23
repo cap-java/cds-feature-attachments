@@ -65,8 +65,8 @@
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.41.29</software.amazon.awssdk-s3-version>
-    <software.amazon.awssdk-crt-version>0.43.3</software.amazon.awssdk-crt-version>
+    <software.amazon.awssdk-s3-version>2.41.34</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-crt-version>0.43.4</software.amazon.awssdk-crt-version>
 
     <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
     <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
@@ -192,11 +192,11 @@
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.4</version>
+          <version>3.5.5</version>
         </plugin>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>3.5.4</version>
+          <version>3.5.5</version>
         </plugin>
         <plugin>
           <artifactId>maven-pmd-plugin</artifactId>
