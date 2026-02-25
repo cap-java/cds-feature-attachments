@@ -43,17 +43,16 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
     waitTillExpectedHandlerMessageSize(2);
     verifyEventContextEmptyForEvent(
         AttachmentService.EVENT_READ_ATTACHMENT, AttachmentService.EVENT_CREATE_ATTACHMENT);
-    var deleteEvents =
-        serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
+    var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
     assertThat(deleteEvents).hasSize(2);
     assertThat(
-            deleteEvents.stream()
-                .anyMatch(
-                    verifyContentIdAndUserInfo(itemAttachmentEntityAfterChange.getContentId())))
+        deleteEvents.stream()
+            .anyMatch(
+                verifyContentIdAndUserInfo(itemAttachmentEntityAfterChange.getContentId())))
         .isTrue();
     assertThat(
-            deleteEvents.stream()
-                .anyMatch(verifyContentIdAndUserInfo(itemAttachmentAfterChange.getContentId())))
+        deleteEvents.stream()
+            .anyMatch(verifyContentIdAndUserInfo(itemAttachmentAfterChange.getContentId())))
         .isTrue();
   }
 
@@ -97,8 +96,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
     verifyEventContextEmptyForEvent(
         AttachmentService.EVENT_READ_ATTACHMENT,
         AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
-    var createEvent =
-        serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
+    var createEvent = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
     assertThat(createEvent)
         .hasSize(1)
         .first()
@@ -117,34 +115,28 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
       String resultContentId, String toBeDeletedContentId, String content) {
     waitTillExpectedHandlerMessageSize(3);
     verifyEventContextEmptyForEvent(AttachmentService.EVENT_READ_ATTACHMENT);
-    var createEvents =
-        serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
+    var createEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
     assertThat(createEvents).hasSize(2);
     verifyCreateEventsContainsContentId(toBeDeletedContentId, createEvents);
     verifyCreateEventsContainsContentId(resultContentId, createEvents);
-    var deleteEvents =
-        serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
+    var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
 
-    var deleteContentId =
-        !resultContentId.equals(toBeDeletedContentId)
-            ? toBeDeletedContentId
-            : createEvents.stream()
-                .filter(
-                    event ->
-                        !resultContentId.equals(
-                            ((AttachmentCreateEventContext) event.context()).getContentId()))
-                .findFirst()
-                .orElseThrow()
-                .context()
-                .get(Attachments.CONTENT_ID);
+    var deleteContentId = !resultContentId.equals(toBeDeletedContentId)
+        ? toBeDeletedContentId
+        : createEvents.stream()
+            .filter(
+                event -> !resultContentId.equals(
+                    ((AttachmentCreateEventContext) event.context()).getContentId()))
+            .findFirst()
+            .orElseThrow()
+            .context()
+            .get(Attachments.CONTENT_ID);
 
-    var eventFound =
-        deleteEvents.stream()
-            .anyMatch(
-                event ->
-                    ((AttachmentMarkAsDeletedEventContext) event.context())
-                        .getContentId()
-                        .equals(deleteContentId));
+    var eventFound = deleteEvents.stream()
+        .anyMatch(
+            event -> ((AttachmentMarkAsDeletedEventContext) event.context())
+                .getContentId()
+                .equals(deleteContentId));
     assertThat(eventFound).isTrue();
   }
 
@@ -153,8 +145,7 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
     waitTillExpectedHandlerMessageSize(1);
     verifyEventContextEmptyForEvent(
         AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
-    var deleteEvents =
-        serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
+    var deleteEvents = serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
     assertThat(deleteEvents)
         .hasSize(1)
         .first()
@@ -196,25 +187,23 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
 
   private Predicate<EventContextHolder> verifyContentIdAndUserInfo(
       String itemAttachmentEntityAfterChange) {
-    return event ->
-        ((AttachmentMarkAsDeletedEventContext) event.context())
-                .getContentId()
-                .equals(itemAttachmentEntityAfterChange)
-            && ((AttachmentMarkAsDeletedEventContext) event.context())
-                .getDeletionUserInfo()
-                .getName()
-                .equals("anonymous");
+    return event -> ((AttachmentMarkAsDeletedEventContext) event.context())
+        .getContentId()
+        .equals(itemAttachmentEntityAfterChange)
+        && ((AttachmentMarkAsDeletedEventContext) event.context())
+            .getDeletionUserInfo()
+            .getName()
+            .equals("anonymous");
   }
 
   private void verifyCreateEventsContainsContentId(
       String contentId, List<EventContextHolder> createEvents) {
     assertThat(
-            createEvents.stream()
-                .anyMatch(
-                    event ->
-                        ((AttachmentCreateEventContext) event.context())
-                            .getContentId()
-                            .equals(contentId)))
+        createEvents.stream()
+            .anyMatch(
+                event -> ((AttachmentCreateEventContext) event.context())
+                    .getContentId()
+                    .equals(contentId)))
         .isTrue();
   }
 
