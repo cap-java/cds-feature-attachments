@@ -12,6 +12,10 @@ annotate db.Roots.mediaValidatedAttachments with {
     ]);
 }
 
+annotate db.Roots.mimeValidatedAttachments with {
+    content @(Core.AcceptableMediaTypes: ['application/pdf']);
+}
+
 service TestService {
     entity Roots            as projection on db.Roots;
     entity AttachmentEntity as projection on db.AttachmentEntity;

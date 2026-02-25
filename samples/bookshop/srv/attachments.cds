@@ -9,6 +9,8 @@ extend my.Books with {
   sizeLimitedAttachments    : Composition of many Attachments;
   @UI.Hidden
   mediaValidatedAttachments : Composition of many Attachments;
+  @UI.Hidden
+  attachments2              : Composition of many Attachments;
 }
 
 annotate my.Books.sizeLimitedAttachments with {
@@ -21,6 +23,10 @@ annotate my.Books.mediaValidatedAttachments with {
     'image/jpeg',
     'image/png'
   ];
+}
+
+annotate my.Books.attachments2 with {
+  content @Core.AcceptableMediaTypes: ['application/pdf']
 }
 
 // Add UI component for attachments table to the Browse Books App
@@ -40,5 +46,10 @@ annotate adminService.Books with @(UI.Facets: [{
   $Type : 'UI.ReferenceFacet',
   ID    : 'AttachmentsFacet',
   Label : '{i18n>attachments}',
-  Target: 'attachments/@UI.LineItem'
+  Target: 'mediaValidatedAttachments/@UI.LineItem'
 }]);
+
+service nonDraft {
+  @odata.draft.enabled: false
+  entity Books as projection on my.Books;
+}

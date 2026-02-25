@@ -25,10 +25,10 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.AttachmentValidationHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.validation.AttachmentValidationHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
@@ -414,15 +414,14 @@ class CreateAttachmentsHandlerTest {
     try (MockedStatic<AttachmentValidationHelper> helper =
         mockStatic(AttachmentValidationHelper.class)) {
       helper
-          .when(
-              () -> AttachmentValidationHelper.validateAcceptableMediaTypes(entity, data, runtime))
+          .when(() -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime))
           .thenAnswer(invocation -> null);
       // when
       new CreateAttachmentsHandler(eventFactory, storageReader, "400MB", runtime)
           .processBeforeForMetadata(context, data);
       // then
       helper.verify(
-          () -> AttachmentValidationHelper.validateAcceptableMediaTypes(entity, data, runtime));
+          () -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime));
     }
   }
 
