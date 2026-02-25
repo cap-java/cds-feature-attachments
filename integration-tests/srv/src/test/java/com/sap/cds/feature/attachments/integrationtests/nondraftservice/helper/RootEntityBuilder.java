@@ -16,7 +16,6 @@ public class RootEntityBuilder {
     rootEntity.setAttachments(new ArrayList<>());
     rootEntity.setItems(new ArrayList<>());
     rootEntity.setSizeLimitedAttachments(new ArrayList<>());
-    rootEntity.setMediaValidatedAttachments(new ArrayList<>());
   }
 
   public static RootEntityBuilder create() {
@@ -37,12 +36,6 @@ public class RootEntityBuilder {
   public RootEntityBuilder addSizeLimitedAttachments(AttachmentsBuilder... attachments) {
     Arrays.stream(attachments)
         .forEach(attachment -> rootEntity.getSizeLimitedAttachments().add(attachment.build()));
-    return this;
-  }
-
-  public RootEntityBuilder addMediaValidatedAttachments(AttachmentsBuilder... attachments) {
-    Arrays.stream(attachments)
-        .forEach(attachment -> rootEntity.getMediaValidatedAttachments().add(attachment.build()));
     return this;
   }
 

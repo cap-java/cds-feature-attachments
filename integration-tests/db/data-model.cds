@@ -15,6 +15,7 @@ entity Roots : cuid {
                                     on items.parentID = $self.ID;
     sizeLimitedAttachments    : Composition of many Attachments;
     mediaValidatedAttachments : Composition of many Attachments;
+    mimeValidatedAttachments  : Composition of many Attachments;
 }
 
 entity Items : cuid {
