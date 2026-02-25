@@ -11,15 +11,12 @@ public final class FileNameValidator {
   /**
    * Validates and normalizes a file name before further processing.
    *
-   * <p>
-   * This method ensures that filenames are non-null, non-blank, and follow a
-   * basic "name.extension" format before being used in further processing such as
-   * MIME type resolution.
+   * <p>This method ensures that filenames are non-null, non-blank, and follow a basic
+   * "name.extension" format before being used in further processing such as MIME type resolution.
    *
    * @param fileName the original filename to validate
    * @return the trimmed and validated filename
-   * @throws ServiceException if the filename is null, blank, or has an invalid
-   *                          format
+   * @throws ServiceException if the filename is null, blank, or has an invalid format
    */
   public static String validateAndNormalize(String fileName) {
     if (fileName == null) {

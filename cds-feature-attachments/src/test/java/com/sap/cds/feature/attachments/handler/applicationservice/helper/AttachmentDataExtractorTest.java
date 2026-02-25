@@ -38,18 +38,12 @@ import org.mockito.MockitoAnnotations;
 
 class AttachmentDataExtractorTest {
 
-  @Mock
-  private CdsElement attachmentElement;
-  @Mock
-  private CdsAssociationType associationType;
-  @Mock
-  private CdsEntity targetEntity;
-  @Mock
-  private CdsType cdsType;
-  @Mock
-  private CdsDataProcessor processor;
-  @Mock
-  private CdsAnnotation<Object> annotation;
+  @Mock private CdsElement attachmentElement;
+  @Mock private CdsAssociationType associationType;
+  @Mock private CdsEntity targetEntity;
+  @Mock private CdsType cdsType;
+  @Mock private CdsDataProcessor processor;
+  @Mock private CdsAnnotation<Object> annotation;
   private MockedStatic<MediaTypeResolver> mediaMock;
   private MockedStatic<ApplicationHandlerHelper> helperMock;
   private MockedStatic<CdsDataProcessor> processorMock;
@@ -157,23 +151,29 @@ class AttachmentDataExtractorTest {
     return Stream.of(
         Arguments.of(
             "Not an association",
-            (Consumer<AttachmentDataExtractorTest>) test -> when(test.cdsType.isAssociation()).thenReturn(false)),
+            (Consumer<AttachmentDataExtractorTest>)
+                test -> when(test.cdsType.isAssociation()).thenReturn(false)),
         Arguments.of(
             "Not a composition",
-            (Consumer<AttachmentDataExtractorTest>) test -> when(test.associationType.isComposition())
-                .thenReturn(false)),
+            (Consumer<AttachmentDataExtractorTest>)
+                test -> when(test.associationType.isComposition()).thenReturn(false)),
         Arguments.of(
             "Not a media entity",
-            (Consumer<AttachmentDataExtractorTest>) test -> test.helperMock
-                .when(() -> ApplicationHandlerHelper.isMediaEntity(test.targetEntity))
-                .thenReturn(false)),
+            (Consumer<AttachmentDataExtractorTest>)
+                test ->
+                    test.helperMock
+                        .when(() -> ApplicationHandlerHelper.isMediaEntity(test.targetEntity))
+                        .thenReturn(false)),
         Arguments.of(
             "Missing media annotation",
-            (Consumer<AttachmentDataExtractorTest>) test -> test.mediaMock
-                .when(
-                    () -> MediaTypeResolver.getAcceptableMediaTypesAnnotation(
-                        test.targetEntity))
-                .thenReturn(Optional.empty())));
+            (Consumer<AttachmentDataExtractorTest>)
+                test ->
+                    test.mediaMock
+                        .when(
+                            () ->
+                                MediaTypeResolver.getAcceptableMediaTypesAnnotation(
+                                    test.targetEntity))
+                        .thenReturn(Optional.empty())));
   }
 
   @Test
@@ -190,8 +190,9 @@ class AttachmentDataExtractorTest {
     doNothing().when(processor).process(anyList(), any());
     when(targetEntity.elements()).thenReturn(Stream.of(attachmentElement));
     when(attachmentElement.getName()).thenReturn(ATTACHMENT_FIELD);
-    CdsData data = CdsData.create(
-        Map.of(ATTACHMENT_FIELD, List.of(CdsData.create(Map.of(FILE_NAME, "file.txt")))));
+    CdsData data =
+        CdsData.create(
+            Map.of(ATTACHMENT_FIELD, List.of(CdsData.create(Map.of(FILE_NAME, "file.txt")))));
 
     // Act + Assert
     ServiceException ex = assertThrows(ServiceException.class, () -> extractFileNames(data));
@@ -212,8 +213,9 @@ class AttachmentDataExtractorTest {
     Set<String> dataKeys = Set.of(ATTACHMENT_FIELD);
 
     // Act
-    var method = AttachmentDataExtractor.class.getDeclaredMethod(
-        "hasMissingFileNames", Map.class, List.class, Set.class);
+    var method =
+        AttachmentDataExtractor.class.getDeclaredMethod(
+            "hasMissingFileNames", Map.class, List.class, Set.class);
     method.setAccessible(true);
     boolean resultValue = (boolean) method.invoke(null, result, elements, dataKeys);
 
@@ -285,35 +287,37 @@ class AttachmentDataExtractorTest {
   }
 
   private Map<String, Set<String>> extractFileNames(CdsData cdsData) {
-    return AttachmentDataExtractor.extractAndValidateFileNamesByElement(targetEntity, List.of(cdsData));
+    return AttachmentDataExtractor.extractAndValidateFileNamesByElement(
+        targetEntity, List.of(cdsData));
   }
 
   private CdsData prepareCdsDataWithAttachments(Object... fileNames) {
-    List<CdsData> attachments = Arrays.stream(fileNames)
-        .map(
-            name -> {
-              Map<String, Object> map = new HashMap<>();
-              map.put(FILE_NAME, name);
-              return CdsData.create(map);
-            })
-        .toList();
+    List<CdsData> attachments =
+        Arrays.stream(fileNames)
+            .map(
+                name -> {
+                  Map<String, Object> map = new HashMap<>();
+                  map.put(FILE_NAME, name);
+                  return CdsData.create(map);
+                })
+            .toList();
     mockValidatorExecution(fileNames);
     return CdsData.create(Map.of(ATTACHMENT_FIELD, attachments));
   }
 
   private void mockValidatorExecution(Object... values) {
     doAnswer(
-        invocation -> {
-          Filter filter = invocation.getArgument(0);
-          Validator validator = invocation.getArgument(1);
+            invocation -> {
+              Filter filter = invocation.getArgument(0);
+              Validator validator = invocation.getArgument(1);
 
-          if (filter.test(null, attachmentElement, null)) {
-            for (Object value : values) {
-              validator.validate(null, attachmentElement, value);
-            }
-          }
-          return processor;
-        })
+              if (filter.test(null, attachmentElement, null)) {
+                for (Object value : values) {
+                  validator.validate(null, attachmentElement, value);
+                }
+              }
+              return processor;
+            })
         .when(processor)
         .addValidator(any(), any());
 
