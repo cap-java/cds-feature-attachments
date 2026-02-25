@@ -21,8 +21,7 @@ class MediaTypeResolverTest {
   void returnsMediaTypes_whenEntityIsMediaEntity() {
     CdsEntity entity = mediaEntity("MediaEntity", List.of("image/png", "image/jpeg"));
     try (MockedStatic<ApplicationHandlerHelper> mocked = mockMedia(entity)) {
-      Map<String, List<String>> result =
-          MediaTypeResolver.getAcceptableMediaTypesFromEntity(entity);
+      Map<String, List<String>> result = MediaTypeResolver.getAcceptableMediaTypesFromEntity(entity);
       assertEquals(Map.of("MediaEntity", List.of("image/png", "image/jpeg")), result);
     }
   }
@@ -31,20 +30,19 @@ class MediaTypeResolverTest {
   void returnsWildcard_whenAnnotationMissing() {
     CdsEntity entity = mediaEntity("MediaEntity", null);
     try (MockedStatic<ApplicationHandlerHelper> mocked = mockMedia(entity)) {
-      Map<String, List<String>> result =
-          MediaTypeResolver.getAcceptableMediaTypesFromEntity(entity);
+      Map<String, List<String>> result = MediaTypeResolver.getAcceptableMediaTypesFromEntity(entity);
       assertEquals(List.of("*/*"), result.get("MediaEntity"));
     }
   }
 
   @Test
   void returnsMediaTypes_fromComposedChildEntities() {
-    CdsEntity child = mediaEntity("ChildMedia", List.of("application/pdf"));
+    CdsEntity child = mediaEntity("ChildMediaEntity", List.of("application/pdf"));
     CdsEntity root = rootWithChild(child);
     try (MockedStatic<ApplicationHandlerHelper> mocked = mockMedia(child)) {
       mocked.when(() -> ApplicationHandlerHelper.isMediaEntity(root)).thenReturn(false);
       Map<String, List<String>> result = MediaTypeResolver.getAcceptableMediaTypesFromEntity(root);
-      assertEquals(Map.of("ChildMedia", List.of("application/pdf")), result);
+      assertEquals(Map.of("ChildMediaEntity", List.of("application/pdf")), result);
     }
   }
 
@@ -52,8 +50,7 @@ class MediaTypeResolverTest {
   void ignoresNonMediaChildren() {
     CdsEntity child = mock(CdsEntity.class);
     CdsEntity root = rootWithChild(child);
-    try (MockedStatic<ApplicationHandlerHelper> mocked =
-        mockStatic(ApplicationHandlerHelper.class)) {
+    try (MockedStatic<ApplicationHandlerHelper> mocked = mockStatic(ApplicationHandlerHelper.class)) {
       mocked.when(() -> ApplicationHandlerHelper.isMediaEntity(root)).thenReturn(false);
       mocked.when(() -> ApplicationHandlerHelper.isMediaEntity(child)).thenReturn(false);
       Map<String, List<String>> result = MediaTypeResolver.getAcceptableMediaTypesFromEntity(root);
@@ -65,8 +62,7 @@ class MediaTypeResolverTest {
   void returnsEmpty_whenNoAssociations() {
     CdsEntity root = mock(CdsEntity.class);
     when(root.elements()).thenReturn(Stream.empty());
-    try (MockedStatic<ApplicationHandlerHelper> mocked =
-        mockStatic(ApplicationHandlerHelper.class)) {
+    try (MockedStatic<ApplicationHandlerHelper> mocked = mockStatic(ApplicationHandlerHelper.class)) {
       mocked.when(() -> ApplicationHandlerHelper.isMediaEntity(root)).thenReturn(false);
       Map<String, List<String>> result = MediaTypeResolver.getAcceptableMediaTypesFromEntity(root);
       assertTrue(result.isEmpty());

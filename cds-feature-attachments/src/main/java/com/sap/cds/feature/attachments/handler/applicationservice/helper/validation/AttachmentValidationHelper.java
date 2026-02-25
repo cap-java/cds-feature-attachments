@@ -24,11 +24,13 @@ public final class AttachmentValidationHelper {
   public static final List<String> WILDCARD_MEDIA_TYPE = List.of("*/*");
 
   /**
-   * Validates if the media type of the attachment in the given fileName is acceptable
+   * Validates if the media type of the attachment in the given fileName is
+   * acceptable
    *
    * @param entity the {@link CdsEntity entity} type of the given data
-   * @param data the list of {@link CdsData} to process
-   * @throws ServiceException if the media type of the attachment is not acceptable
+   * @param data   the list of {@link CdsData} to process
+   * @throws ServiceException if the media type of the attachment is not
+   *                          acceptable
    */
   public static void validateMediaAttachments(
       CdsEntity entity, List<CdsData> data, CdsRuntime cdsRuntime) {
@@ -43,17 +45,17 @@ public final class AttachmentValidationHelper {
     }
 
     CdsEntity serviceEntity = optionalServiceEntity.get();
-    boolean hasNoAttachmentCompositions =
-        !ApplicationHandlerHelper.deepSearchForAttachments(serviceEntity);
-
+    boolean hasNoAttachmentCompositions = !ApplicationHandlerHelper.deepSearchForAttachments(serviceEntity);
+    // Skip if entity is irrelevant for attachments
     if (!ApplicationHandlerHelper.isMediaEntity(serviceEntity) && hasNoAttachmentCompositions) {
       return;
     }
-
-    Map<String, List<String>> allowedTypesByElementName =
-        MediaTypeResolver.getAcceptableMediaTypesFromEntity(serviceEntity);
-    Map<String, Set<String>> fileNamesByElementName =
-        AttachmentDataExtractor.extractFileNamesByElement(serviceEntity, data);
+    // validate the media types of the attachments
+    Map<String, List<String>> allowedTypesByElementName = MediaTypeResolver
+        .getAcceptableMediaTypesFromEntity(serviceEntity);
+    Map<String, Set<String>> fileNamesByElementName = AttachmentDataExtractor.extractAndValidateFileNamesByElement(
+        serviceEntity,
+        data);
     validateAttachmentMediaTypes(fileNamesByElementName, allowedTypesByElementName);
   }
 
@@ -61,26 +63,33 @@ public final class AttachmentValidationHelper {
       Map<String, Set<String>> fileNamesByElementName,
       Map<String, List<String>> acceptableMediaTypesByElementName) {
 
-    Map<String, List<String>> invalidFiles =
-        findInvalidFiles(fileNamesByElementName, acceptableMediaTypesByElementName);
+    // Determine which uploaded files do not match the allowed media types
+    Map<String, List<String>> invalidFiles = findInvalidFilesByElementName(fileNamesByElementName,
+        acceptableMediaTypesByElementName);
 
-    assertNoInvalidFiles(invalidFiles, acceptableMediaTypesByElementName);
+    if (!invalidFiles.isEmpty()) {
+      throw buildUnsupportedFileTypeMessage(acceptableMediaTypesByElementName, invalidFiles);
+    }
   }
 
-  private static Map<String, List<String>> findInvalidFiles(
+  private static Map<String, List<String>> findInvalidFilesByElementName(
       Map<String, Set<String>> fileNamesByElementName,
       Map<String, List<String>> acceptableMediaTypesByElementName) {
+    // If no files are provided, there is nothing to validate → return empty result
     if (fileNamesByElementName == null || fileNamesByElementName.isEmpty()) {
       return Map.of();
     }
+    // Will store, per element, the list of files that violate media type
+    // constraints
     Map<String, List<String>> invalidFiles = new HashMap<>();
     fileNamesByElementName.forEach(
         (elementName, files) -> {
-          List<String> acceptableTypes =
-              acceptableMediaTypesByElementName.getOrDefault(elementName, WILDCARD_MEDIA_TYPE);
+          // Resolve the allowed media types for this field / element.
+          List<String> acceptableTypes = acceptableMediaTypesByElementName.getOrDefault(elementName,
+              WILDCARD_MEDIA_TYPE);
 
-          List<String> invalid =
-              files.stream().filter(file -> !isAttachmentTypeValid(file, acceptableTypes)).toList();
+          // Filter out files whose media type is NOT allowed for this element
+          List<String> invalid = files.stream().filter(file -> !isAttachmentTypeValid(file, acceptableTypes)).toList();
 
           if (!invalid.isEmpty()) {
             invalidFiles.put(elementName, invalid);
@@ -90,40 +99,29 @@ public final class AttachmentValidationHelper {
     return invalidFiles;
   }
 
-  private static void assertNoInvalidFiles(
-      Map<String, List<String>> invalidFiles,
-      Map<String, List<String>> acceptableMediaTypesByElementName) {
-
-    if (!invalidFiles.isEmpty()) {
-      throw buildUnsupportedFileTypeMessage(acceptableMediaTypesByElementName, invalidFiles);
-    }
+  private static boolean isAttachmentTypeValid(String fileName, List<String> acceptableTypes) {
+    String mimeType = MediaTypeService.resolveMimeType(fileName);
+    return MediaTypeService.isMimeTypeAllowed(acceptableTypes, mimeType);
   }
 
   private static ServiceException buildUnsupportedFileTypeMessage(
       Map<String, List<String>> acceptableMediaTypesByElementName,
       Map<String, List<String>> invalidFilesByElement) {
-    String message =
-        invalidFilesByElement.entrySet().stream()
-            .map(
-                entry -> {
-                  String element = entry.getKey();
-                  String files = String.join(", ", entry.getValue());
-                  String allowed =
-                      String.join(
-                          ", ",
-                          acceptableMediaTypesByElementName.getOrDefault(
-                              element, WILDCARD_MEDIA_TYPE));
-                  return files + " (allowed: " + allowed + ") ";
-                })
-            .collect(Collectors.joining("; "));
+    String message = invalidFilesByElement.entrySet().stream()
+        .map(
+            entry -> {
+              String element = entry.getKey();
+              String files = String.join(", ", entry.getValue());
+              String allowed = String.join(
+                  ", ",
+                  acceptableMediaTypesByElementName.getOrDefault(
+                      element, WILDCARD_MEDIA_TYPE));
+              return files + " (allowed: " + allowed + ") ";
+            })
+        .collect(Collectors.joining("; "));
 
     return new ServiceException(
         ErrorStatuses.UNSUPPORTED_MEDIA_TYPE, "Unsupported file types detected: " + message);
-  }
-
-  private static boolean isAttachmentTypeValid(String fileName, List<String> acceptableTypes) {
-    String mimeType = MediaTypeService.resolveMimeType(fileName);
-    return MediaTypeService.isMimeTypeAllowed(acceptableTypes, mimeType);
   }
 
   private AttachmentValidationHelper() {
