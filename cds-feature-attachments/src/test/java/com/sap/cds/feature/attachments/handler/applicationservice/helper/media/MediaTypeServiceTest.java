@@ -5,6 +5,7 @@ package com.sap.cds.feature.attachments.handler.applicationservice.helper.media;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.sap.cds.services.ServiceException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -149,5 +150,15 @@ class MediaTypeServiceTest {
         MediaTypeService.isMimeTypeAllowed(List.of("application/json", "image/png"), "image/png");
 
     assertTrue(result);
+  }
+
+  @Test
+  void throws_whenFilenameIsNull() {
+    assertThrows(ServiceException.class, () -> MediaTypeService.resolveMimeType(null));
+  }
+
+  @Test
+  void throws_whenFileNameIsBlank() {
+    assertThrows(ServiceException.class, () -> MediaTypeService.resolveMimeType("   "));
   }
 }

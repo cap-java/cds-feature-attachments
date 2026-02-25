@@ -138,15 +138,11 @@ class AttachmentValidationHelperTest {
   @Test
   void groupsInvalidFilesByElement_andBuildsReadableMessage() {
     Map<String, Set<String>> files = Map.of("com.test.Entity", Set.of("file.txt", "file.pdf"));
-
     Map<String, List<String>> allowed = Map.of("com.test.Entity", List.of("image/png"));
-
     ServiceException ex =
         assertThrows(
             ServiceException.class,
             () -> AttachmentValidationHelper.validateAttachmentMediaTypes(files, allowed));
-
-    assertTrue(ex.getMessage().contains("Entity")); // simple name extraction
     assertTrue(ex.getMessage().contains("file.txt"));
     assertTrue(ex.getMessage().contains("file.pdf"));
     assertTrue(ex.getMessage().contains("image/png"));
@@ -164,18 +160,6 @@ class AttachmentValidationHelperTest {
 
     assertDoesNotThrow(
         () -> AttachmentValidationHelper.validateAttachmentMediaTypes(files, Map.of()));
-  }
-
-  @Test
-  void throwsException_whenFilenameInvalid() {
-    Map<String, Set<String>> files = Map.of("Entity", Set.of("invalid")); // no extension
-
-    ServiceException ex =
-        assertThrows(
-            ServiceException.class,
-            () -> AttachmentValidationHelper.validateAttachmentMediaTypes(files, Map.of()));
-
-    assertTrue(ex.getMessage().contains("Invalid filename format"));
   }
 
   private CdsRuntime mockRuntime(CdsEntity entity) {

@@ -14,83 +14,79 @@ class FileNameValidatorTest {
   @Test
   void throwsException_whenFileNameIsNull() {
     ServiceException ex =
-        assertThrows(ServiceException.class, () -> FileNameValidator.validate(null));
+        assertThrows(ServiceException.class, () -> FileNameValidator.validateAndNormalize(null));
 
-    assertEquals(ErrorStatuses.UNSUPPORTED_MEDIA_TYPE, ex.getErrorStatus());
+    assertEquals(ErrorStatuses.BAD_REQUEST, ex.getErrorStatus());
     assertTrue(ex.getMessage().contains("must not be null"));
   }
 
   @Test
   void throwsException_whenFileNameIsBlank() {
     ServiceException ex =
-        assertThrows(ServiceException.class, () -> FileNameValidator.validate("   "));
+        assertThrows(ServiceException.class, () -> FileNameValidator.validateAndNormalize("   "));
 
-    assertEquals(ErrorStatuses.UNSUPPORTED_MEDIA_TYPE, ex.getErrorStatus());
+    assertEquals(ErrorStatuses.BAD_REQUEST, ex.getErrorStatus());
     assertTrue(ex.getMessage().contains("must not be blank"));
   }
 
   @Test
   void throwsException_whenNoExtensionPresent() {
     ServiceException ex =
-        assertThrows(ServiceException.class, () -> FileNameValidator.validate("file"));
-
+        assertThrows(ServiceException.class, () -> FileNameValidator.validateAndNormalize("file"));
     assertTrue(ex.getMessage().contains("Invalid filename format"));
   }
 
   @Test
   void throwsException_whenOnlyDotFile() {
     ServiceException ex =
-        assertThrows(ServiceException.class, () -> FileNameValidator.validate("."));
-
+        assertThrows(ServiceException.class, () -> FileNameValidator.validateAndNormalize("."));
     assertTrue(ex.getMessage().contains("Invalid filename format"));
   }
 
   @Test
   void throwsException_whenTrailingDot() {
     ServiceException ex =
-        assertThrows(ServiceException.class, () -> FileNameValidator.validate("file."));
-
+        assertThrows(ServiceException.class, () -> FileNameValidator.validateAndNormalize("file."));
     assertTrue(ex.getMessage().contains("Invalid filename format"));
   }
 
   @Test
   void throwsException_whenOnlyDots() {
     ServiceException ex =
-        assertThrows(ServiceException.class, () -> FileNameValidator.validate("..."));
-
+        assertThrows(ServiceException.class, () -> FileNameValidator.validateAndNormalize("..."));
     assertTrue(ex.getMessage().contains("Invalid filename format"));
   }
 
   @Test
   void throwsException_whenTrimmedBecomesInvalid() {
     ServiceException ex =
-        assertThrows(ServiceException.class, () -> FileNameValidator.validate("   file   "));
-
+        assertThrows(
+            ServiceException.class, () -> FileNameValidator.validateAndNormalize("   file   "));
     assertTrue(ex.getMessage().contains("Invalid filename format"));
   }
 
   @Test
   void doesNotThrow_whenValidFileName() {
-    assertDoesNotThrow(() -> FileNameValidator.validate("file.txt"));
+    assertDoesNotThrow(() -> FileNameValidator.validateAndNormalize("file.txt"));
   }
 
   @Test
   void doesNotThrow_whenValidFileNameWithMultipleDots() {
-    assertDoesNotThrow(() -> FileNameValidator.validate("archive.tar.gz"));
+    assertDoesNotThrow(() -> FileNameValidator.validateAndNormalize("archive.tar.gz"));
   }
 
   @Test
   void doesNotThrow_whenValidFileNameWithWhitespace() {
-    assertDoesNotThrow(() -> FileNameValidator.validate("  file.txt  "));
+    assertDoesNotThrow(() -> FileNameValidator.validateAndNormalize("  file.txt  "));
   }
 
   @Test
   void doesNotThrow_whenDoubleDotButValidExtension() {
-    assertDoesNotThrow(() -> FileNameValidator.validate("file..txt"));
+    assertDoesNotThrow(() -> FileNameValidator.validateAndNormalize("file..txt"));
   }
 
   @Test
   void doesNotThrow_whenHiddenFileWithoutName() {
-    assertDoesNotThrow(() -> FileNameValidator.validate(".config.json"));
+    assertDoesNotThrow(() -> FileNameValidator.validateAndNormalize(".config.json"));
   }
 }

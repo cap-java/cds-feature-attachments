@@ -3,6 +3,8 @@
  */
 package com.sap.cds.feature.attachments.handler.applicationservice.helper.media;
 
+import com.sap.cds.services.ErrorStatuses;
+import com.sap.cds.services.ServiceException;
 import java.util.Collection;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -79,16 +81,27 @@ public final class MediaTypeService {
           Map.entry("webp", "image/webp"));
 
   public static String resolveMimeType(String fileName) {
-    String fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+    if (fileName == null || fileName.isBlank()) {
+      throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Filename is missing");
+    }
+    int lastDotIndex = fileName.lastIndexOf('.');
+    if (lastDotIndex == -1 || lastDotIndex == fileName.length() - 1) {
+      return fallbackToDefaultMimeType(fileName);
+    }
+    String fileExtension = fileName.substring(lastDotIndex + 1).toLowerCase();
     String actualMimeType = EXT_TO_MEDIA_TYPE.get(fileExtension);
     if (actualMimeType == null) {
-      logger.warn(
-          "Could not determine mime type for file: {}. Setting mime type to default: {}",
-          fileName,
-          DEFAULT_MEDIA_TYPE);
-      actualMimeType = DEFAULT_MEDIA_TYPE;
+      return fallbackToDefaultMimeType(fileName);
     }
     return actualMimeType;
+  }
+
+  private static String fallbackToDefaultMimeType(String fileName) {
+    logger.warn(
+        "Could not determine mime type for file: {}. Setting mime type to default: {}",
+        fileName,
+        DEFAULT_MEDIA_TYPE);
+    return DEFAULT_MEDIA_TYPE;
   }
 
   public static boolean isMimeTypeAllowed(
@@ -108,7 +121,7 @@ public final class MediaTypeService {
         .anyMatch(
             type -> {
               return type.endsWith("/*")
-                  ? baseMimeType.startsWith(type.substring(0, type.length() - 2) + "/")
+                  ? baseMimeType.startsWith(type.substring(0, type.length() - 1))
                   : baseMimeType.equals(type);
             });
   }

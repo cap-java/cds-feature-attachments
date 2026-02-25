@@ -107,14 +107,13 @@ public final class AttachmentValidationHelper {
             .map(
                 entry -> {
                   String element = entry.getKey();
-                  String simpleName = extractSimpleName(element);
                   String files = String.join(", ", entry.getValue());
                   String allowed =
                       String.join(
                           ", ",
                           acceptableMediaTypesByElementName.getOrDefault(
                               element, WILDCARD_MEDIA_TYPE));
-                  return simpleName + ": " + files + " (allowed: " + allowed + ")";
+                  return files + " (allowed: " + allowed + ") ";
                 })
             .collect(Collectors.joining("; "));
 
@@ -122,13 +121,7 @@ public final class AttachmentValidationHelper {
         ErrorStatuses.UNSUPPORTED_MEDIA_TYPE, "Unsupported file types detected: " + message);
   }
 
-  private static String extractSimpleName(String qualifiedName) {
-    int idx = qualifiedName.lastIndexOf('.');
-    return idx >= 0 ? qualifiedName.substring(idx + 1) : qualifiedName;
-  }
-
   private static boolean isAttachmentTypeValid(String fileName, List<String> acceptableTypes) {
-    FileNameValidator.validate(fileName);
     String mimeType = MediaTypeService.resolveMimeType(fileName);
     return MediaTypeService.isMimeTypeAllowed(acceptableTypes, mimeType);
   }
