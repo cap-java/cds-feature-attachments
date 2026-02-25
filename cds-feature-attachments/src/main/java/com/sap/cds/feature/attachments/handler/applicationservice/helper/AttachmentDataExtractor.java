@@ -25,14 +25,14 @@ import java.util.stream.Collectors;
 
 public final class AttachmentDataExtractor {
   private static final String FILE_NAME_FIELD = "fileName";
-  public static final Filter FILE_NAME_FILTER = (path, element, type) -> element.getName()
-      .contentEquals(FILE_NAME_FIELD);
+  public static final Filter FILE_NAME_FILTER =
+      (path, element, type) -> element.getName().contentEquals(FILE_NAME_FIELD);
 
   /**
    * Extracts and validates file names of attachments from the given entity data.
-   * 
+   *
    * @param entity the CDS entity definition
-   * @param data   the incoming data containing attachment values
+   * @param data the incoming data containing attachment values
    * @return a map of element names to sets of associated file names
    */
   public static Map<String, Set<String>> extractAndValidateFileNamesByElement(
@@ -58,35 +58,37 @@ public final class AttachmentDataExtractor {
   }
 
   private static Validator generateFileNameFieldValidator(Map<String, Set<String>> result) {
-    Validator validator = (path, element, value) -> {
-      String fileName = requireString(value);
-      String normalizedFileName = FileNameValidator.validateAndNormalize(fileName);
-      String key = element.getDeclaringType().getQualifiedName();
-      result.computeIfAbsent(key, k -> new HashSet<>()).add(normalizedFileName);
-    };
+    Validator validator =
+        (path, element, value) -> {
+          String fileName = requireString(value);
+          String normalizedFileName = FileNameValidator.validateAndNormalize(fileName);
+          String key = element.getDeclaringType().getQualifiedName();
+          result.computeIfAbsent(key, k -> new HashSet<>()).add(normalizedFileName);
+        };
     return validator;
   }
 
   private static void ensureAttachmentsHaveFileNames(
       CdsEntity entity, List<? extends CdsData> data, Map<String, Set<String>> result) {
     // Collect attachment-related elements/fields from the entity
-    List<CdsElement> attachmentElements = entity
-        .elements()
-        .filter(
-            e -> {
-              // Only consider associations
-              if (!e.getType().isAssociation()) {
-                return false;
-              }
-              // Keep only associations targeting media entities
-              // that define acceptable media types
-              CdsAssociationType association = e.getType().as(CdsAssociationType.class);
-              return ApplicationHandlerHelper.isMediaEntity(association.getTarget())
-                  && MediaTypeResolver.getAcceptableMediaTypesAnnotation(
-                      association.getTarget())
-                      .isPresent();
-            })
-        .toList();
+    List<CdsElement> attachmentElements =
+        entity
+            .elements()
+            .filter(
+                e -> {
+                  // Only consider associations
+                  if (!e.getType().isAssociation()) {
+                    return false;
+                  }
+                  // Keep only associations targeting media entities
+                  // that define acceptable media types
+                  CdsAssociationType association = e.getType().as(CdsAssociationType.class);
+                  return ApplicationHandlerHelper.isMediaEntity(association.getTarget())
+                      && MediaTypeResolver.getAcceptableMediaTypesAnnotation(
+                              association.getTarget())
+                          .isPresent();
+                })
+            .toList();
 
     // Validate that required attachments have file names
     ensureFilenamesPresent(data, result, attachmentElements);

@@ -18,24 +18,21 @@ import java.util.Optional;
 public final class MediaTypeResolver {
   private static final String CONTENT_ELEMENT = "content";
   private static final String ACCEPTABLE_MEDIA_TYPES_ANNOTATION = "Core.AcceptableMediaTypes";
-  private static final TypeReference<List<String>> STRING_LIST_TYPE_REF = new TypeReference<>() {
-  };
+  private static final TypeReference<List<String>> STRING_LIST_TYPE_REF = new TypeReference<>() {};
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
   /**
    * Resolves the acceptable media (MIME) types for the given {@link CdsEntity}.
    *
-   * <p>
-   * The method behaves differently depending on whether the provided entity
-   * itself is a media entity or a root entity containing compositions:
+   * <p>The method behaves differently depending on whether the provided entity itself is a media
+   * entity or a root entity containing compositions:
    *
-   * <p>
-   * If no media entities are found (neither the root nor its composition
-   * targets), an empty map is returned.
+   * <p>If no media entities are found (neither the root nor its composition targets), an empty map
+   * is returned.
    *
    * @param entity the CDS entity to inspect (root or media entity)
-   * @return a map of entity qualified names to their allowed media types;
-   *         empty if no media entities are found
+   * @return a map of entity qualified names to their allowed media types; empty if no media
+   *     entities are found
    */
   public static Map<String, List<String>> getAcceptableMediaTypesFromEntity(CdsEntity entity) {
     // If this entity is a media entity
