@@ -109,7 +109,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
     requestHelper.executePostWithMatcher(
         createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS),
         attachmentMetadata,
-        status().isUnsupportedMediaType());
+        status().isBadRequest());
   }
 
   @Test
@@ -163,9 +163,8 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
     Map<String, Object> payload = new HashMap<>();
     payload.put("title", "Hello World!");
     payload.put("mediaValidatedAttachments", List.of(
-        Map.of("fileName", "test1.jpeg"), // invalid
-        Map.of("fileName", "test2.jpeg") // valid
-    ));
+        Map.of("fileName", "test1.jpeg"),
+        Map.of("fileName", "test2.jpeg")));
 
     payload.put("mimeValidatedAttachments", List.of(
         Map.of("fileName", "test3.pdf")));

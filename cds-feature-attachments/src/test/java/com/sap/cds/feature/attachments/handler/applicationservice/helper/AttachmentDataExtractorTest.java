@@ -178,61 +178,48 @@ class AttachmentDataExtractorTest {
 
   @Test
   void filter_acceptsElement_whenAllConditionsTrue() {
-    // default setup already does this
     CdsData data = prepareCdsDataWithAttachments("file.txt");
-
     Map<String, Set<String>> result = extractFileNames(data);
-
     assertThat(result.get(ATTACHMENT_ENTITY)).contains("file.txt");
   }
 
   @Test
   void ensureFilenamesPresent_whenResultMissingKey_throwsException() {
     // Arrange
-
-    // IMPORTANT: disable validator so result stays EMPTY
     doAnswer(invocation -> processor).when(processor).addValidator(any(), any());
     doNothing().when(processor).process(anyList(), any());
-
     when(targetEntity.elements()).thenReturn(Stream.of(attachmentElement));
-
-    // Ensure attachment is detected
     when(attachmentElement.getName()).thenReturn(ATTACHMENT_FIELD);
-
     CdsData data =
         CdsData.create(
             Map.of(ATTACHMENT_FIELD, List.of(CdsData.create(Map.of(FILE_NAME, "file.txt")))));
 
     // Act + Assert
     ServiceException ex = assertThrows(ServiceException.class, () -> extractFileNames(data));
-
     assertThat(ex.getMessage()).contains("Filename is missing");
   }
 
   @Test
-  void hasMissingFileNames_keyExistsButEmptySet_returnsTrue() throws Exception {
+  void hasMissingFileNames_whenFileNamesEmpty_returnsTrue() throws Exception {
+    // Arrange
     Map<String, Set<String>> result = new HashMap<>();
     result.put(ATTACHMENT_ENTITY, new HashSet<>());
+    when(attachmentElement.getName()).thenReturn(ATTACHMENT_FIELD);
+    when(attachmentElement.getType()).thenReturn(cdsType);
+    when(cdsType.as(CdsAssociationType.class)).thenReturn(associationType);
+    when(associationType.getTarget()).thenReturn(targetEntity);
+    when(targetEntity.getQualifiedName()).thenReturn(ATTACHMENT_ENTITY);
+    List<CdsElement> elements = List.of(attachmentElement);
+    Set<String> dataKeys = Set.of(ATTACHMENT_FIELD);
 
-    CdsElement element = mock(CdsElement.class);
-    CdsType type = mock(CdsType.class);
-    CdsAssociationType assoc = mock(CdsAssociationType.class);
-    CdsEntity target = mock(CdsEntity.class);
-
-    when(element.getType()).thenReturn(type);
-    when(type.as(CdsAssociationType.class)).thenReturn(assoc);
-    when(assoc.getTarget()).thenReturn(target);
-    when(target.getQualifiedName()).thenReturn(ATTACHMENT_ENTITY);
-
-    List<CdsElement> elements = List.of(element);
-
+    // Act
     var method =
         AttachmentDataExtractor.class.getDeclaredMethod(
-            "hasMissingFileNames", Map.class, List.class);
+            "hasMissingFileNames", Map.class, List.class, Set.class);
     method.setAccessible(true);
+    boolean resultValue = (boolean) method.invoke(null, result, elements, dataKeys);
 
-    boolean resultValue = (boolean) method.invoke(null, result, elements);
-
+    // Assert
     assertThat(resultValue).isTrue();
   }
 

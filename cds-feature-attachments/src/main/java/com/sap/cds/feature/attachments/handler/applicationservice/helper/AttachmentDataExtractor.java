@@ -8,6 +8,7 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.media.MediaTypeResolver;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.validation.FileNameValidator;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElement;
@@ -44,21 +45,16 @@ public final class AttachmentDataExtractor {
   }
 
   private static Validator createFileNameValidator(Map<String, Set<String>> result) {
-    Validator validator =
-        (path, element, value) -> {
-          if (!(value instanceof String fileName)) {
-            throw new ServiceException(
-                ErrorStatuses.BAD_REQUEST,
-                value == null ? "Filename is missing" : "Filename must be a string");
-          }
-          fileName = fileName.trim();
-          if (fileName.isBlank()) {
-            throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Filename is missing");
-          }
-          String key = element.getDeclaringType().getQualifiedName();
-          result.computeIfAbsent(key, k -> new HashSet<>()).add(fileName);
-        };
-    return validator;
+    return (path, element, value) -> {
+      if (!(value instanceof String fileName)) {
+        throw new ServiceException(
+            ErrorStatuses.BAD_REQUEST,
+            value == null ? "Filename is missing" : "Filename must be a string");
+      }
+      String normalizedFileName = FileNameValidator.validateAndNormalize(fileName);
+      String key = element.getDeclaringType().getQualifiedName();
+      result.computeIfAbsent(key, k -> new HashSet<>()).add(normalizedFileName);
+    };
   }
 
   private static void ensureAttachmentsHaveFileNames(
@@ -87,30 +83,27 @@ public final class AttachmentDataExtractor {
       Map<String, Set<String>> result,
       List<CdsElement> attachmentElements) {
     Set<String> dataKeys = collectValidDataKeys(data);
-    List<CdsElement> availableAttachmentElements =
-        filterAttachmentsPresentInData(attachmentElements, dataKeys);
-    boolean hasMissingFileNames = hasMissingFileNames(result, availableAttachmentElements);
-    if (hasMissingFileNames) {
+    boolean hasMissingFileName = hasMissingFileNames(result, attachmentElements, dataKeys);
+    if (hasMissingFileName) {
       throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Filename is missing");
     }
   }
 
   private static boolean hasMissingFileNames(
-      Map<String, Set<String>> result, List<CdsElement> availableAttachmentElements) {
+      Map<String, Set<String>> result,
+      List<CdsElement> availableAttachmentElements,
+      Set<String> dataKeys) {
 
     return availableAttachmentElements.stream()
+        .filter(e -> dataKeys.contains(e.getName()))
         .anyMatch(
             element -> {
               CdsAssociationType assoc = element.getType().as(CdsAssociationType.class);
               String target = assoc.getTarget().getQualifiedName();
 
-              return !result.containsKey(target) || result.get(target).isEmpty();
+              Set<String> fileNames = result.get(target);
+              return fileNames == null || fileNames.isEmpty();
             });
-  }
-
-  private static List<CdsElement> filterAttachmentsPresentInData(
-      List<CdsElement> attachmentElements, Set<String> dataKeys) {
-    return attachmentElements.stream().filter(e -> dataKeys.contains(e.getName())).toList();
   }
 
   private static Set<String> collectValidDataKeys(List<? extends CdsData> data) {

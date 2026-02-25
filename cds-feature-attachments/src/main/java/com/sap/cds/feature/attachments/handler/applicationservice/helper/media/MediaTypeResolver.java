@@ -5,6 +5,7 @@ package com.sap.cds.feature.attachments.handler.applicationservice.helper.media;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.validation.AttachmentValidationHelper;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.reflect.CdsAnnotation;
 import com.sap.cds.reflect.CdsAssociationType;
@@ -16,7 +17,6 @@ import java.util.Optional;
 
 public final class MediaTypeResolver {
   private static final String CONTENT_ELEMENT = "content";
-  private static final List<String> WILDCARD_MEDIA_TYPE = List.of("*/*");
   private static final String ACCEPTABLE_MEDIA_TYPES_ANNOTATION = "Core.AcceptableMediaTypes";
   private static final TypeReference<List<String>> STRING_LIST_TYPE_REF = new TypeReference<>() {};
   private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -55,7 +55,7 @@ public final class MediaTypeResolver {
     return getAcceptableMediaTypesAnnotation(entity)
         .map(CdsAnnotation::getValue)
         .map(value -> objectMapper.convertValue(value, STRING_LIST_TYPE_REF))
-        .orElse(WILDCARD_MEDIA_TYPE);
+        .orElse(AttachmentValidationHelper.WILDCARD_MEDIA_TYPE);
   }
 
   private MediaTypeResolver() {
