@@ -30,6 +30,7 @@ class SizeLimitedAttachmentValidationNonDraftTest extends OdataRequestValidation
 
     var selectedRoot = selectStoredRootWithSizeLimitedAttachments();
     var attachment = getRandomRootSizeLimitedAttachment(selectedRoot);
+    attachment.setFileName("test.txt");
 
     // Act & Assert: Upload 3MB content (within limit) succeeds
     byte[] content = new byte[3 * 1024 * 1024]; // 3MB
@@ -48,7 +49,7 @@ class SizeLimitedAttachmentValidationNonDraftTest extends OdataRequestValidation
 
     var selectedRoot = selectStoredRootWithSizeLimitedAttachments();
     var attachment = getRandomRootSizeLimitedAttachment(selectedRoot);
-
+    attachment.setFileName("test.txt");
     // Act: Try to upload 6MB content (exceeds limit)
     byte[] content = new byte[6 * 1024 * 1024]; // 6MB
     var url =
@@ -57,7 +58,8 @@ class SizeLimitedAttachmentValidationNonDraftTest extends OdataRequestValidation
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
     requestHelper.executePutWithMatcher(url, content, status().is(413));
 
-    // Assert: Error response with HTTP 413 status code indicates size limit exceeded
+    // Assert: Error response with HTTP 413 status code indicates size limit
+    // exceeded
   }
 
   // Helper methods
