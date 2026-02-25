@@ -27,15 +27,14 @@ import org.mockito.MockedStatic;
 class AttachmentValidationHelperTest {
 
   @Test
-  void returns_whenEntityIsNull() {
+  void validateMediaAttachments_doesNothing_whenEntityIsNull() {
     assertDoesNotThrow(
-        () ->
-            AttachmentValidationHelper.validateMediaAttachments(
-                null, List.of(), mock(CdsRuntime.class)));
+        () -> AttachmentValidationHelper.validateMediaAttachments(
+            null, List.of(), mock(CdsRuntime.class)));
   }
 
   @Test
-  void returns_whenEntityNotFoundInModel() {
+  void validateMediaAttachments_doesNothing_whenEntityNotFoundInModel() {
     CdsEntity entity = mock(CdsEntity.class);
     when(entity.getQualifiedName()).thenReturn("Entity");
 
@@ -49,11 +48,10 @@ class AttachmentValidationHelperTest {
   }
 
   @Test
-  void returns_whenNotMediaEntityAndNoAttachments() {
+  void validateMediaAttachments_doesNothing_whenNotMediaEntityAndNoAttachments() {
     CdsEntity entity = mockEntity("Entity");
 
-    try (MockedStatic<ApplicationHandlerHelper> mocked =
-        mockStatic(ApplicationHandlerHelper.class)) {
+    try (MockedStatic<ApplicationHandlerHelper> mocked = mockStatic(ApplicationHandlerHelper.class)) {
       mocked
           .when(() -> ApplicationHandlerHelper.deepSearchForAttachments(entity))
           .thenReturn(false);
@@ -67,17 +65,15 @@ class AttachmentValidationHelperTest {
   }
 
   @Test
-  void passes_whenAllFilesValid() {
+  void validateMediaAttachments_doesNotThrow_whenAllFilesAreAllowed() {
     CdsEntity entity = mockEntity("Entity");
 
-    Map<String, List<String>> allowed = Map.of("Entity", List.of("image/png"));
-    Map<String, Set<String>> files = Map.of("Entity", Set.of("file.png"));
+    Map<String, List<String>> allowed = Map.of("Entity.attachments", List.of("image/png"));
+    Map<String, Set<String>> files = Map.of("Entity.attachments", Set.of("file.png"));
 
-    try (MockedStatic<ApplicationHandlerHelper> helper =
-            mockStatic(ApplicationHandlerHelper.class);
+    try (MockedStatic<ApplicationHandlerHelper> helper = mockStatic(ApplicationHandlerHelper.class);
         MockedStatic<MediaTypeResolver> resolver = mockStatic(MediaTypeResolver.class);
-        MockedStatic<AttachmentDataExtractor> extractor =
-            mockStatic(AttachmentDataExtractor.class)) {
+        MockedStatic<AttachmentDataExtractor> extractor = mockStatic(AttachmentDataExtractor.class)) {
 
       helper.when(() -> ApplicationHandlerHelper.deepSearchForAttachments(entity)).thenReturn(true);
       helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(true);
@@ -87,7 +83,7 @@ class AttachmentValidationHelperTest {
           .thenReturn(allowed);
 
       extractor
-          .when(() -> AttachmentDataExtractor.extractFileNamesByElement(entity, List.of()))
+          .when(() -> AttachmentDataExtractor.extractAndValidateFileNamesByElement(entity, List.of()))
           .thenReturn(files);
 
       CdsRuntime runtime = mockRuntime(entity);
@@ -98,17 +94,15 @@ class AttachmentValidationHelperTest {
   }
 
   @Test
-  void throwsException_whenInvalidFilesDetected() {
+  void validateMediaAttachments_throwsServiceException_whenUnsupportedFileTypesDetected() {
     CdsEntity entity = mockEntity("Entity");
 
-    Map<String, List<String>> allowed = Map.of("Entity", List.of("image/png"));
-    Map<String, Set<String>> files = Map.of("Entity", Set.of("file.txt"));
+    Map<String, List<String>> allowed = Map.of("Entity.attachments", List.of("image/png"));
+    Map<String, Set<String>> files = Map.of("Entity.attachments", Set.of("file.txt"));
 
-    try (MockedStatic<ApplicationHandlerHelper> helper =
-            mockStatic(ApplicationHandlerHelper.class);
+    try (MockedStatic<ApplicationHandlerHelper> helper = mockStatic(ApplicationHandlerHelper.class);
         MockedStatic<MediaTypeResolver> resolver = mockStatic(MediaTypeResolver.class);
-        MockedStatic<AttachmentDataExtractor> extractor =
-            mockStatic(AttachmentDataExtractor.class)) {
+        MockedStatic<AttachmentDataExtractor> extractor = mockStatic(AttachmentDataExtractor.class)) {
 
       helper.when(() -> ApplicationHandlerHelper.deepSearchForAttachments(entity)).thenReturn(true);
       helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(true);
@@ -118,16 +112,14 @@ class AttachmentValidationHelperTest {
           .thenReturn(allowed);
 
       extractor
-          .when(() -> AttachmentDataExtractor.extractFileNamesByElement(entity, List.of()))
+          .when(() -> AttachmentDataExtractor.extractAndValidateFileNamesByElement(entity, List.of()))
           .thenReturn(files);
 
       CdsRuntime runtime = mockRuntime(entity);
 
-      ServiceException ex =
-          assertThrows(
-              ServiceException.class,
-              () ->
-                  AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), runtime));
+      ServiceException ex = assertThrows(
+          ServiceException.class,
+          () -> AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), runtime));
 
       assertTrue(ex.getMessage().contains("Unsupported file types detected"));
       assertTrue(ex.getMessage().contains("file.txt"));
@@ -136,27 +128,26 @@ class AttachmentValidationHelperTest {
   }
 
   @Test
-  void groupsInvalidFilesByElement_andBuildsReadableMessage() {
-    Map<String, Set<String>> files = Map.of("com.test.Entity", Set.of("file.txt", "file.pdf"));
-    Map<String, List<String>> allowed = Map.of("com.test.Entity", List.of("image/png"));
-    ServiceException ex =
-        assertThrows(
-            ServiceException.class,
-            () -> AttachmentValidationHelper.validateAttachmentMediaTypes(files, allowed));
+  void validateAttachmentMediaTypes_groupsUnsupportedFilesByElement_inExceptionMessage() {
+    Map<String, Set<String>> files = Map.of("Entity.attachments", Set.of("file.txt", "file.pdf"));
+    Map<String, List<String>> allowed = Map.of("Entity.attachments", List.of("image/png"));
+    ServiceException ex = assertThrows(
+        ServiceException.class,
+        () -> AttachmentValidationHelper.validateAttachmentMediaTypes(files, allowed));
     assertTrue(ex.getMessage().contains("file.txt"));
     assertTrue(ex.getMessage().contains("file.pdf"));
     assertTrue(ex.getMessage().contains("image/png"));
   }
 
   @Test
-  void doesNothing_whenNoFilesProvided() {
+  void validateAttachmentMediaTypes_doesNotThrow_whenNoFilesProvided() {
     assertDoesNotThrow(
         () -> AttachmentValidationHelper.validateAttachmentMediaTypes(Map.of(), Map.of()));
   }
 
   @Test
-  void usesWildcard_whenNoAllowedTypesDefined() {
-    Map<String, Set<String>> files = Map.of("Entity", Set.of("file.anything"));
+  void validateAttachmentMediaTypes_allowsAnyType_whenNoAllowedTypesConfigured() {
+    Map<String, Set<String>> files = Map.of("Entity.attachments", Set.of("file.anything"));
 
     assertDoesNotThrow(
         () -> AttachmentValidationHelper.validateAttachmentMediaTypes(files, Map.of()));
