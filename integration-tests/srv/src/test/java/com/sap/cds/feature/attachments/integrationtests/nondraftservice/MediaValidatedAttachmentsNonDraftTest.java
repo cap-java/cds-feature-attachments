@@ -14,10 +14,8 @@ import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testserv
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Roots_;
 import com.sap.cds.feature.attachments.integrationtests.common.MockHttpRequestHelper;
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
-import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.AttachmentsBuilder;
 import com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper.RootEntityBuilder;
 import com.sap.cds.ql.Select;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,8 +39,9 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
   }
 
   private Roots selectStoredRootWithMediaValidatedAttachments() {
-    Select<Roots_> select = Select.from(Roots_.class)
-        .columns(r -> r._all(), r -> r.mediaValidatedAttachments().expand());
+    Select<Roots_> select =
+        Select.from(Roots_.class)
+            .columns(r -> r._all(), r -> r.mediaValidatedAttachments().expand());
 
     Result result = persistenceService.run(select);
     return result.single(Roots.class);
@@ -55,10 +54,10 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
 
   @ParameterizedTest
   @CsvSource({
-      "image.jpg,image/jpeg,201",
-      "image.png,image/png,201",
-      "document.pdf,application/pdf,415",
-      "notes.txt,text/plain,415"
+    "image.jpg,image/jpeg,201",
+    "image.png,image/png,201",
+    "document.pdf,application/pdf,415",
+    "notes.txt,text/plain,415"
   })
   void shouldValidateMediaTypes(String fileName, String mediaType, int expectedStatus)
       throws Exception {
@@ -125,24 +124,21 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
 
   @ParameterizedTest
   @CsvSource({
-      // valid cases
-      "'test1.jpeg|test2.jpeg',201",
-      // invalid media types
-      "'test.pdf',415",
-      "'test1.jpeg|test2.pdf',415",
-      // invalid filenames
-      "'',400",
-      "'   ',400",
-      // edge cases
-      "'.gitignore',415"
+    // valid cases
+    "'test1.jpeg|test2.jpeg',201",
+    // invalid media types
+    "'test.pdf',415",
+    "'test1.jpeg|test2.pdf',415",
+    // invalid filenames
+    "'',400",
+    "'   ',400",
+    // edge cases
+    "'.gitignore',415"
   })
   void shouldValidateMediaTypes_forMultipleAttachments(String fileNames, int expectedStatus)
       throws Exception {
     String payload = buildPayload(fileNames);
-    requestHelper.executePostWithMatcher(
-        BASE_URL,
-        payload,
-        status().is(expectedStatus));
+    requestHelper.executePostWithMatcher(BASE_URL, payload, status().is(expectedStatus));
   }
 
   @Test
@@ -152,44 +148,35 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
     payload.put("mediaValidatedAttachments", List.of());
 
     String payloadStr = objectMapper.writeValueAsString(payload);
-    requestHelper.executePostWithMatcher(
-        BASE_URL,
-        payloadStr,
-        status().is(201));
+    requestHelper.executePostWithMatcher(BASE_URL, payloadStr, status().is(201));
   }
 
   @Test
   void shouldAcceptDeepCreate_whenMixedValidAndAllValidAttachments() throws Exception {
     Map<String, Object> payload = new HashMap<>();
     payload.put("title", "Hello World!");
-    payload.put("mediaValidatedAttachments", List.of(
-        Map.of("fileName", "test1.jpeg"),
-        Map.of("fileName", "test2.jpeg")));
+    payload.put(
+        "mediaValidatedAttachments",
+        List.of(Map.of("fileName", "test1.jpeg"), Map.of("fileName", "test2.jpeg")));
 
-    payload.put("mimeValidatedAttachments", List.of(
-        Map.of("fileName", "test3.pdf")));
+    payload.put("mimeValidatedAttachments", List.of(Map.of("fileName", "test3.pdf")));
 
     requestHelper.executePostWithMatcher(
-        BASE_URL,
-        objectMapper.writeValueAsString(payload),
-        status().isCreated());
+        BASE_URL, objectMapper.writeValueAsString(payload), status().isCreated());
   }
 
   @Test
   void shouldRejectDeepCreate_whenMixedValidAndInvalidAttachments() throws Exception {
     Map<String, Object> payload = new HashMap<>();
     payload.put("title", "Hello World!");
-    payload.put("mediaValidatedAttachments", List.of(
-        Map.of("fileName", "test1.pdf"),
-        Map.of("fileName", "test2.jpeg")));
+    payload.put(
+        "mediaValidatedAttachments",
+        List.of(Map.of("fileName", "test1.pdf"), Map.of("fileName", "test2.jpeg")));
 
-    payload.put("mimeValidatedAttachments", List.of(
-        Map.of("fileName", "test3.pdf")));
+    payload.put("mimeValidatedAttachments", List.of(Map.of("fileName", "test3.pdf")));
 
     requestHelper.executePostWithMatcher(
-        BASE_URL,
-        objectMapper.writeValueAsString(payload),
-        status().isUnsupportedMediaType());
+        BASE_URL, objectMapper.writeValueAsString(payload), status().isUnsupportedMediaType());
   }
 
   private String createRootAndReturnId() throws Exception {
@@ -219,8 +206,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
   }
 
   private String createUrl(String rootId, String path) {
-    return BASE_URL + "(" + rootId + ")" +
-        (path == null || path.isBlank() ? "" : "/" + path);
+    return BASE_URL + "(" + rootId + ")" + (path == null || path.isBlank() ? "" : "/" + path);
   }
 
   private String createAttachmentMetadata(String fileName) throws JsonProcessingException {
@@ -229,9 +215,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
 
   // helper method
   private Roots buildServiceRoot() {
-    return RootEntityBuilder.create()
-        .setTitle("Root")
-        .build();
+    return RootEntityBuilder.create().setTitle("Root").build();
   }
 
   // Override abstract methods from OdataRequestValidationBase

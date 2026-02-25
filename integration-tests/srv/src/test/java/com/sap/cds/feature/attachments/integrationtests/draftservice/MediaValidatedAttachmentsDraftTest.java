@@ -37,15 +37,15 @@ public class MediaValidatedAttachmentsDraftTest extends DraftOdataRequestValidat
 
   @ParameterizedTest
   @CsvSource({
-      "test.png,201",
-      "test.jpeg,201",
-      "test.pdf,415",
-      "test.txt,415",
-      "'',400",
-      "'   ',400",
-      ".gitignore,415",
-      ".env,415",
-      ".hiddenfile,415"
+    "test.png,201",
+    "test.jpeg,201",
+    "test.pdf,415",
+    "test.txt,415",
+    "'',400",
+    "'   ',400",
+    ".gitignore,415",
+    ".env,415",
+    ".hiddenfile,415"
   })
   void shouldValidateMediaType_whenCreatingAttachmentInDraft(String fileName, int expectedStatus)
       throws Exception {
@@ -74,7 +74,8 @@ public class MediaValidatedAttachmentsDraftTest extends DraftOdataRequestValidat
 
   // Helper methods
   private String createDraftRootAndReturnId() throws Exception {
-    CdsData response = requestHelper.executePostWithODataResponseAndAssertStatusCreated(BASE_ROOT_URL, "{}");
+    CdsData response =
+        requestHelper.executePostWithODataResponseAndAssertStatusCreated(BASE_ROOT_URL, "{}");
 
     DraftRoots draftRoot = Struct.access(response).as(DraftRoots.class);
     String payload = objectMapper.writeValueAsString(Map.of("title", "Draft"));
