@@ -1,7 +1,7 @@
 /*
  * © 2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
-package com.sap.cds.feature.attachments.handler.applicationservice.helper;
+package com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -14,7 +14,6 @@ import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.media.MediaTypeResolver;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.reflect.CdsAnnotation;
 import com.sap.cds.reflect.CdsAssociationType;
@@ -92,7 +91,20 @@ class AttachmentDataExtractorTest {
   }
 
   @Test
-  void extractFileNames_whenFilenameMissing_throwsBadRequest() {
+  void extractFileNames_whenFilenameIsDot_throwsBadRequest() {
+    // Arrange
+    CdsData cdsData = prepareCdsDataWithAttachments(".");
+
+    // Act
+    ServiceException ex = assertThrows(ServiceException.class, () -> extractFileNames(cdsData));
+
+    // Assert
+    assertThat(ex.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
+    assertThat(ex.getMessage()).contains("Invalid filename format");
+  }
+
+  @Test
+  void extractFileNames_whenFilenameNull_throwsBadRequest() {
     // Arrange
     CdsData cdsData = prepareCdsDataWithAttachments((Object) null);
 

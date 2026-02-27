@@ -10,13 +10,11 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.Drafts;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -123,29 +121,6 @@ public final class ApplicationHandlerHelper {
     Map<String, Object> keyMap = new HashMap<>(keys);
     keyMap.entrySet().removeIf(entry -> entry.getKey().equals(Drafts.IS_ACTIVE_ENTITY));
     return keyMap;
-  }
-
-  public static boolean deepSearchForAttachments(CdsEntity entity) {
-    return deepSearchForAttachmentsRecursive(entity, new HashSet<>());
-  }
-
-  private static boolean deepSearchForAttachmentsRecursive(
-      CdsEntity entity, HashSet<String> visited) {
-
-    if (visited.contains(entity.getQualifiedName())) {
-      return false;
-    }
-    visited.add(entity.getQualifiedName());
-
-    if (isMediaEntity(entity)) {
-      return true;
-    }
-
-    return entity
-        .compositions()
-        .map(element -> element.getType().as(CdsAssociationType.class))
-        .anyMatch(
-            association -> deepSearchForAttachmentsRecursive(association.getTarget(), visited));
   }
 
   private ApplicationHandlerHelper() {
