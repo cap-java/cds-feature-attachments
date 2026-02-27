@@ -11,6 +11,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -27,6 +28,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation.AttachmentValidationHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
@@ -48,6 +50,7 @@ import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
@@ -55,6 +58,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 class CreateAttachmentsHandlerTest {
 
@@ -78,7 +82,10 @@ class CreateAttachmentsHandlerTest {
     storageReader = mock(ThreadDataStorageReader.class);
     cut =
         new CreateAttachmentsHandler(
-            eventFactory, storageReader, ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+            eventFactory,
+            storageReader,
+            ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+            runtime);
 
     createContext = mock(CdsCreateEventContext.class);
     event = mock(ModifyAttachmentEvent.class);
@@ -381,6 +388,41 @@ class CreateAttachmentsHandlerTest {
         .containsExactlyInAnyOrder(
             CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE, DraftService.EVENT_DRAFT_PATCH);
     assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
+  }
+
+  @Test
+  void processBeforeForMetadata_methodHasCorrectAnnotations() throws NoSuchMethodException {
+    Method method =
+        cut.getClass()
+            .getDeclaredMethod("processBeforeForMetadata", EventContext.class, List.class);
+
+    Before beforeAnnotation = method.getAnnotation(Before.class);
+    HandlerOrder handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
+
+    assertThat(beforeAnnotation.event())
+        .containsExactlyInAnyOrder(CqnService.EVENT_CREATE, DraftService.EVENT_DRAFT_NEW);
+    assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.BEFORE);
+  }
+
+  @Test
+  void processBeforeForMetadata_executesValidation() {
+    EventContext context = mock(EventContext.class);
+    CdsEntity entity = mock(CdsEntity.class);
+    List<CdsData> data = List.of(mock(CdsData.class));
+    when(context.getTarget()).thenReturn(entity);
+
+    try (MockedStatic<AttachmentValidationHelper> helper =
+        mockStatic(AttachmentValidationHelper.class)) {
+      helper
+          .when(() -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime))
+          .thenAnswer(invocation -> null);
+      // when
+      new CreateAttachmentsHandler(eventFactory, storageReader, "400MB", runtime)
+          .processBeforeForMetadata(context, data);
+      // then
+      helper.verify(
+          () -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime));
+    }
   }
 
   private void getEntityAndMockContext(String cdsName) {
