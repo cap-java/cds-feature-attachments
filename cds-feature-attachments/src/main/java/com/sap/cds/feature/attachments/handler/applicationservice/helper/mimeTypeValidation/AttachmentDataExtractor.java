@@ -1,14 +1,12 @@
 /*
  * © 2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
-package com.sap.cds.feature.attachments.handler.applicationservice.helper;
+package com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
 import com.sap.cds.CdsDataProcessor.Validator;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.media.MediaTypeResolver;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.validation.FileNameValidator;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsElement;
@@ -44,8 +42,6 @@ public final class AttachmentDataExtractor {
     return fileNamesByElementName;
   }
 
-  // -------------------- Extraction --------------------
-
   private static Map<String, Set<String>> collectFileNamesByElementName(
       CdsEntity entity, List<? extends CdsData> data) {
     // Use CdsProcessor to traverse the data and collect file names for elements
@@ -61,11 +57,24 @@ public final class AttachmentDataExtractor {
     Validator validator =
         (path, element, value) -> {
           String fileName = requireString(value);
-          String normalizedFileName = FileNameValidator.validateAndNormalize(fileName);
+          String normalizedFileName = validateAndNormalize(fileName);
           String key = element.getDeclaringType().getQualifiedName();
           result.computeIfAbsent(key, k -> new HashSet<>()).add(normalizedFileName);
         };
     return validator;
+  }
+
+  private static String validateAndNormalize(String fileName) {
+    String trimmedFileName = fileName.trim();
+    if (trimmedFileName.isEmpty()) {
+      throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Filename must not be blank");
+    }
+
+    int lastDotIndex = trimmedFileName.lastIndexOf('.');
+    if (lastDotIndex == -1 || lastDotIndex == trimmedFileName.length() - 1) {
+      throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Invalid filename format: " + fileName);
+    }
+    return trimmedFileName;
   }
 
   private static void ensureAttachmentsHaveFileNames(
@@ -144,16 +153,12 @@ public final class AttachmentDataExtractor {
 
   private static String requireString(Object value) {
     if (value == null) {
-      throw missingFileNameError();
+      throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Filename is missing");
     }
     if (!(value instanceof String s)) {
       throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Filename must be a string");
     }
     return s;
-  }
-
-  private static ServiceException missingFileNameError() {
-    return new ServiceException(ErrorStatuses.BAD_REQUEST, "Filename is missing");
   }
 
   private AttachmentDataExtractor() {

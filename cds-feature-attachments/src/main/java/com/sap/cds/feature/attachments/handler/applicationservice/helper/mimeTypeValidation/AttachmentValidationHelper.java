@@ -1,13 +1,11 @@
 /*
  * © 2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
-package com.sap.cds.feature.attachments.handler.applicationservice.helper.validation;
+package com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation;
 
 import com.sap.cds.CdsData;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.AttachmentDataExtractor;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.media.MediaTypeResolver;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.media.MediaTypeService;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.ErrorStatuses;
@@ -16,12 +14,16 @@ import com.sap.cds.services.runtime.CdsRuntime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class AttachmentValidationHelper {
   public static final List<String> WILDCARD_MEDIA_TYPE = List.of("*/*");
+  private static AssociationCascader cascader = new AssociationCascader();
+
+  static void setCascader(AssociationCascader testCascader) {
+    cascader = testCascader;
+  }
 
   /**
    * Validates if the media type of the attachment in the given fileName is acceptable
@@ -36,28 +38,24 @@ public final class AttachmentValidationHelper {
       return;
     }
     CdsModel cdsModel = cdsRuntime.getCdsModel();
-    Optional<CdsEntity> optionalServiceEntity = cdsModel.findEntity(entity.getQualifiedName());
 
-    if (optionalServiceEntity.isEmpty()) {
+    boolean areAttachmentsAvailable =
+        ApplicationHandlerHelper.isMediaEntity(entity)
+            || cascader.hasAttachmentPath(cdsModel, entity);
+
+    if (!areAttachmentsAvailable) {
       return;
     }
 
-    CdsEntity serviceEntity = optionalServiceEntity.get();
-    boolean hasNoAttachmentCompositions =
-        !ApplicationHandlerHelper.deepSearchForAttachments(serviceEntity);
-    // Skip if entity is irrelevant for attachments
-    if (!ApplicationHandlerHelper.isMediaEntity(serviceEntity) && hasNoAttachmentCompositions) {
-      return;
-    }
     // validate the media types of the attachments
     Map<String, List<String>> allowedTypesByElementName =
-        MediaTypeResolver.getAcceptableMediaTypesFromEntity(serviceEntity);
+        MediaTypeResolver.getAcceptableMediaTypesFromEntity(entity, cdsModel);
     Map<String, Set<String>> fileNamesByElementName =
-        AttachmentDataExtractor.extractAndValidateFileNamesByElement(serviceEntity, data);
+        AttachmentDataExtractor.extractAndValidateFileNamesByElement(entity, data);
     validateAttachmentMediaTypes(fileNamesByElementName, allowedTypesByElementName);
   }
 
-  public static void validateAttachmentMediaTypes(
+  private static void validateAttachmentMediaTypes(
       Map<String, Set<String>> fileNamesByElementName,
       Map<String, List<String>> acceptableMediaTypesByElementName) {
 
@@ -88,7 +86,13 @@ public final class AttachmentValidationHelper {
 
           // Filter out files whose media type is NOT allowed for this element
           List<String> invalid =
-              files.stream().filter(file -> !isAttachmentTypeValid(file, acceptableTypes)).toList();
+              files.stream()
+                  .filter(
+                      fileName -> {
+                        String mimeType = MediaTypeService.resolveMimeType(fileName);
+                        return !MediaTypeService.isMimeTypeAllowed(acceptableTypes, mimeType);
+                      })
+                  .toList();
 
           if (!invalid.isEmpty()) {
             invalidFiles.put(elementName, invalid);
@@ -96,11 +100,6 @@ public final class AttachmentValidationHelper {
         });
 
     return invalidFiles;
-  }
-
-  private static boolean isAttachmentTypeValid(String fileName, List<String> acceptableTypes) {
-    String mimeType = MediaTypeService.resolveMimeType(fileName);
-    return MediaTypeService.isMimeTypeAllowed(acceptableTypes, mimeType);
   }
 
   private static ServiceException buildUnsupportedFileTypeMessage(
@@ -126,6 +125,6 @@ public final class AttachmentValidationHelper {
   }
 
   private AttachmentValidationHelper() {
-    // prevent instantiation
+    // to prevent instantiation
   }
 }

@@ -1,7 +1,7 @@
 /*
  * © 2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
-package com.sap.cds.feature.attachments.handler.applicationservice.helper.media;
+package com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation;
 
 import static org.junit.jupiter.api.Assertions.*;
 
