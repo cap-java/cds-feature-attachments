@@ -10,7 +10,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.Extende
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.validation.AttachmentValidationHelper;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation.AttachmentValidationHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.reflect.CdsEntity;

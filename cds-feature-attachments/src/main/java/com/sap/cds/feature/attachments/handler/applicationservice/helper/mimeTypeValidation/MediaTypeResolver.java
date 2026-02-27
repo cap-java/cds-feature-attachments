@@ -1,15 +1,14 @@
 /*
  * © 2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
-package com.sap.cds.feature.attachments.handler.applicationservice.helper.media;
+package com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.validation.AttachmentValidationHelper;
-import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.reflect.CdsAnnotation;
-import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.reflect.CdsModel;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +18,7 @@ public final class MediaTypeResolver {
   private static final String CONTENT_ELEMENT = "content";
   private static final String ACCEPTABLE_MEDIA_TYPES_ANNOTATION = "Core.AcceptableMediaTypes";
   private static final TypeReference<List<String>> STRING_LIST_TYPE_REF = new TypeReference<>() {};
+  private static AssociationCascader cascader = new AssociationCascader();
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
   /**
@@ -34,26 +34,21 @@ public final class MediaTypeResolver {
    * @return a map of entity qualified names to their allowed media types; empty if no media
    *     entities are found
    */
-  public static Map<String, List<String>> getAcceptableMediaTypesFromEntity(CdsEntity entity) {
-    // If this entity is a media entity
-    if (ApplicationHandlerHelper.isMediaEntity(entity)) {
-      return Map.of(entity.getQualifiedName(), fetchAcceptableMediaTypes(entity));
-    }
+  static void setCascader(AssociationCascader testCascader) {
+    cascader = testCascader;
+  }
 
-    // If it's not a mediaEntity, if it's a root entity
+  public static Map<String, List<String>> getAcceptableMediaTypesFromEntity(
+      CdsEntity entity, CdsModel model) {
     Map<String, List<String>> result = new HashMap<>();
-    entity
-        .elements()
-        .filter(e -> e.getType().isAssociation())
-        .map(e -> e.getType().as(CdsAssociationType.class))
-        .filter(CdsAssociationType::isComposition)
-        .forEach(
-            association -> {
-              CdsEntity target = association.getTarget();
-              if (target != null && ApplicationHandlerHelper.isMediaEntity(target)) {
-                result.put(target.getQualifiedName(), fetchAcceptableMediaTypes(target));
-              }
-            });
+    List<String> mediaEntityNames = cascader.findMediaEntityNames(model, entity);
+    if (mediaEntityNames.isEmpty()) {
+      return result;
+    }
+    for (String entityName : mediaEntityNames) {
+      CdsEntity mediaEntity = model.getEntity(entityName);
+      result.put(entityName, fetchAcceptableMediaTypes(mediaEntity));
+    }
 
     return result;
   }
