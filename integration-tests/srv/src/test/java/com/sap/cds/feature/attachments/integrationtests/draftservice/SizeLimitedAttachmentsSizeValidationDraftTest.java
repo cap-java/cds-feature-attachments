@@ -51,6 +51,41 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     // Assert: Error response with HTTP 413 status code indicates size limit exceeded
   }
 
+  @Test
+  void uploadContentWithinLimitAndActivateDraftSucceeds() throws Exception {
+    // Arrange: Create draft with sizeLimitedAttachments (no prior activation)
+    var draftRoot = createNewDraftWithSizeLimitedAttachments();
+    var attachment = draftRoot.getSizeLimitedAttachments().get(0);
+
+    // Act: Upload 3MB content (within 5MB limit)
+    byte[] content = new byte[3 * 1024 * 1024]; // 3MB
+    var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
+    requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
+    requestHelper.executePutWithMatcher(url, content, status().isNoContent());
+
+    // Assert: Draft activation succeeds
+    requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+    var rootUrl = getRootUrl(draftRoot.getId(), false);
+    var draftPrepareUrl = rootUrl + "/TestDraftService.draftPrepare";
+    var draftActivateUrl = rootUrl + "/TestDraftService.draftActivate";
+    requestHelper.executePostWithMatcher(
+        draftPrepareUrl, "{\"SideEffectsQualifier\":\"\"}", status().isOk());
+    requestHelper.executePostWithMatcher(draftActivateUrl, "{}", status().isOk());
+  }
+
+  @Test
+  void uploadContentExceedingLimitOnFirstDraftRejects() throws Exception {
+    // Arrange: Create draft with sizeLimitedAttachments (no prior activation)
+    var draftRoot = createNewDraftWithSizeLimitedAttachments();
+    var attachment = draftRoot.getSizeLimitedAttachments().get(0);
+
+    // Act & Assert: Upload 6MB content to a brand-new draft attachment fails immediately
+    byte[] content = new byte[6 * 1024 * 1024]; // 6MB
+    var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
+    requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
+    requestHelper.executePutWithMatcher(url, content, status().is(413));
+  }
+
   // Helper methods
   private DraftRoots createNewDraftWithSizeLimitedAttachments() throws Exception {
     // Create new draft

@@ -94,7 +94,9 @@ public final class ModifyApplicationHandlerHelper {
     Attachments attachment = getExistingAttachment(keys, existingAttachments);
     String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
-    String maxSizeStr = getValMaxValue(path.target().entity(), existingAttachments, defaultMaxSize);
+    String maxSizeStr =
+        getValMaxValue(
+            path.target().entity(), List.of((CdsData) path.target().values()), defaultMaxSize);
     eventContext.put(
         "attachment.MaxSize",
         maxSizeStr); // make max size available in context for error handling later
@@ -136,7 +138,8 @@ public final class ModifyApplicationHandlerHelper {
                     .findAnnotation("Validation.Maximum")
                     .ifPresent(
                         annotation -> {
-                          if (annotation.getValue() != null && annotation.getValue() != "true") {
+                          if (annotation.getValue() != null
+                              && !"true".equals(annotation.getValue().toString())) {
                             annotationValue.set(annotation.getValue().toString());
                           }
                         }))

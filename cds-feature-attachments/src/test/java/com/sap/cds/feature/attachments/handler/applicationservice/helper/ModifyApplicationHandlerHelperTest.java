@@ -79,7 +79,7 @@ class ModifyApplicationHandlerHelperTest {
     // Set Content-Length header to exceed 10KB (10240 bytes)
     when(parameterInfo.getHeader("Content-Length")).thenReturn("20000");
 
-    var existingAttachments = List.of(attachment);
+    var existingAttachments = List.<Attachments>of();
 
     // Act & Assert
     var exception =
@@ -133,7 +133,7 @@ class ModifyApplicationHandlerHelperTest {
               return null;
             });
 
-    var existingAttachments = List.of(attachment);
+    var existingAttachments = List.<Attachments>of();
 
     // Act & Assert
     var exception =
