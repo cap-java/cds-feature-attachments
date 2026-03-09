@@ -128,6 +128,12 @@
         <artifactId>cds-feature-attachments</artifactId>
         <version>${revision}</version>
       </dependency>
+
+      <dependency>
+        <groupId>com.sap.cds.integration-tests</groupId>
+        <artifactId>cds-feature-attachments-integration-tests-srv</artifactId>
+        <version>${revision}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

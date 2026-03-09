@@ -26,7 +26,6 @@
     <dependency>
       <groupId>com.sap.cds.integration-tests</groupId>
       <artifactId>cds-feature-attachments-integration-tests-srv</artifactId>
-      <version>${revision}</version>
     </dependency>
   </dependencies>
 
@@ -94,11 +93,6 @@
               <goal>report-aggregate</goal>
             </goals>
             <phase>verify</phase>
-            <configuration>
-              <dataFileExcludes>
-                <dataFileExclude>**/integration-tests/db/**</dataFileExclude>
-              </dataFileExcludes>
-            </configuration>
           </execution>
 
           <!-- Merge .exec files from unit tests and integration tests into one -->
