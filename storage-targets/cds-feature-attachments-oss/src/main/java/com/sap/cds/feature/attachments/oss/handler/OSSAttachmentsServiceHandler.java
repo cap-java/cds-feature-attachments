@@ -5,12 +5,12 @@ package com.sap.cds.feature.attachments.oss.handler;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
-import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.oss.client.AWSClient;
 import com.sap.cds.feature.attachments.oss.client.AzureClient;
 import com.sap.cds.feature.attachments.oss.client.GoogleClient;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.StatusCode;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
@@ -105,7 +105,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 
     String contentId = (String) context.getAttachmentIds().get(Attachments.ID);
     MediaData data = context.getData();
-    String fileName = data.getFileName();
+    String fileName = data.getFilename();
 
     try {
       osClient.uploadContent(data.getContent(), contentId, data.getMimeType()).get();

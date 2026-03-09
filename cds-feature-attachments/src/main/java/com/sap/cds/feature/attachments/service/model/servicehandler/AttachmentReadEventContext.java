@@ -29,7 +29,7 @@ public interface AttachmentReadEventContext extends EventContext {
    *     <ul>
    *       <li>content
    *       <li>mimeType
-   *       <li>fileName
+   *       <li>filename
    *     </ul>
    */
   MediaData getData();

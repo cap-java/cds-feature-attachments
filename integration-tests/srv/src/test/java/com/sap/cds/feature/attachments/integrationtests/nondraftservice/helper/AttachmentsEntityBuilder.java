@@ -20,8 +20,8 @@ public class AttachmentsEntityBuilder {
     return this;
   }
 
-  public AttachmentsEntityBuilder setFileName(String fileName) {
-    attachmentEntity.setFileName(fileName);
+  public AttachmentsEntityBuilder setFilename(String filename) {
+    attachmentEntity.setFilename(filename);
     return this;
   }
 

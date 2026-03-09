@@ -246,7 +246,7 @@ class OSSAttachmentsServiceHandlerTest {
     when(context.getData()).thenReturn(mockMediaData);
     when(context.getAttachmentEntity()).thenReturn(mockEntity);
     when(mockEntity.getQualifiedName()).thenReturn("TestEntity");
-    when(mockMediaData.getFileName()).thenReturn("test.txt");
+    when(mockMediaData.getFilename()).thenReturn("test.txt");
     when(mockMediaData.getContent()).thenReturn(new ByteArrayInputStream("test".getBytes()));
     when(mockMediaData.getMimeType()).thenReturn("text/plain");
 

@@ -26,14 +26,14 @@ class AttachmentReadEventContextTest {
       cut.setContentId("some read contentID");
       var mediaData = MediaData.create();
       mediaData.setMimeType("mime type");
-      mediaData.setFileName("file name");
+      mediaData.setFilename("file name");
       mediaData.setContent(testStream);
 
       cut.setData(mediaData);
 
       assertThat(cut.getContentId()).isEqualTo("some read contentID");
       var responseMediaData = cut.getData();
-      assertThat(responseMediaData.getFileName()).isEqualTo("file name");
+      assertThat(responseMediaData.getFilename()).isEqualTo("file name");
       assertThat(responseMediaData.getMimeType()).isEqualTo("mime type");
       assertThat(responseMediaData.getContent()).isEqualTo(testStream);
     }

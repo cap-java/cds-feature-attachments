@@ -65,7 +65,7 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
 
     // Create sizeLimitedAttachment
     var attachment = Attachments.create();
-    attachment.setFileName("testFile.txt");
+    attachment.setFilename("testFile.txt");
     attachment.setMimeType("text/plain");
     var attachmentUrl = rootUrl + "/sizeLimitedAttachments";
     var responseAttachmentCdsData =
