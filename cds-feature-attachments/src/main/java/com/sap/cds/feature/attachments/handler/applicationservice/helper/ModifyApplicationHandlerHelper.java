@@ -125,7 +125,6 @@ public final class ModifyApplicationHandlerHelper {
         .flatMap(e -> e.findAnnotation("Validation.Maximum"))
         .map(CdsAnnotation::getValue)
         .filter(v -> !"true".equals(v.toString()))
-
         .map(Object::toString)
         .orElse(defaultMaxSize);
   }
