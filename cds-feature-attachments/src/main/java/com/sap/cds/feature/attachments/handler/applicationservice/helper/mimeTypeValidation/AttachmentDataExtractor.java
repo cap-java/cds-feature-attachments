@@ -13,7 +13,6 @@ import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.ServiceException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -68,11 +67,6 @@ public final class AttachmentDataExtractor {
     String trimmedFileName = fileName.trim();
     if (trimmedFileName.isEmpty()) {
       throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Filename must not be blank");
-    }
-
-    int lastDotIndex = trimmedFileName.lastIndexOf('.');
-    if (lastDotIndex == -1 || lastDotIndex == trimmedFileName.length() - 1) {
-      throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Invalid filename format: " + fileName);
     }
     return trimmedFileName;
   }
@@ -147,7 +141,6 @@ public final class AttachmentDataExtractor {
   private static boolean isEmpty(Object value) {
     return value == null
         || (value instanceof String s && s.isBlank())
-        || (value instanceof Collection<?> c && c.isEmpty())
         || (value instanceof Iterable<?> i && !i.iterator().hasNext());
   }
 

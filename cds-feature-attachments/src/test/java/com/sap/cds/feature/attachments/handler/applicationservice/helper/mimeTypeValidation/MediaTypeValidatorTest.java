@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,11 +33,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 
 class MediaTypeValidatorTest {
-
-  @AfterEach
-  void reset() {
-    MediaTypeValidator.setCascader(new AssociationCascader());
-  }
 
   // ====================================================================================
   // Tests for validateMediaAttachments (previously AttachmentValidationHelperTest)
@@ -49,7 +43,8 @@ class MediaTypeValidatorTest {
 
     @Test
     void doesNothing_whenEntityIsNull() {
-      assertDoesNotThrow(() -> MediaTypeValidator.validateMediaAttachments(null, List.of(), null));
+      assertDoesNotThrow(
+          () -> MediaTypeValidator.validateMediaAttachments(null, List.of(), null, null));
     }
 
     @Test
@@ -61,15 +56,15 @@ class MediaTypeValidatorTest {
       when(model.findEntity("Entity")).thenReturn(Optional.empty());
 
       CdsRuntime runtime = mockRuntime(model);
+      AssociationCascader cascader = mockCascader(entity, model, List.of());
 
       try (MockedStatic<ApplicationHandlerHelper> helper =
           mockStatic(ApplicationHandlerHelper.class)) {
         helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(false);
 
-        setupMockCascader(entity, model, false);
-
         assertDoesNotThrow(
-            () -> MediaTypeValidator.validateMediaAttachments(entity, List.of(), runtime));
+            () ->
+                MediaTypeValidator.validateMediaAttachments(entity, List.of(), runtime, cascader));
       }
     }
 
@@ -84,9 +79,8 @@ class MediaTypeValidatorTest {
         CdsRuntime runtime = mockRuntime(entity);
         helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(true);
 
-        // Setup cascader so getAcceptableMediaTypesFromEntity works
-        setupMockCascaderWithMediaEntities(
-            entity, runtime.getCdsModel(), List.of("Entity.attachments"));
+        AssociationCascader cascader =
+            mockCascader(entity, runtime.getCdsModel(), List.of("Entity.attachments"));
         CdsEntity mediaEntity = mockMediaEntityWithAnnotation("Entity.attachments", "image/png");
         when(runtime.getCdsModel().getEntity("Entity.attachments")).thenReturn(mediaEntity);
 
@@ -97,7 +91,8 @@ class MediaTypeValidatorTest {
             .thenReturn(null);
 
         assertDoesNotThrow(
-            () -> MediaTypeValidator.validateMediaAttachments(entity, List.of(), runtime));
+            () ->
+                MediaTypeValidator.validateMediaAttachments(entity, List.of(), runtime, cascader));
       }
     }
 
@@ -116,10 +111,11 @@ class MediaTypeValidatorTest {
               mockStatic(AttachmentDataExtractor.class)) {
 
         helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(isMediaEntity);
-        setupMockCascaderWithMediaEntities(
-            entity,
-            runtime.getCdsModel(),
-            hasAttachmentPath ? List.of("Entity.attachments") : List.of());
+        AssociationCascader cascader =
+            mockCascader(
+                entity,
+                runtime.getCdsModel(),
+                hasAttachmentPath ? List.of("Entity.attachments") : List.of());
         CdsEntity mediaEntity = mockMediaEntityWithAnnotation("Entity.attachments", "image/png");
         when(runtime.getCdsModel().getEntity("Entity.attachments")).thenReturn(mediaEntity);
 
@@ -130,7 +126,8 @@ class MediaTypeValidatorTest {
             .thenReturn(files);
 
         assertDoesNotThrow(
-            () -> MediaTypeValidator.validateMediaAttachments(entity, List.of(), runtime));
+            () ->
+                MediaTypeValidator.validateMediaAttachments(entity, List.of(), runtime, cascader));
       }
     }
 
@@ -157,8 +154,8 @@ class MediaTypeValidatorTest {
 
         helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(isMediaEntity);
         // Both cases need media entities to be found by the cascader for validation to trigger
-        setupMockCascaderWithMediaEntities(
-            entity, runtime.getCdsModel(), List.of("Entity.attachments"));
+        AssociationCascader cascader =
+            mockCascader(entity, runtime.getCdsModel(), List.of("Entity.attachments"));
         CdsEntity mediaEntity = mockMediaEntityWithAnnotation("Entity.attachments", "image/png");
         when(runtime.getCdsModel().getEntity("Entity.attachments")).thenReturn(mediaEntity);
 
@@ -171,7 +168,9 @@ class MediaTypeValidatorTest {
         ServiceException ex =
             assertThrows(
                 ServiceException.class,
-                () -> MediaTypeValidator.validateMediaAttachments(entity, List.of(), runtime));
+                () ->
+                    MediaTypeValidator.validateMediaAttachments(
+                        entity, List.of(), runtime, cascader));
 
         assertThat(ex.getMessage()).contains("Unsupported media type");
         assertThat(ex.getMessage()).contains("Allowed types:");
@@ -383,16 +382,10 @@ class MediaTypeValidatorTest {
 
     @Test
     void shouldReturnEmptyMapWhenNoMediaEntitiesFound() {
-      AssociationCascader mockCascader = mock(AssociationCascader.class);
-      MediaTypeValidator.setCascader(mockCascader);
-
       CdsModel model = mock(CdsModel.class);
-      CdsEntity root = mock(CdsEntity.class);
-
-      when(mockCascader.findMediaEntityNames(model, root)).thenReturn(List.of());
 
       Map<String, List<String>> result =
-          MediaTypeValidator.getAcceptableMediaTypesFromEntity(root, model);
+          MediaTypeValidator.resolveAcceptableMediaTypes(List.of(), model);
 
       assertThat(result).isEmpty();
     }
@@ -400,15 +393,10 @@ class MediaTypeValidatorTest {
     @Test
     void shouldReturnMediaTypesFromAnnotation() {
       CdsModel model = mock(CdsModel.class);
-      CdsEntity root = mock(CdsEntity.class);
       CdsEntity media = mock(CdsEntity.class);
       CdsElement element = mock(CdsElement.class);
       CdsAnnotation<Object> annotation = mock(CdsAnnotation.class);
 
-      AssociationCascader cascader = mock(AssociationCascader.class);
-      MediaTypeValidator.setCascader(cascader);
-
-      when(cascader.findMediaEntityNames(model, root)).thenReturn(List.of("MediaEntity"));
       when(model.getEntity("MediaEntity")).thenReturn(media);
 
       when(media.getElement("content")).thenReturn(element);
@@ -416,32 +404,23 @@ class MediaTypeValidatorTest {
       when(annotation.getValue()).thenReturn(List.of("image/png", "image/jpeg"));
 
       Map<String, List<String>> result =
-          MediaTypeValidator.getAcceptableMediaTypesFromEntity(root, model);
+          MediaTypeValidator.resolveAcceptableMediaTypes(List.of("MediaEntity"), model);
 
       assertThat(result.get("MediaEntity")).containsExactly("image/png", "image/jpeg");
     }
 
     @Test
     void shouldResolveMediaTypesUsingCascader() {
-      try (MockedStatic<ApplicationHandlerHelper> mocked =
-          mockStatic(ApplicationHandlerHelper.class)) {
+      CdsModel model = mock(CdsModel.class);
+      CdsEntity media = mock(CdsEntity.class);
 
-        CdsModel model = mock(CdsModel.class);
-        CdsEntity root = mock(CdsEntity.class);
-        CdsEntity media = mock(CdsEntity.class);
-        AssociationCascader mockCascader = mock(AssociationCascader.class);
-        MediaTypeValidator.setCascader(mockCascader);
+      when(model.getEntity("MediaEntity")).thenReturn(media);
+      when(media.getElement(any())).thenReturn(null);
 
-        mocked.when(() -> ApplicationHandlerHelper.isMediaEntity(any())).thenReturn(false);
-        when(mockCascader.findMediaEntityNames(model, root)).thenReturn(List.of("MediaEntity"));
-        when(model.getEntity("MediaEntity")).thenReturn(media);
-        when(media.getElement(any())).thenReturn(null);
+      Map<String, List<String>> result =
+          MediaTypeValidator.resolveAcceptableMediaTypes(List.of("MediaEntity"), model);
 
-        Map<String, List<String>> result =
-            MediaTypeValidator.getAcceptableMediaTypesFromEntity(root, model);
-
-        assertThat(result).containsKey("MediaEntity");
-      }
+      assertThat(result).containsKey("MediaEntity");
     }
   }
 
@@ -449,18 +428,11 @@ class MediaTypeValidatorTest {
   // Shared test helpers
   // ====================================================================================
 
-  private void setupMockCascader(CdsEntity entity, CdsModel model, boolean hasAttachmentPath) {
-    AssociationCascader cascader = mock(AssociationCascader.class);
-    when(cascader.hasAttachmentPath(model, entity)).thenReturn(hasAttachmentPath);
-    MediaTypeValidator.setCascader(cascader);
-  }
-
-  private void setupMockCascaderWithMediaEntities(
+  private AssociationCascader mockCascader(
       CdsEntity entity, CdsModel model, List<String> mediaEntityNames) {
     AssociationCascader cascader = mock(AssociationCascader.class);
-    when(cascader.hasAttachmentPath(model, entity)).thenReturn(!mediaEntityNames.isEmpty());
     when(cascader.findMediaEntityNames(model, entity)).thenReturn(mediaEntityNames);
-    MediaTypeValidator.setCascader(cascader);
+    return cascader;
   }
 
   @SuppressWarnings("unchecked")

@@ -32,6 +32,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTyp
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
+import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ErrorStatuses;
@@ -85,7 +86,8 @@ class CreateAttachmentsHandlerTest {
             eventFactory,
             storageReader,
             ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-            runtime);
+            runtime,
+            new AssociationCascader());
 
     createContext = mock(CdsCreateEventContext.class);
     event = mock(ModifyAttachmentEvent.class);
@@ -414,16 +416,18 @@ class CreateAttachmentsHandlerTest {
     CdsEntity entity = mock(CdsEntity.class);
     List<CdsData> data = List.of(mock(CdsData.class));
     when(context.getTarget()).thenReturn(entity);
+    AssociationCascader cascader = new AssociationCascader();
 
     try (MockedStatic<MediaTypeValidator> helper = mockStatic(MediaTypeValidator.class)) {
       helper
-          .when(() -> MediaTypeValidator.validateMediaAttachments(entity, data, runtime))
+          .when(() -> MediaTypeValidator.validateMediaAttachments(entity, data, runtime, cascader))
           .thenAnswer(invocation -> null);
       // when
-      new CreateAttachmentsHandler(eventFactory, storageReader, "400MB", runtime)
+      new CreateAttachmentsHandler(eventFactory, storageReader, "400MB", runtime, cascader)
           .processBeforeForMetadata(context, data);
       // then
-      helper.verify(() -> MediaTypeValidator.validateMediaAttachments(entity, data, runtime));
+      helper.verify(
+          () -> MediaTypeValidator.validateMediaAttachments(entity, data, runtime, cascader));
     }
   }
 

@@ -91,16 +91,15 @@ class AttachmentDataExtractorTest {
   }
 
   @Test
-  void extractFileNames_whenFilenameIsDot_throwsBadRequest() {
-    // Arrange
+  void extractFileNames_whenFilenameIsDot_acceptsIt() {
+    // A filename of "." is non-empty after trimming, so the extractor accepts it.
+    // MIME type resolution will handle it (returns default MIME type).
     CdsData cdsData = prepareCdsDataWithAttachments(".");
 
-    // Act
-    ServiceException ex = assertThrows(ServiceException.class, () -> extractFileNames(cdsData));
+    Map<String, Set<String>> result = extractFileNames(cdsData);
 
-    // Assert
-    assertThat(ex.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
-    assertThat(ex.getMessage()).contains("Invalid filename format");
+    assertThat(result).containsKey(ATTACHMENT_ENTITY);
+    assertThat(result.get(ATTACHMENT_ENTITY)).contains(".");
   }
 
   @Test
@@ -212,43 +211,63 @@ class AttachmentDataExtractorTest {
   }
 
   @Test
-  void hasMissingFileNames_whenFileNamesEmpty_returnsTrue() throws Exception {
-    // Arrange
-    Map<String, Set<String>> result = new HashMap<>();
-    result.put(ATTACHMENT_ENTITY, new HashSet<>());
+  void ensureFilenamesPresent_skipsNullValues() {
+    // When data entry has null value, isEmpty returns true, so the key is excluded from dataKeys.
+    // This means missing filename check is not triggered for that key.
+    doAnswer(invocation -> processor).when(processor).addValidator(any(), any());
+    doNothing().when(processor).process(anyList(), any());
+    when(targetEntity.elements()).thenReturn(Stream.of(attachmentElement));
     when(attachmentElement.getName()).thenReturn(ATTACHMENT_FIELD);
-    when(attachmentElement.getType()).thenReturn(cdsType);
-    when(cdsType.as(CdsAssociationType.class)).thenReturn(associationType);
-    when(associationType.getTarget()).thenReturn(targetEntity);
-    when(targetEntity.getQualifiedName()).thenReturn(ATTACHMENT_ENTITY);
-    List<CdsElement> elements = List.of(attachmentElement);
-    Set<String> dataKeys = Set.of(ATTACHMENT_FIELD);
+    Map<String, Object> map = new HashMap<>();
+    map.put(ATTACHMENT_FIELD, null);
+    CdsData data = CdsData.create(map);
 
-    // Act
-    var method =
-        AttachmentDataExtractor.class.getDeclaredMethod(
-            "hasMissingFileNames", Map.class, List.class, Set.class);
-    method.setAccessible(true);
-    boolean resultValue = (boolean) method.invoke(null, result, elements, dataKeys);
+    Map<String, Set<String>> result = extractFileNames(data);
 
-    // Assert
-    assertThat(resultValue).isTrue();
+    assertThat(result).isEmpty();
   }
 
   @Test
-  void isEmptyValue_shouldCoverAllBranches() throws Exception {
-    var method = AttachmentDataExtractor.class.getDeclaredMethod("isEmpty", Object.class);
-    method.setAccessible(true);
-    Iterable<Object> emptyIterable = () -> Collections.emptyIterator();
-    Iterable<Object> nonEmptyIterable = () -> List.<Object>of("x").iterator();
+  void ensureFilenamesPresent_skipsBlankStringValues() {
+    // When data entry has blank string value, isEmpty returns true
+    doAnswer(invocation -> processor).when(processor).addValidator(any(), any());
+    doNothing().when(processor).process(anyList(), any());
+    when(targetEntity.elements()).thenReturn(Stream.of(attachmentElement));
+    when(attachmentElement.getName()).thenReturn(ATTACHMENT_FIELD);
+    CdsData data = CdsData.create(Map.of(ATTACHMENT_FIELD, "   "));
 
-    assertThat(method.invoke(null, (Object) null)).isEqualTo(true);
-    assertThat(method.invoke(null, "   ")).isEqualTo(true);
-    assertThat(method.invoke(null, "abc")).isEqualTo(false);
-    assertThat(method.invoke(null, List.of())).isEqualTo(true);
-    assertThat(method.invoke(null, List.of("x"))).isEqualTo(false);
-    assertThat(method.invoke(null, emptyIterable)).isEqualTo(true);
-    assertThat(method.invoke(null, nonEmptyIterable)).isEqualTo(false);
+    Map<String, Set<String>> result = extractFileNames(data);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void ensureFilenamesPresent_skipsEmptyListValues() {
+    // When data entry has empty list, isEmpty returns true (via Iterable branch)
+    doAnswer(invocation -> processor).when(processor).addValidator(any(), any());
+    doNothing().when(processor).process(anyList(), any());
+    when(targetEntity.elements()).thenReturn(Stream.of(attachmentElement));
+    when(attachmentElement.getName()).thenReturn(ATTACHMENT_FIELD);
+    CdsData data = CdsData.create(Map.of(ATTACHMENT_FIELD, List.of()));
+
+    Map<String, Set<String>> result = extractFileNames(data);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void ensureFilenamesPresent_includesNonEmptyNumericValues() {
+    // When data entry has non-empty non-string, non-iterable value, isEmpty returns false.
+    // The key is included in dataKeys, triggering the missing filename check.
+    doAnswer(invocation -> processor).when(processor).addValidator(any(), any());
+    doNothing().when(processor).process(anyList(), any());
+    when(targetEntity.elements()).thenReturn(Stream.of(attachmentElement));
+    when(attachmentElement.getName()).thenReturn(ATTACHMENT_FIELD);
+    CdsData data = CdsData.create(Map.of(ATTACHMENT_FIELD, 42));
+
+    ServiceException ex = assertThrows(ServiceException.class, () -> extractFileNames(data));
+
+    assertThat(ex.getMessage()).contains("Filename is missing");
   }
 
   // ------------------ Mocks and Test Setup ------------------

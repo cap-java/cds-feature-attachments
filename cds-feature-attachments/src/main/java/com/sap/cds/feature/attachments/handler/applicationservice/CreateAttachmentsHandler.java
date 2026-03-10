@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadD
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation.MediaTypeValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.ServiceException;
@@ -45,16 +46,19 @@ public class CreateAttachmentsHandler implements EventHandler {
   private final ThreadDataStorageReader storageReader;
   private final String defaultMaxSize;
   private final CdsRuntime cdsRuntime;
+  private final AssociationCascader cascader;
 
   public CreateAttachmentsHandler(
       ModifyAttachmentEventFactory eventFactory,
       ThreadDataStorageReader storageReader,
       String defaultMaxSize,
-      CdsRuntime cdsRuntime) {
+      CdsRuntime cdsRuntime,
+      AssociationCascader cascader) {
     this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
     this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
     this.defaultMaxSize = requireNonNull(defaultMaxSize, "defaultMaxSize must not be null");
     this.cdsRuntime = requireNonNull(cdsRuntime, "cdsRuntime must not be null");
+    this.cascader = requireNonNull(cascader, "cascader must not be null");
   }
 
   @Before
@@ -77,7 +81,7 @@ public class CreateAttachmentsHandler implements EventHandler {
   @HandlerOrder(HandlerOrder.BEFORE)
   void processBeforeForMetadata(EventContext context, List<CdsData> data) {
     CdsEntity target = context.getTarget();
-    MediaTypeValidator.validateMediaAttachments(target, data, cdsRuntime);
+    MediaTypeValidator.validateMediaAttachments(target, data, cdsRuntime, cascader);
   }
 
   @Before

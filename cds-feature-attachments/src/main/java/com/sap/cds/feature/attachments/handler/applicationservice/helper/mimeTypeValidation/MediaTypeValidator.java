@@ -43,37 +43,32 @@ public final class MediaTypeValidator {
   private static final TypeReference<List<String>> STRING_LIST_TYPE_REF = new TypeReference<>() {};
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
-  private static AssociationCascader cascader = new AssociationCascader();
-
-  static void setCascader(AssociationCascader testCascader) {
-    cascader = testCascader;
-  }
-
   /**
    * Validates if the media type of the attachments in the given data are acceptable for the entity.
    *
    * @param entity the {@link CdsEntity entity} type of the given data
    * @param data the list of {@link CdsData} to process
    * @param cdsRuntime the CDS runtime
+   * @param cascader the {@link AssociationCascader} to resolve composition paths
    * @throws ServiceException if the media type of any attachment is not acceptable
    */
   public static void validateMediaAttachments(
-      CdsEntity entity, List<CdsData> data, CdsRuntime cdsRuntime) {
+      CdsEntity entity, List<CdsData> data, CdsRuntime cdsRuntime, AssociationCascader cascader) {
     if (entity == null) {
       return;
     }
     CdsModel cdsModel = cdsRuntime.getCdsModel();
+    List<String> mediaEntityNames = cascader.findMediaEntityNames(cdsModel, entity);
 
     boolean areAttachmentsAvailable =
-        ApplicationHandlerHelper.isMediaEntity(entity)
-            || cascader.hasAttachmentPath(cdsModel, entity);
+        ApplicationHandlerHelper.isMediaEntity(entity) || !mediaEntityNames.isEmpty();
 
     if (!areAttachmentsAvailable) {
       return;
     }
 
     Map<String, List<String>> allowedTypesByElementName =
-        getAcceptableMediaTypesFromEntity(entity, cdsModel);
+        resolveAcceptableMediaTypes(mediaEntityNames, cdsModel);
     Map<String, Set<String>> fileNamesByElementName =
         AttachmentDataExtractor.extractAndValidateFileNamesByElement(entity, data);
 
@@ -87,16 +82,12 @@ public final class MediaTypeValidator {
   // --------------- Annotation resolution ---------------
 
   /**
-   * Resolves the acceptable media (MIME) types for the given {@link CdsEntity} by walking its
-   * composition tree.
+   * Resolves the acceptable media (MIME) types for the given media entity names by looking up their
+   * {@code @Core.AcceptableMediaTypes} annotations.
    */
-  static Map<String, List<String>> getAcceptableMediaTypesFromEntity(
-      CdsEntity entity, CdsModel model) {
+  static Map<String, List<String>> resolveAcceptableMediaTypes(
+      List<String> mediaEntityNames, CdsModel model) {
     Map<String, List<String>> result = new HashMap<>();
-    List<String> mediaEntityNames = cascader.findMediaEntityNames(model, entity);
-    if (mediaEntityNames.isEmpty()) {
-      return result;
-    }
     for (String entityName : mediaEntityNames) {
       CdsEntity mediaEntity = model.getEntity(entityName);
       result.put(entityName, fetchAcceptableMediaTypes(mediaEntity));
@@ -158,7 +149,9 @@ public final class MediaTypeValidator {
 
     if (acceptableMediaTypes == null
         || acceptableMediaTypes.isEmpty()
-        || acceptableMediaTypes.contains("*/*")) return true;
+        || acceptableMediaTypes.contains("*/*")) {
+      return true;
+    }
 
     String baseMimeType = mimeType.trim().toLowerCase();
     Collection<String> normalizedTypes =

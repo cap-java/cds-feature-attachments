@@ -25,11 +25,6 @@ public class AssociationCascader {
 
   private static final Logger logger = LoggerFactory.getLogger(AssociationCascader.class);
 
-  public boolean hasAttachmentPath(CdsModel model, CdsEntity entity) {
-    NodeTree tree = findEntityPath(model, entity);
-    return !tree.getChildren().isEmpty();
-  }
-
   public List<String> findMediaEntityNames(CdsModel model, CdsEntity entity) {
     NodeTree tree = findEntityPath(model, entity);
     List<String> result = new ArrayList<>();

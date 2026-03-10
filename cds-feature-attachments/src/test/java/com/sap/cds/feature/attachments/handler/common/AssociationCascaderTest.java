@@ -33,15 +33,6 @@ class AssociationCascaderTest {
   }
 
   @Test
-  void hasAttachmentPath_returnsTrue_whenChildrenExist() {
-    var entity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
-
-    boolean result = cut.hasAttachmentPath(runtime.getCdsModel(), entity);
-
-    assertThat(result).isTrue();
-  }
-
-  @Test
   void findMediaEntityNames_returnsAllLeafMediaEntities_forRoot() {
     var entity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
 
