@@ -41,7 +41,7 @@ jobs:
           maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Upload Changed Artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: root-new-version
           path: .
@@ -85,7 +85,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Changed Artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: root-build
           include-hidden-files: true
