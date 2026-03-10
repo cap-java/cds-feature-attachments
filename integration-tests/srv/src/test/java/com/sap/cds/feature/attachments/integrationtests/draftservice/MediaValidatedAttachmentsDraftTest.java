@@ -14,6 +14,8 @@ import com.sap.cds.feature.attachments.integrationtests.common.MockHttpRequestHe
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,6 +72,39 @@ public class MediaValidatedAttachmentsDraftTest extends DraftOdataRequestValidat
     String metadata = "{}";
     requestHelper.executePostWithMatcher(
         buildDraftAttachmentCreationUrl(rootId), metadata, status().isCreated());
+  }
+
+  @Test
+  void shouldRejectPatch_whenInvalidMediaTypeInDraft() throws Exception {
+    String rootId = createDraftRootAndReturnId();
+
+    // First create a valid attachment on the draft
+    String validMetadata = objectMapper.writeValueAsString(Map.of("fileName", "photo.jpeg"));
+    requestHelper.executePostWithODataResponseAndAssertStatus(
+        buildDraftAttachmentCreationUrl(rootId),
+        validMetadata,
+        org.springframework.http.HttpStatus.CREATED);
+
+    // Now try to PATCH the draft root with an invalid attachment
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("mediaValidatedAttachments", List.of(Map.of("fileName", "document.pdf")));
+
+    requestHelper.executePatchWithMatcher(
+        getRootUrl(rootId, false),
+        objectMapper.writeValueAsString(payload),
+        status().isUnsupportedMediaType());
+  }
+
+  @Test
+  void shouldAcceptPatch_whenValidMediaTypeInDraft() throws Exception {
+    String rootId = createDraftRootAndReturnId();
+
+    // PATCH the draft root with a valid attachment
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("mediaValidatedAttachments", List.of(Map.of("fileName", "photo.png")));
+
+    requestHelper.executePatchWithMatcher(
+        getRootUrl(rootId, false), objectMapper.writeValueAsString(payload), status().isOk());
   }
 
   // Helper methods

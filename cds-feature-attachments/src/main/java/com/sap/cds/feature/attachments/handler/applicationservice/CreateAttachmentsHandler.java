@@ -10,7 +10,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.Extende
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation.AttachmentValidationHelper;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation.MediaTypeValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.reflect.CdsEntity;
@@ -67,11 +67,17 @@ public class CreateAttachmentsHandler implements EventHandler {
         context.getTarget(), data, storageReader.get());
   }
 
-  @Before(event = {CqnService.EVENT_CREATE, DraftService.EVENT_DRAFT_NEW})
+  @Before(
+      event = {
+        CqnService.EVENT_CREATE,
+        CqnService.EVENT_UPDATE,
+        DraftService.EVENT_DRAFT_NEW,
+        DraftService.EVENT_DRAFT_PATCH
+      })
   @HandlerOrder(HandlerOrder.BEFORE)
   void processBeforeForMetadata(EventContext context, List<CdsData> data) {
     CdsEntity target = context.getTarget();
-    AttachmentValidationHelper.validateMediaAttachments(target, data, cdsRuntime);
+    MediaTypeValidator.validateMediaAttachments(target, data, cdsRuntime);
   }
 
   @Before

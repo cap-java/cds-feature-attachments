@@ -93,7 +93,7 @@ public final class AttachmentDataExtractor {
                   // that define acceptable media types
                   CdsAssociationType association = e.getType().as(CdsAssociationType.class);
                   return ApplicationHandlerHelper.isMediaEntity(association.getTarget())
-                      && MediaTypeResolver.getAcceptableMediaTypesAnnotation(
+                      && MediaTypeValidator.getAcceptableMediaTypesAnnotation(
                               association.getTarget())
                           .isPresent();
                 })

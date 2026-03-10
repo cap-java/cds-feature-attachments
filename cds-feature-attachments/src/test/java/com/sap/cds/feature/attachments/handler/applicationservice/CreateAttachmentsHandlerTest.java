@@ -28,7 +28,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
-import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation.AttachmentValidationHelper;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation.MediaTypeValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
@@ -400,7 +400,11 @@ class CreateAttachmentsHandlerTest {
     HandlerOrder handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
 
     assertThat(beforeAnnotation.event())
-        .containsExactlyInAnyOrder(CqnService.EVENT_CREATE, DraftService.EVENT_DRAFT_NEW);
+        .containsExactlyInAnyOrder(
+            CqnService.EVENT_CREATE,
+            CqnService.EVENT_UPDATE,
+            DraftService.EVENT_DRAFT_NEW,
+            DraftService.EVENT_DRAFT_PATCH);
     assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.BEFORE);
   }
 
@@ -411,17 +415,15 @@ class CreateAttachmentsHandlerTest {
     List<CdsData> data = List.of(mock(CdsData.class));
     when(context.getTarget()).thenReturn(entity);
 
-    try (MockedStatic<AttachmentValidationHelper> helper =
-        mockStatic(AttachmentValidationHelper.class)) {
+    try (MockedStatic<MediaTypeValidator> helper = mockStatic(MediaTypeValidator.class)) {
       helper
-          .when(() -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime))
+          .when(() -> MediaTypeValidator.validateMediaAttachments(entity, data, runtime))
           .thenAnswer(invocation -> null);
       // when
       new CreateAttachmentsHandler(eventFactory, storageReader, "400MB", runtime)
           .processBeforeForMetadata(context, data);
       // then
-      helper.verify(
-          () -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime));
+      helper.verify(() -> MediaTypeValidator.validateMediaAttachments(entity, data, runtime));
     }
   }
 

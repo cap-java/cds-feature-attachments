@@ -43,7 +43,7 @@ class AttachmentDataExtractorTest {
   @Mock private CdsType cdsType;
   @Mock private CdsDataProcessor processor;
   @Mock private CdsAnnotation<Object> annotation;
-  private MockedStatic<MediaTypeResolver> mediaMock;
+  private MockedStatic<MediaTypeValidator> mediaMock;
   private MockedStatic<ApplicationHandlerHelper> helperMock;
   private MockedStatic<CdsDataProcessor> processorMock;
 
@@ -183,7 +183,7 @@ class AttachmentDataExtractorTest {
                     test.mediaMock
                         .when(
                             () ->
-                                MediaTypeResolver.getAcceptableMediaTypesAnnotation(
+                                MediaTypeValidator.getAcceptableMediaTypesAnnotation(
                                     test.targetEntity))
                         .thenReturn(Optional.empty())));
   }
@@ -277,14 +277,14 @@ class AttachmentDataExtractorTest {
   }
 
   private void initStaticMocks() {
-    mediaMock = mockStatic(MediaTypeResolver.class);
+    mediaMock = mockStatic(MediaTypeValidator.class);
     helperMock = mockStatic(ApplicationHandlerHelper.class);
     processorMock = mockStatic(CdsDataProcessor.class);
   }
 
   private void mockDefaultBehavior() {
     mediaMock
-        .when(() -> MediaTypeResolver.getAcceptableMediaTypesAnnotation(targetEntity))
+        .when(() -> MediaTypeValidator.getAcceptableMediaTypesAnnotation(targetEntity))
         .thenReturn(Optional.of("dummy"));
     helperMock.when(() -> ApplicationHandlerHelper.isMediaEntity(targetEntity)).thenReturn(true);
     processorMock.when(CdsDataProcessor::create).thenReturn(processor);

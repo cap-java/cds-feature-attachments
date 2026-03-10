@@ -152,6 +152,22 @@ public class MockHttpRequestHelper {
         .andExpect(matcher);
   }
 
+  public void executePatchWithMatcher(String url, String body, ResultMatcher matcher)
+      throws Exception {
+    executePatchWithMatcher(url, body, "*", matcher);
+  }
+
+  public void executePatchWithMatcher(String url, String body, String etag, ResultMatcher matcher)
+      throws Exception {
+    mvc.perform(
+            MockMvcRequestBuilders.patch(url)
+                .contentType(contentType)
+                .accept(accept)
+                .header(IF_MATCH, etag)
+                .content(body))
+        .andExpect(matcher);
+  }
+
   public void setContentType(MediaType contentType) {
     this.contentType = contentType.toString();
   }

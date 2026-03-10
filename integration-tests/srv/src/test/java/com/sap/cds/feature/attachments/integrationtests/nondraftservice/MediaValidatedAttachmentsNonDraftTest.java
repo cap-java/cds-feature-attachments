@@ -179,6 +179,36 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
         BASE_URL, objectMapper.writeValueAsString(payload), status().isUnsupportedMediaType());
   }
 
+  @Test
+  void shouldRejectUpdate_whenInvalidMediaTypeInAttachment() throws Exception {
+    // First create a valid root
+    String rootId = createRootAndReturnId();
+
+    // Try to update the root entity with an invalid attachment via deep update
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("title", "Updated Root");
+    payload.put("mediaValidatedAttachments", List.of(Map.of("fileName", "document.pdf")));
+
+    requestHelper.executePatchWithMatcher(
+        createUrl(rootId, null),
+        objectMapper.writeValueAsString(payload),
+        status().isUnsupportedMediaType());
+  }
+
+  @Test
+  void shouldAcceptUpdate_whenValidMediaTypeInAttachment() throws Exception {
+    // First create a valid root
+    String rootId = createRootAndReturnId();
+
+    // Update the root entity with a valid attachment via deep update
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("title", "Updated Root");
+    payload.put("mediaValidatedAttachments", List.of(Map.of("fileName", "photo.jpeg")));
+
+    requestHelper.executePatchWithMatcher(
+        createUrl(rootId, null), objectMapper.writeValueAsString(payload), status().isOk());
+  }
+
   private String createRootAndReturnId() throws Exception {
     // Build the initial Java object.. Root
     Roots serviceRoot = buildServiceRoot();
