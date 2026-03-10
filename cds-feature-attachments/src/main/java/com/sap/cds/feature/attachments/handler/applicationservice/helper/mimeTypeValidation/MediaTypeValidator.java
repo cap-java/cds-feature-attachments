@@ -1,5 +1,5 @@
 /*
- * © 2024-2025 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation;
 
@@ -11,6 +11,7 @@ import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.reflect.CdsAnnotation;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
+import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.runtime.CdsRuntime;
@@ -67,8 +68,6 @@ public final class MediaTypeValidator {
       return;
     }
 
-    Map<String, List<String>> allowedTypesByElementName =
-        resolveAcceptableMediaTypes(mediaEntityNames, cdsModel);
     Map<String, Set<String>> fileNamesByElementName =
         AttachmentDataExtractor.extractAndValidateFileNamesByElement(entity, data);
 
@@ -76,6 +75,8 @@ public final class MediaTypeValidator {
       return;
     }
 
+    Map<String, List<String>> allowedTypesByElementName =
+        resolveAcceptableMediaTypes(mediaEntityNames, cdsModel);
     validateAttachmentMediaTypes(fileNamesByElementName, allowedTypesByElementName);
   }
 
@@ -102,7 +103,8 @@ public final class MediaTypeValidator {
         .orElse(WILDCARD_MEDIA_TYPE);
   }
 
-  static Optional<CdsAnnotation<Object>> getAcceptableMediaTypesAnnotation(CdsEntity entity) {
+  static Optional<CdsAnnotation<Object>> getAcceptableMediaTypesAnnotation(
+      CdsStructuredType entity) {
     return Optional.ofNullable(entity.getElement(CONTENT_ELEMENT))
         .flatMap(element -> element.findAnnotation(ACCEPTABLE_MEDIA_TYPES_ANNOTATION));
   }

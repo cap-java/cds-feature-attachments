@@ -30,7 +30,6 @@ class SizeLimitedAttachmentValidationNonDraftTest extends OdataRequestValidation
 
     var selectedRoot = selectStoredRootWithSizeLimitedAttachments();
     var attachment = getRandomRootSizeLimitedAttachment(selectedRoot);
-    attachment.setFileName("test.txt");
 
     // Act & Assert: Upload 3MB content (within limit) succeeds
     byte[] content = new byte[3 * 1024 * 1024]; // 3MB
@@ -49,7 +48,7 @@ class SizeLimitedAttachmentValidationNonDraftTest extends OdataRequestValidation
 
     var selectedRoot = selectStoredRootWithSizeLimitedAttachments();
     var attachment = getRandomRootSizeLimitedAttachment(selectedRoot);
-    attachment.setFileName("test.txt");
+
     // Act: Try to upload 6MB content (exceeds limit)
     byte[] content = new byte[6 * 1024 * 1024]; // 6MB
     var url =

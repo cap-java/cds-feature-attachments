@@ -29,7 +29,7 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     // Arrange: Create draft with sizeLimitedAttachments
     var draftRoot = createNewDraftWithSizeLimitedAttachments();
     var attachment = draftRoot.getSizeLimitedAttachments().get(0);
-    attachment.setFileName("test.txt");
+
     // Act & Assert: Upload 3MB content (within limit) succeeds
     byte[] content = new byte[3 * 1024 * 1024]; // 3MB
     var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
@@ -42,7 +42,7 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     // Arrange: Create draft with sizeLimitedAttachments
     var draftRoot = createNewDraftWithSizeLimitedAttachments();
     var attachment = draftRoot.getSizeLimitedAttachments().get(0);
-    attachment.setFileName("test.txt");
+
     // Act: Try to upload 6MB content (exceeds limit)
     byte[] content = new byte[6 * 1024 * 1024]; // 6MB
     var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());

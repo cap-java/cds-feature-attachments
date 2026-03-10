@@ -23,7 +23,10 @@ import java.util.stream.Collectors;
 public final class AttachmentDataExtractor {
   private static final String FILE_NAME_FIELD = "fileName";
   public static final Filter FILE_NAME_FILTER =
-      (path, element, type) -> element.getName().contentEquals(FILE_NAME_FIELD);
+      (path, element, type) ->
+          element.getName().contentEquals(FILE_NAME_FIELD)
+              && MediaTypeValidator.getAcceptableMediaTypesAnnotation(element.getDeclaringType())
+                  .isPresent();
 
   /**
    * Extracts and validates file names of attachments from the given entity data.

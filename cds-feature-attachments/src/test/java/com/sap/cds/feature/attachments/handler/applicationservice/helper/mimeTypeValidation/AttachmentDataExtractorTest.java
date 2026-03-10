@@ -195,6 +195,20 @@ class AttachmentDataExtractorTest {
   }
 
   @Test
+  void filter_rejectsElement_whenEntityMissingAcceptableMediaTypesAnnotation() {
+    // Override the annotation mock to return empty for the declaring type
+    mediaMock
+        .when(() -> MediaTypeValidator.getAcceptableMediaTypesAnnotation(targetEntity))
+        .thenReturn(Optional.empty());
+
+    CdsData data = prepareCdsDataWithAttachments("file.txt");
+    Map<String, Set<String>> result = extractFileNames(data);
+
+    // The filter should reject the element, so no filenames are collected
+    assertThat(result).isEmpty();
+  }
+
+  @Test
   void ensureFilenamesPresent_whenResultMissingKey_throwsException() {
     // Arrange
     doAnswer(invocation -> processor).when(processor).addValidator(any(), any());
@@ -342,7 +356,7 @@ class AttachmentDataExtractorTest {
               Filter filter = invocation.getArgument(0);
               Validator validator = invocation.getArgument(1);
 
-              if (filter.test(null, attachmentElement, null)) {
+              if (filter.test(null, attachmentElement, targetEntity)) {
                 for (Object value : values) {
                   validator.validate(null, attachmentElement, value);
                 }
