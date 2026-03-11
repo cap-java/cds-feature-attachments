@@ -6,6 +6,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Version 1.3.2 - 2026-03-10
+
+### Added
+
+### Changed
+
+### Fixed
+- Fixed Validation.Maximum annotation not triggering on first upload of an attachment
+
 ## Version 1.3.1 - 2026-02-06
 
 ### Added
