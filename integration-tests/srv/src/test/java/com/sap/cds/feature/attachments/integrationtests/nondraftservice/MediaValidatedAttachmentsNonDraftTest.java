@@ -108,7 +108,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
     requestHelper.executePostWithMatcher(
         createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS),
         attachmentMetadata,
-        status().isBadRequest());
+        status().isUnsupportedMediaType());
   }
 
   @Test

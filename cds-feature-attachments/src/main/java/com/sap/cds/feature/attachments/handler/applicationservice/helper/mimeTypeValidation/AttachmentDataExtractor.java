@@ -70,10 +70,10 @@ public final class AttachmentDataExtractor {
       throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Filename must not be blank");
     }
 
-    int lastDotIndex = trimmedFileName.lastIndexOf('.');
-    if (lastDotIndex == -1 || lastDotIndex == trimmedFileName.length() - 1) {
+    if (trimmedFileName.endsWith(".")) {
       throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Invalid filename format: " + fileName);
     }
+
     return trimmedFileName;
   }
 

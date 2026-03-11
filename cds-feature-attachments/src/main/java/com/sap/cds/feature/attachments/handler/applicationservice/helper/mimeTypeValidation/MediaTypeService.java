@@ -54,21 +54,24 @@ public final class MediaTypeService {
       return false;
     }
 
-    if (acceptableMediaTypes == null
-        || acceptableMediaTypes.isEmpty()
-        || acceptableMediaTypes.contains("*/*")) return true;
+    if (acceptableMediaTypes == null || acceptableMediaTypes.isEmpty()) {
+      return true;
+    }
 
     String baseMimeType = mimeType.trim().toLowerCase();
     Collection<String> normalizedTypes =
         acceptableMediaTypes.stream().map(type -> type.trim().toLowerCase()).toList();
 
+    if (normalizedTypes.contains("*/*")) {
+      return true;
+    }
+
     return normalizedTypes.stream()
         .anyMatch(
-            type -> {
-              return type.endsWith("/*")
-                  ? baseMimeType.startsWith(type.substring(0, type.length() - 1))
-                  : baseMimeType.equals(type);
-            });
+            type ->
+                type.endsWith("/*")
+                    ? baseMimeType.startsWith(type.substring(0, type.length() - 1))
+                    : baseMimeType.equals(type));
   }
 
   private static String fallbackToDefaultMimeType(String fileName) {
