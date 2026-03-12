@@ -2,26 +2,35 @@ namespace sap.attachments;
 
 using {
     cuid,
-    managed
+    managed,
+    sap.common.CodeList
 } from '@sap/cds/common';
 
-type StatusCode : String enum {
-    Unscanned;
-    Scanning;
-    Clean;
-    Infected;
-    Failed;
+entity ScanStates : CodeList {
+    key code        : String(32)           @Common.Text: name  @Common.TextArrangement: #TextOnly  enum {
+            Unscanned;
+            Scanning;
+            Infected;
+            Clean;
+            Failed;
+        };
+        name        : localized String(64) @title: '{i18n>ScanStatus}';
+        criticality : Integer              @UI.Hidden;
 }
 
-aspect MediaData           @(_is_media_data) {
+aspect MediaData @(_is_media_data) {
+    url       : String;
     content   : LargeBinary; // stored only for db-based services
-    mimeType  : String;
-    fileName  : String(5000);
-    contentId : String     @readonly; // id of attachment in external storage, if database storage is used, same as id
-    status    : StatusCode @readonly;
-    scannedAt : Timestamp  @readonly;
+    mimeType  : String default 'application/octet-stream';
+    filename  : String;
+    hash      : String;
+    contentId : String; // id of attachment in external storage, if database storage is used, same as id
+    status    : String default 'Unscanned';
+    statusNav : Association to one ScanStates
+                    on statusNav.code = status;
+    lastScan  : Timestamp;
 }
 
 aspect Attachments : cuid, managed, MediaData {
-    note : String(5000);
+    note : String;
 }

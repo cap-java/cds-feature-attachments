@@ -77,11 +77,11 @@ abstract class DraftOdataRequestValidationBase {
     var selectedAttachmentEntity = selectedRoot.getItems().get(0).getAttachmentEntities().get(0);
 
     verifyContentId(selectedAttachment.getContentId(), selectedAttachment.getId());
-    assertThat(selectedAttachment.getFileName()).isEqualTo("itemAttachment.txt");
+    assertThat(selectedAttachment.getFilename()).isEqualTo("itemAttachment.txt");
     assertThat(selectedAttachment.getMimeType()).contains("text/plain");
     verifyContent(selectedAttachment.getContent(), testContentAttachment);
     verifyContentId(selectedAttachmentEntity.getContentId(), selectedAttachmentEntity.getId());
-    assertThat(selectedAttachmentEntity.getFileName()).isEqualTo("itemAttachmentEntity.txt");
+    assertThat(selectedAttachmentEntity.getFilename()).isEqualTo("itemAttachmentEntity.txt");
     assertThat(selectedAttachmentEntity.getMimeType()).contains("image/jpeg");
     verifyContent(selectedAttachmentEntity.getContent(), testContentAttachmentEntity);
     verifyOnlyTwoCreateEvents(testContentAttachment, testContentAttachmentEntity);
@@ -200,10 +200,10 @@ abstract class DraftOdataRequestValidationBase {
 
     prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
     var selectedRootAfterUpdate = selectStoredRootData(selectedRoot);
-    assertThat(selectedRootAfterUpdate.getItems().get(0).getAttachments().get(0).getFileName())
+    assertThat(selectedRootAfterUpdate.getItems().get(0).getAttachments().get(0).getFilename())
         .isEqualTo(changedAttachmentFileName);
     assertThat(
-            selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0).getFileName())
+            selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0).getFilename())
         .isEqualTo(changedAttachmentEntityFileName);
     verifyNoAttachmentEventsCalled();
   }
@@ -218,8 +218,8 @@ abstract class DraftOdataRequestValidationBase {
     var itemAttachment = selectedRoot.getItems().get(0).getAttachments().get(0);
     var itemAttachmentEntity = selectedRoot.getItems().get(0).getAttachmentEntities().get(0);
 
-    var originAttachmentFileName = itemAttachment.getFileName();
-    var originAttachmentEntityFileName = itemAttachmentEntity.getFileName();
+    var originAttachmentFileName = itemAttachment.getFilename();
+    var originAttachmentEntityFileName = itemAttachmentEntity.getFilename();
 
     updateFileName(
         selectedRoot,
@@ -230,10 +230,10 @@ abstract class DraftOdataRequestValidationBase {
 
     cancelDraft(getRootUrl(selectedRoot.getId(), false));
     var selectedRootAfterUpdate = selectStoredRootData(selectedRoot);
-    assertThat(selectedRootAfterUpdate.getItems().get(0).getAttachments().get(0).getFileName())
+    assertThat(selectedRootAfterUpdate.getItems().get(0).getAttachments().get(0).getFilename())
         .isEqualTo(originAttachmentFileName);
     assertThat(
-            selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0).getFileName())
+            selectedRootAfterUpdate.getItems().get(0).getAttachmentEntities().get(0).getFilename())
         .isEqualTo(originAttachmentEntityFileName);
     verifyNoAttachmentEventsCalled();
   }
@@ -658,7 +658,7 @@ abstract class DraftOdataRequestValidationBase {
 
   private Attachments createAttachment(String itemId) throws Exception {
     var itemAttachment = Attachments.create();
-    itemAttachment.setFileName("itemAttachment.txt");
+    itemAttachment.setFilename("itemAttachment.txt");
 
     var attachmentPostUrl = BASE_URL + "Items(ID=" + itemId + ",IsActiveEntity=false)/attachments";
     var responseAttachmentCdsData =
@@ -708,7 +708,7 @@ abstract class DraftOdataRequestValidationBase {
 
   private AttachmentEntity createAttachmentEntity(Items responseItem) throws Exception {
     var itemAttachmentEntity = AttachmentEntity.create();
-    itemAttachmentEntity.setFileName("itemAttachmentEntity.txt");
+    itemAttachmentEntity.setFilename("itemAttachmentEntity.txt");
 
     var attachmentEntityPostUrl = getItemUrl(responseItem, false) + "/attachmentEntities";
     var responseAttachmentEntityCdsData =
@@ -871,10 +871,10 @@ abstract class DraftOdataRequestValidationBase {
     var attachmentEntityUrl = getAttachmentEntityBaseUrl(itemAttachmentEntity.getId(), false);
 
     requestHelper.executePatchWithODataResponseAndAssertStatus(
-        attachmentUrl, "{\"fileName\":\"" + changedAttachmentFileName + "\"}", httpStatus);
+        attachmentUrl, "{\"filename\":\"" + changedAttachmentFileName + "\"}", httpStatus);
     requestHelper.executePatchWithODataResponseAndAssertStatus(
         attachmentEntityUrl,
-        "{\"fileName\":\"" + changedAttachmentEntityFileName + "\"}",
+        "{\"filename\":\"" + changedAttachmentEntityFileName + "\"}",
         httpStatus);
   }
 

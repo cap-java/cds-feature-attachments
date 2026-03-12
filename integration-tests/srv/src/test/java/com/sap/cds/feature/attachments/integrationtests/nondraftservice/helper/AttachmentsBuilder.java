@@ -22,8 +22,8 @@ public class AttachmentsBuilder {
     return this;
   }
 
-  public AttachmentsBuilder setFileName(String fileName) {
-    attachment.setFileName(fileName);
+  public AttachmentsBuilder setFilename(String filename) {
+    attachment.setFilename(filename);
     return this;
   }
 

@@ -46,7 +46,7 @@ public interface AttachmentService extends Service {
    *     <ul>
    *       <li>attachmentIds - list of keys for attachment entity
    *       <li>attachmentEntity - cds entity in which the attachment will be stored
-   *       <li>fileName
+   *       <li>filename
    *       <li>mimeType
    *       <li>content (mandatory)
    *     </ul>

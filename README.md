@@ -364,7 +364,7 @@ The following table gives an overview of the fields and the i18n codes:
 | ---------- | --------------------- |
 | `content`  | `attachment_content`  |
 | `mimeType` | `attachment_mimeType` |
-| `fileName` | `attachment_fileName` |
+| `filename` | `attachment_fileName` |
 | `status`   | `attachment_status`   |
 | `note`     | `attachment_note`     |
 
