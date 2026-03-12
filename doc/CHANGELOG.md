@@ -8,21 +8,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Version 1.3.2 - 2026-03-10
 
-### Added
-
-### Changed
-
 ### Fixed
 - Fixed Validation.Maximum annotation not triggering on first upload of an attachment
 
 ## Version 1.3.1 - 2026-02-06
 
-### Added
-
 ### Changed
 - Changed default max file size value to only be enforced when using the malware scanner
-
-### Fixed
 
 ## Version 1.3.0 - 2026-01-26
 
@@ -37,17 +29,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Version 1.2.4 - 2025-12-17
 
-### Added
-
-### Changed
-
 ### Fixed
 - DraftCancel not registering attachments as compositions
 - fix overflowing filename
 
 ## Version 1.2.3 - 2025-12-01
-
-### Added
 
 ### Changed
 - Sample: Replaced cap-notebook with a bookshop sample
@@ -176,10 +162,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - First public release on https://repo1.maven.org/maven2/com/sap/cds/
 
-### Changed
-
-### Fixed
-
 ## Version 1.0.2 - 2024-05-08
 
 ### Added
@@ -191,13 +173,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - CAP Java version was updated to 2.9.1
 
-### Fixed
-
 ## Version 1.0.1 - 2024-04-29
-
-### Added
-
-### Changed
 
 ### Fixed
 
@@ -215,7 +191,3 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Handlers for application and draft services which calls the attachment service
 - Call of malware scanner if bound to consuming services
 - Spring boot test for attachment service and handlers
-
-### Changed
-
--
