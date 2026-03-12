@@ -1,0 +1,130 @@
+/*
+ * © 2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ */
+package com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation;
+
+import com.sap.cds.CdsData;
+import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
+import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.reflect.CdsModel;
+import com.sap.cds.services.ErrorStatuses;
+import com.sap.cds.services.ServiceException;
+import com.sap.cds.services.runtime.CdsRuntime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public final class AttachmentValidationHelper {
+  public static final List<String> WILDCARD_MEDIA_TYPE = List.of("*/*");
+  private static AssociationCascader cascader = new AssociationCascader();
+
+  static void setCascader(AssociationCascader testCascader) {
+    cascader = testCascader;
+  }
+
+  /**
+   * Validates if the media type of the attachment in the given fileName is acceptable
+   *
+   * @param entity the {@link CdsEntity entity} type of the given data
+   * @param data the list of {@link CdsData} to process
+   * @throws ServiceException if the media type of the attachment is not acceptable
+   */
+  public static void validateMediaAttachments(
+      CdsEntity entity, List<CdsData> data, CdsRuntime cdsRuntime) {
+    if (entity == null) {
+      return;
+    }
+    CdsModel cdsModel = cdsRuntime.getCdsModel();
+
+    boolean areAttachmentsAvailable =
+        ApplicationHandlerHelper.isMediaEntity(entity)
+            || cascader.hasAttachmentPath(cdsModel, entity);
+
+    if (!areAttachmentsAvailable) {
+      return;
+    }
+
+    // validate the media types of the attachments
+    Map<String, List<String>> allowedTypesByElementName =
+        MediaTypeResolver.getAcceptableMediaTypesFromEntity(entity, cdsModel);
+    Map<String, Set<String>> fileNamesByElementName =
+        AttachmentDataExtractor.extractAndValidateFileNamesByElement(entity, data);
+    validateAttachmentMediaTypes(fileNamesByElementName, allowedTypesByElementName);
+  }
+
+  private static void validateAttachmentMediaTypes(
+      Map<String, Set<String>> fileNamesByElementName,
+      Map<String, List<String>> acceptableMediaTypesByElementName) {
+
+    // Determine which uploaded files do not match the allowed media types
+    Map<String, List<String>> invalidFiles =
+        findInvalidFilesByElementName(fileNamesByElementName, acceptableMediaTypesByElementName);
+
+    if (!invalidFiles.isEmpty()) {
+      throw buildUnsupportedFileTypeMessage(acceptableMediaTypesByElementName, invalidFiles);
+    }
+  }
+
+  private static Map<String, List<String>> findInvalidFilesByElementName(
+      Map<String, Set<String>> fileNamesByElementName,
+      Map<String, List<String>> acceptableMediaTypesByElementName) {
+    // If no files are provided, there is nothing to validate → return empty result
+    if (fileNamesByElementName == null || fileNamesByElementName.isEmpty()) {
+      return Map.of();
+    }
+    // Will store, per element, the list of files that violate media type
+    // constraints
+    Map<String, List<String>> invalidFiles = new HashMap<>();
+    fileNamesByElementName.forEach(
+        (elementName, files) -> {
+          // Resolve the allowed media types for this field / element.
+          List<String> acceptableTypes =
+              acceptableMediaTypesByElementName.getOrDefault(elementName, WILDCARD_MEDIA_TYPE);
+
+          // Filter out files whose media type is NOT allowed for this element
+          List<String> invalid =
+              files.stream()
+                  .filter(
+                      fileName -> {
+                        String mimeType = MediaTypeService.resolveMimeType(fileName);
+                        return !MediaTypeService.isMimeTypeAllowed(acceptableTypes, mimeType);
+                      })
+                  .toList();
+
+          if (!invalid.isEmpty()) {
+            invalidFiles.put(elementName, invalid);
+          }
+        });
+
+    return invalidFiles;
+  }
+
+  private static ServiceException buildUnsupportedFileTypeMessage(
+      Map<String, List<String>> acceptableMediaTypesByElementName,
+      Map<String, List<String>> invalidFilesByElement) {
+    String message =
+        invalidFilesByElement.entrySet().stream()
+            .map(
+                entry -> {
+                  String element = entry.getKey();
+                  String files = String.join(", ", entry.getValue());
+                  String allowed =
+                      String.join(
+                          ", ",
+                          acceptableMediaTypesByElementName.getOrDefault(
+                              element, WILDCARD_MEDIA_TYPE));
+                  return files + " (allowed: " + allowed + ") ";
+                })
+            .collect(Collectors.joining("; "));
+
+    return new ServiceException(
+        ErrorStatuses.UNSUPPORTED_MEDIA_TYPE, "Unsupported file types detected: " + message);
+  }
+
+  private AttachmentValidationHelper() {
+    // to prevent instantiation
+  }
+}

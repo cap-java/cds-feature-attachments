@@ -15,6 +15,7 @@ public class RootEntityBuilder {
     rootEntity = Roots.create();
     rootEntity.setAttachments(new ArrayList<>());
     rootEntity.setItems(new ArrayList<>());
+    rootEntity.setSizeLimitedAttachments(new ArrayList<>());
   }
 
   public static RootEntityBuilder create() {
@@ -33,9 +34,6 @@ public class RootEntityBuilder {
   }
 
   public RootEntityBuilder addSizeLimitedAttachments(AttachmentsBuilder... attachments) {
-    if (rootEntity.getSizeLimitedAttachments() == null) {
-      rootEntity.setSizeLimitedAttachments(new ArrayList<>());
-    }
     Arrays.stream(attachments)
         .forEach(attachment -> rootEntity.getSizeLimitedAttachments().add(attachment.build()));
     return this;

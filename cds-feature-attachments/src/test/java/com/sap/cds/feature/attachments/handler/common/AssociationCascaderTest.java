@@ -33,6 +33,49 @@ class AssociationCascaderTest {
   }
 
   @Test
+  void hasAttachmentPath_returnsTrue_whenChildrenExist() {
+    var entity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+
+    boolean result = cut.hasAttachmentPath(runtime.getCdsModel(), entity);
+
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  void findMediaEntityNames_returnsAllLeafMediaEntities_forRoot() {
+    var entity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+
+    var result = cut.findMediaEntityNames(runtime.getCdsModel(), entity);
+
+    assertThat(result)
+        .containsExactlyInAnyOrder(
+            "unit.test.TestService.RootTable.attachments",
+            Attachment_.CDS_NAME,
+            "unit.test.TestService.Items.itemAttachments",
+            "unit.test.TestService.EventItems.sizeLimitedAttachments",
+            "unit.test.TestService.EventItems.defaultSizeLimitedAttachments");
+  }
+
+  @Test
+  void findMediaEntityNames_doesNotIncludeNonLeafNodes() {
+    var entity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+
+    var result = cut.findMediaEntityNames(runtime.getCdsModel(), entity);
+
+    // RootTable and Items should NOT be included (they have children)
+    assertThat(result).doesNotContain(RootTable_.CDS_NAME).doesNotContain(Items_.CDS_NAME);
+  }
+
+  @Test
+  void findMediaEntityNames_returnsSelf_whenEntityIsLeaf() {
+    var entity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
+
+    var result = cut.findMediaEntityNames(runtime.getCdsModel(), entity);
+
+    assertThat(result).containsExactly(Attachment_.CDS_NAME);
+  }
+
+  @Test
   void pathCorrectFoundForRoot() {
     var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
 

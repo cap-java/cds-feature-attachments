@@ -25,6 +25,31 @@ public class AssociationCascader {
 
   private static final Logger logger = LoggerFactory.getLogger(AssociationCascader.class);
 
+  public boolean hasAttachmentPath(CdsModel model, CdsEntity entity) {
+    NodeTree tree = findEntityPath(model, entity);
+    return !tree.getChildren().isEmpty();
+  }
+
+  public List<String> findMediaEntityNames(CdsModel model, CdsEntity entity) {
+    NodeTree tree = findEntityPath(model, entity);
+    List<String> result = new ArrayList<>();
+    collect(tree, result);
+    return result;
+  }
+
+  private void collect(NodeTree node, List<String> result) {
+    String entityName = node.getIdentifier().fullEntityName();
+
+    if (!node.getChildren().isEmpty()) {
+      for (NodeTree child : node.getChildren()) {
+        collect(child, result);
+      }
+    } else {
+      // leaf = media entity
+      result.add(entityName);
+    }
+  }
+
   public NodeTree findEntityPath(CdsModel model, CdsEntity entity) {
     logger.debug("Start finding path to attachments for entity {}", entity.getQualifiedName());
     var firstList = new LinkedList<AssociationIdentifier>();
