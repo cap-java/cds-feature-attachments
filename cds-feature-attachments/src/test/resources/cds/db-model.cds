@@ -50,3 +50,10 @@ annotate EventItems.defaultSizeLimitedAttachments with {
     content @Validation.Maximum;
 };
 
+annotate EventItems with {
+    sizeLimitedAttachments @Validation.MinItems: 2 @Validation.MaxItems: 20;
+};
+
+annotate Roots with {
+    attachments @Validation.MinItems: 1 @Validation.MaxItems: 10;
+};
