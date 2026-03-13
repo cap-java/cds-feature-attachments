@@ -9,9 +9,13 @@ entity Attachment : Attachments {
 
 entity Roots : cuid {
     title              : String;
+    stock              : Integer;
     itemTable          : Composition of many Items
                              on itemTable.rootId = $self.ID;
     attachments        : Composition of many Attachments;
+    @Validation.MaxItems : 5
+    @Validation.MinItems : 1
+    limitedAttachments : Composition of many Attachments;
 }
 
 entity Items : cuid {

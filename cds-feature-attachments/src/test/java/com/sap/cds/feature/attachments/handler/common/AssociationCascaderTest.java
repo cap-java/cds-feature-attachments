@@ -41,15 +41,22 @@ class AssociationCascaderTest {
     assertThat(rootNode.getIdentifier().associationName()).isEmpty();
     assertThat(rootNode.getIdentifier().fullEntityName()).isEqualTo(RootTable_.CDS_NAME);
     var rootChildren = rootNode.getChildren();
-    assertThat(rootChildren).hasSize(2);
-    var rootAttachmentNode = rootChildren.get(0);
+    assertThat(rootChildren).hasSize(3);
+    var rootLimitedAttachmentNode = rootChildren.get(0);
+    assertThat(rootLimitedAttachmentNode.getChildren()).isNotNull().isEmpty();
+    assertThat(rootLimitedAttachmentNode.getIdentifier().associationName())
+        .isEqualTo("limitedAttachments");
+    assertThat(rootLimitedAttachmentNode.getIdentifier().fullEntityName())
+        .isEqualTo("unit.test.TestService.RootTable.limitedAttachments");
+
+    var rootAttachmentNode = rootChildren.get(1);
     assertThat(rootAttachmentNode.getChildren()).isNotNull().isEmpty();
     assertThat(rootAttachmentNode.getIdentifier().associationName())
         .isEqualTo(RootTable.ATTACHMENTS);
     assertThat(rootAttachmentNode.getIdentifier().fullEntityName())
         .isEqualTo("unit.test.TestService.RootTable.attachments");
 
-    var itemNode = rootChildren.get(1);
+    var itemNode = rootChildren.get(2);
     assertThat(itemNode.getIdentifier().associationName()).isEqualTo(RootTable.ITEM_TABLE);
     assertThat(itemNode.getIdentifier().fullEntityName()).isEqualTo(Items_.CDS_NAME);
     assertThat(itemNode.getChildren()).hasSize(3);
@@ -78,14 +85,20 @@ class AssociationCascaderTest {
 
     assertThat(databaseRootNode.getIdentifier().associationName()).isEmpty();
     assertThat(databaseRootNode.getIdentifier().fullEntityName()).isEqualTo(Roots_.CDS_NAME);
-    assertThat(databaseRootNode.getChildren()).hasSize(2);
-    var databaseRootAttachmentNode = databaseRootNode.getChildren().get(0);
+    assertThat(databaseRootNode.getChildren()).hasSize(3);
+    var databaseRootLimitedAttachmentNode = databaseRootNode.getChildren().get(0);
+    assertThat(databaseRootLimitedAttachmentNode.getIdentifier().associationName())
+        .isEqualTo("limitedAttachments");
+    assertThat(databaseRootLimitedAttachmentNode.getIdentifier().fullEntityName())
+        .isEqualTo("unit.test.Roots.limitedAttachments");
+
+    var databaseRootAttachmentNode = databaseRootNode.getChildren().get(1);
     assertThat(databaseRootAttachmentNode.getIdentifier().associationName())
         .isEqualTo("attachments");
     assertThat(databaseRootAttachmentNode.getIdentifier().fullEntityName())
         .isEqualTo("unit.test.Roots.attachments");
 
-    var databaseRootItemNode = databaseRootNode.getChildren().get(1);
+    var databaseRootItemNode = databaseRootNode.getChildren().get(2);
     assertThat(databaseRootItemNode.getIdentifier().associationName()).isEqualTo("itemTable");
     assertThat(databaseRootItemNode.getIdentifier().fullEntityName()).isEqualTo("unit.test.Items");
     verifyItemAttachments(
