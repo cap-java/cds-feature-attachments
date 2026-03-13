@@ -11,6 +11,8 @@ entity Roots : cuid {
     title              : String;
     itemTable          : Composition of many Items
                              on itemTable.rootId = $self.ID;
+    @Validation.MaxItems : 20
+    @Validation.MinItems : 2
     attachments        : Composition of many Attachments;
 }
 
@@ -20,6 +22,7 @@ entity Items : cuid {
     events          : Composition of many Events
                           on events.id1 = $self.ID;
     attachments     : Composition of many Attachment on attachments.ID = $self.ID;
+    @Validation.MinItems : 1
     itemAttachments : Composition of many Attachments;
 }
 
