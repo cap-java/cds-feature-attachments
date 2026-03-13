@@ -38,8 +38,13 @@ entity Events {
 entity EventItems {
     key id1  : UUID;
         note : String;
+        stock : Integer;
         sizeLimitedAttachments : Composition of many Attachments;
         defaultSizeLimitedAttachments : Composition of many Attachments;
+        minMaxAttachments : Composition of many Attachments;
+        minAttachments : Composition of many Attachments;
+        maxAttachments : Composition of many Attachments;
+        propertyRefAttachments : Composition of many Attachments;
 }
 
 annotate EventItems.sizeLimitedAttachments with {
@@ -48,5 +53,12 @@ annotate EventItems.sizeLimitedAttachments with {
 
 annotate EventItems.defaultSizeLimitedAttachments with {
     content @Validation.Maximum;
+};
+
+annotate EventItems with {
+    minMaxAttachments @Validation.MinItems: 2 @Validation.MaxItems: 5;
+    minAttachments @Validation.MinItems: 1;
+    maxAttachments @Validation.MaxItems: 3;
+    propertyRefAttachments @Validation.MinItems: 'stock';
 };
 

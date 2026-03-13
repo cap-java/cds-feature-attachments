@@ -7,6 +7,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ItemCountValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
@@ -69,6 +70,11 @@ public class CreateAttachmentsHandler implements EventHandler {
           "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
       ModifyApplicationHandlerHelper.handleAttachmentForEntities(
           context.getTarget(), data, new ArrayList<>(), eventFactory, context, defaultMaxSize);
+    }
+    // Skip item count validation during draft activate – DraftActiveAttachmentsHandler
+    // performs the authoritative check against the full DB attachment count before activation.
+    if (!storageReader.get()) {
+      ItemCountValidator.validate(context.getTarget(), data, context, false);
     }
   }
 
