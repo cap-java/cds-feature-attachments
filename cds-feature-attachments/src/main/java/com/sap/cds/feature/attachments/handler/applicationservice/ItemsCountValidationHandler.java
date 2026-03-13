@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
  * items in compositions annotated with {@code @Validation.MaxItems} or
  * {@code @Validation.MinItems}.
  *
- * <p>During draft activation (draft save), violations are reported as warnings. During direct active
- * CREATE/UPDATE operations, violations are reported as errors.
+ * <p>During draft activation (draft save), violations are reported as warnings. During direct
+ * active CREATE/UPDATE operations, violations are reported as errors.
  *
  * <p>The annotation values can be:
  *
@@ -44,9 +44,9 @@ import org.slf4j.LoggerFactory;
  *       value is looked up from the entity data at runtime
  * </ul>
  *
- * <p>Error messages can be overridden per entity/property using the i18n key pattern:
- * {@code Validation_MaxItems/<EntityName>/<PropertyName>}. If no specific key is found, the base
- * key {@code Validation_MaxItems} is used.
+ * <p>Error messages can be overridden per entity/property using the i18n key pattern: {@code
+ * Validation_MaxItems/<EntityName>/<PropertyName>}. If no specific key is found, the base key
+ * {@code Validation_MaxItems} is used.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
 public class ItemsCountValidationHandler implements EventHandler {
@@ -163,8 +163,8 @@ public class ItemsCountValidationHandler implements EventHandler {
    *
    * <ul>
    *   <li>Integer/Number literals — used directly
-   *   <li>String values — first tried as integer literal, then as a property reference in the entity
-   *       data
+   *   <li>String values — first tried as integer literal, then as a property reference in the
+   *       entity data
    * </ul>
    *
    * @param annotationValue the raw annotation value
