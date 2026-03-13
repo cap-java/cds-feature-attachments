@@ -5,6 +5,7 @@ package com.sap.cds.feature.attachments.configuration;
 
 import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.ItemsCountValidationHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
@@ -133,6 +134,7 @@ public class Registration implements CdsRuntimeConfiguration {
       configurer.eventHandler(
           new ReadAttachmentsHandler(
               attachmentService, new AttachmentStatusValidator(), scanRunner));
+      configurer.eventHandler(new ItemsCountValidationHandler(storage));
     } else {
       logger.debug(
           "No application service is available. Application service event handlers will not be registered.");
