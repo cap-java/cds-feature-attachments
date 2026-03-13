@@ -5,6 +5,7 @@ package com.sap.cds.feature.attachments.configuration;
 
 import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.ItemCountValidationHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
@@ -21,6 +22,7 @@ import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftItemCountValidationHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.AttachmentsServiceImpl;
@@ -133,6 +135,7 @@ public class Registration implements CdsRuntimeConfiguration {
       configurer.eventHandler(
           new ReadAttachmentsHandler(
               attachmentService, new AttachmentStatusValidator(), scanRunner));
+      configurer.eventHandler(new ItemCountValidationHandler(attachmentsReader));
     } else {
       logger.debug(
           "No application service is available. Application service event handlers will not be registered.");
@@ -146,6 +149,7 @@ public class Registration implements CdsRuntimeConfiguration {
           new DraftPatchAttachmentsHandler(persistenceService, eventFactory, defaultMaxSize));
       configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteEvent));
       configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
+      configurer.eventHandler(new DraftItemCountValidationHandler(persistenceService));
     } else {
       logger.debug("No draft service is available. Draft event handlers will not be registered.");
     }

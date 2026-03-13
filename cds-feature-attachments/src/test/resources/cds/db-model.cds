@@ -12,6 +12,13 @@ entity Roots : cuid {
     itemTable          : Composition of many Items
                              on itemTable.rootId = $self.ID;
     attachments        : Composition of many Attachments;
+    @Validation.MaxItems: 3
+    maxLimitedAttachments : Composition of many Attachments;
+    @Validation.MinItems: 1
+    minLimitedAttachments : Composition of many Attachments;
+    @Validation.MaxItems: 5
+    @Validation.MinItems: 2
+    rangedAttachments : Composition of many Attachments;
 }
 
 entity Items : cuid {

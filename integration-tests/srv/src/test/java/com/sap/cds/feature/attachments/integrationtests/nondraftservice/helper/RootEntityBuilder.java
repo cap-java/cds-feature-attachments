@@ -3,9 +3,11 @@
  */
 package com.sap.cds.feature.attachments.integrationtests.nondraftservice.helper;
 
+import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Roots;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class RootEntityBuilder {
 
@@ -43,6 +45,21 @@ public class RootEntityBuilder {
 
   public RootEntityBuilder addItems(ItemEntityBuilder... items) {
     Arrays.stream(items).forEach(item -> rootEntity.getItems().add(item.build()));
+    return this;
+  }
+
+  @SuppressWarnings("unchecked")
+  public RootEntityBuilder addMaxLimitedAttachments(int count) {
+    List<CdsData> list = (List<CdsData>) rootEntity.get("maxLimitedAttachments");
+    if (list == null) {
+      list = new ArrayList<>();
+      rootEntity.put("maxLimitedAttachments", list);
+    }
+    for (int i = 0; i < count; i++) {
+      CdsData item = CdsData.create();
+      item.put("name", "item" + i);
+      list.add(item);
+    }
     return this;
   }
 

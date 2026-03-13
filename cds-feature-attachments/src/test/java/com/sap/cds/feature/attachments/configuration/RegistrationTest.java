@@ -13,10 +13,12 @@ import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.ItemCountValidationHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.draftservice.DraftItemCountValidationHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
@@ -108,7 +110,7 @@ class RegistrationTest {
 
     cut.eventHandlers(configurer);
 
-    var handlerSize = 8;
+    var handlerSize = 10;
     verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
     checkHandlers(handlerArgumentCaptor.getAllValues(), handlerSize);
   }
@@ -128,7 +130,7 @@ class RegistrationTest {
 
     cut.eventHandlers(configurer);
 
-    var handlerSize = 8;
+    var handlerSize = 10;
     verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
     checkHandlers(handlerArgumentCaptor.getAllValues(), handlerSize);
   }
@@ -140,9 +142,11 @@ class RegistrationTest {
     isHandlerForClassIncluded(handlers, UpdateAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, DeleteAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, ReadAttachmentsHandler.class);
+    isHandlerForClassIncluded(handlers, ItemCountValidationHandler.class);
     isHandlerForClassIncluded(handlers, DraftPatchAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, DraftCancelAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, DraftActiveAttachmentsHandler.class);
+    isHandlerForClassIncluded(handlers, DraftItemCountValidationHandler.class);
   }
 
   @Test
@@ -166,10 +170,12 @@ class RegistrationTest {
     isHandlerForClassMissing(handlers, UpdateAttachmentsHandler.class);
     isHandlerForClassMissing(handlers, DeleteAttachmentsHandler.class);
     isHandlerForClassMissing(handlers, ReadAttachmentsHandler.class);
+    isHandlerForClassMissing(handlers, ItemCountValidationHandler.class);
     // event handlers for draft services are not registered
     isHandlerForClassMissing(handlers, DraftPatchAttachmentsHandler.class);
     isHandlerForClassMissing(handlers, DraftCancelAttachmentsHandler.class);
     isHandlerForClassMissing(handlers, DraftActiveAttachmentsHandler.class);
+    isHandlerForClassMissing(handlers, DraftItemCountValidationHandler.class);
   }
 
   private void isHandlerForClassIncluded(
