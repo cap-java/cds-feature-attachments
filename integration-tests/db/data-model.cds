@@ -9,11 +9,13 @@ entity AttachmentEntity : Attachments {
 
 entity Roots : cuid {
     title       : String;
+    stock       : Integer;
     attachments : Composition of many AttachmentEntity
                       on attachments.parentKey = $self.ID;
     items       : Composition of many Items
                       on items.parentID = $self.ID;
     sizeLimitedAttachments : Composition of many Attachments;
+    minMaxAttachments : Composition of many Attachments;
 }
 
 entity Items : cuid {

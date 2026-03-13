@@ -145,7 +145,7 @@ public class Registration implements CdsRuntimeConfiguration {
       configurer.eventHandler(
           new DraftPatchAttachmentsHandler(persistenceService, eventFactory, defaultMaxSize));
       configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteEvent));
-      configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
+      configurer.eventHandler(new DraftActiveAttachmentsHandler(storage, persistenceService));
     } else {
       logger.debug("No draft service is available. Draft event handlers will not be registered.");
     }
