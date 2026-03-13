@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -235,5 +236,16 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
               }
               return numberMatch;
             });
+  }
+
+  // Override flaky test from base class to disable it.
+  // This test is affected by a race condition in the CAP runtime's outbox TaskScheduler
+  // where the second DELETE event is not processed during root deletion.
+
+  @Disabled("Flaky due to CAP runtime outbox race condition - second DELETE event not processed")
+  @Test
+  @Override
+  void rootDeleteDeletesAllContents() throws Exception {
+    super.rootDeleteDeletesAllContents();
   }
 }

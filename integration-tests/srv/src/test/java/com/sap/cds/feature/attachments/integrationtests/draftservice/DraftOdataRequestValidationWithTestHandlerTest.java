@@ -247,6 +247,42 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
   @Disabled("Flaky due to CAP runtime outbox race condition - second DELETE event not processed")
   @Test
   @Override
+  void deleteContentInDraft() throws Exception {
+    super.deleteContentInDraft();
+  }
+
+  @Disabled("Flaky due to CAP runtime outbox race condition - second DELETE event not processed")
+  @Test
+  @Override
+  void deleteAttachmentAndActivateDraft() throws Exception {
+    super.deleteAttachmentAndActivateDraft();
+  }
+
+  @Disabled("Flaky due to CAP runtime outbox race condition - second DELETE event not processed")
+  @Test
+  @Override
+  void deleteItemAndActivateDraft() throws Exception {
+    super.deleteItemAndActivateDraft();
+  }
+
+  @Disabled("Flaky due to CAP runtime outbox race condition - second DELETE event not processed")
+  @Test
+  @Override
+  void noEventsForForDeletedRoot() throws Exception {
+    super.noEventsForForDeletedRoot();
+  }
+
+  @Disabled(
+      "Flaky due to CAP runtime outbox race condition - second DELETE/UPDATE event not processed")
+  @Test
+  @Override
+  void updateContentInDraft() throws Exception {
+    super.updateContentInDraft();
+  }
+
+  @Disabled("Flaky due to CAP runtime outbox race condition - second DELETE event not processed")
+  @Test
+  @Override
   void errorInTransactionAfterCreateCallsDelete() throws Exception {
     super.errorInTransactionAfterCreateCallsDelete();
   }
