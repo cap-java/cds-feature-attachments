@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.3.3
+## Version 1.3.3 - 2026-03-15
 
 ### Fixed
 - Fixed @Validation.Maximum error message not showing in consuming projects due to messages.properties being overwritten instead of merged. Error messages are now self-contained and no longer rely on a resource bundle.
