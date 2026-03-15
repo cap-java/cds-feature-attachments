@@ -82,10 +82,12 @@ public class CreateAttachmentsHandler implements EventHandler {
         String maxSizeStr = (String) context.get("attachment.MaxSize");
         if (maxSizeStr != null) {
           throw new ServiceException(
-              ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded", maxSizeStr);
+              ExtendedErrorStatuses.CONTENT_TOO_LARGE,
+              "File size exceeds the limit of {}.",
+              maxSizeStr);
         }
         throw new ServiceException(
-            ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded");
+            ExtendedErrorStatuses.CONTENT_TOO_LARGE, "File size exceeds the limit.");
       }
       throw e;
     }
