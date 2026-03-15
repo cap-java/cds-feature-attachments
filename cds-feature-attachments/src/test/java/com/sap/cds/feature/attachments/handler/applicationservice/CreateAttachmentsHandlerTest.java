@@ -340,7 +340,7 @@ class CreateAttachmentsHandlerTest {
     var exception = assertThrows(ServiceException.class, () -> cut.restoreError(context));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
-    assertThat(exception.getMessage()).contains("AttachmentSizeExceeded");
+    assertThat(exception.getMessage()).contains("File size exceeds the limit of 10MB.");
     assertThat(exception).isNotSameAs(originalException);
   }
 
@@ -355,7 +355,7 @@ class CreateAttachmentsHandlerTest {
     var exception = assertThrows(ServiceException.class, () -> cut.restoreError(context));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
-    assertThat(exception.getMessage()).contains("AttachmentSizeExceeded");
+    assertThat(exception.getMessage()).contains("File size exceeds the limit.");
     assertThat(exception).isNotSameAs(originalException);
   }
 
