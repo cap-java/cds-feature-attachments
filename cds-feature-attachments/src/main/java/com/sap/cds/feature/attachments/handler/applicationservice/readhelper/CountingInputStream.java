@@ -3,6 +3,7 @@
  */
 package com.sap.cds.feature.attachments.handler.applicationservice.readhelper;
 
+import com.sap.cds.feature.attachments.configuration.MessageKeys;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.FileSizeUtils;
 import com.sap.cds.services.ServiceException;
@@ -81,9 +82,7 @@ public final class CountingInputStream extends InputStream {
     byteCount += bytes;
     if (byteCount > maxBytes) {
       throw new ServiceException(
-          ExtendedErrorStatuses.CONTENT_TOO_LARGE,
-          "File size exceeds the limit of {}.",
-          maxBytesString);
+          ExtendedErrorStatuses.CONTENT_TOO_LARGE, MessageKeys.FILE_SIZE_EXCEEDED, maxBytesString);
     }
   }
 }
