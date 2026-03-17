@@ -4,13 +4,25 @@ using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
 // Extend Books entity to support file attachments (images, PDFs, documents)
 // Each book can have multiple attachments via composition relationship
 extend my.Books with {
-  attachments : Composition of many Attachments;
+  attachments                      : Composition of many Attachments;
   @UI.Hidden
-  sizeLimitedAttachments : Composition of many Attachments;
+  sizeLimitedAttachments           : Composition of many Attachments;
+  @UI.Hidden
+  mediaValidatedAttachments        : Composition of many Attachments;
+  @UI.Hidden
+  anotherMediaValidatedAttachments : Composition of many Attachments;
 }
 
 annotate my.Books.sizeLimitedAttachments with {
   content @Validation.Maximum: '5MB';
+}
+
+// Media type validation for attachments
+annotate my.Books.mediaValidatedAttachments with {
+  content @Core.AcceptableMediaTypes: [
+    'image/jpeg',
+    'image/png'
+  ];
 }
 
 // Add UI component for attachments table to the Browse Books App
@@ -30,5 +42,10 @@ annotate adminService.Books with @(UI.Facets: [{
   $Type : 'UI.ReferenceFacet',
   ID    : 'AttachmentsFacet',
   Label : '{i18n>attachments}',
-  Target: 'attachments/@UI.LineItem'
+  Target: 'mediaValidatedAttachments/@UI.LineItem'
 }]);
+
+
+service nonDraft {
+  entity Books as projection on my.Books;
+}

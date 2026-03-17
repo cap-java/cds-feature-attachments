@@ -10,8 +10,10 @@ import com.sap.cds.feature.attachments.handler.applicationservice.helper.Extende
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation.AttachmentValidationHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
@@ -23,6 +25,7 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.runtime.CdsRuntime;
 import com.sap.cds.services.utils.OrderConstants;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,14 +44,17 @@ public class CreateAttachmentsHandler implements EventHandler {
   private final ModifyAttachmentEventFactory eventFactory;
   private final ThreadDataStorageReader storageReader;
   private final String defaultMaxSize;
+  private final CdsRuntime cdsRuntime;
 
   public CreateAttachmentsHandler(
       ModifyAttachmentEventFactory eventFactory,
       ThreadDataStorageReader storageReader,
-      String defaultMaxSize) {
+      String defaultMaxSize,
+      CdsRuntime cdsRuntime) {
     this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
     this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
     this.defaultMaxSize = requireNonNull(defaultMaxSize, "defaultMaxSize must not be null");
+    this.cdsRuntime = requireNonNull(cdsRuntime, "cdsRuntime must not be null");
   }
 
   @Before
@@ -59,6 +65,13 @@ public class CreateAttachmentsHandler implements EventHandler {
     // field in data
     ReadonlyDataContextEnhancer.preserveReadonlyFields(
         context.getTarget(), data, storageReader.get());
+  }
+
+  @Before(event = {CqnService.EVENT_CREATE, DraftService.EVENT_DRAFT_NEW})
+  @HandlerOrder(HandlerOrder.BEFORE)
+  void processBeforeForMetadata(EventContext context, List<CdsData> data) {
+    CdsEntity target = context.getTarget();
+    AttachmentValidationHelper.validateMediaAttachments(target, data, cdsRuntime);
   }
 
   @Before

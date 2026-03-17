@@ -1,5 +1,5 @@
 /*
- * © 2024-2025 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.configuration;
 
@@ -123,7 +123,8 @@ public class Registration implements CdsRuntimeConfiguration {
     boolean hasApplicationServices =
         serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
     if (hasApplicationServices) {
-      configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage, defaultMaxSize));
+      configurer.eventHandler(
+          new CreateAttachmentsHandler(eventFactory, storage, defaultMaxSize, runtime));
       configurer.eventHandler(
           new UpdateAttachmentsHandler(
               eventFactory, attachmentsReader, outboxedAttachmentService, storage, defaultMaxSize));
