@@ -36,6 +36,7 @@
     <module>storage-targets/cds-feature-attachments-fs</module>
     <module>storage-targets/cds-feature-attachments-oss</module>
     <module>integration-tests</module>
+    <module>coverage-report</module>
   </modules>
 
   <scm>
@@ -125,6 +126,12 @@
       <dependency>
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-feature-attachments</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.sap.cds.integration-tests</groupId>
+        <artifactId>cds-feature-attachments-integration-tests-srv</artifactId>
         <version>${revision}</version>
       </dependency>
     </dependencies>
@@ -406,6 +413,7 @@
                 <excludeArtifact>cds-feature-attachments-integration-tests-parent</excludeArtifact>
                 <excludeArtifact>cds-feature-attachments-integration-tests-db</excludeArtifact>
                 <excludeArtifact>cds-feature-attachments-integration-tests-srv</excludeArtifact>
+                <excludeArtifact>cds-feature-attachments-coverage-report</excludeArtifact>
               </excludeArtifacts>
             </configuration>
           </plugin>
@@ -418,7 +426,7 @@
         <module>cds-feature-attachments</module>
         <module>storage-targets/cds-feature-attachments-fs</module>
         <module>storage-targets/cds-feature-attachments-oss</module>
-        <!-- Exclude integration-tests modules -->
+        <!-- Exclude integration-tests and coverage-report modules -->
       </modules>
     </profile>
   </profiles>
