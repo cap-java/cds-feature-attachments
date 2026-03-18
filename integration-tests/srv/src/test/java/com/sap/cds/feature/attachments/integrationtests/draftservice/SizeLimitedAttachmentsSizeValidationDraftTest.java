@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.integrationtests.common.MockHttpRequestHe
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
@@ -28,7 +29,7 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     // Arrange: Create draft with sizeLimitedAttachments
     var draftRoot = createNewDraftWithSizeLimitedAttachments();
     var attachment = draftRoot.getSizeLimitedAttachments().get(0);
-
+    attachment.setFileName("test.txt");
     // Act & Assert: Upload 3MB content (within limit) succeeds
     byte[] content = new byte[3 * 1024 * 1024]; // 3MB
     var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
@@ -41,14 +42,50 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     // Arrange: Create draft with sizeLimitedAttachments
     var draftRoot = createNewDraftWithSizeLimitedAttachments();
     var attachment = draftRoot.getSizeLimitedAttachments().get(0);
-
+    attachment.setFileName("test.txt");
     // Act: Try to upload 6MB content (exceeds limit)
     byte[] content = new byte[6 * 1024 * 1024]; // 6MB
     var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
     requestHelper.executePutWithMatcher(url, content, status().is(413));
 
-    // Assert: Error response with HTTP 413 status code indicates size limit exceeded
+    // Assert: Error response with HTTP 413 status code indicates size limit
+    // exceeded
+  }
+
+  @Test
+  void uploadContentWithinLimitAndActivateDraftSucceeds() throws Exception {
+    // Arrange: Create draft with sizeLimitedAttachments (no prior activation)
+    var draftRoot = createNewDraftWithSizeLimitedAttachments();
+    var attachment = draftRoot.getSizeLimitedAttachments().get(0);
+
+    // Act: Upload 3MB content (within 5MB limit)
+    byte[] content = new byte[3 * 1024 * 1024]; // 3MB
+    var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
+    requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
+    requestHelper.executePutWithMatcher(url, content, status().isNoContent());
+
+    // Assert: Draft activation succeeds
+    requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+    var rootUrl = getRootUrl(draftRoot.getId(), false);
+    var draftPrepareUrl = rootUrl + "/TestDraftService.draftPrepare";
+    var draftActivateUrl = rootUrl + "/TestDraftService.draftActivate";
+    requestHelper.executePostWithMatcher(
+        draftPrepareUrl, "{\"SideEffectsQualifier\":\"\"}", status().isOk());
+    requestHelper.executePostWithMatcher(draftActivateUrl, "{}", status().isOk());
+  }
+
+  @Test
+  void uploadContentExceedingLimitOnFirstDraftRejects() throws Exception {
+    // Arrange: Create draft with sizeLimitedAttachments (no prior activation)
+    var draftRoot = createNewDraftWithSizeLimitedAttachments();
+    var attachment = draftRoot.getSizeLimitedAttachments().get(0);
+
+    // Act & Assert: Upload 6MB content to a brand-new draft attachment fails immediately
+    byte[] content = new byte[6 * 1024 * 1024]; // 6MB
+    var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
+    requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
+    requestHelper.executePutWithMatcher(url, content, status().is(413));
   }
 
   // Helper methods
@@ -74,7 +111,7 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     var createdAttachment = Struct.access(responseAttachmentCdsData).as(Attachments.class);
 
     // Build result with the attachment
-    draftRoot.setSizeLimitedAttachments(java.util.List.of(createdAttachment));
+    draftRoot.setSizeLimitedAttachments(List.of(createdAttachment));
     return draftRoot;
   }
 

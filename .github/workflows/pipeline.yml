@@ -51,7 +51,7 @@ jobs:
           maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: build-artifacts-java-${{ matrix.java-version }}
           path: |
@@ -77,7 +77,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts-java-${{ matrix.java-version }}
 
