@@ -45,6 +45,7 @@ annotate adminService.Books with @(UI.Facets: [{
   Target: 'mediaValidatedAttachments/@UI.LineItem'
 }]);
 
+annotate adminService.Books with @odata.draft.enabled;
 
 service nonDraft {
   entity Books as projection on my.Books;
