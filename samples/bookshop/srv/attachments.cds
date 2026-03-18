@@ -8,7 +8,7 @@ extend my.Books with {
   @UI.Hidden
   sizeLimitedAttachments           : Composition of many Attachments;
   @UI.Hidden
-  mediaValidatedAttachments        : Composition of many Attachments;
+  mediaValidatedAttachments        : Composition of one Attachments;
   @UI.Hidden
   anotherMediaValidatedAttachments : Composition of many Attachments;
 }
@@ -42,10 +42,20 @@ annotate adminService.Books with @(UI.Facets: [{
   $Type : 'UI.ReferenceFacet',
   ID    : 'AttachmentsFacet',
   Label : '{i18n>attachments}',
-  Target: 'mediaValidatedAttachments/@UI.LineItem'
+  Target: 'mediaValidatedAttachments/@UI.FieldGroup'
 }]);
 
 annotate adminService.Books with @odata.draft.enabled;
+
+
+annotate adminService.Books.mediaValidatedAttachments with @UI.FieldGroup: {
+    Data: [
+        {Value: content},
+        {Value: fileName},
+        {Value: mimeType},
+        {Value: status}
+    ]
+};
 
 service nonDraft {
   entity Books as projection on my.Books;
