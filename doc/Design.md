@@ -434,10 +434,10 @@ The following fields are readonly fields:
 
 - `contentId`
 - `status`
-- `scannedAt`
+- `lastScan`
 
 Other fields which are readonly like `createdAt` can be set once a draft entity is activated.
-But the fields `contentId`, `status` and `scannedAt` are readonly fields which are not allowed to be updated during the
+But the fields `contentId`, `status` and `lastScan` are readonly fields which are not allowed to be updated during the
 activation of a draft entity.
 
 Because readonly fields are deleted from the event context during the draft activate, the fields need to be stored and

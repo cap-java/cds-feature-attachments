@@ -119,7 +119,7 @@ The process for deletion of a content is the same as for the deletion, but handl
 The following fields are readonly:
 
 - `status`
-- `scannedAt`
+- `lastScan`
 - `contentId`
 
 As in the current implementation of the draft activate in the CAP Java stack all readonly fields are not copied to the

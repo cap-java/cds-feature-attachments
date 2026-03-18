@@ -4,40 +4,66 @@ using {
 } from './attachments';
 
 annotate MediaData with @UI.MediaResource: {Stream: content} {
-    content   @(
+    content    @(
         title                           : '{i18n>attachment_content}',
         Core.MediaType                  : mimeType,
-        Core.ContentDisposition.Filename: fileName,
+        Core.ContentDisposition.Filename: filename,
         Core.ContentDisposition.Type    : 'inline'
-    );
-    mimeType  @(
+    )                                                @odata.draft.skip;
+    mimeType   @(
         title: '{i18n>attachment_mimeType}',
         Core.IsMediaType
     );
-    fileName  @(
-        title: '{i18n>attachment_fileName}',
+    filename   @(
+        title: '{i18n>attachment_filename}',
         UI.MultiLineText
-        );
-    status    @(title: '{i18n>attachment_status}');
-    contentId @(UI.Hidden: true);
-    scannedAt @(UI.Hidden: true);
+    );
+    url        @(UI.Hidden);
+    hash       @(UI.Hidden)                          @Core.Computed;
+    status     @(title: '{i18n>attachment_status}')  @readonly;
+    contentId  @(UI.Hidden)                          @readonly;
+    lastScan   @(UI.Hidden)                          @Core.Computed;
 }
 
-annotate Attachments with @UI: {
+annotate Attachments with  @UI: {
     HeaderInfo: {
         $Type         : 'UI.HeaderInfoType',
         TypeName      : '{i18n>attachment}',
         TypeNamePlural: '{i18n>attachments}',
     },
     LineItem  : [
-        {Value: content,   @HTML5.CssDefaults: {width: '30%'}},
-        {Value: status,    @HTML5.CssDefaults: {width: '10%'}},
-        {Value: createdAt, @HTML5.CssDefaults: {width: '20%'}},
-        {Value: createdBy, @HTML5.CssDefaults: {width: '15%'}},
-        {Value: note,      @HTML5.CssDefaults: {width: '25%'}},
-        {Value: up__ID, @UI.Hidden}
+        {
+            Value             : content,
+            @HTML5.CssDefaults: {width: '30%'}
+        },
+        {
+            Value             : status,
+            Criticality       : statusNav.criticality,
+            @HTML5.CssDefaults: {width: '10%'}
+        },
+        {
+            Value             : createdAt,
+            @HTML5.CssDefaults: {width: '20%'}
+        },
+        {
+            Value             : createdBy,
+            @HTML5.CssDefaults: {width: '15%'}
+        },
+        {
+            Value             : note,
+            @HTML5.CssDefaults: {width: '25%'}
+        },
+        {
+            Value: up__ID,
+            @UI.Hidden
+        }
     ]
-} {
+}  @Capabilities: {SortRestrictions: {NonSortableProperties: [content]}}  {
+    content
+               @Core.ContentDisposition: {
+        Filename: filename,
+        Type    : 'inline'
+    };
     note       @(
         title: '{i18n>attachment_note}',
         UI.MultiLineText

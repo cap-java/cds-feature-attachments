@@ -71,7 +71,7 @@ class MarkAsDeletedAttachmentEventTest {
     assertThat(currentData)
         .containsEntry(Attachments.CONTENT_ID, null)
         .containsEntry(Attachments.STATUS, null)
-        .containsEntry(Attachments.SCANNED_AT, null);
+        .containsEntry(Attachments.LAST_SCAN, null);
   }
 
   @Test

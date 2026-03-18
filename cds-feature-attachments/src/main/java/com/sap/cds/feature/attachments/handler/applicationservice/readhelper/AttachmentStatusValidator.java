@@ -3,7 +3,7 @@
  */
 package com.sap.cds.feature.attachments.handler.applicationservice.readhelper;
 
-import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.service.model.StatusCode;
 
 /**
  * The class {@link AttachmentStatusValidator} is responsible for validating the status of an

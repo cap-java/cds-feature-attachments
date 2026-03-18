@@ -12,13 +12,13 @@ import java.util.Map;
  *
  * @param attachmentIds The keys for the attachment entity
  * @param attachmentEntity The {@link CdsEntity entity} in which the attachment will be stored
- * @param fileName The file name of the content
+ * @param filename The file name of the content
  * @param mimeType The mime type of the content
  * @param content The input stream of the content
  */
 public record CreateAttachmentInput(
     Map<String, Object> attachmentIds,
     CdsEntity attachmentEntity,
-    String fileName,
+    String filename,
     String mimeType,
     InputStream content) {}

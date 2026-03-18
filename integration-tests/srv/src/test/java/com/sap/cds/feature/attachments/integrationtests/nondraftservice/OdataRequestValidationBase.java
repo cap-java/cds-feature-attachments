@@ -156,7 +156,7 @@ abstract class OdataRequestValidationBase {
             .orElseThrow();
     assertThat(attachmentWithExpectedContent)
         .containsEntry("content@mediaContentType", "application/octet-stream;charset=UTF-8")
-        .containsEntry(Attachments.FILE_NAME, itemAttachment.getFileName());
+        .containsEntry(Attachments.FILENAME, itemAttachment.getFilename());
     assertThat(attachmentWithExpectedContent.getStatus()).isNotEmpty();
     verifyContentId(
         attachmentWithExpectedContent, itemAttachment.getId(), itemAttachment.getContentId());
@@ -287,7 +287,7 @@ abstract class OdataRequestValidationBase {
 
     assertThat(responseAttachment.get("content@mediaContentType")).isNull();
     assertThat(responseAttachment.getContentId()).isNull();
-    assertThat(responseAttachment.getFileName()).isEqualTo(itemAttachment.getFileName());
+    assertThat(responseAttachment.getFilename()).isEqualTo(itemAttachment.getFilename());
     verifyNoAttachmentEventsCalled();
   }
 
@@ -309,7 +309,7 @@ abstract class OdataRequestValidationBase {
 
     assertThat(responseAttachment)
         .containsEntry("content@mediaContentType", "application/octet-stream;charset=UTF-8")
-        .containsEntry(Attachments.FILE_NAME, itemAttachment.getFileName());
+        .containsEntry(Attachments.FILENAME, itemAttachment.getFilename());
     verifyContentId(responseAttachment, itemAttachment.getId(), itemAttachment.getContentId());
     verifyNoAttachmentEventsCalled();
   }
@@ -575,14 +575,14 @@ abstract class OdataRequestValidationBase {
     var url = buildDirectAttachmentEntityUrl(itemAttachment.getId());
     requestHelper.executePatchWithODataResponseAndAssertStatus(
         url,
-        "{\"fileName\":\"test_for_change.txt\"}",
+        "{\"filename\":\"test_for_change.txt\"}",
         "W/\"2024-05-06T15:24:29.657713600Z\"",
         HttpStatus.PRECONDITION_FAILED);
 
     var selectedRootAfterChange = selectStoredRootWithDeepData();
     var itemAfterChange = getItemWithAttachmentEntity(selectedRootAfterChange);
     var itemAttachmentAfterChange = getRandomItemAttachmentEntity(itemAfterChange);
-    assertThat(itemAttachmentAfterChange.getFileName()).isEqualTo(itemAttachment.getFileName());
+    assertThat(itemAttachmentAfterChange.getFilename()).isEqualTo(itemAttachment.getFilename());
   }
 
   @Test
@@ -598,12 +598,12 @@ abstract class OdataRequestValidationBase {
 
     var url = buildDirectAttachmentEntityUrl(itemAttachment.getId());
     requestHelper.executePatchWithODataResponseAndAssertStatus(
-        url, "{\"fileName\":\"test_for_change.txt\"}", eTag, HttpStatus.OK);
+        url, "{\"filename\":\"test_for_change.txt\"}", eTag, HttpStatus.OK);
 
     var selectedRootAfterChange = selectStoredRootWithDeepData();
     var itemAfterChange = getItemWithAttachmentEntity(selectedRootAfterChange);
     var itemAttachmentAfterChange = getRandomItemAttachmentEntity(itemAfterChange);
-    assertThat(itemAttachmentAfterChange.getFileName()).isEqualTo("test_for_change.txt");
+    assertThat(itemAttachmentAfterChange.getFilename()).isEqualTo("test_for_change.txt");
   }
 
   protected Items selectItem(Items item) {
@@ -618,26 +618,26 @@ abstract class OdataRequestValidationBase {
     return RootEntityBuilder.create()
         .setTitle("some root title")
         .addAttachments(
-            AttachmentsEntityBuilder.create().setFileName("fileRoot.txt").setMimeType("text/plain"))
+            AttachmentsEntityBuilder.create().setFilename("fileRoot.txt").setMimeType("text/plain"))
         .addItems(
             ItemEntityBuilder.create()
                 .setTitle("some item 1 title")
                 .addAttachments(
                     AttachmentsBuilder.create()
-                        .setFileName("fileItem1.txt")
+                        .setFilename("fileItem1.txt")
                         .setMimeType("text/plain"),
                     AttachmentsBuilder.create()
-                        .setFileName("fileItem2.txt")
+                        .setFilename("fileItem2.txt")
                         .setMimeType("text/plain")),
             ItemEntityBuilder.create()
                 .setTitle("some item 2 title")
                 .addAttachmentEntities(
                     AttachmentsEntityBuilder.create()
-                        .setFileName("fileItem3.text")
+                        .setFilename("fileItem3.text")
                         .setMimeType("text/plain"))
                 .addAttachments(
                     AttachmentsBuilder.create()
-                        .setFileName("fileItem3.text")
+                        .setFilename("fileItem3.text")
                         .setMimeType("text/plain")))
         .build();
   }
@@ -672,8 +672,8 @@ abstract class OdataRequestValidationBase {
         .satisfies(
             attachment -> {
               assertThat(attachment.getId()).isNotEmpty();
-              assertThat(attachment.getFileName())
-                  .isEqualTo(serviceRoot.getAttachments().get(0).getFileName());
+              assertThat(attachment.getFilename())
+                  .isEqualTo(serviceRoot.getAttachments().get(0).getFilename());
               assertThat(attachment.getMimeType())
                   .isEqualTo(serviceRoot.getAttachments().get(0).getMimeType());
             });

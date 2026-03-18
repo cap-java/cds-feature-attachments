@@ -50,7 +50,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     Map<String, Object> values = path.target().values();
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
     Optional<String> mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, attachment);
-    Optional<String> fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, attachment);
+    Optional<String> fileNameOptional = getFieldValue(MediaData.FILENAME, values, attachment);
 
     CreateAttachmentInput createEventInput =
         new CreateAttachmentInput(

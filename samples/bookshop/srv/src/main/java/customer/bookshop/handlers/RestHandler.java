@@ -63,7 +63,7 @@ public class RestHandler {
             List<Map<String, Object>> response = attachments.stream().map(attachment -> {
                 Map<String, Object> map = new HashMap<>();
                 map.put("id", attachment.getId());
-                map.put("fileName", attachment.getFileName());
+                map.put("filename", attachment.getFilename());
                 map.put("mimeType", attachment.getMimeType());
                 map.put("status", attachment.getStatus());
                 map.put("note", attachment.getNote());
@@ -94,7 +94,7 @@ public class RestHandler {
             return attachment.map(a -> {
                 Map<String, Object> map = new HashMap<>();
                 map.put("id", a.getId());
-                map.put("fileName", a.getFileName());
+                map.put("filename", a.getFilename());
                 map.put("mimeType", a.getMimeType());
                 map.put("status", a.getStatus());
                 map.put("note", a.getNote());
@@ -140,7 +140,7 @@ public class RestHandler {
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + attachment.getFileName() + "\"");
+                "attachment; filename=\"" + attachment.getFilename() + "\"");
 
             if (attachment.getMimeType() != null) {
                 headers.add(HttpHeaders.CONTENT_TYPE, attachment.getMimeType());
@@ -180,7 +180,7 @@ public class RestHandler {
             // Create attachment entity
             BooksAttachments attachment = BooksAttachments.create();
             attachment.setUpId(bookId);
-            attachment.setFileName(file.getOriginalFilename());
+            attachment.setFilename(file.getOriginalFilename());
             attachment.setMimeType(file.getContentType());
             attachment.setContent(file.getInputStream());
             attachment.setStatus("Clean"); // Will be updated by malware scanner
@@ -201,7 +201,7 @@ public class RestHandler {
 
                 Map<String, Object> response = new HashMap<>();
                 response.put("id", created.getId());
-                response.put("fileName", created.getFileName());
+                response.put("filename", created.getFilename());
                 response.put("mimeType", created.getMimeType());
                 response.put("status", created.getStatus());
                 response.put("note", created.getNote());
@@ -247,8 +247,8 @@ public class RestHandler {
             updateData.setId(attachmentsId);
 
             // Only allow updating certain fields
-            if (updates.containsKey("fileName")) {
-                updateData.setFileName((String) updates.get("fileName"));
+            if (updates.containsKey("filename")) {
+                updateData.setFilename((String) updates.get("filename"));
             }
             if (updates.containsKey("note")) {
                 updateData.setNote((String) updates.get("note"));
@@ -267,7 +267,7 @@ public class RestHandler {
 
             Map<String, Object> response = new HashMap<>();
             response.put("id", updated.getId());
-            response.put("fileName", updated.getFileName());
+            response.put("filename", updated.getFilename());
             response.put("mimeType", updated.getMimeType());
             response.put("status", updated.getStatus());
             response.put("note", updated.getNote());
