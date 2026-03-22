@@ -48,9 +48,16 @@ public final class AttachmentValidationHelper {
       return;
     }
 
-    // validate the media types of the attachments
+    // Resolve which media entities actually have the @Core.AcceptableMediaTypes annotation.
+    // If none do, skip the entire validation – no data extraction, no MIME resolution needed.
     Map<String, List<String>> allowedTypesByElementName =
         MediaTypeResolver.getAcceptableMediaTypesFromEntity(cdsModel, mediaEntityNames);
+
+    if (allowedTypesByElementName.isEmpty()) {
+      return;
+    }
+
+    // validate the media types of the attachments
     Map<String, Set<String>> fileNamesByElementName =
         AttachmentDataExtractor.extractAndValidateFileNamesByElement(entity, data);
     validateAttachmentMediaTypes(fileNamesByElementName, allowedTypesByElementName);
