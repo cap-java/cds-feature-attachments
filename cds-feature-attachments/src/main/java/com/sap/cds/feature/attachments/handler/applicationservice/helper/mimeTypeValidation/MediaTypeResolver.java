@@ -27,17 +27,16 @@ public final class MediaTypeResolver {
     }
     for (String entityName : mediaEntityNames) {
       CdsEntity mediaEntity = model.getEntity(entityName);
-      result.put(entityName, fetchAcceptableMediaTypes(mediaEntity));
+      fetchAcceptableMediaTypes(mediaEntity).ifPresent(types -> result.put(entityName, types));
     }
 
     return result;
   }
 
-  private static List<String> fetchAcceptableMediaTypes(CdsEntity entity) {
+  private static Optional<List<String>> fetchAcceptableMediaTypes(CdsEntity entity) {
     return getAcceptableMediaTypesAnnotation(entity)
         .map(CdsAnnotation::getValue)
-        .map(value -> objectMapper.convertValue(value, STRING_LIST_TYPE_REF))
-        .orElse(AttachmentValidationHelper.WILDCARD_MEDIA_TYPE);
+        .map(value -> objectMapper.convertValue(value, STRING_LIST_TYPE_REF));
   }
 
   public static Optional<CdsAnnotation<Object>> getAcceptableMediaTypesAnnotation(
