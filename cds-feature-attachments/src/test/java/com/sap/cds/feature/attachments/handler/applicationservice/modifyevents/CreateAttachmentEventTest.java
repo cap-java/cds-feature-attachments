@@ -92,7 +92,7 @@ class CreateAttachmentEventTest {
     when(target.values()).thenReturn(attachment);
     when(target.keys()).thenReturn(Map.of("ID", attachment.getId(), "up__ID", "test"));
     when(attachmentService.createAttachment(any()))
-        .thenReturn(new AttachmentModificationResult(false, "id", "test"));
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
     var existingData = Attachments.create();
     existingData.setFileName("some file name");
     existingData.setMimeType("some mime type");
@@ -116,7 +116,7 @@ class CreateAttachmentEventTest {
     var attachment = Attachments.create();
     attachment.setId("test");
     var attachmentServiceResult =
-        new AttachmentModificationResult(false, "some document id", "test");
+        new AttachmentModificationResult(false, "some document id", "test", null);
     when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
     when(target.values()).thenReturn(attachment);
 
@@ -134,7 +134,7 @@ class CreateAttachmentEventTest {
     var listener = mock(ChangeSetListener.class);
     when(listenerProvider.provideListener(contentId, runtime)).thenReturn(listener);
     when(attachmentService.createAttachment(any()))
-        .thenReturn(new AttachmentModificationResult(false, contentId, "test"));
+        .thenReturn(new AttachmentModificationResult(false, contentId, "test", null));
 
     cut.processEvent(path, null, Attachments.create(), eventContext);
 
@@ -154,7 +154,7 @@ class CreateAttachmentEventTest {
     }
     when(target.values()).thenReturn(attachment);
     when(attachmentService.createAttachment(any()))
-        .thenReturn(new AttachmentModificationResult(isExternalStored, "id", "test"));
+        .thenReturn(new AttachmentModificationResult(isExternalStored, "id", "test", null));
 
     var result =
         cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
@@ -174,7 +174,7 @@ class CreateAttachmentEventTest {
     when(target.values()).thenReturn(attachment);
     when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
     when(attachmentService.createAttachment(any()))
-        .thenReturn(new AttachmentModificationResult(false, "id", "test"));
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
 
     cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
     return attachment;

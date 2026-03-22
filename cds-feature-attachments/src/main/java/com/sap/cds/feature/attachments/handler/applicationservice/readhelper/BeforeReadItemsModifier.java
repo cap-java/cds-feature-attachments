@@ -15,8 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class {@link BeforeReadItemsModifier} is a modifier that adds the content id field and status
- * code to the select items.
+ * The class {@link BeforeReadItemsModifier} is a modifier that adds the content id field, status
+ * code and scanned-at timestamp to the select items.
  */
 public class BeforeReadItemsModifier implements Modifier {
 
@@ -74,9 +74,10 @@ public class BeforeReadItemsModifier implements Modifier {
   private void enhanceWithNewFieldForMediaAssociation(
       String association, List<CqnSelectListItem> list, List<CqnSelectListItem> listToEnhance) {
     if (isMediaAssociationAndNeedNewContentIdField(association, list)) {
-      logger.debug("Adding document id and status code to select items");
+      logger.debug("Adding document id, status code and scanned-at timestamp to select items");
       listToEnhance.add(CQL.get(Attachments.CONTENT_ID));
       listToEnhance.add(CQL.get(Attachments.STATUS));
+      listToEnhance.add(CQL.get(Attachments.SCANNED_AT));
     }
   }
 
