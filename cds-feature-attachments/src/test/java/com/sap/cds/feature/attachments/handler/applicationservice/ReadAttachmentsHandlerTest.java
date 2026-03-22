@@ -329,7 +329,8 @@ class ReadAttachmentsHandlerTest {
     attachment.setContentId("some ID");
     attachment.setContent(mock(InputStream.class));
     attachment.setStatus(StatusCode.CLEAN);
-    attachment.setScannedAt(Instant.now().minus(2, ChronoUnit.DAYS));
+    attachment.setScannedAt(
+        Instant.now().minus(ReadAttachmentsHandler.RESCAN_THRESHOLD).plusSeconds(60));
 
     cut.processAfter(readEventContext, List.of(attachment));
 
@@ -349,6 +350,7 @@ class ReadAttachmentsHandlerTest {
 
     verify(asyncMalwareScanExecutor)
         .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+    verify(attachmentStatusValidator).verifyStatus(StatusCode.UNSCANNED);
     verifyNoInteractions(persistenceService);
   }
 

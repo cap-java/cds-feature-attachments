@@ -210,6 +210,8 @@ public class ReadAttachmentsHandler implements EventHandler {
     Attachments updateData = Attachments.create();
     updateData.setStatus(StatusCode.SCANNING);
 
+    // Filter by contentId because primary keys are unavailable during content-only reads
+    // (areKeysEmpty returns true). This is consistent with DefaultAttachmentMalwareScanner.
     CqnUpdate update =
         Update.entity(entity)
             .data(updateData)
