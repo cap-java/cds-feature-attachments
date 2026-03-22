@@ -31,7 +31,4 @@ cds-feature-attachments/src/test/resources/schema.sql
 .secrets
 event.json
 
-# CAP Notebook
-cap-notebook/demoapp/
-
 .DS_Store

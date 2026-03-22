@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class AttachmentValidationHelper {
-  public static final List<String> WILDCARD_MEDIA_TYPE = List.of("*/*");
   private static AssociationCascader cascader = new AssociationCascader();
 
   static void setCascader(AssociationCascader testCascader) {
@@ -123,10 +122,7 @@ public final class AttachmentValidationHelper {
                   String element = entry.getKey();
                   String files = String.join(", ", entry.getValue());
                   String allowed =
-                      String.join(
-                          ", ",
-                          acceptableMediaTypesByElementName.getOrDefault(
-                              element, WILDCARD_MEDIA_TYPE));
+                      String.join(", ", acceptableMediaTypesByElementName.get(element));
                   return files + " (allowed: " + allowed + ") ";
                 })
             .collect(Collectors.joining("; "));
