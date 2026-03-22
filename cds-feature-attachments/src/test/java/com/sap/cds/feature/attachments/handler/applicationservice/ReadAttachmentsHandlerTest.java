@@ -36,11 +36,14 @@ import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -61,6 +64,7 @@ class ReadAttachmentsHandlerTest {
   private AttachmentStatusValidator attachmentStatusValidator;
   private CdsReadEventContext readEventContext;
   private AsyncMalwareScanExecutor asyncMalwareScanExecutor;
+  private PersistenceService persistenceService;
 
   @BeforeAll
   static void classSetup() {
@@ -72,9 +76,13 @@ class ReadAttachmentsHandlerTest {
     attachmentService = mock(AttachmentService.class);
     attachmentStatusValidator = mock(AttachmentStatusValidator.class);
     asyncMalwareScanExecutor = mock(AsyncMalwareScanExecutor.class);
+    persistenceService = mock(PersistenceService.class);
     cut =
         new ReadAttachmentsHandler(
-            attachmentService, attachmentStatusValidator, asyncMalwareScanExecutor);
+            attachmentService,
+            attachmentStatusValidator,
+            asyncMalwareScanExecutor,
+            persistenceService);
 
     readEventContext = mock(CdsReadEventContext.class);
   }
@@ -164,6 +172,7 @@ class ReadAttachmentsHandlerTest {
       attachment.setContentId("some ID");
       attachment.setContent(null);
       attachment.setStatus(StatusCode.CLEAN);
+      attachment.setScannedAt(Instant.now());
 
       cut.processAfter(readEventContext, List.of(attachment));
 
@@ -251,6 +260,96 @@ class ReadAttachmentsHandlerTest {
     cut.processAfter(readEventContext, List.of(attachment));
 
     verifyNoInteractions(asyncMalwareScanExecutor);
+  }
+
+  @Test
+  void scannerCalledForStaleCleanAttachment() {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(Instant.now().minus(4, ChronoUnit.DAYS));
+    doThrow(AttachmentStatusException.class)
+        .when(attachmentStatusValidator)
+        .verifyStatus(StatusCode.SCANNING);
+
+    List<CdsData> attachments = List.of(attachment);
+    assertThrows(
+        AttachmentStatusException.class, () -> cut.processAfter(readEventContext, attachments));
+
+    verify(persistenceService).run(any(com.sap.cds.ql.cqn.CqnUpdate.class));
+    verify(asyncMalwareScanExecutor)
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
+  }
+
+  @Test
+  void scannerCalledForCleanAttachmentWithNullScannedAt() {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(null);
+    doThrow(AttachmentStatusException.class)
+        .when(attachmentStatusValidator)
+        .verifyStatus(StatusCode.SCANNING);
+
+    List<CdsData> attachments = List.of(attachment);
+    assertThrows(
+        AttachmentStatusException.class, () -> cut.processAfter(readEventContext, attachments));
+
+    verify(persistenceService).run(any(com.sap.cds.ql.cqn.CqnUpdate.class));
+    verify(asyncMalwareScanExecutor)
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
+  }
+
+  @Test
+  void scannerNotCalledForFreshCleanAttachment() {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(Instant.now().minus(1, ChronoUnit.DAYS));
+
+    cut.processAfter(readEventContext, List.of(attachment));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.CLEAN);
+  }
+
+  @Test
+  void scannerNotCalledForCleanAttachmentScannedExactlyAtThreshold() {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(Instant.now().minus(2, ChronoUnit.DAYS));
+
+    cut.processAfter(readEventContext, List.of(attachment));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
+  }
+
+  @Test
+  void persistenceServiceNotCalledForUnscannedAttachments() {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.UNSCANNED);
+
+    cut.processAfter(readEventContext, List.of(attachment));
+
+    verify(asyncMalwareScanExecutor)
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+    verifyNoInteractions(persistenceService);
   }
 
   @Test
