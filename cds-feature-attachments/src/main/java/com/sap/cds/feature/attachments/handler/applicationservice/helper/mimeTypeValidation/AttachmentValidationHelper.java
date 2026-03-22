@@ -88,9 +88,12 @@ public final class AttachmentValidationHelper {
     Map<String, List<String>> invalidFiles = new HashMap<>();
     fileNamesByElementName.forEach(
         (elementName, files) -> {
-          // Resolve the allowed media types for this field / element.
-          List<String> acceptableTypes =
-              acceptableMediaTypesByElementName.getOrDefault(elementName, WILDCARD_MEDIA_TYPE);
+          // Only validate elements that have the @Core.AcceptableMediaTypes annotation.
+          // Elements not in the map are unconstrained and can accept any media type.
+          List<String> acceptableTypes = acceptableMediaTypesByElementName.get(elementName);
+          if (acceptableTypes == null) {
+            return;
+          }
 
           // Filter out files whose media type is NOT allowed for this element
           List<String> invalid =
