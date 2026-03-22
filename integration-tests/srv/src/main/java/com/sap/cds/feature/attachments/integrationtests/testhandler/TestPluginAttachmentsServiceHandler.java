@@ -15,6 +15,7 @@ import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +49,7 @@ public class TestPluginAttachmentsServiceHandler implements EventHandler {
     documents.put(contentId, context.getData().getContent().readAllBytes());
     context.setContentId(contentId);
     context.getData().setStatus(StatusCode.CLEAN);
+    context.getData().setScannedAt(Instant.now());
     context.setCompleted();
     eventContextHolder.add(
         new EventContextHolder(AttachmentService.EVENT_CREATE_ATTACHMENT, context));
