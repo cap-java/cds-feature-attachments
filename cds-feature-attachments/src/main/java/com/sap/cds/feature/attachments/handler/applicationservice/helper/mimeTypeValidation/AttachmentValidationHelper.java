@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class AttachmentValidationHelper {
-  public static final List<String> WILDCARD_MEDIA_TYPE = List.of("*/*");
   private static AssociationCascader cascader = new AssociationCascader();
 
   static void setCascader(AssociationCascader testCascader) {
@@ -48,9 +47,16 @@ public final class AttachmentValidationHelper {
       return;
     }
 
-    // validate the media types of the attachments
+    // Resolve which media entities actually have the @Core.AcceptableMediaTypes annotation.
+    // If none do, skip the entire validation – no data extraction, no MIME resolution needed.
     Map<String, List<String>> allowedTypesByElementName =
         MediaTypeResolver.getAcceptableMediaTypesFromEntity(cdsModel, mediaEntityNames);
+
+    if (allowedTypesByElementName.isEmpty()) {
+      return;
+    }
+
+    // validate the media types of the attachments
     Map<String, Set<String>> fileNamesByElementName =
         AttachmentDataExtractor.extractAndValidateFileNamesByElement(entity, data);
     validateAttachmentMediaTypes(fileNamesByElementName, allowedTypesByElementName);
@@ -81,9 +87,12 @@ public final class AttachmentValidationHelper {
     Map<String, List<String>> invalidFiles = new HashMap<>();
     fileNamesByElementName.forEach(
         (elementName, files) -> {
-          // Resolve the allowed media types for this field / element.
-          List<String> acceptableTypes =
-              acceptableMediaTypesByElementName.getOrDefault(elementName, WILDCARD_MEDIA_TYPE);
+          // Only validate elements that have the @Core.AcceptableMediaTypes annotation.
+          // Elements not in the map are unconstrained and can accept any media type.
+          List<String> acceptableTypes = acceptableMediaTypesByElementName.get(elementName);
+          if (acceptableTypes == null) {
+            return;
+          }
 
           // Filter out files whose media type is NOT allowed for this element
           List<String> invalid =
@@ -113,10 +122,7 @@ public final class AttachmentValidationHelper {
                   String element = entry.getKey();
                   String files = String.join(", ", entry.getValue());
                   String allowed =
-                      String.join(
-                          ", ",
-                          acceptableMediaTypesByElementName.getOrDefault(
-                              element, WILDCARD_MEDIA_TYPE));
+                      String.join(", ", acceptableMediaTypesByElementName.get(element));
                   return files + " (allowed: " + allowed + ") ";
                 })
             .collect(Collectors.joining("; "));

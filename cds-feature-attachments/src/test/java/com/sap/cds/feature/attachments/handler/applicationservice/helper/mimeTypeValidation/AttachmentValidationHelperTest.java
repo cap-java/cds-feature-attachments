@@ -61,6 +61,35 @@ class AttachmentValidationHelperTest {
   }
 
   @Test
+  void doesNothing_whenNoEntityHasAcceptableMediaTypesAnnotation() {
+    CdsEntity entity = mockEntity("Entity");
+    CdsRuntime runtime = mockRuntime(entity);
+
+    try (MockedStatic<ApplicationHandlerHelper> helper =
+            mockStatic(ApplicationHandlerHelper.class);
+        MockedStatic<MediaTypeResolver> resolver = mockStatic(MediaTypeResolver.class);
+        MockedStatic<AttachmentDataExtractor> extractor =
+            mockStatic(AttachmentDataExtractor.class)) {
+
+      helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(true);
+
+      // MediaTypeResolver returns empty map = no entity has the annotation
+      resolver
+          .when(
+              () ->
+                  MediaTypeResolver.getAcceptableMediaTypesFromEntity(
+                      any(CdsModel.class), anyList()))
+          .thenReturn(Map.of());
+
+      // Verify that AttachmentDataExtractor is never called (early return)
+      assertDoesNotThrow(
+          () -> AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), runtime));
+
+      extractor.verifyNoInteractions();
+    }
+  }
+
+  @Test
   void doesNotThrow_whenNoFiles() {
     CdsEntity entity = mockEntity("Entity");
 

@@ -47,7 +47,7 @@ class MediaTypeResolverTest {
   }
 
   @Test
-  void shouldResolveMediaTypesUsingCascader() {
+  void shouldExcludeEntityWithoutAnnotation() {
     CdsModel model = mock(CdsModel.class);
     CdsEntity media = mock(CdsEntity.class);
 
@@ -57,6 +57,7 @@ class MediaTypeResolverTest {
     Map<String, List<String>> result =
         MediaTypeResolver.getAcceptableMediaTypesFromEntity(model, List.of("MediaEntity"));
 
-    assertThat(result).containsKey("MediaEntity");
+    assertThat(result).doesNotContainKey("MediaEntity");
+    assertThat(result).isEmpty();
   }
 }
