@@ -22,6 +22,7 @@ It supports the [AWS, Azure, and Google object stores](storage-targets/cds-featu
   * [Storage Targets](#storage-targets)
   * [Malware Scanner](#malware-scanner)
   * [Specify the maximum file size](#specify-the-maximum-file-size)
+  * [Restrict allowed MIME types](#restrict-allowed-mime-types)
   * [Outbox](#outbox)
   * [Restore Endpoint](#restore-endpoint)
     * [Motivation](#motivation)
@@ -214,6 +215,38 @@ The @Validation.Maximum value is a size string consisting of a number followed b
 
 The default is 400MB
 
+### Restrict allowed MIME types
+
+You can restrict which MIME types are allowed for attachments by annotating the content property with @Core.AcceptableMediaTypes. This validation is performed during file upload.
+
+```cds
+entity Books {
+  ...
+  attachments: Composition of many Attachments;
+}
+
+annotate Books.attachments with {
+  content @Core.AcceptableMediaTypes : ['image/jpeg', 'image/png', 'application/pdf'];
+}
+```
+
+Wildcard patterns are supported:
+
+```cds
+annotate Books.attachments with {
+  content @Core.AcceptableMediaTypes : ['image/*', 'application/pdf'];
+}
+```
+
+To allow all MIME types (default behavior), either omit the annotation or use:
+
+```cds
+annotate Books.attachments with {
+  content @Core.AcceptableMediaTypes : ['*/*'];
+}
+```
+
+
 ### Outbox
 
 In this plugin the [persistent outbox](https://cap.cloud.sap/docs/java/outbox#persistent) is used to mark attachments as
@@ -348,7 +381,7 @@ the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
 ### Multitenancy
 
 - When using SAP HANA as the storage target, multitenancy support depends on the consuming application. In most cases, multitenancy is achieved by using a dedicated schema for each tenant, providing strong data isolation at the database level.
-- When using an [object store](storage-targets/cds-feature-attachments-oss) as the storage target, true multitenancy is not yet implemented (as of version 1.3.1). In this case, all blobs are stored in a single bucket, and tenant data is not separated.
+- When using an [object store](storage-targets/cds-feature-attachments-oss) as the storage target, true multitenancy is not yet implemented (as of version 1.3.3). In this case, all blobs are stored in a single bucket, and tenant data is not separated.
 
 ### Object Stores
 
