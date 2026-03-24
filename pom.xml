@@ -65,8 +65,8 @@
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.42.13</software.amazon.awssdk-s3-version>
-    <software.amazon.awssdk-crt-version>0.43.8</software.amazon.awssdk-crt-version>
+    <software.amazon.awssdk-s3-version>2.42.18</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-crt-version>0.43.9</software.amazon.awssdk-crt-version>
 
     <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
     <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
@@ -348,7 +348,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.4.0</version>
         <configuration>
           <java>
             <googleJavaFormat>
