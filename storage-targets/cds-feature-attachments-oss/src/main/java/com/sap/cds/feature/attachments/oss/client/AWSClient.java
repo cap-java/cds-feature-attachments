@@ -6,6 +6,7 @@ package com.sap.cds.feature.attachments.oss.client;
 import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -18,9 +19,14 @@ import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.Delete;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
@@ -127,6 +133,41 @@ public class AWSClient implements OSClient {
             throw new ObjectStoreServiceException(
                 "Failed to read file from the AWS Object Store", e);
           }
+        });
+  }
+
+  @Override
+  public Future<Void> deleteContentByPrefix(String prefix) {
+    return executor.submit(
+        () -> {
+          try {
+            ListObjectsV2Request listReq =
+                ListObjectsV2Request.builder().bucket(this.bucketName).prefix(prefix).build();
+            ListObjectsV2Response listResp;
+            do {
+              listResp = s3Client.listObjectsV2(listReq);
+              if (!listResp.contents().isEmpty()) {
+                List<ObjectIdentifier> keys =
+                    listResp.contents().stream()
+                        .map(obj -> ObjectIdentifier.builder().key(obj.key()).build())
+                        .toList();
+                DeleteObjectsRequest deleteReq =
+                    DeleteObjectsRequest.builder()
+                        .bucket(this.bucketName)
+                        .delete(Delete.builder().objects(keys).build())
+                        .build();
+                s3Client.deleteObjects(deleteReq);
+              }
+              listReq =
+                  listReq.toBuilder()
+                      .continuationToken(listResp.nextContinuationToken())
+                      .build();
+            } while (listResp.isTruncated());
+          } catch (RuntimeException e) {
+            throw new ObjectStoreServiceException(
+                "Failed to delete objects by prefix from the AWS Object Store", e);
+          }
+          return null;
         });
   }
 }

@@ -6,6 +6,8 @@ package com.sap.cds.feature.attachments.oss.client;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
+import com.azure.storage.blob.models.BlobItem;
+import com.azure.storage.blob.models.ListBlobsOptions;
 import com.azure.storage.blob.specialized.BlobOutputStream;
 import com.azure.storage.blob.specialized.BlockBlobClient;
 import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
@@ -84,6 +86,23 @@ public class AzureClient implements OSClient {
             throw new ObjectStoreServiceException(
                 "Failed to read file from the Azure Object Store", e);
           }
+        });
+  }
+
+  @Override
+  public Future<Void> deleteContentByPrefix(String prefix) {
+    return executor.submit(
+        () -> {
+          try {
+            ListBlobsOptions options = new ListBlobsOptions().setPrefix(prefix);
+            for (BlobItem blobItem : blobContainerClient.listBlobs(options, null)) {
+              blobContainerClient.getBlobClient(blobItem.getName()).delete();
+            }
+          } catch (RuntimeException e) {
+            throw new ObjectStoreServiceException(
+                "Failed to delete objects by prefix from the Azure Object Store", e);
+          }
+          return null;
         });
   }
 }

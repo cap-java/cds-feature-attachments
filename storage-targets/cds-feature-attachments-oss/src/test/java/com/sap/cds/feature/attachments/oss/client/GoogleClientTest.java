@@ -272,4 +272,102 @@ class GoogleClientTest {
         assertThrows(ExecutionException.class, () -> googleClient.readContent("file.txt").get());
     assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
   }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testDeleteContentByPrefix_DeletesAllMatchingBlobs()
+      throws NoSuchFieldException, IllegalAccessException {
+    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
+
+    Storage mockStorage = mock(Storage.class);
+
+    var field = GoogleClient.class.getDeclaredField("storage");
+    field.setAccessible(true);
+    field.set(googleClient, mockStorage);
+    var executorField = GoogleClient.class.getDeclaredField("executor");
+    executorField.setAccessible(true);
+    executorField.set(googleClient, executor);
+    var bucketField = GoogleClient.class.getDeclaredField("bucketName");
+    bucketField.setAccessible(true);
+    bucketField.set(googleClient, "my-bucket");
+
+    // Mock listing of blobs by prefix
+    Blob blobA = mock(Blob.class);
+    when(blobA.getName()).thenReturn("tenantX/file1.txt");
+    when(blobA.getGeneration()).thenReturn(1L);
+    Blob blobB = mock(Blob.class);
+    when(blobB.getName()).thenReturn("tenantX/file2.txt");
+    when(blobB.getGeneration()).thenReturn(2L);
+
+    // First call: list by prefix (without versions) returns the blobs
+    Page<Blob> prefixPage = mock(Page.class);
+    when(prefixPage.iterateAll()).thenReturn(() -> java.util.Arrays.asList(blobA, blobB).iterator());
+
+    // For each blob, list versions returns the same blob (single version each)
+    Page<Blob> versionPageA = mock(Page.class);
+    when(versionPageA.iterateAll()).thenReturn(() -> Collections.singletonList(blobA).iterator());
+    Page<Blob> versionPageB = mock(Page.class);
+    when(versionPageB.iterateAll()).thenReturn(() -> Collections.singletonList(blobB).iterator());
+
+    // First call: prefix listing; subsequent calls: version listings
+    when(mockStorage.list(anyString(), any()))
+        .thenReturn(prefixPage);
+    when(mockStorage.list(anyString(), any(), any()))
+        .thenReturn(versionPageA, versionPageB);
+
+    when(mockStorage.delete(any(BlobId.class))).thenReturn(true);
+
+    assertDoesNotThrow(() -> googleClient.deleteContentByPrefix("tenantX/").get());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testDeleteContentByPrefix_HandlesVersioning()
+      throws NoSuchFieldException, IllegalAccessException {
+    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
+
+    Storage mockStorage = mock(Storage.class);
+
+    var field = GoogleClient.class.getDeclaredField("storage");
+    field.setAccessible(true);
+    field.set(googleClient, mockStorage);
+    var executorField = GoogleClient.class.getDeclaredField("executor");
+    executorField.setAccessible(true);
+    executorField.set(googleClient, executor);
+    var bucketField = GoogleClient.class.getDeclaredField("bucketName");
+    bucketField.setAccessible(true);
+    bucketField.set(googleClient, "my-bucket");
+
+    // Blob with 2 versions
+    Blob blob = mock(Blob.class);
+    when(blob.getName()).thenReturn("tenantY/versioned-file.txt");
+    when(blob.getGeneration()).thenReturn(1L);
+
+    Blob version1 = mock(Blob.class);
+    when(version1.getName()).thenReturn("tenantY/versioned-file.txt");
+    when(version1.getGeneration()).thenReturn(1L);
+
+    Blob version2 = mock(Blob.class);
+    when(version2.getName()).thenReturn("tenantY/versioned-file.txt");
+    when(version2.getGeneration()).thenReturn(2L);
+
+    Page<Blob> prefixPage = mock(Page.class);
+    when(prefixPage.iterateAll()).thenReturn(() -> Collections.singletonList(blob).iterator());
+
+    Page<Blob> versionPage = mock(Page.class);
+    when(versionPage.iterateAll())
+        .thenReturn(() -> java.util.Arrays.asList(version1, version2).iterator());
+
+    when(mockStorage.list(anyString(), any()))
+        .thenReturn(prefixPage);
+    when(mockStorage.list(anyString(), any(), any()))
+        .thenReturn(versionPage);
+    when(mockStorage.delete(any(BlobId.class))).thenReturn(true);
+
+    assertDoesNotThrow(() -> googleClient.deleteContentByPrefix("tenantY/").get());
+
+    // Should delete both versions
+    org.mockito.Mockito.verify(mockStorage, org.mockito.Mockito.times(2))
+        .delete(any(BlobId.class));
+  }
 }

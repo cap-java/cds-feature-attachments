@@ -134,4 +134,30 @@ public class GoogleClient implements OSClient {
           }
         });
   }
+
+  @Override
+  public Future<Void> deleteContentByPrefix(String prefix) {
+    return executor.submit(
+        () -> {
+          try {
+            Page<Blob> blobs =
+                storage.list(bucketName, Storage.BlobListOption.prefix(prefix));
+            for (Blob blob : blobs.iterateAll()) {
+              Page<Blob> versions =
+                  storage.list(
+                      bucketName,
+                      Storage.BlobListOption.versions(true),
+                      Storage.BlobListOption.prefix(blob.getName()));
+              for (Blob version : versions.iterateAll()) {
+                storage.delete(
+                    BlobId.of(bucketName, version.getName(), version.getGeneration()));
+              }
+            }
+          } catch (RuntimeException e) {
+            throw new ObjectStoreServiceException(
+                "Failed to delete objects by prefix from Google Object Store", e);
+          }
+          return null;
+        });
+  }
 }
