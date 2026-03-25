@@ -32,6 +32,7 @@ class BeforeReadItemsModifierTest {
 
     cut = new BeforeReadItemsModifier(List.of("attachments"));
     runTestForExpand(cut, select, 1);
+    runTestForExpandScannedAt(cut, select, 1);
   }
 
   @Test
@@ -111,6 +112,7 @@ class BeforeReadItemsModifierTest {
         Select.from(Attachment_.class).columns(Attachment_::ID, Attachment_::content);
 
     runTestForDirectSelect(select, 1);
+    runTestForDirectSelectScannedAt(select, 1);
   }
 
   @Test
@@ -162,6 +164,37 @@ class BeforeReadItemsModifierTest {
         resultItems.stream()
             .filter(
                 item -> item.isRef() && item.asRef().displayName().equals(Attachments.CONTENT_ID))
+            .count();
+    assertThat(count).isEqualTo(expectedFieldCount);
+  }
+
+  private void runTestForExpandScannedAt(
+      BeforeReadItemsModifier cut, CqnSelect select, int expectedFieldCount) {
+    List<CqnSelectListItem> resultItems = cut.items(select.items());
+
+    var rootExpandedItem =
+        resultItems.stream().filter(CqnSelectListItem::isExpand).findAny().orElseThrow();
+    var itemExpandedItem =
+        rootExpandedItem.asExpand().items().stream()
+            .filter(CqnSelectListItem::isExpand)
+            .findAny()
+            .orElseThrow();
+    var count =
+        itemExpandedItem.asExpand().items().stream()
+            .filter(
+                item -> item.isRef() && item.asRef().displayName().equals(Attachments.SCANNED_AT))
+            .count();
+    assertThat(count).isEqualTo(expectedFieldCount);
+  }
+
+  private void runTestForDirectSelectScannedAt(CqnSelect select, int expectedFieldCount) {
+    cut = new BeforeReadItemsModifier(List.of(""));
+    List<CqnSelectListItem> resultItems = cut.items(select.items());
+
+    var count =
+        resultItems.stream()
+            .filter(
+                item -> item.isRef() && item.asRef().displayName().equals(Attachments.SCANNED_AT))
             .count();
     assertThat(count).isEqualTo(expectedFieldCount);
   }
