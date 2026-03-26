@@ -56,7 +56,8 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
     return new AttachmentModificationResult(
         Boolean.TRUE.equals(createContext.getIsInternalStored()),
         createContext.getContentId(),
-        createContext.getData().getStatus());
+        createContext.getData().getStatus(),
+        createContext.getData().getScannedAt());
   }
 
   @Override
