@@ -139,7 +139,7 @@ class UpdateAttachmentsHandlerTest {
     var readonlyUpdateFields = CdsData.create();
     readonlyUpdateFields.put(Attachment.CONTENT_ID, "Document Id");
     readonlyUpdateFields.put(Attachment.STATUS, "Status Code");
-    readonlyUpdateFields.put(Attachment.SCANNED_AT, Instant.now());
+    readonlyUpdateFields.put(Attachment.LAST_SCAN, Instant.now());
     var testStream = mock(InputStream.class);
     var attachment = Attachments.create();
     attachment.setContent(testStream);
@@ -162,8 +162,7 @@ class UpdateAttachmentsHandlerTest {
     assertThat(attachment.getContentId())
         .isEqualTo(readonlyUpdateFields.get(Attachment.CONTENT_ID));
     assertThat(attachment.getStatus()).isEqualTo(readonlyUpdateFields.get(Attachment.STATUS));
-    assertThat(attachment.getScannedAt())
-        .isEqualTo(readonlyUpdateFields.get(Attachment.SCANNED_AT));
+    assertThat(attachment.getLastScan()).isEqualTo(readonlyUpdateFields.get(Attachment.LAST_SCAN));
   }
 
   @Test
@@ -173,7 +172,7 @@ class UpdateAttachmentsHandlerTest {
     var updateAttachment = Attachments.create();
     updateAttachment.setContentId("Document Id");
     updateAttachment.setStatus("Status Code");
-    updateAttachment.setScannedAt(Instant.now());
+    updateAttachment.setLastScan(Instant.now());
     updateAttachment.setContent(null);
     when(storageReader.get()).thenReturn(true);
 
@@ -185,7 +184,7 @@ class UpdateAttachmentsHandlerTest {
     assertThat(readOnlyUpdateData)
         .containsEntry(Attachment.CONTENT_ID, updateAttachment.getContentId())
         .containsEntry(Attachment.STATUS, updateAttachment.getStatus())
-        .containsEntry(Attachment.SCANNED_AT, updateAttachment.getScannedAt());
+        .containsEntry(Attachment.LAST_SCAN, updateAttachment.getLastScan());
   }
 
   @Test
@@ -199,7 +198,7 @@ class UpdateAttachmentsHandlerTest {
     var readonlyData = CdsData.create();
     readonlyData.put(Attachment.STATUS, "some wrong status code");
     readonlyData.put(Attachment.CONTENT_ID, "some other document id");
-    readonlyData.put(Attachment.SCANNED_AT, Instant.EPOCH);
+    readonlyData.put(Attachment.LAST_SCAN, Instant.EPOCH);
     updateAttachment.put("DRAFT_READONLY_CONTEXT", readonlyData);
     when(storageReader.get()).thenReturn(false);
 
@@ -210,7 +209,7 @@ class UpdateAttachmentsHandlerTest {
     assertThat(updateAttachment)
         .containsEntry(Attachment.CONTENT_ID, contentId)
         .doesNotContainKey(Attachment.STATUS)
-        .doesNotContainKey(Attachment.SCANNED_AT);
+        .doesNotContainKey(Attachment.LAST_SCAN);
   }
 
   @Test
@@ -220,7 +219,7 @@ class UpdateAttachmentsHandlerTest {
     var updateAttachment = Attachments.create();
     updateAttachment.setContentId("Document Id");
     updateAttachment.setStatus("Status Code");
-    updateAttachment.setScannedAt(Instant.now());
+    updateAttachment.setLastScan(Instant.now());
     when(storageReader.get()).thenReturn(false);
 
     cut.processBeforeForDraft(updateContext, List.of(updateAttachment));
@@ -247,7 +246,7 @@ class UpdateAttachmentsHandlerTest {
   void attachmentAccessExceptionCorrectHandledForUpdate() {
     var id = getEntityAndMockContext(Attachment_.CDS_NAME);
     var attachment = Attachments.create();
-    attachment.setFileName("test.txt");
+    attachment.setFilename("test.txt");
     attachment.setContent(null);
     attachment.setId(id);
     when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));

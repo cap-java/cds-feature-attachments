@@ -97,7 +97,7 @@ class AttachmentsServiceImplTest {
     var stream = mock(InputStream.class);
     Map<String, Object> ids = Map.of("ID1", "value1", "id2", "Value2");
     var input =
-        new CreateAttachmentInput(ids, mock(CdsEntity.class), "fileName", "mimeType", stream);
+        new CreateAttachmentInput(ids, mock(CdsEntity.class), "filename", "mimeType", stream);
 
     var result = cut.createAttachment(input);
 
@@ -106,7 +106,7 @@ class AttachmentsServiceImplTest {
     var createContext = contextReference.get();
     assertThat(createContext.getAttachmentIds()).isEqualTo(input.attachmentIds());
     assertThat(createContext.getAttachmentEntity()).isEqualTo(input.attachmentEntity());
-    assertThat(createContext.getData().getFileName()).isEqualTo(input.fileName());
+    assertThat(createContext.getData().getFilename()).isEqualTo(input.filename());
     assertThat(createContext.getData().getMimeType()).isEqualTo(input.mimeType());
     assertThat(createContext.getData().getContent()).isEqualTo(stream);
   }
@@ -125,7 +125,7 @@ class AttachmentsServiceImplTest {
     Map<String, Object> ids = Map.of("ID1", "value1", "id2", "Value2");
     var input =
         new CreateAttachmentInput(
-            ids, mock(CdsEntity.class), "fileName", "mimeType", mock(InputStream.class));
+            ids, mock(CdsEntity.class), "filename", "mimeType", mock(InputStream.class));
 
     var result = cut.createAttachment(input);
 

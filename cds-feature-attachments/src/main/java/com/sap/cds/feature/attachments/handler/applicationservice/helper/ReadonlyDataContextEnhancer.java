@@ -39,7 +39,7 @@ public final class ReadonlyDataContextEnhancer {
             Attachments attachment = Attachments.create();
             attachment.setContentId(values.getContentId());
             attachment.setStatus(values.getStatus());
-            attachment.setScannedAt(values.getScannedAt());
+            attachment.setLastScan(values.getLastScan());
             path.target().values().put(DRAFT_READONLY_CONTEXT, attachment);
           } else {
             path.target().values().remove(DRAFT_READONLY_CONTEXT);
@@ -62,7 +62,7 @@ public final class ReadonlyDataContextEnhancer {
     if (Objects.nonNull(readOnlyData)) {
       data.put(Attachments.CONTENT_ID, readOnlyData.get(Attachments.CONTENT_ID));
       data.put(Attachments.STATUS, readOnlyData.get(Attachments.STATUS));
-      data.put(Attachments.SCANNED_AT, readOnlyData.get(Attachments.SCANNED_AT));
+      data.put(Attachments.LAST_SCAN, readOnlyData.get(Attachments.LAST_SCAN));
       data.remove(DRAFT_READONLY_CONTEXT);
     }
   }

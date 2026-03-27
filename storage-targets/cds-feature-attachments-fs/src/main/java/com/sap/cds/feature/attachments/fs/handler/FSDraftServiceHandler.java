@@ -35,7 +35,7 @@ public class FSDraftServiceHandler implements EventHandler {
 
     // check if target entity contains aspect Attachments
     if (ApplicationHandlerHelper.isMediaEntity(target)) {
-      String fileName = (String) data.get(Attachments.FILE_NAME);
+      String fileName = (String) data.get(Attachments.FILENAME);
 
       // guessing the MIME type of the attachment based on the file name
       String mimeType = URLConnection.guessContentTypeFromName(fileName);

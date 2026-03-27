@@ -67,7 +67,7 @@ class SizeLimitedAttachmentValidationNonDraftTest extends OdataRequestValidation
     return RootEntityBuilder.create()
         .setTitle("Root with sizeLimitedAttachments")
         .addSizeLimitedAttachments(
-            AttachmentsBuilder.create().setFileName("testFile.txt").setMimeType("text/plain"))
+            AttachmentsBuilder.create().setFilename("testFile.txt").setMimeType("text/plain"))
         .build();
   }
 
