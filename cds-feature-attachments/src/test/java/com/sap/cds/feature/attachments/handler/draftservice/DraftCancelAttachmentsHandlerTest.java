@@ -316,4 +316,22 @@ class DraftCancelAttachmentsHandlerTest {
     Optional<CdsEntity> serviceEntity = runtime.getCdsModel().findEntity(cdsName);
     when(eventContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
   }
+
+  // --- Inline Attachment Tests ---
+
+  @Test
+  void entityWithInlineAttachmentsIsProcessed() {
+    // RootTable has profilePicture: Attachment (inline)
+    // deepSearchForAttachments should detect it via hasInlineAttachmentElements and process
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(RootTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    cut.processBeforeDraftCancel(eventContext);
+
+    // Inline attachment on root means attachmentsReader is called
+    verify(attachmentsReader, atLeastOnce()).readAttachments(any(), any(), any());
+  }
 }

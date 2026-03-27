@@ -101,9 +101,9 @@ public class Registration implements CdsRuntimeConfiguration {
         new DefaultAttachmentMalwareScanner(persistenceService, attachmentService, scanClient);
 
     EndTransactionMalwareScanProvider malwareScanEndTransactionListener =
-        (attachmentEntity, contentId) ->
+        (attachmentEntity, contentId, inlinePrefix) ->
             new EndTransactionMalwareScanRunner(
-                attachmentEntity, contentId, malwareScanner, runtime);
+                attachmentEntity, contentId, inlinePrefix, malwareScanner, runtime);
 
     // register event handlers for attachment service
     configurer.eventHandler(
@@ -129,7 +129,8 @@ public class Registration implements CdsRuntimeConfiguration {
               eventFactory, attachmentsReader, outboxedAttachmentService, storage, defaultMaxSize));
       configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteEvent));
       EndTransactionMalwareScanRunner scanRunner =
-          new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
+          new EndTransactionMalwareScanRunner(
+              null, null, Optional.empty(), malwareScanner, runtime);
       configurer.eventHandler(
           new ReadAttachmentsHandler(
               attachmentService, new AttachmentStatusValidator(), scanRunner, persistenceService));

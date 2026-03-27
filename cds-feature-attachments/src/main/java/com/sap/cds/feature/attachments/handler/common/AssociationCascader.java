@@ -71,7 +71,7 @@ public class AssociationCascader {
     var localProcessEntities = new ArrayList<String>();
     currentList.set(new LinkedList<>());
 
-    var isMediaEntity = ApplicationHandlerHelper.isMediaEntity(entity);
+    var isMediaEntity = ApplicationHandlerHelper.isDirectMediaEntity(entity);
     if (isMediaEntity) {
       var identifier = new AssociationIdentifier(associationName, entity.getQualifiedName());
       firstList.addLast(identifier);
@@ -80,6 +80,14 @@ public class AssociationCascader {
     if (isMediaEntity) {
       internalResultList.add(firstList);
       return internalResultList;
+    }
+
+    // Also check for inline attachment type fields on the entity itself
+    if (ApplicationHandlerHelper.hasInlineAttachmentElements(entity)) {
+      var identifier = new AssociationIdentifier(associationName, entity.getQualifiedName());
+      var inlinePath = new LinkedList<>(firstList);
+      inlinePath.addLast(identifier);
+      internalResultList.add(inlinePath);
     }
 
     Map<String, CdsEntity> associations =
