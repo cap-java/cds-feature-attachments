@@ -183,7 +183,8 @@ resources:
 The malware scanner is used in the `AttachmentService` to scan
 attachments.
 
-The malware scanner supports both mTLS and basic authentication; mTLS is recommended as basic authentication has been deprecated.
+> [!Note]
+> The malware scanner supports both mTLS and basic authentication; mTLS is recommended as basic authentication has been deprecated.
 
 If there is no malware scanner available, the attachments are automatically marked as `Clean`.
 
