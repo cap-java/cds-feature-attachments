@@ -25,6 +25,9 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,8 +66,32 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
           CqnSelect select = Select.from(draftEntity).matching(path.target().keys());
           Result result = persistence.run(select);
 
+          List<Attachments> existingAttachments;
+          Optional<String> inlinePrefix =
+              ApplicationHandlerHelper.getInlineAttachmentPrefix(
+                  path.target().entity(), element.getName());
+          if (inlinePrefix.isPresent()) {
+            // For inline attachments, the DB result has flattened column names (e.g.
+            // profileIcon_contentId).
+            // Extract to unprefixed Attachments and carry over parent entity keys for matching.
+            Map<String, Object> parentKeys = path.target().keys();
+            existingAttachments =
+                result.listOf(Attachments.class).stream()
+                    .map(
+                        raw -> {
+                          Attachments extracted =
+                              ApplicationHandlerHelper.extractInlineAttachment(
+                                  raw, inlinePrefix.get());
+                          parentKeys.forEach(extracted::putIfAbsent);
+                          return extracted;
+                        })
+                    .collect(Collectors.toList());
+          } else {
+            existingAttachments = result.listOf(Attachments.class);
+          }
+
           return ModifyApplicationHandlerHelper.handleAttachmentForEntity(
-              result.listOf(Attachments.class),
+              existingAttachments,
               eventFactory,
               context,
               path,

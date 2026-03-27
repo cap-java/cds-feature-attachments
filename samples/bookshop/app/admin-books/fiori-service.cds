@@ -31,6 +31,17 @@ annotate AdminService.Books with @(UI: {
       $Type : 'UI.ReferenceFacet',
       Label : '{i18n>Admin}',
       Target: '@UI.FieldGroup#Admin'
+    },
+    {
+      $Type : 'UI.ReferenceFacet',
+      Label : 'Profile Icon',
+      Target: '@UI.FieldGroup#ProfileIcon'
+    },
+    {
+      $Type : 'UI.ReferenceFacet',
+      ID    : 'AttachmentsFacet',
+      Label : '{i18n>attachments}',
+      Target: 'attachments/@UI.LineItem'
     }
   ],
   FieldGroup #General: {Data: [
@@ -48,6 +59,9 @@ annotate AdminService.Books with @(UI: {
     {Value: createdAt},
     {Value: modifiedBy},
     {Value: modifiedAt}
+  ]},
+  FieldGroup #ProfileIcon: {Data: [
+    {Value: profileIcon_content}
   ]}
 });
 

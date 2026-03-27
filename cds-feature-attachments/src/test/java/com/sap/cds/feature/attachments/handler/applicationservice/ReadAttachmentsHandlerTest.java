@@ -45,6 +45,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -233,7 +234,7 @@ class ReadAttachmentsHandlerTest {
     cut.processAfter(readEventContext, List.of(attachment));
 
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId(), Optional.empty());
   }
 
   @Test
@@ -247,7 +248,7 @@ class ReadAttachmentsHandlerTest {
     cut.processAfter(readEventContext, List.of(attachment));
 
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId(), Optional.empty());
   }
 
   @Test
@@ -281,7 +282,7 @@ class ReadAttachmentsHandlerTest {
 
     verify(persistenceService).run(any(com.sap.cds.ql.cqn.CqnUpdate.class));
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId(), Optional.empty());
     assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
   }
 
@@ -303,7 +304,7 @@ class ReadAttachmentsHandlerTest {
 
     verify(persistenceService).run(any(com.sap.cds.ql.cqn.CqnUpdate.class));
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId(), Optional.empty());
     assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
   }
 
@@ -350,7 +351,7 @@ class ReadAttachmentsHandlerTest {
     cut.processAfter(readEventContext, List.of(attachment));
 
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId(), Optional.empty());
     verify(attachmentStatusValidator).verifyStatus(StatusCode.UNSCANNED);
     verifyNoInteractions(persistenceService);
   }
@@ -502,5 +503,57 @@ class ReadAttachmentsHandlerTest {
     when(readEventContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
     when(readEventContext.getModel()).thenReturn(runtime.getCdsModel());
     when(readEventContext.getCqn()).thenReturn(select);
+  }
+
+  // --- Inline Attachment Tests ---
+
+  @Test
+  void inlineContentWrappedWithLazyProxyOnRead() {
+    mockEventContext(RootTable_.CDS_NAME, mock(CqnSelect.class));
+
+    // Create root data with inline attachment fields
+    var root = CdsData.create();
+    root.put("ID", UUID.randomUUID().toString());
+    root.put("profilePicture_content", null);
+    root.put("profilePicture_contentId", "inline-doc-1");
+    root.put("profilePicture_status", StatusCode.CLEAN);
+
+    cut.processAfter(readEventContext, List.of(root));
+
+    assertThat(root.get("profilePicture_content")).isInstanceOf(LazyProxyInputStream.class);
+  }
+
+  @Test
+  void inlineContentWithoutContentIdRemainsNull() {
+    mockEventContext(RootTable_.CDS_NAME, mock(CqnSelect.class));
+
+    var root = CdsData.create();
+    root.put("ID", UUID.randomUUID().toString());
+    root.put("profilePicture_content", null);
+    // No contentId — should not be wrapped
+
+    cut.processAfter(readEventContext, List.of(root));
+
+    assertThat(root.get("profilePicture_content")).isNull();
+  }
+
+  @Test
+  void inlineContentWithExistingStreamWrappedWithProxy() throws IOException {
+    mockEventContext(RootTable_.CDS_NAME, mock(CqnSelect.class));
+    var testContent = "inline photo bytes";
+    var testStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8));
+
+    var root = CdsData.create();
+    root.put("ID", UUID.randomUUID().toString());
+    root.put("profilePicture_content", testStream);
+    root.put("profilePicture_contentId", "inline-doc-2");
+    root.put("profilePicture_status", StatusCode.CLEAN);
+
+    cut.processAfter(readEventContext, List.of(root));
+
+    assertThat(root.get("profilePicture_content")).isInstanceOf(LazyProxyInputStream.class);
+    // The proxy uses the existing stream supplier
+    byte[] bytes = ((InputStream) root.get("profilePicture_content")).readAllBytes();
+    assertThat(bytes).isEqualTo(testContent.getBytes(StandardCharsets.UTF_8));
   }
 }

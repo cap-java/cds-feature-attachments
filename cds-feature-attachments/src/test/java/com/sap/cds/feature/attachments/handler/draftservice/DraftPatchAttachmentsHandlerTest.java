@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.sap.cds.CdsData;
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
@@ -192,5 +193,66 @@ class DraftPatchAttachmentsHandlerTest {
 
   private void mockTargetInUpdateContext(CdsEntity serviceEntity) {
     when(eventContext.getTarget()).thenReturn(serviceEntity);
+  }
+
+  // --- Inline Attachment Tests ---
+
+  @Test
+  void inlineContentFieldTriggersConverterViaMEDIA_CONTENT_FILTER() {
+    // RootTable has profilePicture : Attachment (inline).
+    // MEDIA_CONTENT_FILTER should match profilePicture_content and the converter
+    // should call persistence + eventFactory.
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+
+    var data = CdsData.create();
+    data.put("ID", UUID.randomUUID().toString());
+    data.put("profilePicture_content", mock(InputStream.class));
+
+    var result = mock(Result.class);
+    when(persistence.run(any(CqnSelect.class))).thenReturn(result);
+
+    cut.processBeforeDraftPatch(eventContext, List.of(data));
+
+    // The converter reads from persistence (draft entity) and calls eventFactory
+    verify(persistence).run(any(CqnSelect.class));
+    verify(eventFactory).getEvent(any(), any(), any());
+  }
+
+  @Test
+  void inlineDeleteExtractsExistingContentIdFromFlattenedDbResult() {
+    // When the user deletes an inline attachment, the PATCH data has
+    // profilePicture_content: null. The DB result has flattened column names
+    // (profilePicture_contentId). The handler must extract the existing contentId
+    // from the flattened DB result so the event factory can return deleteEvent.
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+
+    String bookId = UUID.randomUUID().toString();
+    String existingContentId = UUID.randomUUID().toString();
+
+    // Incoming data: user deleting the inline attachment (content = null)
+    var data = CdsData.create();
+    data.put("ID", bookId);
+    data.put("profilePicture_content", null);
+
+    // DB result: existing draft row with flattened inline attachment fields
+    var dbRow = Attachments.create();
+    dbRow.put("ID", bookId);
+    dbRow.put("profilePicture_contentId", existingContentId);
+    dbRow.put("profilePicture_status", "Clean");
+    dbRow.put("profilePicture_mimeType", "image/png");
+    dbRow.put("profilePicture_fileName", "avatar.png");
+
+    var result = mock(Result.class);
+    when(persistence.run(any(CqnSelect.class))).thenReturn(result);
+    when(result.listOf(Attachments.class)).thenReturn(List.of(dbRow));
+
+    cut.processBeforeDraftPatch(eventContext, List.of(data));
+
+    // Verify the event factory receives an Attachments with the correctly extracted
+    // (unprefixed) contentId from the DB data
+    ArgumentCaptor<Attachments> attachmentCaptor = ArgumentCaptor.forClass(Attachments.class);
+    verify(eventFactory).getEvent(any(), any(), attachmentCaptor.capture());
+    Attachments captured = attachmentCaptor.getValue();
+    assertThat(captured.getContentId()).isEqualTo(existingContentId);
   }
 }

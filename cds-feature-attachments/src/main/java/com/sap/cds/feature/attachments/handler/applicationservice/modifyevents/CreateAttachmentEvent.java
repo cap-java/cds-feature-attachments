@@ -17,6 +17,7 @@ import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.changeset.ChangeSetListener;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -49,8 +50,13 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
         path.target().entity().getQualifiedName());
     Map<String, Object> values = path.target().values();
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-    Optional<String> mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, attachment);
-    Optional<String> fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, attachment);
+
+    // Detect inline prefix if applicable
+    Optional<String> inlinePrefix = detectInlinePrefix(path);
+    Optional<String> mimeTypeOptional =
+        getFieldValue(MediaData.MIME_TYPE, values, attachment, inlinePrefix);
+    Optional<String> fileNameOptional =
+        getFieldValue(MediaData.FILE_NAME, values, attachment, inlinePrefix);
 
     CreateAttachmentInput createEventInput =
         new CreateAttachmentInput(
@@ -64,16 +70,42 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
         listenerProvider.provideListener(result.contentId(), eventContext.getCdsRuntime());
 
     eventContext.getChangeSetContext().register(createListener);
-    path.target().values().put(Attachments.CONTENT_ID, result.contentId());
-    path.target().values().put(Attachments.STATUS, result.status());
+    // Set contentId and status using correct field names (prefixed for inline)
+    String contentIdField =
+        inlinePrefix.map(p -> p + "_" + Attachments.CONTENT_ID).orElse(Attachments.CONTENT_ID);
+    String statusField =
+        inlinePrefix.map(p -> p + "_" + Attachments.STATUS).orElse(Attachments.STATUS);
+    path.target().values().put(contentIdField, result.contentId());
+    path.target().values().put(statusField, result.status());
     if (nonNull(result.scannedAt())) {
-      path.target().values().put(Attachments.SCANNED_AT, result.scannedAt());
+      String scannedAtField =
+          inlinePrefix.map(p -> p + "_" + Attachments.SCANNED_AT).orElse(Attachments.SCANNED_AT);
+      path.target().values().put(scannedAtField, result.scannedAt());
     }
     return result.isInternalStored() ? content : null;
   }
 
+  private static Optional<String> detectInlinePrefix(Path path) {
+    List<String> prefixes =
+        ApplicationHandlerHelper.getInlineAttachmentFieldNames(path.target().entity());
+    if (!prefixes.isEmpty()
+        && !path.target().entity().getAnnotationValue("_is_media_data", false)) {
+      return Optional.of(prefixes.get(0));
+    }
+    return Optional.empty();
+  }
+
   private static Optional<String> getFieldValue(
-      String fieldName, Map<String, Object> values, Attachments attachment) {
+      String fieldName,
+      Map<String, Object> values,
+      Attachments attachment,
+      Optional<String> inlinePrefix) {
+    // Try prefixed field name first (for inline types)
+    if (inlinePrefix.isPresent()) {
+      Object prefixedValue = values.get(inlinePrefix.get() + "_" + fieldName);
+      if (nonNull(prefixedValue)) return Optional.of((String) prefixedValue);
+    }
+    // Fall back to direct field name
     Object annotationValue = values.get(fieldName);
     Object value = nonNull(annotationValue) ? annotationValue : attachment.get(fieldName);
     return Optional.ofNullable((String) value);

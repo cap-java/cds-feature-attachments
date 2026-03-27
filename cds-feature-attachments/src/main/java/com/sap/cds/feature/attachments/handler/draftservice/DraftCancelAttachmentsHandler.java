@@ -43,9 +43,21 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   private static final Logger logger = LoggerFactory.getLogger(DraftCancelAttachmentsHandler.class);
 
   private static final Filter contentIdFilter =
-      (path, element, type) ->
-          ApplicationHandlerHelper.isMediaEntity(path.target().type())
-              && element.getName().equals(Attachments.CONTENT_ID);
+      (path, element, type) -> {
+        // Case 1: Composition-based attachment entity
+        if (ApplicationHandlerHelper.isDirectMediaEntity(path.target().type())
+            && element.getName().equals(Attachments.CONTENT_ID)) {
+          return true;
+        }
+        // Case 2: Inline attachment type — check for prefixed contentId
+        String elementName = element.getName();
+        if (elementName.endsWith("_" + Attachments.CONTENT_ID)) {
+          return ApplicationHandlerHelper.getInlineAttachmentPrefix(
+                  path.target().type(), elementName)
+              .isPresent();
+        }
+        return false;
+      };
 
   private final AttachmentsReader attachmentsReader;
   private final MarkAsDeletedAttachmentEvent deleteEvent;
@@ -118,7 +130,12 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     }
     visited.add(entity.getQualifiedName());
 
-    if (ApplicationHandlerHelper.isMediaEntity(entity)) {
+    if (ApplicationHandlerHelper.isDirectMediaEntity(entity)) {
+      return true;
+    }
+
+    // Also check for inline attachment type fields
+    if (ApplicationHandlerHelper.hasInlineAttachmentElements(entity)) {
       return true;
     }
 

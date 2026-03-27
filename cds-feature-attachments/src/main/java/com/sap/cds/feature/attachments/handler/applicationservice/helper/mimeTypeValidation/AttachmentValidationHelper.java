@@ -39,7 +39,7 @@ public final class AttachmentValidationHelper {
     CdsModel cdsModel = cdsRuntime.getCdsModel();
 
     List<String> mediaEntityNames =
-        ApplicationHandlerHelper.isMediaEntity(entity)
+        ApplicationHandlerHelper.isDirectMediaEntity(entity)
             ? List.of(entity.getQualifiedName())
             : cascader.findMediaEntityNames(cdsModel, entity);
 

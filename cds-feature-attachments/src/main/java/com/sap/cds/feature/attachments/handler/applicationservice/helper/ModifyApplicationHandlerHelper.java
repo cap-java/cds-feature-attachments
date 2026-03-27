@@ -20,6 +20,7 @@ import com.sap.cds.services.ServiceException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class ModifyApplicationHandlerHelper {
 
@@ -86,7 +87,24 @@ public final class ModifyApplicationHandlerHelper {
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
     ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values());
     Attachments attachment = getExistingAttachment(keys, existingAttachments);
-    String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+
+    // For inline attachment fields, extract contentId using prefix
+    String contentId;
+    Optional<String> inlinePrefix =
+        ApplicationHandlerHelper.getInlineAttachmentPrefix(
+            path.target().entity(), Attachments.CONTENT_ID);
+    if (inlinePrefix.isEmpty()) {
+      // Try to detect prefix from any inline attachment field present in data
+      contentId =
+          resolveInlineOrDirectField(
+              path.target().values(), path.target().entity(), Attachments.CONTENT_ID);
+    } else {
+      contentId =
+          (String) path.target().values().get(inlinePrefix.get() + "_" + Attachments.CONTENT_ID);
+    }
+    if (contentId == null) {
+      contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+    }
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
     String maxSizeStr = getValMaxValue(path.target().entity(), defaultMaxSize);
     eventContext.put(
@@ -122,13 +140,42 @@ public final class ModifyApplicationHandlerHelper {
   }
 
   private static String getValMaxValue(CdsEntity entity, String defaultMaxSize) {
+    // Try direct content element first (composition-based)
     return entity
         .findElement("content")
+        .or(
+            () -> {
+              // Try inline attachment content elements (e.g. profilePicture_content)
+              List<String> prefixes =
+                  ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
+              for (String prefix : prefixes) {
+                var found = entity.findElement(prefix + "_content");
+                if (found.isPresent()) return found;
+              }
+              return Optional.empty();
+            })
         .flatMap(e -> e.findAnnotation("Validation.Maximum"))
         .map(CdsAnnotation::getValue)
         .filter(v -> !"true".equals(v.toString()))
         .map(Object::toString)
         .orElse(defaultMaxSize);
+  }
+
+  /** Resolves a field value from either direct or inline prefixed field name. */
+  private static String resolveInlineOrDirectField(
+      Map<String, Object> values,
+      com.sap.cds.reflect.CdsStructuredType entityType,
+      String fieldName) {
+    // First try direct field
+    Object direct = values.get(fieldName);
+    if (direct != null) return (String) direct;
+    // Then try inline prefixed fields
+    List<String> prefixes = ApplicationHandlerHelper.getInlineAttachmentFieldNames(entityType);
+    for (String prefix : prefixes) {
+      Object prefixed = values.get(prefix + "_" + fieldName);
+      if (prefixed != null) return (String) prefixed;
+    }
+    return null;
   }
 
   private static Attachments getExistingAttachment(

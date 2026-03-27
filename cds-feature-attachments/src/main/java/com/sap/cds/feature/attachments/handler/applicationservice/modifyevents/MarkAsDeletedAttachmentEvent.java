@@ -7,12 +7,16 @@ import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.draft.DraftService;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,14 +55,37 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
           qualifiedName);
     }
     if (nonNull(path)) {
-      String newContentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+      Optional<String> inlinePrefix = detectInlinePrefix(path);
+      String contentIdField = resolveField(Attachments.CONTENT_ID, inlinePrefix);
+      String statusField = resolveField(Attachments.STATUS, inlinePrefix);
+      String scannedAtField = resolveField(Attachments.SCANNED_AT, inlinePrefix);
+      String mimeTypeField = resolveField(MediaData.MIME_TYPE, inlinePrefix);
+      String fileNameField = resolveField(MediaData.FILE_NAME, inlinePrefix);
+
+      String newContentId = (String) path.target().values().get(contentIdField);
       if (nonNull(newContentId) && newContentId.equals(attachment.getContentId())
-          || !path.target().values().containsKey(Attachments.CONTENT_ID)) {
-        path.target().values().put(Attachments.CONTENT_ID, null);
-        path.target().values().put(Attachments.STATUS, null);
-        path.target().values().put(Attachments.SCANNED_AT, null);
+          || !path.target().values().containsKey(contentIdField)) {
+        path.target().values().put(contentIdField, null);
+        path.target().values().put(statusField, null);
+        path.target().values().put(scannedAtField, null);
+        path.target().values().put(mimeTypeField, null);
+        path.target().values().put(fileNameField, null);
       }
     }
     return content;
+  }
+
+  private static Optional<String> detectInlinePrefix(Path path) {
+    List<String> prefixes =
+        ApplicationHandlerHelper.getInlineAttachmentFieldNames(path.target().entity());
+    if (!prefixes.isEmpty()
+        && !path.target().entity().getAnnotationValue("_is_media_data", false)) {
+      return Optional.of(prefixes.get(0));
+    }
+    return Optional.empty();
+  }
+
+  private static String resolveField(String fieldName, Optional<String> inlinePrefix) {
+    return inlinePrefix.map(p -> p + "_" + fieldName).orElse(fieldName);
   }
 }
