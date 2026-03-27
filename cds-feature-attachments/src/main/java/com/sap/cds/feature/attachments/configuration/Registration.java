@@ -30,7 +30,6 @@ import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactio
 import com.sap.cds.feature.attachments.service.malware.AttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
-import com.sap.cds.feature.attachments.service.malware.client.HttpClientProvider;
 import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClient;
 import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClientProvider;
 import com.sap.cds.services.ServiceCatalog;
@@ -173,12 +172,14 @@ public class Registration implements CdsRuntimeConfiguration {
     if (bindingOpt.isPresent()) {
       ServiceBinding binding = bindingOpt.get();
       ConnectionPool connectionPool = getConnectionPool(environment);
-      HttpClientProvider clientProvider = new MalwareScanClientProvider(binding, connectionPool);
+      MalwareScanClientProvider clientProvider =
+          new MalwareScanClientProvider(binding, connectionPool);
       if (logger.isInfoEnabled()) {
         logger.info(
-            "Using Malware Scanning service binding with name '{}' and plan '{}' for malware scanning of attachments.",
+            "Using Malware Scanning service binding with name '{}', plan '{}', and authentication type '{}' for malware scanning of attachments.",
             binding.getName().orElse("unknown"),
-            binding.getServicePlan().orElse("unknown"));
+            binding.getServicePlan().orElse("unknown"),
+            clientProvider.getAuthenticationType());
       }
       return new DefaultMalwareScanClient(clientProvider);
     }
