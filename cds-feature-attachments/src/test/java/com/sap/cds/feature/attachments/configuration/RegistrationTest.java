@@ -69,6 +69,15 @@ class RegistrationTest {
         .thenReturn(Optional.of(DefaultAttachmentMalwareScanner.MALWARE_SCAN_SERVICE_LABEL));
     when(binding.getName()).thenReturn(Optional.of("malware-scanner"));
     when(binding.getServicePlan()).thenReturn(Optional.of("clamav"));
+    when(binding.getCredentials())
+        .thenReturn(
+            java.util.Map.of(
+                "username",
+                "test-user",
+                "password",
+                "test-password",
+                "url",
+                "http://localhost:1111"));
     when(environment.getServiceBindings()).thenReturn(Stream.of(binding));
     when(cdsRuntime.getEnvironment()).thenReturn(environment);
     persistenceService = mock(PersistenceService.class);
