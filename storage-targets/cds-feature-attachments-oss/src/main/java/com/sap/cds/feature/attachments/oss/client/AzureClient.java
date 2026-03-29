@@ -13,6 +13,8 @@ import com.azure.storage.blob.specialized.BlockBlobClient;
 import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -95,10 +97,27 @@ public class AzureClient implements OSClient {
         () -> {
           try {
             ListBlobsOptions options = new ListBlobsOptions().setPrefix(prefix);
+            List<String> blobNames = new ArrayList<>();
             for (BlobItem blobItem : blobContainerClient.listBlobs(options, null)) {
-              blobContainerClient.getBlobClient(blobItem.getName()).delete();
+              blobNames.add(blobItem.getName());
+            }
+            List<Future<Void>> deleteFutures =
+                blobNames.stream()
+                    .map(
+                        name ->
+                            executor.submit(
+                                () -> {
+                                  blobContainerClient.getBlobClient(name).delete();
+                                  return (Void) null;
+                                }))
+                    .toList();
+            for (Future<Void> f : deleteFutures) {
+              f.get();
             }
           } catch (RuntimeException e) {
+            throw new ObjectStoreServiceException(
+                "Failed to delete objects by prefix from the Azure Object Store", e);
+          } catch (Exception e) {
             throw new ObjectStoreServiceException(
                 "Failed to delete objects by prefix from the Azure Object Store", e);
           }

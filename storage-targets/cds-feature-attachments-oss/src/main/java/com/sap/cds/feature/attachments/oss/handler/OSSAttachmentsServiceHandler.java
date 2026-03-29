@@ -203,6 +203,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     if (multitenancyEnabled && "shared".equals(objectStoreKind)) {
       String tenant = getTenant(context);
       validateTenantId(tenant);
+      validateContentId(contentId);
       return tenant + "/" + contentId;
     }
     return contentId;
@@ -223,6 +224,17 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
         || tenantId.contains("..")) {
       throw new ServiceException(
           "Invalid tenant ID for attachment storage: must not be empty or contain path separators");
+    }
+  }
+
+  private static void validateContentId(String contentId) {
+    if (contentId == null
+        || contentId.isEmpty()
+        || contentId.contains("/")
+        || contentId.contains("\\")
+        || contentId.contains("..")) {
+      throw new ServiceException(
+          "Invalid content ID for attachment storage: must not be empty or contain path separators");
     }
   }
 }

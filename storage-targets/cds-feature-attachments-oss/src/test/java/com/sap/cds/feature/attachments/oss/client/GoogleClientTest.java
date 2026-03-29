@@ -291,7 +291,7 @@ class GoogleClientTest {
     bucketField.setAccessible(true);
     bucketField.set(googleClient, "my-bucket");
 
-    // Mock listing of blobs by prefix
+    // Mock blobs returned by single list call with prefix + versions
     Blob blobA = mock(Blob.class);
     when(blobA.getName()).thenReturn("tenantX/file1.txt");
     when(blobA.getGeneration()).thenReturn(1L);
@@ -299,25 +299,15 @@ class GoogleClientTest {
     when(blobB.getName()).thenReturn("tenantX/file2.txt");
     when(blobB.getGeneration()).thenReturn(2L);
 
-    // First call: list by prefix (without versions) returns the blobs
-    Page<Blob> prefixPage = mock(Page.class);
-    when(prefixPage.iterateAll()).thenReturn(() -> java.util.Arrays.asList(blobA, blobB).iterator());
+    Page<Blob> page = mock(Page.class);
+    when(page.iterateAll()).thenReturn(() -> java.util.Arrays.asList(blobA, blobB).iterator());
 
-    // For each blob, list versions returns the same blob (single version each)
-    Page<Blob> versionPageA = mock(Page.class);
-    when(versionPageA.iterateAll()).thenReturn(() -> Collections.singletonList(blobA).iterator());
-    Page<Blob> versionPageB = mock(Page.class);
-    when(versionPageB.iterateAll()).thenReturn(() -> Collections.singletonList(blobB).iterator());
-
-    // First call: prefix listing; subsequent calls: version listings
-    when(mockStorage.list(anyString(), any()))
-        .thenReturn(prefixPage);
-    when(mockStorage.list(anyString(), any(), any()))
-        .thenReturn(versionPageA, versionPageB);
-
+    when(mockStorage.list(anyString(), any(), any())).thenReturn(page);
     when(mockStorage.delete(any(BlobId.class))).thenReturn(true);
 
     assertDoesNotThrow(() -> googleClient.deleteContentByPrefix("tenantX/").get());
+    org.mockito.Mockito.verify(mockStorage, org.mockito.Mockito.times(2))
+        .delete(any(BlobId.class));
   }
 
   @Test
@@ -338,11 +328,7 @@ class GoogleClientTest {
     bucketField.setAccessible(true);
     bucketField.set(googleClient, "my-bucket");
 
-    // Blob with 2 versions
-    Blob blob = mock(Blob.class);
-    when(blob.getName()).thenReturn("tenantY/versioned-file.txt");
-    when(blob.getGeneration()).thenReturn(1L);
-
+    // Single blob with 2 versions returned directly by the combined list call
     Blob version1 = mock(Blob.class);
     when(version1.getName()).thenReturn("tenantY/versioned-file.txt");
     when(version1.getGeneration()).thenReturn(1L);
@@ -351,17 +337,11 @@ class GoogleClientTest {
     when(version2.getName()).thenReturn("tenantY/versioned-file.txt");
     when(version2.getGeneration()).thenReturn(2L);
 
-    Page<Blob> prefixPage = mock(Page.class);
-    when(prefixPage.iterateAll()).thenReturn(() -> Collections.singletonList(blob).iterator());
-
-    Page<Blob> versionPage = mock(Page.class);
-    when(versionPage.iterateAll())
+    Page<Blob> page = mock(Page.class);
+    when(page.iterateAll())
         .thenReturn(() -> java.util.Arrays.asList(version1, version2).iterator());
 
-    when(mockStorage.list(anyString(), any()))
-        .thenReturn(prefixPage);
-    when(mockStorage.list(anyString(), any(), any()))
-        .thenReturn(versionPage);
+    when(mockStorage.list(anyString(), any(), any())).thenReturn(page);
     when(mockStorage.delete(any(BlobId.class))).thenReturn(true);
 
     assertDoesNotThrow(() -> googleClient.deleteContentByPrefix("tenantY/").get());

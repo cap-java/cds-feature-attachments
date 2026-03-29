@@ -141,17 +141,12 @@ public class GoogleClient implements OSClient {
         () -> {
           try {
             Page<Blob> blobs =
-                storage.list(bucketName, Storage.BlobListOption.prefix(prefix));
+                storage.list(
+                    bucketName,
+                    Storage.BlobListOption.prefix(prefix),
+                    Storage.BlobListOption.versions(true));
             for (Blob blob : blobs.iterateAll()) {
-              Page<Blob> versions =
-                  storage.list(
-                      bucketName,
-                      Storage.BlobListOption.versions(true),
-                      Storage.BlobListOption.prefix(blob.getName()));
-              for (Blob version : versions.iterateAll()) {
-                storage.delete(
-                    BlobId.of(bucketName, version.getName(), version.getGeneration()));
-              }
+              storage.delete(BlobId.of(bucketName, blob.getName(), blob.getGeneration()));
             }
           } catch (RuntimeException e) {
             throw new ObjectStoreServiceException(

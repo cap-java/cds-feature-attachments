@@ -23,7 +23,9 @@ import software.amazon.awssdk.services.s3.model.Delete;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Error;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
@@ -156,7 +158,13 @@ public class AWSClient implements OSClient {
                         .bucket(this.bucketName)
                         .delete(Delete.builder().objects(keys).build())
                         .build();
-                s3Client.deleteObjects(deleteReq);
+                DeleteObjectsResponse deleteResp = s3Client.deleteObjects(deleteReq);
+                if (deleteResp.hasErrors() && !deleteResp.errors().isEmpty()) {
+                  logger.warn(
+                      "Failed to delete {} objects during prefix cleanup: {}",
+                      deleteResp.errors().size(),
+                      deleteResp.errors().stream().map(S3Error::key).toList());
+                }
               }
               listReq =
                   listReq.toBuilder()

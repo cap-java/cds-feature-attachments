@@ -190,6 +190,67 @@ class MultiTenantIsolationTest {
     assertEquals(0, uploadedKeys.size());
   }
 
+  // ==================== Content ID Validation Integration Tests ====================
+
+  @Test
+  void testPathTraversalInContentId_BlockedInSharedMode() {
+    // A malicious contentId like "../other-tenant/secret" must be rejected
+    // to prevent tenant A from reading/writing tenant B's namespace
+    assertThrows(
+        ServiceException.class,
+        () -> simulateCreate("tenantA", "../other-tenant/secret", "malicious data"));
+    assertEquals(0, uploadedKeys.size());
+  }
+
+  @Test
+  void testSlashInContentId_BlockedInSharedMode() {
+    assertThrows(
+        ServiceException.class,
+        () -> simulateCreate("tenantA", "sub/path", "data"));
+    assertEquals(0, uploadedKeys.size());
+  }
+
+  @Test
+  void testBackslashInContentId_BlockedInSharedMode() {
+    assertThrows(
+        ServiceException.class,
+        () -> simulateCreate("tenantA", "evil\\path", "data"));
+    assertEquals(0, uploadedKeys.size());
+  }
+
+  @Test
+  void testEmptyContentId_BlockedInSharedMode() {
+    assertThrows(
+        ServiceException.class,
+        () -> simulateCreate("tenantA", "", "data"));
+    assertEquals(0, uploadedKeys.size());
+  }
+
+  @Test
+  void testDoubleDotInContentId_BlockedInSharedMode() {
+    assertThrows(
+        ServiceException.class,
+        () -> simulateCreate("tenantA", "..otherTenant", "data"));
+    assertEquals(0, uploadedKeys.size());
+  }
+
+  @Test
+  void testPathTraversalInContentId_FullIsolationScenario() {
+    // Tenant B uploads a legitimate file
+    simulateCreate("tenantB", "legit-content-id", "Tenant B secret");
+    assertEquals(1, uploadedKeys.size());
+    assertEquals("tenantB/legit-content-id", uploadedKeys.get(0));
+
+    // Tenant A tries to use path traversal to access tenant B's file
+    assertThrows(
+        ServiceException.class,
+        () -> simulateCreate("tenantA", "../tenantB/legit-content-id", "overwrite attempt"));
+
+    // Only the original upload should exist
+    assertEquals(1, uploadedKeys.size());
+    assertTrue(storage.containsKey("tenantB/legit-content-id"));
+  }
+
   private void simulateCreate(String tenant, String contentId, String content) {
     AttachmentCreateEventContext context = mock(AttachmentCreateEventContext.class);
     MediaData mockMediaData = mock(MediaData.class);
