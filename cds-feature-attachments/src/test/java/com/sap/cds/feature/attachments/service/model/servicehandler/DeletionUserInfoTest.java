@@ -22,8 +22,10 @@ class DeletionUserInfoTest {
     var name = "some name";
 
     cut.setName(name);
+    cut.setIsSystemUser(true);
 
     assertThat(cut.getName()).isEqualTo(name);
+    assertThat(cut.getIsSystemUser()).isTrue();
   }
 
   @Test
@@ -31,7 +33,9 @@ class DeletionUserInfoTest {
     var name = "some_name";
 
     cut.setName(name);
+    cut.setIsSystemUser(false);
 
     assertThat(cut).containsEntry(DeletionUserInfo.NAME, name);
+    assertThat(cut).containsEntry(DeletionUserInfo.IS_SYSTEM_USER, false);
   }
 }

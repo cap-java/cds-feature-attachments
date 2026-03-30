@@ -56,7 +56,8 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
     return new AttachmentModificationResult(
         Boolean.TRUE.equals(createContext.getIsInternalStored()),
         createContext.getContentId(),
-        createContext.getData().getStatus());
+        createContext.getData().getStatus(),
+        createContext.getData().getScannedAt());
   }
 
   @Override
@@ -80,6 +81,7 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
   private DeletionUserInfo fillDeletionUserInfo(UserInfo userInfo) {
     var deletionUserInfo = DeletionUserInfo.create();
     deletionUserInfo.setName(userInfo.getName());
+    deletionUserInfo.setIsSystemUser(userInfo.isSystemUser());
     return deletionUserInfo;
   }
 }
