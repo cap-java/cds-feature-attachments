@@ -13,6 +13,7 @@ import com.sap.cds.Struct;
 public interface DeletionUserInfo extends CdsData {
 
   String NAME = "name";
+  String IS_SYSTEM_USER = "isSystemUser";
 
   static DeletionUserInfo create() {
     return Struct.create(DeletionUserInfo.class);
@@ -21,4 +22,8 @@ public interface DeletionUserInfo extends CdsData {
   String getName();
 
   void setName(String id);
+
+  Boolean getIsSystemUser();
+
+  void setIsSystemUser(Boolean isSystemUser);
 }
