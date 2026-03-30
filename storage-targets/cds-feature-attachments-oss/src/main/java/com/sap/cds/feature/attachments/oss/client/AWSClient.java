@@ -25,12 +25,12 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Error;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Error;
 
 public class AWSClient implements OSClient {
   private final S3Client s3Client;
@@ -167,9 +167,7 @@ public class AWSClient implements OSClient {
                 }
               }
               listReq =
-                  listReq.toBuilder()
-                      .continuationToken(listResp.nextContinuationToken())
-                      .build();
+                  listReq.toBuilder().continuationToken(listResp.nextContinuationToken()).build();
             } while (listResp.isTruncated());
           } catch (RuntimeException e) {
             throw new ObjectStoreServiceException(
