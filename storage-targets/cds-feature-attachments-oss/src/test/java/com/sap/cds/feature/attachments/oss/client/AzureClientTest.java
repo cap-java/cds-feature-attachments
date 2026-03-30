@@ -7,22 +7,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.azure.core.http.rest.PagedIterable;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
-import com.azure.storage.blob.models.BlobItem;
-import com.azure.storage.blob.models.ListBlobsOptions;
 import com.azure.storage.blob.specialized.BlobOutputStream;
 import com.azure.storage.blob.specialized.BlockBlobClient;
 import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 class AzureClientTest {
@@ -194,60 +188,5 @@ class AzureClientTest {
     ExecutionException thrown =
         assertThrows(ExecutionException.class, () -> azureClient.readContent("file.txt").get());
     assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
-  }
-
-  @Test
-  @SuppressWarnings("unchecked")
-  void testDeleteContentByPrefix_DeletesAllMatchingBlobs()
-      throws NoSuchFieldException, IllegalAccessException {
-    AzureClient azureClient = mock(AzureClient.class, CALLS_REAL_METHODS);
-
-    BlobContainerClient mockContainer = mock(BlobContainerClient.class);
-    BlobClient mockBlobClient = mock(BlobClient.class);
-
-    var field = AzureClient.class.getDeclaredField("blobContainerClient");
-    field.setAccessible(true);
-    field.set(azureClient, mockContainer);
-    var executorField = AzureClient.class.getDeclaredField("executor");
-    executorField.setAccessible(true);
-    executorField.set(azureClient, executor);
-
-    // Create mock blob items matching the prefix
-    BlobItem blob1 = mock(BlobItem.class);
-    when(blob1.getName()).thenReturn("tenantA/file1.txt");
-    BlobItem blob2 = mock(BlobItem.class);
-    when(blob2.getName()).thenReturn("tenantA/file2.txt");
-
-    PagedIterable<BlobItem> mockPagedIterable = mock(PagedIterable.class);
-    when(mockPagedIterable.stream()).thenReturn(Stream.of(blob1, blob2));
-    when(mockPagedIterable.iterator()).thenReturn(Arrays.asList(blob1, blob2).iterator());
-    when(mockContainer.listBlobs(any(ListBlobsOptions.class), any())).thenReturn(mockPagedIterable);
-    when(mockContainer.getBlobClient(anyString())).thenReturn(mockBlobClient);
-
-    assertDoesNotThrow(() -> azureClient.deleteContentByPrefix("tenantA/").get());
-  }
-
-  @Test
-  @SuppressWarnings("unchecked")
-  void testDeleteContentByPrefix_EmptyResult()
-      throws NoSuchFieldException, IllegalAccessException {
-    AzureClient azureClient = mock(AzureClient.class, CALLS_REAL_METHODS);
-
-    BlobContainerClient mockContainer = mock(BlobContainerClient.class);
-
-    var field = AzureClient.class.getDeclaredField("blobContainerClient");
-    field.setAccessible(true);
-    field.set(azureClient, mockContainer);
-    var executorField = AzureClient.class.getDeclaredField("executor");
-    executorField.setAccessible(true);
-    executorField.set(azureClient, executor);
-
-    // Empty listing
-    PagedIterable<BlobItem> emptyIterable = mock(PagedIterable.class);
-    when(emptyIterable.stream()).thenReturn(Stream.empty());
-    when(emptyIterable.iterator()).thenReturn(Collections.emptyIterator());
-    when(mockContainer.listBlobs(any(ListBlobsOptions.class), any())).thenReturn(emptyIterable);
-
-    assertDoesNotThrow(() -> azureClient.deleteContentByPrefix("nonexistent-tenant/").get());
   }
 }

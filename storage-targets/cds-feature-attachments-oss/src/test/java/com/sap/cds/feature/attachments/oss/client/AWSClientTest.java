@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
@@ -31,15 +30,10 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
-import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
-import software.amazon.awssdk.services.s3.model.S3Object;
 
 class AWSClientTest {
   ExecutorService executor = Executors.newCachedThreadPool();
@@ -48,7 +42,7 @@ class AWSClientTest {
   void testConstructorWithAwsBindingUsesAwsClient()
       throws NoSuchFieldException, IllegalAccessException {
     OSSAttachmentsServiceHandler handler =
-        new OSSAttachmentsServiceHandler(getDummyBinding(), executor, false, null);
+        new OSSAttachmentsServiceHandler(getDummyBinding(), executor);
     OSClient client = OSSAttachmentsServiceHandlerTestUtils.getOsClient(handler);
     assertInstanceOf(AWSClient.class, client);
   }
@@ -229,100 +223,6 @@ class AWSClientTest {
     ExecutionException thrown =
         assertThrows(ExecutionException.class, () -> awsClient.deleteContent("test.txt").get());
     assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
-  }
-
-  @Test
-  void testDeleteContentByPrefix_DeletesAllMatchingObjects() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
-    S3Client mockS3Client = mock(S3Client.class);
-
-    // Create mock list response with 2 objects matching the prefix
-    S3Object obj1 = S3Object.builder().key("tenantA/file1.txt").build();
-    S3Object obj2 = S3Object.builder().key("tenantA/file2.txt").build();
-    ListObjectsV2Response listResponse =
-        ListObjectsV2Response.builder()
-            .contents(obj1, obj2)
-            .isTruncated(false)
-            .build();
-
-    when(mockS3Client.listObjectsV2(any(ListObjectsV2Request.class))).thenReturn(listResponse);
-    DeleteObjectsResponse deleteResponse = mock(DeleteObjectsResponse.class);
-    when(mockS3Client.deleteObjects(any(DeleteObjectsRequest.class))).thenReturn(deleteResponse);
-
-    var field = AWSClient.class.getDeclaredField("s3Client");
-    field.setAccessible(true);
-    field.set(awsClient, mockS3Client);
-
-    assertDoesNotThrow(() -> awsClient.deleteContentByPrefix("tenantA/").get());
-    verify(mockS3Client).listObjectsV2(any(ListObjectsV2Request.class));
-    verify(mockS3Client).deleteObjects(any(DeleteObjectsRequest.class));
-  }
-
-  @Test
-  void testDeleteContentByPrefix_HandlesPagination() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
-    S3Client mockS3Client = mock(S3Client.class);
-
-    // First page: truncated, has a continuation token
-    S3Object obj1 = S3Object.builder().key("tenantB/file1.txt").build();
-    ListObjectsV2Response firstPage =
-        ListObjectsV2Response.builder()
-            .contents(obj1)
-            .isTruncated(true)
-            .nextContinuationToken("token-page2")
-            .build();
-
-    // Second page: not truncated, final page
-    S3Object obj2 = S3Object.builder().key("tenantB/file2.txt").build();
-    ListObjectsV2Response secondPage =
-        ListObjectsV2Response.builder()
-            .contents(obj2)
-            .isTruncated(false)
-            .build();
-
-    when(mockS3Client.listObjectsV2(any(ListObjectsV2Request.class)))
-        .thenReturn(firstPage, secondPage);
-    DeleteObjectsResponse deleteResponse = mock(DeleteObjectsResponse.class);
-    when(mockS3Client.deleteObjects(any(DeleteObjectsRequest.class))).thenReturn(deleteResponse);
-
-    var field = AWSClient.class.getDeclaredField("s3Client");
-    field.setAccessible(true);
-    field.set(awsClient, mockS3Client);
-
-    assertDoesNotThrow(() -> awsClient.deleteContentByPrefix("tenantB/").get());
-    // Should call listObjectsV2 twice (two pages) and deleteObjects twice
-    verify(mockS3Client, org.mockito.Mockito.times(2))
-        .listObjectsV2(any(ListObjectsV2Request.class));
-    verify(mockS3Client, org.mockito.Mockito.times(2))
-        .deleteObjects(any(DeleteObjectsRequest.class));
-  }
-
-  @Test
-  void testDeleteContentByPrefix_EmptyPrefix_NoObjects() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
-    S3Client mockS3Client = mock(S3Client.class);
-
-    // Empty listing
-    ListObjectsV2Response emptyResponse =
-        ListObjectsV2Response.builder()
-            .contents(java.util.Collections.emptyList())
-            .isTruncated(false)
-            .build();
-
-    when(mockS3Client.listObjectsV2(any(ListObjectsV2Request.class))).thenReturn(emptyResponse);
-
-    var field = AWSClient.class.getDeclaredField("s3Client");
-    field.setAccessible(true);
-    field.set(awsClient, mockS3Client);
-
-    assertDoesNotThrow(() -> awsClient.deleteContentByPrefix("nonexistent/").get());
-    verify(mockS3Client).listObjectsV2(any(ListObjectsV2Request.class));
-    // No deleteObjects call when there are no objects
-    verify(mockS3Client, org.mockito.Mockito.never())
-        .deleteObjects(any(DeleteObjectsRequest.class));
   }
 
   private ServiceBinding getDummyBinding() {
