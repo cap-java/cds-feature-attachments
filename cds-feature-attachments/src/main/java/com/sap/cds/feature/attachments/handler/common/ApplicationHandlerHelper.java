@@ -15,6 +15,7 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.Drafts;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,10 +112,10 @@ public final class ApplicationHandlerHelper {
    * @return list of inline attachment field name prefixes (e.g. ["profilePicture"])
    */
   public static List<String> getInlineAttachmentFieldNames(CdsStructuredType entity) {
-    List<String> fieldNames = new ArrayList<>();
     var elements = entity.elements();
-    if (elements == null) return fieldNames;
+    if (elements == null) return List.of();
     String contentSuffix = "_content";
+    LinkedHashSet<String> fieldNames = new LinkedHashSet<>();
     elements
         .filter(e -> e.getName().endsWith(contentSuffix))
         .filter(e -> e.getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false))
@@ -123,11 +124,11 @@ public final class ApplicationHandlerHelper {
             e -> {
               String prefix =
                   e.getName().substring(0, e.getName().length() - contentSuffix.length());
-              if (!prefix.isEmpty() && !fieldNames.contains(prefix)) {
+              if (!prefix.isEmpty()) {
                 fieldNames.add(prefix);
               }
             });
-    return fieldNames;
+    return new ArrayList<>(fieldNames);
   }
 
   /**
