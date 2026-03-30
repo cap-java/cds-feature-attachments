@@ -52,14 +52,19 @@ public final class ModifyApplicationHandlerHelper {
         ApplicationHandlerHelper.condenseAttachments(existingAttachments, entity);
 
     Converter converter =
-        (path, element, value) ->
-            handleAttachmentForEntity(
-                condensedExistingAttachments,
-                eventFactory,
-                eventContext,
-                path,
-                (InputStream) value,
-                defaultMaxSize);
+        (path, element, value) -> {
+          Optional<String> inlinePrefix =
+              ApplicationHandlerHelper.getInlineAttachmentPrefix(
+                  path.target().entity(), element.getName());
+          return handleAttachmentForEntity(
+              condensedExistingAttachments,
+              eventFactory,
+              eventContext,
+              path,
+              (InputStream) value,
+              defaultMaxSize,
+              inlinePrefix);
+        };
 
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
@@ -75,6 +80,7 @@ public final class ModifyApplicationHandlerHelper {
    * @param path the {@link Path} of the attachment
    * @param content the content of the attachment
    * @param defaultMaxSize the default max size to use when no annotation is present
+   * @param inlinePrefix the inline attachment field prefix, or empty for composition-based
    * @return the processed content as an {@link InputStream}
    */
   public static InputStream handleAttachmentForEntity(
@@ -83,26 +89,18 @@ public final class ModifyApplicationHandlerHelper {
       EventContext eventContext,
       Path path,
       InputStream content,
-      String defaultMaxSize) {
+      String defaultMaxSize,
+      Optional<String> inlinePrefix) {
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
     ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values());
     Attachments attachment = getExistingAttachment(keys, existingAttachments);
 
-    // For inline attachment fields, extract contentId using prefix
+    // For inline attachment fields, extract contentId using the known prefix
     String contentId;
-    Optional<String> inlinePrefix =
-        ApplicationHandlerHelper.getInlineAttachmentPrefix(
-            path.target().entity(), Attachments.CONTENT_ID);
-    if (inlinePrefix.isEmpty()) {
-      // Try to detect prefix from any inline attachment field present in data
-      contentId =
-          resolveInlineOrDirectField(
-              path.target().values(), path.target().entity(), Attachments.CONTENT_ID);
-    } else {
+    if (inlinePrefix.isPresent()) {
       contentId =
           (String) path.target().values().get(inlinePrefix.get() + "_" + Attachments.CONTENT_ID);
-    }
-    if (contentId == null) {
+    } else {
       contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
     }
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
@@ -130,7 +128,8 @@ public final class ModifyApplicationHandlerHelper {
     ModifyAttachmentEvent eventToProcess =
         eventFactory.getEvent(wrappedContent, contentId, attachment);
     try {
-      return eventToProcess.processEvent(path, wrappedContent, attachment, eventContext);
+      return eventToProcess.processEvent(
+          path, wrappedContent, attachment, eventContext, inlinePrefix);
     } catch (Exception e) {
       if (wrappedContent != null && wrappedContent.isLimitExceeded()) {
         throw tooLargeException;
@@ -159,23 +158,6 @@ public final class ModifyApplicationHandlerHelper {
         .filter(v -> !"true".equals(v.toString()))
         .map(Object::toString)
         .orElse(defaultMaxSize);
-  }
-
-  /** Resolves a field value from either direct or inline prefixed field name. */
-  private static String resolveInlineOrDirectField(
-      Map<String, Object> values,
-      com.sap.cds.reflect.CdsStructuredType entityType,
-      String fieldName) {
-    // First try direct field
-    Object direct = values.get(fieldName);
-    if (direct != null) return (String) direct;
-    // Then try inline prefixed fields
-    List<String> prefixes = ApplicationHandlerHelper.getInlineAttachmentFieldNames(entityType);
-    for (String prefix : prefixes) {
-      Object prefixed = values.get(prefix + "_" + fieldName);
-      if (prefixed != null) return (String) prefixed;
-    }
-    return null;
   }
 
   private static Attachments getExistingAttachment(

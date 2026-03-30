@@ -8,6 +8,7 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * The interface {@link ModifyAttachmentEvent} provides a method to process an event on the {@link
@@ -22,8 +23,14 @@ public interface ModifyAttachmentEvent {
    * @param content the content of the attachment
    * @param attachment existing attachment data
    * @param eventContext the current event context
+   * @param inlinePrefix the inline attachment field prefix (e.g. "coverImage"), or empty for
+   *     composition-based attachments
    * @return the processed content
    */
   InputStream processEvent(
-      Path path, InputStream content, Attachments attachment, EventContext eventContext);
+      Path path,
+      InputStream content,
+      Attachments attachment,
+      EventContext eventContext,
+      Optional<String> inlinePrefix);
 }

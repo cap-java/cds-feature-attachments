@@ -39,6 +39,11 @@ annotate AdminService.Books with @(UI: {
     },
     {
       $Type : 'UI.ReferenceFacet',
+      Label : 'Cover Image',
+      Target: '@UI.FieldGroup#CoverImage'
+    },
+    {
+      $Type : 'UI.ReferenceFacet',
       ID    : 'AttachmentsFacet',
       Label : '{i18n>attachments}',
       Target: 'attachments/@UI.LineItem'
@@ -62,6 +67,9 @@ annotate AdminService.Books with @(UI: {
   ]},
   FieldGroup #ProfileIcon: {Data: [
     {Value: profileIcon_content}
+  ]},
+  FieldGroup #CoverImage: {Data: [
+    {Value: coverImage_content}
   ]}
 });
 
