@@ -180,6 +180,7 @@ class AttachmentsServiceImplTest {
   private ModifiableUserInfo mockUserInfo() {
     var userInfo = UserInfo.create();
     userInfo.setName("some name");
+    userInfo.setIsSystemUser(true);
     return userInfo;
   }
 
@@ -187,5 +188,6 @@ class AttachmentsServiceImplTest {
       AttachmentMarkAsDeletedEventContext deleteEventContext, ModifiableUserInfo userInfo) {
     var deletionUserInfo = deleteEventContext.getDeletionUserInfo();
     assertThat(deletionUserInfo.getName()).isEqualTo(userInfo.getName());
+    assertThat(deletionUserInfo.getIsSystemUser()).isEqualTo(userInfo.isSystemUser());
   }
 }

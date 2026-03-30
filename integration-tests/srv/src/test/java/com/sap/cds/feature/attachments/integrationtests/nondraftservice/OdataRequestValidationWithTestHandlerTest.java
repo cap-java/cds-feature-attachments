@@ -163,6 +163,8 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
               assertThat(event.context()).isInstanceOf(AttachmentMarkAsDeletedEventContext.class);
               var deleteContext = (AttachmentMarkAsDeletedEventContext) event.context();
               assertThat(deleteContext.getContentId()).isEqualTo(contentId);
+              assertThat(deleteContext.getDeletionUserInfo().getName()).isEqualTo("anonymous");
+              assertThat(deleteContext.getDeletionUserInfo().getIsSystemUser()).isFalse();
             });
   }
 
@@ -203,7 +205,11 @@ class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBa
             && ((AttachmentMarkAsDeletedEventContext) event.context())
                 .getDeletionUserInfo()
                 .getName()
-                .equals("anonymous");
+                .equals("anonymous")
+            && Boolean.FALSE.equals(
+                ((AttachmentMarkAsDeletedEventContext) event.context())
+                    .getDeletionUserInfo()
+                    .getIsSystemUser());
   }
 
   private void verifyCreateEventsContainsContentId(
