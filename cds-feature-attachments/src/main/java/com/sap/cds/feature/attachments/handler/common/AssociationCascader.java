@@ -82,14 +82,6 @@ public class AssociationCascader {
       return internalResultList;
     }
 
-    // Also check for inline attachment type fields on the entity itself
-    if (ApplicationHandlerHelper.hasInlineAttachmentElements(entity)) {
-      var identifier = new AssociationIdentifier(associationName, entity.getQualifiedName());
-      var inlinePath = new LinkedList<>(firstList);
-      inlinePath.addLast(identifier);
-      internalResultList.add(inlinePath);
-    }
-
     Map<String, CdsEntity> associations =
         entity
             .elements()

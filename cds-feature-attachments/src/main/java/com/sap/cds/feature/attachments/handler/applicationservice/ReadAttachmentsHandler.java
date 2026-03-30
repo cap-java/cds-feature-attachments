@@ -156,13 +156,6 @@ public class ReadAttachmentsHandler implements EventHandler {
       associationNames.add(associationName);
     }
 
-    // Also add inline attachment field names (for inline type support)
-    List<String> inlineFields = ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
-    if (!inlineFields.isEmpty() && !associationNames.contains(associationName)) {
-      // Use empty string to signify inline fields on the root entity
-      associationNames.add(associationName);
-    }
-
     Map<String, CdsEntity> annotatedEntities =
         entity
             .associations()
