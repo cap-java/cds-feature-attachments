@@ -45,7 +45,8 @@ class OSSAttachmentsServiceHandlerTest {
     creds.put("bucket", "test-bucket");
     when(binding.getCredentials()).thenReturn(creds);
 
-    OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(binding, executor);
+    OSSAttachmentsServiceHandler handler =
+        new OSSAttachmentsServiceHandler(binding, executor, false, null);
     AttachmentRestoreEventContext context = mock(AttachmentRestoreEventContext.class);
     handler.restoreAttachment(context);
     verify(context).setCompleted();
@@ -179,7 +180,7 @@ class OSSAttachmentsServiceHandlerTest {
 
     assertThrows(
         ObjectStoreServiceException.class,
-        () -> new OSSAttachmentsServiceHandler(binding, executor));
+        () -> new OSSAttachmentsServiceHandler(binding, executor, false, null));
   }
 
   @Test
@@ -195,7 +196,7 @@ class OSSAttachmentsServiceHandlerTest {
 
     assertThrows(
         ObjectStoreServiceException.class,
-        () -> new OSSAttachmentsServiceHandler(binding, executor));
+        () -> new OSSAttachmentsServiceHandler(binding, executor, false, null));
   }
 
   @Test
@@ -207,7 +208,7 @@ class OSSAttachmentsServiceHandlerTest {
 
     assertThrows(
         ObjectStoreServiceException.class,
-        () -> new OSSAttachmentsServiceHandler(binding, executor));
+        () -> new OSSAttachmentsServiceHandler(binding, executor, false, null));
   }
 
   @Test
@@ -221,7 +222,7 @@ class OSSAttachmentsServiceHandlerTest {
 
     assertThrows(
         ObjectStoreServiceException.class,
-        () -> new OSSAttachmentsServiceHandler(binding, executor));
+        () -> new OSSAttachmentsServiceHandler(binding, executor, false, null));
   }
 
   // Helper method to setup common mocks for createAttachment exception tests

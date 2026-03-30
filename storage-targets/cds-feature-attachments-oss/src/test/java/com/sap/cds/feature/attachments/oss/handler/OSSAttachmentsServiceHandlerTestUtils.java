@@ -39,7 +39,8 @@ public class OSSAttachmentsServiceHandlerTestUtils {
     String testFileName = "testFileName-" + System.currentTimeMillis() + ".txt";
     String testFileContent = "test";
 
-    OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(binding, executor);
+    OSSAttachmentsServiceHandler handler =
+        new OSSAttachmentsServiceHandler(binding, executor, false, null);
 
     // Create an AttachmentCreateEventContext with mocked data - to upload a test attachment
     MediaData createMediaData = mock(MediaData.class);

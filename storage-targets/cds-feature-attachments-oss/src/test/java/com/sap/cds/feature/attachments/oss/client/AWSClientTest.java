@@ -42,7 +42,7 @@ class AWSClientTest {
   void testConstructorWithAwsBindingUsesAwsClient()
       throws NoSuchFieldException, IllegalAccessException {
     OSSAttachmentsServiceHandler handler =
-        new OSSAttachmentsServiceHandler(getDummyBinding(), executor);
+        new OSSAttachmentsServiceHandler(getDummyBinding(), executor, false, null);
     OSClient client = OSSAttachmentsServiceHandlerTestUtils.getOsClient(handler);
     assertInstanceOf(AWSClient.class, client);
   }
