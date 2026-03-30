@@ -96,7 +96,8 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
               context,
               path,
               (InputStream) value,
-              defaultMaxSize);
+              defaultMaxSize,
+              inlinePrefix);
         };
 
     CdsDataProcessor.create()

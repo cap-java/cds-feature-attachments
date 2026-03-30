@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,7 +95,8 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     attachment.getContent(),
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    Optional.empty()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -121,7 +123,7 @@ class ModifyApplicationHandlerHelperTest {
     when(parameterInfo.getHeader("Content-Length")).thenReturn(null);
 
     // Make event.processEvent() read from the stream, triggering the limit check
-    when(event.processEvent(any(), any(), any(), any()))
+    when(event.processEvent(any(), any(), any(), any(), any()))
         .thenAnswer(
             invocation -> {
               InputStream wrappedContent = invocation.getArgument(1);
@@ -148,7 +150,8 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     content,
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    Optional.empty()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -180,7 +183,8 @@ class ModifyApplicationHandlerHelperTest {
                 eventContext,
                 path,
                 content,
-                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                Optional.empty()));
   }
 
   @Test
@@ -212,7 +216,8 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     content,
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    Optional.empty()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
   }
@@ -243,7 +248,8 @@ class ModifyApplicationHandlerHelperTest {
         eventContext,
         path,
         (InputStream) values.get("profilePicture_content"),
-        ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+        ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+        Optional.of("profilePicture"));
 
     // Verify eventFactory was called with the resolved contentId
     verify(eventFactory).getEvent(any(), eq("existing-doc-77"), any());

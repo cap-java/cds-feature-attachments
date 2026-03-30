@@ -165,6 +165,26 @@ class AttachmentsServiceImplHandlerTest {
     verify(malwareScanProvider).getChangeSetListener(entity, "contentId", Optional.empty());
   }
 
+  @Test
+  void malwareScannerRegisteredWithInlinePrefixFromContext() {
+    var listener = mock(ChangeSetListener.class);
+    var entity = mock(CdsEntity.class);
+    when(malwareScanProvider.getChangeSetListener(entity, "contentId", Optional.of("profileIcon")))
+        .thenReturn(listener);
+    var createContext = AttachmentCreateEventContext.create();
+    createContext.setAttachmentIds(Map.of(Attachments.ID, "contentId"));
+    createContext.setData(MediaData.create());
+    createContext.setAttachmentEntity(entity);
+    createContext.put("attachment.inlinePrefix", "profileIcon");
+    ChangeSetContextImpl.open(false);
+
+    cut.createAttachment(createContext);
+    cut.afterCreateAttachment(createContext);
+
+    verify(malwareScanProvider)
+        .getChangeSetListener(entity, "contentId", Optional.of("profileIcon"));
+  }
+
   private void closeChangeSetContext() throws Exception {
     var context = ChangeSetContextImpl.getCurrent();
     if (Objects.nonNull(context)) {

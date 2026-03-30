@@ -17,7 +17,6 @@ import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.changeset.ChangeSetListener;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -44,15 +43,17 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
   @Override
   public InputStream processEvent(
-      Path path, InputStream content, Attachments attachment, EventContext eventContext) {
+      Path path,
+      InputStream content,
+      Attachments attachment,
+      EventContext eventContext,
+      Optional<String> inlinePrefix) {
     logger.debug(
         "Calling attachment service with create event for entity {}",
         path.target().entity().getQualifiedName());
     Map<String, Object> values = path.target().values();
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 
-    // Detect inline prefix if applicable
-    Optional<String> inlinePrefix = detectInlinePrefix(path);
     Optional<String> mimeTypeOptional =
         getFieldValue(MediaData.MIME_TYPE, values, attachment, inlinePrefix);
     Optional<String> fileNameOptional =
@@ -64,7 +65,8 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
             path.target().entity(),
             fileNameOptional.orElse(null),
             mimeTypeOptional.orElse(null),
-            content);
+            content,
+            inlinePrefix);
     AttachmentModificationResult result = attachmentService.createAttachment(createEventInput);
     ChangeSetListener createListener =
         listenerProvider.provideListener(result.contentId(), eventContext.getCdsRuntime());
@@ -83,16 +85,6 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
       path.target().values().put(scannedAtField, result.scannedAt());
     }
     return result.isInternalStored() ? content : null;
-  }
-
-  private static Optional<String> detectInlinePrefix(Path path) {
-    List<String> prefixes =
-        ApplicationHandlerHelper.getInlineAttachmentFieldNames(path.target().entity());
-    if (!prefixes.isEmpty()
-        && !path.target().entity().getAnnotationValue("_is_media_data", false)) {
-      return Optional.of(prefixes.get(0));
-    }
-    return Optional.empty();
   }
 
   private static Optional<String> getFieldValue(

@@ -5,21 +5,18 @@ package com.sap.cds.feature.attachments.service.handler;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
-import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.changeset.ChangeSetListener;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -69,19 +66,12 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
    */
   @After
   void afterCreateAttachment(AttachmentCreateEventContext context) {
-    Optional<String> inlinePrefix = detectInlinePrefix(context.getAttachmentEntity());
+    String prefix = (String) context.get("attachment.inlinePrefix");
+    Optional<String> inlinePrefix = Optional.ofNullable(prefix);
     ChangeSetListener listener =
         malwareScanProvider.getChangeSetListener(
             context.getAttachmentEntity(), context.getContentId(), inlinePrefix);
     context.getChangeSetContext().register(listener);
-  }
-
-  private static Optional<String> detectInlinePrefix(CdsEntity entity) {
-    List<String> prefixes = ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
-    if (!prefixes.isEmpty() && !entity.getAnnotationValue("_is_media_data", false)) {
-      return Optional.of(prefixes.get(0));
-    }
-    return Optional.empty();
   }
 
   @On

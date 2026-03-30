@@ -26,9 +26,10 @@ annotate my.Books.mediaValidatedAttachments with {
   ];
 }
 
-// Extend Books entity with an inline single-file attachment (profile icon)
+// Extend Books entity with inline single-file attachments
 extend my.Books with {
   profileIcon : Attachment;
+  coverImage  : Attachment;
 }
 
 // Add UI component for attachments table to the Browse Books App

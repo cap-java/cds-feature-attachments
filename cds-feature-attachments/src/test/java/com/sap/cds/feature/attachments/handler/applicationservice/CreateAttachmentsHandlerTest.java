@@ -226,7 +226,7 @@ class CreateAttachmentsHandlerTest {
     attachment.setFileName("test.txt");
     attachment.setContent(null);
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
-    when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));
+    when(event.processEvent(any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
 
     List<CdsData> input = List.of(attachment);
     assertThrows(ServiceException.class, () -> cut.processBefore(createContext, input));

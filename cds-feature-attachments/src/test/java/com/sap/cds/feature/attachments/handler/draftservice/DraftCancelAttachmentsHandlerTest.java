@@ -207,7 +207,7 @@ class DraftCancelAttachmentsHandlerTest {
     cut.processBeforeDraftCancel(eventContext);
 
     verify(deleteContentAttachmentEvent)
-        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext));
+        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext), any());
     assertThat(dataArgumentCaptor.getValue()).isEqualTo(attachment);
   }
 
@@ -226,7 +226,7 @@ class DraftCancelAttachmentsHandlerTest {
     cut.processBeforeDraftCancel(eventContext);
 
     verify(deleteContentAttachmentEvent)
-        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext));
+        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext), any());
     assertThat(dataArgumentCaptor.getValue()).isEqualTo(draftAttachment);
   }
 

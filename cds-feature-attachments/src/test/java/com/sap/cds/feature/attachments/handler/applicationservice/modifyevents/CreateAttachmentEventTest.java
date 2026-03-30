@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,7 +101,7 @@ class CreateAttachmentEventTest {
     existingData.setFileName("some file name");
     existingData.setMimeType("some mime type");
 
-    cut.processEvent(path, attachment.getContent(), existingData, eventContext);
+    cut.processEvent(path, attachment.getContent(), existingData, eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     var createInput = contextArgumentCaptor.getValue();
@@ -123,7 +124,8 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
     when(target.values()).thenReturn(attachment);
 
-    cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
+    cut.processEvent(
+        path, attachment.getContent(), Attachments.create(), eventContext, Optional.empty());
 
     assertThat(attachment.getContentId()).isEqualTo(attachmentServiceResult.contentId());
     assertThat(attachment.getStatus()).isEqualTo(attachmentServiceResult.status());
@@ -139,7 +141,7 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, contentId, "test", null));
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(changeSetContext).register(listener);
   }
@@ -160,7 +162,8 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(isExternalStored, "id", "test", null));
 
     var result =
-        cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
+        cut.processEvent(
+            path, attachment.getContent(), Attachments.create(), eventContext, Optional.empty());
 
     var expectedContent = isExternalStored ? attachment.getContent() : null;
     assertThat(result).isEqualTo(expectedContent);
@@ -179,7 +182,8 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
 
-    cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
+    cut.processEvent(
+        path, attachment.getContent(), Attachments.create(), eventContext, Optional.empty());
     return attachment;
   }
 
@@ -204,7 +208,8 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "doc-123", "Clean", null));
 
-    cut.processEvent(path, content, Attachments.create(), eventContext);
+    cut.processEvent(
+        path, content, Attachments.create(), eventContext, Optional.of("profilePicture"));
 
     assertThat(values).containsEntry("profilePicture_contentId", "doc-123");
     assertThat(values).containsEntry("profilePicture_status", "Clean");
@@ -227,7 +232,8 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "id", "ok", null));
 
-    cut.processEvent(path, content, Attachments.create(), eventContext);
+    cut.processEvent(
+        path, content, Attachments.create(), eventContext, Optional.of("profilePicture"));
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     var input = contextArgumentCaptor.getValue();
@@ -256,7 +262,7 @@ class CreateAttachmentEventTest {
     existingData.setFileName("fallback.txt");
     existingData.setMimeType("text/plain");
 
-    cut.processEvent(path, content, existingData, eventContext);
+    cut.processEvent(path, content, existingData, eventContext, Optional.of("profilePicture"));
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     var input = contextArgumentCaptor.getValue();
@@ -281,7 +287,7 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "doc-999", "ok", null));
 
-    cut.processEvent(path, content, Attachments.create(), eventContext);
+    cut.processEvent(path, content, Attachments.create(), eventContext, Optional.empty());
 
     // Fields written with unprefixed names
     assertThat(values).containsEntry(Attachments.CONTENT_ID, "doc-999");

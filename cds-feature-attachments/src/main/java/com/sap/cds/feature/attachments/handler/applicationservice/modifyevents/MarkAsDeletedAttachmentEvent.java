@@ -8,14 +8,12 @@ import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
-import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.draft.DraftService;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +35,11 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 
   @Override
   public InputStream processEvent(
-      Path path, InputStream content, Attachments attachment, EventContext eventContext) {
+      Path path,
+      InputStream content,
+      Attachments attachment,
+      EventContext eventContext,
+      Optional<String> inlinePrefix) {
     String qualifiedName = eventContext.getTarget().getQualifiedName();
     logger.debug(
         "Processing the event for calling attachment service with mark as delete event for entity {}",
@@ -55,7 +57,6 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
           qualifiedName);
     }
     if (nonNull(path)) {
-      Optional<String> inlinePrefix = detectInlinePrefix(path);
       String contentIdField = resolveField(Attachments.CONTENT_ID, inlinePrefix);
       String statusField = resolveField(Attachments.STATUS, inlinePrefix);
       String scannedAtField = resolveField(Attachments.SCANNED_AT, inlinePrefix);
@@ -73,16 +74,6 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
       }
     }
     return content;
-  }
-
-  private static Optional<String> detectInlinePrefix(Path path) {
-    List<String> prefixes =
-        ApplicationHandlerHelper.getInlineAttachmentFieldNames(path.target().entity());
-    if (!prefixes.isEmpty()
-        && !path.target().entity().getAnnotationValue("_is_media_data", false)) {
-      return Optional.of(prefixes.get(0));
-    }
-    return Optional.empty();
   }
 
   private static String resolveField(String fieldName, Optional<String> inlinePrefix) {
