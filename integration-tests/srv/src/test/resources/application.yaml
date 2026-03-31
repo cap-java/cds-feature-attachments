@@ -1,0 +1,15 @@
+cds:
+  dataSource:
+    csv:
+      paths: "../db/src/gen/csv"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: malware-scan-enabled
+
+cds:
+  environment:
+    local:
+      defaultEnvPath: "classpath:xsuaa-env.json"
