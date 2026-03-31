@@ -1,0 +1,11 @@
+{
+  "name": "mtx-local-integration-tests",
+  "version": "0.0.0",
+  "devDependencies": {
+    "@sap/cds-dk": "^9",
+    "@sap/cds-mtxs": "^3"
+  },
+  "workspaces": [
+    "mtx/sidecar"
+  ]
+}

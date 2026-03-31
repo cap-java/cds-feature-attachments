@@ -1,0 +1,14 @@
+{
+    "profile": "with-mtx-sidecar",
+    "requires": {
+        "multitenancy": true,
+        "extensibility": true,
+        "toggles": true,
+        "db": {
+            "kind": "sqlite"
+        }
+    },
+    "cdsc": {
+        "moduleLookupDirectories": ["node_modules/", "target/cds/"]
+    }
+}

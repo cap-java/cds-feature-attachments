@@ -8,10 +8,10 @@
     <version>${revision}</version>
   </parent>
 
-  <artifactId>cds-feature-attachments-integration-tests-srv</artifactId>
+  <artifactId>cds-feature-attachments-integration-tests-generic</artifactId>
   <packaging>jar</packaging>
 
-  <name>Integration Tests - Service</name>
+  <name>Integration Tests - Generic</name>
 
   <properties>
     <generation-package>com.sap.cds.feature.attachments.generated</generation-package>
