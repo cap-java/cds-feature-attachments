@@ -13,7 +13,7 @@ type StatusCode : String enum {
     Failed;
 }
 
-aspect MediaData           @(_is_media_data) {
+type Attachment @(_is_media_data) {
     content   : LargeBinary; // stored only for db-based services
     mimeType  : String;
     fileName  : String(5000);
@@ -21,6 +21,8 @@ aspect MediaData           @(_is_media_data) {
     status    : StatusCode @readonly;
     scannedAt : Timestamp  @readonly;
 }
+
+aspect MediaData           : Attachment {}
 
 aspect Attachments : cuid, managed, MediaData {
     note : String(5000);

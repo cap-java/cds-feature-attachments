@@ -71,7 +71,7 @@ public class AssociationCascader {
     var localProcessEntities = new ArrayList<String>();
     currentList.set(new LinkedList<>());
 
-    var isMediaEntity = ApplicationHandlerHelper.isMediaEntity(entity);
+    var isMediaEntity = ApplicationHandlerHelper.isDirectMediaEntity(entity);
     if (isMediaEntity) {
       var identifier = new AssociationIdentifier(associationName, entity.getQualifiedName());
       firstList.addLast(identifier);

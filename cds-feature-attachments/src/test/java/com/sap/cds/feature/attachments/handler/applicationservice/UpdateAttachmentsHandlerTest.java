@@ -250,7 +250,7 @@ class UpdateAttachmentsHandlerTest {
     attachment.setFileName("test.txt");
     attachment.setContent(null);
     attachment.setId(id);
-    when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));
+    when(event.processEvent(any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(attachment));
 
@@ -287,7 +287,11 @@ class UpdateAttachmentsHandlerTest {
     ArgumentCaptor<InputStream> eventStreamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(event)
         .processEvent(
-            any(), eventStreamCaptor.capture(), cdsDataArgumentCaptor.capture(), eq(updateContext));
+            any(),
+            eventStreamCaptor.capture(),
+            cdsDataArgumentCaptor.capture(),
+            eq(updateContext),
+            any());
     InputStream eventCaptured = eventStreamCaptor.getValue();
     assertThat(eventCaptured).isInstanceOf(CountingInputStream.class);
     assertThat(((CountingInputStream) eventCaptured).getDelegate()).isSameAs(testStream);
@@ -569,5 +573,99 @@ class UpdateAttachmentsHandlerTest {
         .formatted(key1, key2)
         .replace(" ", "")
         .replace("\n", "");
+  }
+
+  // --- Inline Attachment Tests ---
+
+  @Test
+  void inlineContentFieldTriggersProcessing() {
+    var id = getEntityAndMockContext(RootTable_.CDS_NAME);
+    var root = CdsData.create();
+    root.put("ID", id);
+    root.put("profilePicture_content", mock(InputStream.class));
+    when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
+        .thenReturn(List.of());
+
+    cut.processBefore(updateContext, List.of(root));
+
+    verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
+  }
+
+  @Test
+  void inlineMetadataOnlyFieldTriggersReaderButNotEventFactory() {
+    // data contains profilePicture_mimeType but NOT profilePicture_content
+    // associationsAreUnchanged → false  (because prefix_ key is present)
+    // containsContentField   → false  (mimeType is not content)
+    var id = getEntityAndMockContext(RootTable_.CDS_NAME);
+    var root = CdsData.create();
+    root.put("ID", id);
+    root.put("profilePicture_mimeType", "image/png");
+    when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
+        .thenReturn(List.of());
+
+    cut.processBefore(updateContext, List.of(root));
+
+    // Reader is called because inline fields changed
+    verify(attachmentsReader).readAttachments(any(), any(), any(CqnFilterableStatement.class));
+    // But eventFactory is not called because no actual content change
+    verifyNoInteractions(eventFactory);
+  }
+
+  @Test
+  void noInlineOrCompositionFieldsSkipsProcessing() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+    var root = CdsData.create();
+    root.put("ID", UUID.randomUUID().toString());
+    root.put("title", "Just a title update");
+
+    cut.processBefore(updateContext, List.of(root));
+
+    verifyNoInteractions(attachmentsReader);
+    verifyNoInteractions(eventFactory);
+    verifyNoInteractions(attachmentService);
+  }
+
+  @Test
+  void inlineReadonlyFieldsPreservedForDraftActivation() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+
+    var data = CdsData.create();
+    data.put("ID", UUID.randomUUID().toString());
+    // Content key must be present for CdsDataProcessor validator to fire
+    data.put("profilePicture_content", null);
+    data.put("profilePicture_contentId", "doc-42");
+    data.put("profilePicture_status", "Clean");
+    when(storageReader.get()).thenReturn(true);
+
+    cut.processBeforeForDraft(updateContext, List.of(data));
+
+    // ReadonlyDataContextEnhancer preserves inline readonly fields
+    var readonlyContext = (CdsData) data.get("profilePicture_DRAFT_READONLY_CONTEXT");
+    assertThat(readonlyContext).isNotNull();
+    assertThat(readonlyContext).containsEntry("contentId", "doc-42");
+    assertThat(readonlyContext).containsEntry("status", "Clean");
+  }
+
+  @Test
+  void inlineReadonlyFieldsClearedForNonDraftActivation() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+
+    var readonlyData = CdsData.create();
+    readonlyData.put(Attachments.CONTENT_ID, "old-doc");
+    readonlyData.put(Attachments.STATUS, "Infected");
+
+    var data = CdsData.create();
+    data.put("ID", UUID.randomUUID().toString());
+    data.put("profilePicture_content", null);
+    data.put("profilePicture_contentId", "doc-42");
+    data.put("profilePicture_DRAFT_READONLY_CONTEXT", readonlyData);
+    when(storageReader.get()).thenReturn(false);
+
+    cut.processBeforeForDraft(updateContext, List.of(data));
+
+    // Non-draft: readonly context key is removed
+    assertThat(data.get("profilePicture_DRAFT_READONLY_CONTEXT")).isNull();
+    // contentId stays (it was explicitly set)
+    assertThat(data).containsEntry("profilePicture_contentId", "doc-42");
   }
 }

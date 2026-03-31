@@ -25,6 +25,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.impl.changeset.ChangeSetContextImpl;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -150,7 +151,8 @@ class AttachmentsServiceImplHandlerTest {
   void malwareScannerRegisteredForEndOfTransaction() {
     var listener = mock(ChangeSetListener.class);
     var entity = mock(CdsEntity.class);
-    when(malwareScanProvider.getChangeSetListener(entity, "contentId")).thenReturn(listener);
+    when(malwareScanProvider.getChangeSetListener(entity, "contentId", Optional.empty()))
+        .thenReturn(listener);
     var createContext = AttachmentCreateEventContext.create();
     createContext.setAttachmentIds(Map.of(Attachments.ID, "contentId"));
     createContext.setData(MediaData.create());
@@ -160,7 +162,27 @@ class AttachmentsServiceImplHandlerTest {
     cut.createAttachment(createContext);
     cut.afterCreateAttachment(createContext);
 
-    verify(malwareScanProvider).getChangeSetListener(entity, "contentId");
+    verify(malwareScanProvider).getChangeSetListener(entity, "contentId", Optional.empty());
+  }
+
+  @Test
+  void malwareScannerRegisteredWithInlinePrefixFromContext() {
+    var listener = mock(ChangeSetListener.class);
+    var entity = mock(CdsEntity.class);
+    when(malwareScanProvider.getChangeSetListener(entity, "contentId", Optional.of("profileIcon")))
+        .thenReturn(listener);
+    var createContext = AttachmentCreateEventContext.create();
+    createContext.setAttachmentIds(Map.of(Attachments.ID, "contentId"));
+    createContext.setData(MediaData.create());
+    createContext.setAttachmentEntity(entity);
+    createContext.put("attachment.inlinePrefix", "profileIcon");
+    ChangeSetContextImpl.open(false);
+
+    cut.createAttachment(createContext);
+    cut.afterCreateAttachment(createContext);
+
+    verify(malwareScanProvider)
+        .getChangeSetListener(entity, "contentId", Optional.of("profileIcon"));
   }
 
   private void closeChangeSetContext() throws Exception {

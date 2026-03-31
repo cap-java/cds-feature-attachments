@@ -7,7 +7,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
@@ -26,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -92,7 +95,8 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     attachment.getContent(),
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    Optional.empty()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -119,7 +123,7 @@ class ModifyApplicationHandlerHelperTest {
     when(parameterInfo.getHeader("Content-Length")).thenReturn(null);
 
     // Make event.processEvent() read from the stream, triggering the limit check
-    when(event.processEvent(any(), any(), any(), any()))
+    when(event.processEvent(any(), any(), any(), any(), any()))
         .thenAnswer(
             invocation -> {
               InputStream wrappedContent = invocation.getArgument(1);
@@ -146,7 +150,8 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     content,
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    Optional.empty()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -178,7 +183,8 @@ class ModifyApplicationHandlerHelperTest {
                 eventContext,
                 path,
                 content,
-                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                Optional.empty()));
   }
 
   @Test
@@ -210,8 +216,65 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     content,
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    Optional.empty()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
+  }
+
+  // --- Inline Attachment Tests ---
+
+  @Test
+  void inlineContentIdResolvedFromPrefixedField() {
+    // Use real RootTable entity so that inline detection works
+    CdsEntity realEntity =
+        runtime.getCdsModel().findEntity("unit.test.TestService.RootTable").orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    var values = com.sap.cds.CdsData.create();
+    values.put("ID", UUID.randomUUID().toString());
+    values.put("profilePicture_content", mock(InputStream.class));
+    values.put("profilePicture_contentId", "existing-doc-77");
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+    when(parameterInfo.getHeader("Content-Length")).thenReturn(null);
+
+    var existingAttachments = List.<Attachments>of();
+
+    // contentId should be resolved from profilePicture_contentId
+    ModifyApplicationHandlerHelper.handleAttachmentForEntity(
+        existingAttachments,
+        eventFactory,
+        eventContext,
+        path,
+        (InputStream) values.get("profilePicture_content"),
+        ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+        Optional.of("profilePicture"));
+
+    // Verify eventFactory was called with the resolved contentId
+    verify(eventFactory).getEvent(any(), eq("existing-doc-77"), any());
+  }
+
+  @Test
+  void handleAttachmentForEntitiesProcessesInlineContent() {
+    CdsEntity realEntity =
+        runtime.getCdsModel().findEntity("unit.test.TestService.RootTable").orElseThrow();
+
+    var content = mock(InputStream.class);
+    var data = com.sap.cds.CdsData.create();
+    data.put("ID", UUID.randomUUID().toString());
+    data.put("profilePicture_content", content);
+    when(parameterInfo.getHeader("Content-Length")).thenReturn(null);
+
+    ModifyApplicationHandlerHelper.handleAttachmentForEntities(
+        realEntity,
+        List.of(data),
+        List.of(),
+        eventFactory,
+        eventContext,
+        ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+
+    // eventFactory should be called since inline content was found
+    verify(eventFactory).getEvent(any(), any(), any());
   }
 }

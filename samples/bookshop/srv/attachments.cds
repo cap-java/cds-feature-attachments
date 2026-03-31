@@ -1,5 +1,6 @@
 using {sap.capire.bookshop as my} from '../db/schema';
 using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
+using {sap.attachments.Attachment} from 'com.sap.cds/cds-feature-attachments';
 
 // Extend Books entity to support file attachments (images, PDFs, documents)
 // Each book can have multiple attachments via composition relationship
@@ -25,6 +26,12 @@ annotate my.Books.mediaValidatedAttachments with {
   ];
 }
 
+// Extend Books entity with inline single-file attachments
+extend my.Books with {
+  profileIcon : Attachment;
+  coverImage  : Attachment;
+}
+
 // Add UI component for attachments table to the Browse Books App
 using {CatalogService as service} from '../app/services';
 
@@ -35,15 +42,9 @@ annotate service.Books with @(UI.Facets: [{
   Target: 'attachments/@UI.LineItem'
 }]);
 
-// Adding the UI Component (a table) to the Administrator App
-using {AdminService as adminService} from '../app/services';
-
-annotate adminService.Books with @(UI.Facets: [{
-  $Type : 'UI.ReferenceFacet',
-  ID    : 'AttachmentsFacet',
-  Label : '{i18n>attachments}',
-  Target: 'mediaValidatedAttachments/@UI.LineItem'
-}]);
+// AdminService Facets (including attachments and profileIcon) are defined in
+// app/admin-books/fiori-service.cds. Don't re-annotate UI.Facets here,
+// as it would override the complete facet list defined there.
 
 
 service nonDraft {

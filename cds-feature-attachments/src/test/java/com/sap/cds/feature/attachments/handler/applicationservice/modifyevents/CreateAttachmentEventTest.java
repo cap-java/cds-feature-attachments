@@ -11,7 +11,9 @@ import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
+import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
@@ -26,7 +28,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -97,7 +101,7 @@ class CreateAttachmentEventTest {
     existingData.setFileName("some file name");
     existingData.setMimeType("some mime type");
 
-    cut.processEvent(path, attachment.getContent(), existingData, eventContext);
+    cut.processEvent(path, attachment.getContent(), existingData, eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     var createInput = contextArgumentCaptor.getValue();
@@ -120,7 +124,8 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
     when(target.values()).thenReturn(attachment);
 
-    cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
+    cut.processEvent(
+        path, attachment.getContent(), Attachments.create(), eventContext, Optional.empty());
 
     assertThat(attachment.getContentId()).isEqualTo(attachmentServiceResult.contentId());
     assertThat(attachment.getStatus()).isEqualTo(attachmentServiceResult.status());
@@ -136,7 +141,7 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, contentId, "test", null));
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(changeSetContext).register(listener);
   }
@@ -157,7 +162,8 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(isExternalStored, "id", "test", null));
 
     var result =
-        cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
+        cut.processEvent(
+            path, attachment.getContent(), Attachments.create(), eventContext, Optional.empty());
 
     var expectedContent = isExternalStored ? attachment.getContent() : null;
     assertThat(result).isEqualTo(expectedContent);
@@ -176,7 +182,115 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
 
-    cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
+    cut.processEvent(
+        path, attachment.getContent(), Attachments.create(), eventContext, Optional.empty());
     return attachment;
+  }
+
+  // --- Inline Attachment Tests ---
+
+  @Test
+  void inlineContentIdAndStatusWrittenWithPrefix() {
+    // Use real entity from CDS model so that getInlineAttachmentFieldNames returns
+    // ["profilePicture"]
+    CdsEntity realEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", UUID.randomUUID().toString());
+    values.put("profilePicture_mimeType", "image/png");
+    values.put("profilePicture_fileName", "photo.png");
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+
+    var content = mock(InputStream.class);
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "doc-123", "Clean", null));
+
+    cut.processEvent(
+        path, content, Attachments.create(), eventContext, Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_contentId", "doc-123");
+    assertThat(values).containsEntry("profilePicture_status", "Clean");
+  }
+
+  @Test
+  void inlinePrefixedFieldValuesPassedToService() {
+    CdsEntity realEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", UUID.randomUUID().toString());
+    values.put("profilePicture_mimeType", "image/jpeg");
+    values.put("profilePicture_fileName", "avatar.jpg");
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+
+    var content = mock(InputStream.class);
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "ok", null));
+
+    cut.processEvent(
+        path, content, Attachments.create(), eventContext, Optional.of("profilePicture"));
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    var input = contextArgumentCaptor.getValue();
+    assertThat(input.mimeType()).isEqualTo("image/jpeg");
+    assertThat(input.fileName()).isEqualTo("avatar.jpg");
+    assertThat(input.content()).isEqualTo(content);
+  }
+
+  @Test
+  void inlineFallsBackToAttachmentObjectWhenPrefixedFieldMissing() {
+    CdsEntity realEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", UUID.randomUUID().toString());
+    // No prefixed mimeType/fileName in values
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+
+    var content = mock(InputStream.class);
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "ok", null));
+
+    var existingData = Attachments.create();
+    existingData.setFileName("fallback.txt");
+    existingData.setMimeType("text/plain");
+
+    cut.processEvent(path, content, existingData, eventContext, Optional.of("profilePicture"));
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    var input = contextArgumentCaptor.getValue();
+    assertThat(input.mimeType()).isEqualTo("text/plain");
+    assertThat(input.fileName()).isEqualTo("fallback.txt");
+  }
+
+  @Test
+  void nonInlineEntityDoesNotUsePrefixedFields() {
+    // Mock entity that is NOT inline
+    // Plain mock has no elements, so getInlineAttachmentFieldNames returns empty
+    when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", UUID.randomUUID().toString());
+    values.put(MediaData.MIME_TYPE, "application/pdf");
+    values.put(MediaData.FILE_NAME, "doc.pdf");
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+
+    var content = mock(InputStream.class);
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "doc-999", "ok", null));
+
+    cut.processEvent(path, content, Attachments.create(), eventContext, Optional.empty());
+
+    // Fields written with unprefixed names
+    assertThat(values).containsEntry(Attachments.CONTENT_ID, "doc-999");
+    assertThat(values).containsEntry(Attachments.STATUS, "ok");
   }
 }

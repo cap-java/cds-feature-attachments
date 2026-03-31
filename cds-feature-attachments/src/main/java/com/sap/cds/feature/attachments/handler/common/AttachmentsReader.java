@@ -12,6 +12,7 @@ import com.sap.cds.ql.Expand;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.StructuredType;
 import com.sap.cds.ql.cqn.CqnFilterableStatement;
+import com.sap.cds.ql.cqn.CqnSelectListItem;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -46,10 +47,22 @@ public class AttachmentsReader {
     NodeTree nodePath = cascader.findEntityPath(model, entity);
     List<Expand<?>> expandList = buildExpandList(nodePath);
 
-    Select<?> select =
-        !expandList.isEmpty()
-            ? Select.from(statement.ref()).columns(expandList)
-            : Select.from(statement.ref()).columns(StructuredType::_all);
+    // Also include inline attachment fields directly in the select
+    List<String> inlineFields = ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
+    List<CqnSelectListItem> inlineColumns = new ArrayList<>();
+    for (String fieldName : inlineFields) {
+      inlineColumns.add(CQL.get(fieldName + "_" + Attachments.CONTENT_ID));
+      inlineColumns.add(CQL.get(fieldName + "_" + Attachments.STATUS));
+    }
+
+    Select<?> select;
+    if (!expandList.isEmpty() || !inlineColumns.isEmpty()) {
+      List<CqnSelectListItem> allItems = new ArrayList<>(inlineColumns);
+      allItems.addAll(expandList);
+      select = Select.from(statement.ref()).columns(allItems);
+    } else {
+      select = Select.from(statement.ref()).columns(StructuredType::_all);
+    }
     statement.where().ifPresent(select::where);
 
     Result result = persistence.run(select);

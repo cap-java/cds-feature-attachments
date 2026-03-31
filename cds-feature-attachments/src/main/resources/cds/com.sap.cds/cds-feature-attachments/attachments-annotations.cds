@@ -1,7 +1,15 @@
 using {
+    sap.attachments.Attachment,
     sap.attachments.MediaData,
     sap.attachments.Attachments
 } from './attachments';
+
+// Annotate Attachment type with a static Core.MediaType so that LargeBinary content is exposed as Edm.Stream (enabling Fiori upload widget).
+// Using 'mimeType' (path reference) instead of a static value would break inline usage:
+// CDS flattening rewrites 'content' to 'prefix_content' but does NOT rewrite the path reference 'mimeType' to 'prefix_mimeType', causing a broken reference to a non-existent field.
+annotate Attachment with {
+    content @Core.MediaType: 'application/octet-stream';
+}
 
 annotate MediaData with @UI.MediaResource: {Stream: content} {
     content   @(

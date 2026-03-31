@@ -98,12 +98,25 @@ public class UpdateAttachmentsHandler implements EventHandler {
   }
 
   private boolean associationsAreUnchanged(CdsEntity entity, List<CdsData> data) {
-    // TODO: check if this should be replaced with
-    // entity.assocations().noneMatch(...)
-    return entity
-        .compositions()
-        .noneMatch(
-            association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
+    // Check composition associations
+    boolean compositionsUnchanged =
+        entity
+            .compositions()
+            .noneMatch(
+                association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
+
+    // Also check inline attachment fields
+    List<String> inlinePrefixes = ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
+    boolean inlineUnchanged =
+        inlinePrefixes.stream()
+            .noneMatch(
+                prefix ->
+                    data.stream()
+                        .anyMatch(
+                            d ->
+                                d.keySet().stream().anyMatch(key -> key.startsWith(prefix + "_"))));
+
+    return compositionsUnchanged && inlineUnchanged;
   }
 
   private void deleteRemovedAttachments(
