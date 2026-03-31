@@ -63,6 +63,14 @@ public class AWSClient implements OSClient {
     logger.info("Initialized AWS S3 client");
   }
 
+  AWSClient(
+      S3Client s3Client, S3AsyncClient s3AsyncClient, String bucketName, ExecutorService executor) {
+    this.s3Client = s3Client;
+    this.s3AsyncClient = s3AsyncClient;
+    this.bucketName = bucketName;
+    this.executor = executor;
+  }
+
   @Override
   public Future<Void> uploadContent(
       InputStream content, String completeFileName, String contentType) {

@@ -54,18 +54,12 @@ class GoogleClientTest {
   }
 
   @Test
-  void testDeleteContent()
-      throws NoSuchFieldException,
-          IllegalArgumentException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
-    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
+  void testDeleteContent() throws InterruptedException, ExecutionException {
+    Storage mockStorage = mock(Storage.class);
+    GoogleClient googleClient = new GoogleClient(mockStorage, "my-bucket", executor);
 
     String fileName = "file.txt";
 
-    // Mock storage and paging
-    Storage mockStorage = mock(Storage.class);
     Page<Blob> mockPage = mock(Page.class);
     Blob mockBlob = mock(Blob.class);
     when(mockBlob.getName()).thenReturn(fileName);
@@ -75,48 +69,19 @@ class GoogleClientTest {
     when(mockStorage.list(anyString(), any(), any())).thenReturn(mockPage);
     when(mockStorage.delete(any(BlobId.class))).thenReturn(true);
 
-    // Inject mock storage and bucketName into googleClient using reflection
-    var field = GoogleClient.class.getDeclaredField("storage");
-    field.setAccessible(true);
-    field.set(googleClient, mockStorage);
-    var executorField = GoogleClient.class.getDeclaredField("executor");
-    executorField.setAccessible(true);
-    executorField.set(googleClient, executor);
-    var bucketField = GoogleClient.class.getDeclaredField("bucketName");
-    bucketField.setAccessible(true);
-    bucketField.set(googleClient, "my-bucket");
-
     // Should not throw
     googleClient.deleteContent(fileName).get();
   }
 
   @Test
-  void testUploadContent()
-      throws NoSuchFieldException,
-          IllegalArgumentException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException,
-          IOException {
-    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
-
-    // Mock storage and writer
+  void testUploadContent() throws InterruptedException, ExecutionException, IOException {
     Storage mockStorage = mock(Storage.class);
+    GoogleClient googleClient = new GoogleClient(mockStorage, "my-bucket", executor);
+
     WriteChannel mockWriter = mock(WriteChannel.class);
 
-    // Inject mock storage and bucketName into googleClient using reflection
-    var field = GoogleClient.class.getDeclaredField("storage");
-    field.setAccessible(true);
-    field.set(googleClient, mockStorage);
-    var executorField = GoogleClient.class.getDeclaredField("executor");
-    executorField.setAccessible(true);
-    executorField.set(googleClient, executor);
-    var bucketField = GoogleClient.class.getDeclaredField("bucketName");
-    bucketField.setAccessible(true);
-    bucketField.set(googleClient, "my-bucket");
-
     when(mockStorage.writer(any(BlobInfo.class))).thenReturn(mockWriter);
-    when(mockWriter.write(any(java.nio.ByteBuffer.class))).thenReturn(42); // return any int
+    when(mockWriter.write(any(java.nio.ByteBuffer.class))).thenReturn(42);
     InputStream input = new java.io.ByteArrayInputStream("test".getBytes());
 
     // Should not throw
@@ -124,44 +89,25 @@ class GoogleClientTest {
   }
 
   @Test
-  void testReadContent()
-      throws NoSuchFieldException,
-          IllegalArgumentException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
-    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
-
-    // Mock storage and read channel
+  void testReadContent() throws InterruptedException, ExecutionException {
     Storage mockStorage = mock(Storage.class);
+    GoogleClient googleClient = new GoogleClient(mockStorage, "my-bucket", executor);
+
     ReadChannel mockReadChannel = mock(ReadChannel.class);
     when(mockStorage.reader(any(com.google.cloud.storage.BlobId.class)))
         .thenReturn(mockReadChannel);
-
-    // Inject mock storage and bucketName into googleClient using reflection
-    var field = GoogleClient.class.getDeclaredField("storage");
-    field.setAccessible(true);
-    field.set(googleClient, mockStorage);
-    var executorField = GoogleClient.class.getDeclaredField("executor");
-    executorField.setAccessible(true);
-    executorField.set(googleClient, executor);
-    var bucketField = GoogleClient.class.getDeclaredField("bucketName");
-    bucketField.setAccessible(true);
-    bucketField.set(googleClient, "my-bucket");
 
     // Should not throw
     googleClient.readContent("file.txt").get();
   }
 
   @Test
-  void testDeleteContentDoesNotWork()
-      throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
+  void testDeleteContentDoesNotWork() {
+    Storage mockStorage = mock(Storage.class);
+    GoogleClient googleClient = new GoogleClient(mockStorage, "my-bucket", executor);
 
     String fileName = "file.txt";
 
-    // Mock storage and paging
-    Storage mockStorage = mock(Storage.class);
     Page<Blob> mockPage = mock(Page.class);
     Blob mockBlob = mock(Blob.class);
     when(mockBlob.getName()).thenReturn(fileName);
@@ -171,41 +117,17 @@ class GoogleClientTest {
     when(mockStorage.list(anyString(), any(), any())).thenReturn(mockPage);
     when(mockStorage.delete(any(BlobId.class))).thenReturn(false);
 
-    // Inject mock storage and bucketName into googleClient using reflection
-    var field = GoogleClient.class.getDeclaredField("storage");
-    field.setAccessible(true);
-    field.set(googleClient, mockStorage);
-    var executorField = GoogleClient.class.getDeclaredField("executor");
-    executorField.setAccessible(true);
-    executorField.set(googleClient, executor);
-    var bucketField = GoogleClient.class.getDeclaredField("bucketName");
-    bucketField.setAccessible(true);
-    bucketField.set(googleClient, "my-bucket");
-
     ExecutionException thrown =
         assertThrows(ExecutionException.class, () -> googleClient.deleteContent(fileName).get());
     assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
   }
 
   @Test
-  void testUploadContentThrowsOnIOException()
-      throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
-    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
-
-    // Mock storage and writer
+  void testUploadContentThrowsOnIOException() throws IOException {
     Storage mockStorage = mock(Storage.class);
-    WriteChannel mockWriter = mock(WriteChannel.class);
+    GoogleClient googleClient = new GoogleClient(mockStorage, "my-bucket", executor);
 
-    // Inject mock storage and bucketName into googleClient using reflection
-    var field = GoogleClient.class.getDeclaredField("storage");
-    field.setAccessible(true);
-    field.set(googleClient, mockStorage);
-    var executorField = GoogleClient.class.getDeclaredField("executor");
-    executorField.setAccessible(true);
-    executorField.set(googleClient, executor);
-    var bucketField = GoogleClient.class.getDeclaredField("bucketName");
-    bucketField.setAccessible(true);
-    bucketField.set(googleClient, "my-bucket");
+    WriteChannel mockWriter = mock(WriteChannel.class);
 
     when(mockStorage.writer(any(BlobInfo.class))).thenReturn(mockWriter);
     // Simulate IOException on write
@@ -223,21 +145,11 @@ class GoogleClientTest {
   }
 
   @Test
-  void testDeleteContentThrowsOnRuntimeException()
-      throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
-
-    // Mock storage and blob to throw RuntimeException on delete
+  void testDeleteContentThrowsOnRuntimeException() {
     Storage mockStorage = mock(Storage.class);
-    Blob mockBlob = mock(Blob.class);
+    GoogleClient googleClient = new GoogleClient(mockStorage, "my-bucket", executor);
 
-    // Inject mock storage into googleClient using reflection
-    var field = GoogleClient.class.getDeclaredField("storage");
-    field.setAccessible(true);
-    field.set(googleClient, mockStorage);
-    var executorField = GoogleClient.class.getDeclaredField("executor");
-    executorField.setAccessible(true);
-    executorField.set(googleClient, executor);
+    Blob mockBlob = mock(Blob.class);
 
     when(mockStorage.get(any(String.class), any(String.class))).thenReturn(mockBlob);
     doThrow(new RuntimeException("Simulated delete failure")).when(mockBlob).delete();
@@ -248,22 +160,10 @@ class GoogleClientTest {
   }
 
   @Test
-  void testReadContentThrowsOnRuntimeException()
-      throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
-
-    // Mock storage and blob to throw RuntimeException on reader
+  void testReadContentThrowsOnRuntimeException() {
     Storage mockStorage = mock(Storage.class);
+    GoogleClient googleClient = new GoogleClient(mockStorage, "my-bucket", executor);
 
-    // Inject mock storage into googleClient using reflection
-    var field = GoogleClient.class.getDeclaredField("storage");
-    field.setAccessible(true);
-    field.set(googleClient, mockStorage);
-    var executorField = GoogleClient.class.getDeclaredField("executor");
-    executorField.setAccessible(true);
-    executorField.set(googleClient, executor);
-
-    // Mock blob.reader() to throw RuntimeException
     doThrow(new RuntimeException("Simulated read failure"))
         .when(mockStorage)
         .reader(any(com.google.cloud.storage.BlobId.class));
@@ -274,14 +174,10 @@ class GoogleClientTest {
   }
 
   @Test
-  void testDeleteContentByPrefix()
-      throws NoSuchFieldException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
-    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
-
+  void testDeleteContentByPrefix() throws InterruptedException, ExecutionException {
     Storage mockStorage = mock(Storage.class);
+    GoogleClient googleClient = new GoogleClient(mockStorage, "my-bucket", executor);
+
     Page<Blob> mockPage = mock(Page.class);
     Blob mockBlob1 = mock(Blob.class);
     when(mockBlob1.getName()).thenReturn("prefix/file1.txt");
@@ -295,39 +191,18 @@ class GoogleClientTest {
     when(mockStorage.list(anyString(), any(), any())).thenReturn(mockPage);
     when(mockStorage.delete(any(BlobId.class))).thenReturn(true);
 
-    var field = GoogleClient.class.getDeclaredField("storage");
-    field.setAccessible(true);
-    field.set(googleClient, mockStorage);
-    var executorField = GoogleClient.class.getDeclaredField("executor");
-    executorField.setAccessible(true);
-    executorField.set(googleClient, executor);
-    var bucketField = GoogleClient.class.getDeclaredField("bucketName");
-    bucketField.setAccessible(true);
-    bucketField.set(googleClient, "my-bucket");
-
     googleClient.deleteContentByPrefix("prefix/").get();
 
     verify(mockStorage, times(2)).delete(any(BlobId.class));
   }
 
   @Test
-  void testDeleteContentByPrefixThrowsOnRuntimeException()
-      throws NoSuchFieldException, IllegalAccessException {
-    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
-
+  void testDeleteContentByPrefixThrowsOnRuntimeException() {
     Storage mockStorage = mock(Storage.class);
+    GoogleClient googleClient = new GoogleClient(mockStorage, "my-bucket", executor);
+
     when(mockStorage.list(anyString(), any(), any()))
         .thenThrow(new RuntimeException("Simulated failure"));
-
-    var field = GoogleClient.class.getDeclaredField("storage");
-    field.setAccessible(true);
-    field.set(googleClient, mockStorage);
-    var executorField = GoogleClient.class.getDeclaredField("executor");
-    executorField.setAccessible(true);
-    executorField.set(googleClient, executor);
-    var bucketField = GoogleClient.class.getDeclaredField("bucketName");
-    bucketField.setAccessible(true);
-    bucketField.set(googleClient, "my-bucket");
 
     ExecutionException thrown =
         assertThrows(

@@ -59,10 +59,9 @@ class AWSClientTest {
 
   @Test
   void testReadContent() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
-    // Mock S3Client to return a dummy InputStream
     S3Client mockS3Client = mock(S3Client.class);
+    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+
     ByteArrayInputStream mockInputStream = new ByteArrayInputStream("test-data".getBytes());
     GetObjectResponse mockResponse = mock(GetObjectResponse.class);
     ResponseInputStream<GetObjectResponse> mockResponseInputStream =
@@ -70,20 +69,15 @@ class AWSClientTest {
 
     when(mockS3Client.getObject(any(GetObjectRequest.class))).thenReturn(mockResponseInputStream);
 
-    var field = AWSClient.class.getDeclaredField("s3Client");
-    field.setAccessible(true);
-    field.set(awsClient, mockS3Client);
-
     InputStream result = awsClient.readContent("test.txt").get();
     assertNotNull(result);
   }
 
   @Test
   void testUploadContent() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
-    // Mock S3AsyncClient to return a successful PutObjectResponse
     S3AsyncClient mockAsyncClient = mock(S3AsyncClient.class);
+    AWSClient awsClient = new AWSClient(mock(S3Client.class), mockAsyncClient, "bucket", executor);
+
     PutObjectResponse mockPutRes = mock(PutObjectResponse.class);
     SdkHttpResponse mockHttpRes = mock(SdkHttpResponse.class);
     when(mockHttpRes.isSuccessful()).thenReturn(true);
@@ -93,49 +87,32 @@ class AWSClientTest {
     when(mockAsyncClient.putObject(any(PutObjectRequest.class), any(AsyncRequestBody.class)))
         .thenReturn(successFuture);
 
-    var field = AWSClient.class.getDeclaredField("s3AsyncClient");
-    field.setAccessible(true);
-    field.set(awsClient, mockAsyncClient);
-
-    // Should not throw
-
     awsClient
         .uploadContent(new ByteArrayInputStream("test".getBytes()), "test.txt", "text/plain")
         .get();
   }
 
   @Test
-  void testDeleteContent() throws NoSuchFieldException, IllegalAccessException {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
-    // Mock S3Client to return a DeleteObjectResponse with successful SdkHttpResponse
+  void testDeleteContent() {
     S3Client mockS3Client = mock(S3Client.class);
+    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+
     DeleteObjectResponse mockDelRes = mock(DeleteObjectResponse.class);
     SdkHttpResponse mockHttpRes = mock(SdkHttpResponse.class);
     when(mockHttpRes.isSuccessful()).thenReturn(true);
     when(mockDelRes.sdkHttpResponse()).thenReturn(mockHttpRes);
     when(mockS3Client.deleteObject(any(DeleteObjectRequest.class))).thenReturn(mockDelRes);
 
-    var field = AWSClient.class.getDeclaredField("s3Client");
-    field.setAccessible(true);
-    field.set(awsClient, mockS3Client);
-
     assertDoesNotThrow(() -> awsClient.deleteContent("test.txt").get());
   }
 
   @Test
   void testReadContentThrows() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
-    // Mock S3Client to return a dummy InputStream
     S3Client mockS3Client = mock(S3Client.class);
+    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     when(mockS3Client.getObject(any(GetObjectRequest.class)))
         .thenThrow(new RuntimeException("Simulated S3 failure"));
-
-    var field = AWSClient.class.getDeclaredField("s3Client");
-    field.setAccessible(true);
-    field.set(awsClient, mockS3Client);
 
     ExecutionException thrown =
         assertThrows(ExecutionException.class, () -> awsClient.readContent("test.txt").get());
@@ -144,18 +121,13 @@ class AWSClientTest {
 
   @Test
   void testUploadContentThrows() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
-    // Mock S3AsyncClient that always fails
     S3AsyncClient mockAsyncClient = mock(S3AsyncClient.class);
+    AWSClient awsClient = new AWSClient(mock(S3Client.class), mockAsyncClient, "bucket", executor);
+
     CompletableFuture<?> failedFuture = new CompletableFuture<>();
     failedFuture.completeExceptionally(new RuntimeException("Simulated S3 failure"));
     when(mockAsyncClient.putObject(any(PutObjectRequest.class), any(AsyncRequestBody.class)))
         .thenReturn((CompletableFuture) failedFuture);
-
-    var field = AWSClient.class.getDeclaredField("s3AsyncClient");
-    field.setAccessible(true);
-    field.set(awsClient, mockAsyncClient);
 
     ExecutionException thrown =
         assertThrows(
@@ -171,17 +143,12 @@ class AWSClientTest {
 
   @Test
   void testUploadContentThrowsOnPutResponseNull() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
-    // Mock S3AsyncClient that returns a null PutObjectResponse
     S3AsyncClient mockAsyncClient = mock(S3AsyncClient.class);
+    AWSClient awsClient = new AWSClient(mock(S3Client.class), mockAsyncClient, "bucket", executor);
+
     CompletableFuture<PutObjectResponse> nullFuture = CompletableFuture.completedFuture(null);
     when(mockAsyncClient.putObject(any(PutObjectRequest.class), any(AsyncRequestBody.class)))
         .thenReturn(nullFuture);
-
-    var field = AWSClient.class.getDeclaredField("s3AsyncClient");
-    field.setAccessible(true);
-    field.set(awsClient, mockAsyncClient);
 
     ExecutionException thrown =
         assertThrows(
@@ -197,16 +164,11 @@ class AWSClientTest {
 
   @Test
   void testDeleteContentThrowsOnRuntimeException() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
-    // Mock S3Client to throw a RuntimeException
     S3Client mockS3Client = mock(S3Client.class);
+    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+
     when(mockS3Client.deleteObject(any(DeleteObjectRequest.class)))
         .thenThrow(new RuntimeException("Simulated S3 delete failure"));
-
-    var field = AWSClient.class.getDeclaredField("s3Client");
-    field.setAccessible(true);
-    field.set(awsClient, mockS3Client);
 
     ExecutionException thrown =
         assertThrows(ExecutionException.class, () -> awsClient.deleteContent("test.txt").get());
@@ -214,21 +176,15 @@ class AWSClientTest {
   }
 
   @Test
-  void testDeleteContentThrowsOnUnsuccessfulResponse()
-      throws NoSuchFieldException, IllegalAccessException {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
-    // Mock S3Client to return a DeleteObjectResponse with unsuccessful SdkHttpResponse
+  void testDeleteContentThrowsOnUnsuccessfulResponse() {
     S3Client mockS3Client = mock(S3Client.class);
+    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+
     DeleteObjectResponse mockDelRes = mock(DeleteObjectResponse.class);
     SdkHttpResponse mockHttpRes = mock(SdkHttpResponse.class);
     when(mockHttpRes.isSuccessful()).thenReturn(false);
     when(mockDelRes.sdkHttpResponse()).thenReturn(mockHttpRes);
     when(mockS3Client.deleteObject(any(DeleteObjectRequest.class))).thenReturn(mockDelRes);
-
-    var field = AWSClient.class.getDeclaredField("s3Client");
-    field.setAccessible(true);
-    field.set(awsClient, mockS3Client);
 
     ExecutionException thrown =
         assertThrows(ExecutionException.class, () -> awsClient.deleteContent("test.txt").get());
@@ -237,9 +193,8 @@ class AWSClientTest {
 
   @Test
   void testDeleteContentByPrefix() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
     S3Client mockS3Client = mock(S3Client.class);
+    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     S3Object obj1 = S3Object.builder().key("prefix/file1.txt").build();
     S3Object obj2 = S3Object.builder().key("prefix/file2.txt").build();
@@ -254,10 +209,6 @@ class AWSClientTest {
     when(deleteResponse.errors()).thenReturn(Collections.emptyList());
     when(mockS3Client.deleteObjects(any(DeleteObjectsRequest.class))).thenReturn(deleteResponse);
 
-    var field = AWSClient.class.getDeclaredField("s3Client");
-    field.setAccessible(true);
-    field.set(awsClient, mockS3Client);
-
     awsClient.deleteContentByPrefix("prefix/").get();
 
     verify(mockS3Client).deleteObjects(any(DeleteObjectsRequest.class));
@@ -265,33 +216,24 @@ class AWSClientTest {
 
   @Test
   void testDeleteContentByPrefixEmptyList() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
     S3Client mockS3Client = mock(S3Client.class);
+    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     ListObjectsV2Response listResponse = mock(ListObjectsV2Response.class);
     when(listResponse.contents()).thenReturn(Collections.emptyList());
     when(listResponse.isTruncated()).thenReturn(false);
     when(mockS3Client.listObjectsV2(any(ListObjectsV2Request.class))).thenReturn(listResponse);
 
-    var field = AWSClient.class.getDeclaredField("s3Client");
-    field.setAccessible(true);
-    field.set(awsClient, mockS3Client);
-
     assertDoesNotThrow(() -> awsClient.deleteContentByPrefix("prefix/").get());
   }
 
   @Test
   void testDeleteContentByPrefixThrowsOnRuntimeException() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
     S3Client mockS3Client = mock(S3Client.class);
+    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+
     when(mockS3Client.listObjectsV2(any(ListObjectsV2Request.class)))
         .thenThrow(new RuntimeException("Simulated failure"));
-
-    var field = AWSClient.class.getDeclaredField("s3Client");
-    field.setAccessible(true);
-    field.set(awsClient, mockS3Client);
 
     ExecutionException thrown =
         assertThrows(
@@ -301,9 +243,8 @@ class AWSClientTest {
 
   @Test
   void testDeleteContentByPrefixWithPagination() throws Exception {
-    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
-
     S3Client mockS3Client = mock(S3Client.class);
+    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     // First page: 2 objects, isTruncated=true
     S3Object obj1 = S3Object.builder().key("prefix/file1.txt").build();
@@ -335,10 +276,6 @@ class AWSClientTest {
     when(deleteResponse.hasErrors()).thenReturn(false);
     when(deleteResponse.errors()).thenReturn(Collections.emptyList());
     when(mockS3Client.deleteObjects(any(DeleteObjectsRequest.class))).thenReturn(deleteResponse);
-
-    var field = AWSClient.class.getDeclaredField("s3Client");
-    field.setAccessible(true);
-    field.set(awsClient, mockS3Client);
 
     awsClient.deleteContentByPrefix("prefix/").get();
 

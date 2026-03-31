@@ -38,6 +38,11 @@ public class AzureClient implements OSClient {
     logger.info("Initialized Azure Blob Storage client");
   }
 
+  AzureClient(BlobContainerClient blobContainerClient, ExecutorService executor) {
+    this.blobContainerClient = blobContainerClient;
+    this.executor = executor;
+  }
+
   @Override
   public Future<Void> uploadContent(
       InputStream content, String completeFileName, String contentType) {

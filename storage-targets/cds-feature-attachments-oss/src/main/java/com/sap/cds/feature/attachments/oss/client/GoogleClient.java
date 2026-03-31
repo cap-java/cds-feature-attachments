@@ -54,6 +54,12 @@ public class GoogleClient implements OSClient {
     logger.info("Initialized client for Google Cloud Storage with binding: {}", binding);
   }
 
+  GoogleClient(Storage storage, String bucketName, ExecutorService executor) {
+    this.storage = storage;
+    this.bucketName = bucketName;
+    this.executor = executor;
+  }
+
   @Override
   public Future<Void> uploadContent(
       InputStream content, String completeFileName, String contentType) {

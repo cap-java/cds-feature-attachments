@@ -73,8 +73,8 @@ class OSSAttachmentsServiceHandlerTest {
   }
 
   /**
-   * Creates a real {@link AttachmentCreateEventContext} populated with the given values.
-   * The only mock used is CdsEntity (a model-level concept not creatable without a full model).
+   * Creates a real {@link AttachmentCreateEventContext} populated with the given values. The only
+   * mock used is CdsEntity (a model-level concept not creatable without a full model).
    */
   private static AttachmentCreateEventContext createContext(
       String contentId, String mimeType, String fileName, byte[] content) {
@@ -204,8 +204,7 @@ class OSSAttachmentsServiceHandlerTest {
 
     @Test
     void testReadAttachmentWithNullContentThrows() {
-      when(mockOsClient.readContent("doc123"))
-          .thenReturn(CompletableFuture.completedFuture(null));
+      when(mockOsClient.readContent("doc123")).thenReturn(CompletableFuture.completedFuture(null));
 
       var context = AttachmentReadEventContext.create();
       context.setContentId("doc123");
@@ -266,8 +265,7 @@ class OSSAttachmentsServiceHandlerTest {
 
     @Test
     void testMarkAsDeletedHandlesInterruptedException() throws Exception {
-      var context =
-          createContextForDeleteException(new InterruptedException("Thread interrupted"));
+      var context = createContextForDeleteException(new InterruptedException("Thread interrupted"));
       assertThrows(ServiceException.class, () -> handler.markAttachmentAsDeleted(context));
       assertThat(context.isCompleted()).isTrue();
     }
@@ -299,8 +297,7 @@ class OSSAttachmentsServiceHandlerTest {
     @Test
     void testReadAttachmentHandlesExecutionException() throws Exception {
       var context =
-          createContextForReadException(
-              new ExecutionException("failed", new RuntimeException()));
+          createContextForReadException(new ExecutionException("failed", new RuntimeException()));
       assertThrows(ServiceException.class, () -> handler.readAttachment(context));
       assertThat(context.isCompleted()).isTrue();
     }
@@ -398,8 +395,7 @@ class OSSAttachmentsServiceHandlerTest {
       when(mockOsClient.deleteContent("myTenant/content123"))
           .thenReturn(CompletableFuture.completedFuture(null));
 
-      AttachmentMarkAsDeletedEventContext context =
-          mock(AttachmentMarkAsDeletedEventContext.class);
+      AttachmentMarkAsDeletedEventContext context = mock(AttachmentMarkAsDeletedEventContext.class);
       when(context.getContentId()).thenReturn("content123");
       when(context.getUserInfo()).thenReturn(userInfoWithTenant("myTenant"));
 
