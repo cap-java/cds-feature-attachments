@@ -275,7 +275,9 @@ class GoogleClientTest {
 
   @Test
   void testDeleteContentByPrefix()
-      throws NoSuchFieldException, IllegalAccessException, InterruptedException,
+      throws NoSuchFieldException,
+          IllegalAccessException,
+          InterruptedException,
           ExecutionException {
     GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
 
@@ -329,8 +331,7 @@ class GoogleClientTest {
 
     ExecutionException thrown =
         assertThrows(
-            ExecutionException.class,
-            () -> googleClient.deleteContentByPrefix("prefix/").get());
+            ExecutionException.class, () -> googleClient.deleteContentByPrefix("prefix/").get());
     assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
   }
 }

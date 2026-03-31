@@ -196,7 +196,9 @@ class AzureClientTest {
 
   @Test
   void testDeleteContentByPrefix()
-      throws NoSuchFieldException, IllegalAccessException, InterruptedException,
+      throws NoSuchFieldException,
+          IllegalAccessException,
+          InterruptedException,
           ExecutionException {
     AzureClient azureClient = mock(AzureClient.class, CALLS_REAL_METHODS);
 

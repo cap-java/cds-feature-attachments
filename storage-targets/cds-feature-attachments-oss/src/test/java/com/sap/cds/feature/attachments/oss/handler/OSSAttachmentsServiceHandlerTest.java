@@ -418,12 +418,12 @@ class OSSAttachmentsServiceHandlerTest {
     handler.createAttachment(context);
 
     // Verify the object key includes tenant prefix
-    verify(mockOsClient).uploadContent(any(), org.mockito.ArgumentMatchers.eq("myTenant/content123"), anyString());
+    verify(mockOsClient)
+        .uploadContent(any(), org.mockito.ArgumentMatchers.eq("myTenant/content123"), anyString());
   }
 
   @Test
-  void testMultitenancyWithNullTenantThrows()
-      throws NoSuchFieldException, IllegalAccessException {
+  void testMultitenancyWithNullTenantThrows() throws NoSuchFieldException, IllegalAccessException {
     OSClient mockOsClient = mock(OSClient.class);
     OSSAttachmentsServiceHandler handler =
         mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
@@ -449,8 +449,7 @@ class OSSAttachmentsServiceHandlerTest {
   }
 
   @Test
-  void testValidateTenantIdWithSlashThrows()
-      throws NoSuchFieldException, IllegalAccessException {
+  void testValidateTenantIdWithSlashThrows() throws NoSuchFieldException, IllegalAccessException {
     OSClient mockOsClient = mock(OSClient.class);
     OSSAttachmentsServiceHandler handler =
         mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
@@ -503,8 +502,7 @@ class OSSAttachmentsServiceHandlerTest {
   }
 
   @Test
-  void testValidateTenantIdWithDotsThrows()
-      throws NoSuchFieldException, IllegalAccessException {
+  void testValidateTenantIdWithDotsThrows() throws NoSuchFieldException, IllegalAccessException {
     OSClient mockOsClient = mock(OSClient.class);
     OSSAttachmentsServiceHandler handler =
         mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
@@ -530,8 +528,7 @@ class OSSAttachmentsServiceHandlerTest {
   }
 
   @Test
-  void testValidateEmptyTenantIdThrows()
-      throws NoSuchFieldException, IllegalAccessException {
+  void testValidateEmptyTenantIdThrows() throws NoSuchFieldException, IllegalAccessException {
     OSClient mockOsClient = mock(OSClient.class);
     OSSAttachmentsServiceHandler handler =
         mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
@@ -558,8 +555,7 @@ class OSSAttachmentsServiceHandlerTest {
   }
 
   @Test
-  void testValidateContentIdWithSlashThrows()
-      throws NoSuchFieldException, IllegalAccessException {
+  void testValidateContentIdWithSlashThrows() throws NoSuchFieldException, IllegalAccessException {
     OSClient mockOsClient = mock(OSClient.class);
     OSSAttachmentsServiceHandler handler =
         mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
@@ -585,8 +581,7 @@ class OSSAttachmentsServiceHandlerTest {
   }
 
   @Test
-  void testValidateContentIdWithNullThrows()
-      throws NoSuchFieldException, IllegalAccessException {
+  void testValidateContentIdWithNullThrows() throws NoSuchFieldException, IllegalAccessException {
     OSClient mockOsClient = mock(OSClient.class);
     OSSAttachmentsServiceHandler handler =
         mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
@@ -639,8 +634,7 @@ class OSSAttachmentsServiceHandlerTest {
   }
 
   @Test
-  void testValidateContentIdWithDotsThrows()
-      throws NoSuchFieldException, IllegalAccessException {
+  void testValidateContentIdWithDotsThrows() throws NoSuchFieldException, IllegalAccessException {
     OSClient mockOsClient = mock(OSClient.class);
     OSSAttachmentsServiceHandler handler =
         mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
@@ -666,8 +660,7 @@ class OSSAttachmentsServiceHandlerTest {
   }
 
   @Test
-  void testValidateEmptyContentIdThrows()
-      throws NoSuchFieldException, IllegalAccessException {
+  void testValidateEmptyContentIdThrows() throws NoSuchFieldException, IllegalAccessException {
     OSClient mockOsClient = mock(OSClient.class);
     OSSAttachmentsServiceHandler handler =
         mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
@@ -694,7 +687,9 @@ class OSSAttachmentsServiceHandlerTest {
 
   @Test
   void testReadAttachmentHandlesExecutionException()
-      throws NoSuchFieldException, IllegalAccessException, InterruptedException,
+      throws NoSuchFieldException,
+          IllegalAccessException,
+          InterruptedException,
           ExecutionException {
     OSClient mockOsClient = mock(OSClient.class);
     OSSAttachmentsServiceHandler handler =
