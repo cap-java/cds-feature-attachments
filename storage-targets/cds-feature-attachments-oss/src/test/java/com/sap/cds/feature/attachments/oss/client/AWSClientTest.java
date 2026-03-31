@@ -60,7 +60,8 @@ class AWSClientTest {
   @Test
   void testReadContent() throws Exception {
     S3Client mockS3Client = mock(S3Client.class);
-    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+    AWSClient awsClient =
+        new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     ByteArrayInputStream mockInputStream = new ByteArrayInputStream("test-data".getBytes());
     GetObjectResponse mockResponse = mock(GetObjectResponse.class);
@@ -95,7 +96,8 @@ class AWSClientTest {
   @Test
   void testDeleteContent() {
     S3Client mockS3Client = mock(S3Client.class);
-    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+    AWSClient awsClient =
+        new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     DeleteObjectResponse mockDelRes = mock(DeleteObjectResponse.class);
     SdkHttpResponse mockHttpRes = mock(SdkHttpResponse.class);
@@ -109,7 +111,8 @@ class AWSClientTest {
   @Test
   void testReadContentThrows() throws Exception {
     S3Client mockS3Client = mock(S3Client.class);
-    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+    AWSClient awsClient =
+        new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     when(mockS3Client.getObject(any(GetObjectRequest.class)))
         .thenThrow(new RuntimeException("Simulated S3 failure"));
@@ -165,7 +168,8 @@ class AWSClientTest {
   @Test
   void testDeleteContentThrowsOnRuntimeException() throws Exception {
     S3Client mockS3Client = mock(S3Client.class);
-    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+    AWSClient awsClient =
+        new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     when(mockS3Client.deleteObject(any(DeleteObjectRequest.class)))
         .thenThrow(new RuntimeException("Simulated S3 delete failure"));
@@ -178,7 +182,8 @@ class AWSClientTest {
   @Test
   void testDeleteContentThrowsOnUnsuccessfulResponse() {
     S3Client mockS3Client = mock(S3Client.class);
-    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+    AWSClient awsClient =
+        new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     DeleteObjectResponse mockDelRes = mock(DeleteObjectResponse.class);
     SdkHttpResponse mockHttpRes = mock(SdkHttpResponse.class);
@@ -194,7 +199,8 @@ class AWSClientTest {
   @Test
   void testDeleteContentByPrefix() throws Exception {
     S3Client mockS3Client = mock(S3Client.class);
-    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+    AWSClient awsClient =
+        new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     S3Object obj1 = S3Object.builder().key("prefix/file1.txt").build();
     S3Object obj2 = S3Object.builder().key("prefix/file2.txt").build();
@@ -217,7 +223,8 @@ class AWSClientTest {
   @Test
   void testDeleteContentByPrefixEmptyList() throws Exception {
     S3Client mockS3Client = mock(S3Client.class);
-    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+    AWSClient awsClient =
+        new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     ListObjectsV2Response listResponse = mock(ListObjectsV2Response.class);
     when(listResponse.contents()).thenReturn(Collections.emptyList());
@@ -230,7 +237,8 @@ class AWSClientTest {
   @Test
   void testDeleteContentByPrefixThrowsOnRuntimeException() throws Exception {
     S3Client mockS3Client = mock(S3Client.class);
-    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+    AWSClient awsClient =
+        new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     when(mockS3Client.listObjectsV2(any(ListObjectsV2Request.class)))
         .thenThrow(new RuntimeException("Simulated failure"));
@@ -244,7 +252,8 @@ class AWSClientTest {
   @Test
   void testDeleteContentByPrefixWithPagination() throws Exception {
     S3Client mockS3Client = mock(S3Client.class);
-    AWSClient awsClient = new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
+    AWSClient awsClient =
+        new AWSClient(mockS3Client, mock(S3AsyncClient.class), "bucket", executor);
 
     // First page: 2 objects, isTruncated=true
     S3Object obj1 = S3Object.builder().key("prefix/file1.txt").build();
