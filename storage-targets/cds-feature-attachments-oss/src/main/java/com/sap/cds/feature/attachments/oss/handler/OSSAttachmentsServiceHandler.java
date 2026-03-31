@@ -139,7 +139,8 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
   @On
   void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
     logger.info(
-        "OS Attachment Service handler called for marking attachment as deleted with document id {}",
+        "OS Attachment Service handler called for marking attachment as deleted with document id"
+            + " {}",
         context.getContentId());
 
     try {
@@ -235,7 +236,8 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
         || contentId.contains("\\")
         || contentId.contains("..")) {
       throw new ServiceException(
-          "Invalid content ID for attachment storage: must not be empty or contain path separators");
+          "Invalid content ID for attachment storage: must not be empty or contain path"
+              + " separators");
     }
   }
 }
