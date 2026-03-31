@@ -19,6 +19,7 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRe
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
+import com.sap.cds.services.request.UserInfo;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -374,6 +375,346 @@ class OSSAttachmentsServiceHandlerTest {
     CompletableFuture<InputStream> future = mock(CompletableFuture.class);
     when(mockOsClient.readContent(contentId)).thenReturn(future);
     when(future.get()).thenThrow(new InterruptedException("Thread interrupted"));
+
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+    verify(context).setCompleted();
+  }
+
+  @Test
+  void testCreateAttachmentWithMultitenancyBuildsObjectKey()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    AttachmentCreateEventContext context = mock(AttachmentCreateEventContext.class);
+    MediaData mockMediaData = mock(MediaData.class);
+    CdsEntity mockEntity = mock(CdsEntity.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getAttachmentEntity()).thenReturn(mockEntity);
+    when(mockEntity.getQualifiedName()).thenReturn("TestEntity");
+    when(context.getAttachmentIds()).thenReturn(java.util.Map.of("ID", "content123"));
+    when(context.getData()).thenReturn(mockMediaData);
+    when(mockMediaData.getContent()).thenReturn(new ByteArrayInputStream("test".getBytes()));
+    when(mockMediaData.getMimeType()).thenReturn("text/plain");
+    when(mockMediaData.getFileName()).thenReturn("file.txt");
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn("myTenant");
+
+    when(mockOsClient.uploadContent(any(), anyString(), anyString()))
+        .thenReturn(CompletableFuture.completedFuture(null));
+
+    handler.createAttachment(context);
+
+    // Verify the object key includes tenant prefix
+    verify(mockOsClient).uploadContent(any(), org.mockito.ArgumentMatchers.eq("myTenant/content123"), anyString());
+  }
+
+  @Test
+  void testMultitenancyWithNullTenantThrows()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getContentId()).thenReturn("content123");
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn(null);
+
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+  }
+
+  @Test
+  void testValidateTenantIdWithSlashThrows()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getContentId()).thenReturn("content123");
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn("tenant/evil");
+
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+  }
+
+  @Test
+  void testValidateTenantIdWithBackslashThrows()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getContentId()).thenReturn("content123");
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn("tenant\\evil");
+
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+  }
+
+  @Test
+  void testValidateTenantIdWithDotsThrows()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getContentId()).thenReturn("content123");
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn("..evil");
+
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+  }
+
+  @Test
+  void testValidateEmptyTenantIdThrows()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    // Need to mock tenant as empty string but not null (null triggers different path)
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getContentId()).thenReturn("content123");
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn("");
+
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+  }
+
+  @Test
+  void testValidateContentIdWithSlashThrows()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getContentId()).thenReturn("content/evil");
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn("validTenant");
+
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+  }
+
+  @Test
+  void testValidateContentIdWithNullThrows()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getContentId()).thenReturn(null);
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn("validTenant");
+
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+  }
+
+  @Test
+  void testValidateContentIdWithBackslashThrows()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getContentId()).thenReturn("content\\evil");
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn("validTenant");
+
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+  }
+
+  @Test
+  void testValidateContentIdWithDotsThrows()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getContentId()).thenReturn("..evil");
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn("validTenant");
+
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+  }
+
+  @Test
+  void testValidateEmptyContentIdThrows()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getContentId()).thenReturn("");
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn("validTenant");
+
+    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+  }
+
+  @Test
+  void testReadAttachmentHandlesExecutionException()
+      throws NoSuchFieldException, IllegalAccessException, InterruptedException,
+          ExecutionException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+
+    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    field.setAccessible(true);
+    field.set(handler, mockOsClient);
+
+    String contentId = "doc123";
+    MediaData mockMediaData = mock(MediaData.class);
+
+    when(context.getContentId()).thenReturn(contentId);
+    when(context.getData()).thenReturn(mockMediaData);
+
+    @SuppressWarnings("unchecked")
+    CompletableFuture<InputStream> future = mock(CompletableFuture.class);
+    when(mockOsClient.readContent(contentId)).thenReturn(future);
+    when(future.get()).thenThrow(new ExecutionException("failed", new RuntimeException()));
 
     assertThrows(ServiceException.class, () -> handler.readAttachment(context));
     verify(context).setCompleted();

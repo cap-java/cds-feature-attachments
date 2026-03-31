@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
@@ -17,7 +18,9 @@ import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -30,10 +33,15 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 class AWSClientTest {
   ExecutorService executor = Executors.newCachedThreadPool();
@@ -222,6 +230,70 @@ class AWSClientTest {
 
     ExecutionException thrown =
         assertThrows(ExecutionException.class, () -> awsClient.deleteContent("test.txt").get());
+    assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
+  }
+
+  @Test
+  void testDeleteContentByPrefix() throws Exception {
+    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
+
+    S3Client mockS3Client = mock(S3Client.class);
+
+    S3Object obj1 = S3Object.builder().key("prefix/file1.txt").build();
+    S3Object obj2 = S3Object.builder().key("prefix/file2.txt").build();
+
+    ListObjectsV2Response listResponse = mock(ListObjectsV2Response.class);
+    when(listResponse.contents()).thenReturn(List.of(obj1, obj2));
+    when(listResponse.isTruncated()).thenReturn(false);
+    when(mockS3Client.listObjectsV2(any(ListObjectsV2Request.class))).thenReturn(listResponse);
+
+    DeleteObjectsResponse deleteResponse = mock(DeleteObjectsResponse.class);
+    when(deleteResponse.hasErrors()).thenReturn(false);
+    when(deleteResponse.errors()).thenReturn(Collections.emptyList());
+    when(mockS3Client.deleteObjects(any(DeleteObjectsRequest.class))).thenReturn(deleteResponse);
+
+    var field = AWSClient.class.getDeclaredField("s3Client");
+    field.setAccessible(true);
+    field.set(awsClient, mockS3Client);
+
+    awsClient.deleteContentByPrefix("prefix/").get();
+
+    verify(mockS3Client).deleteObjects(any(DeleteObjectsRequest.class));
+  }
+
+  @Test
+  void testDeleteContentByPrefixEmptyList() throws Exception {
+    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
+
+    S3Client mockS3Client = mock(S3Client.class);
+
+    ListObjectsV2Response listResponse = mock(ListObjectsV2Response.class);
+    when(listResponse.contents()).thenReturn(Collections.emptyList());
+    when(listResponse.isTruncated()).thenReturn(false);
+    when(mockS3Client.listObjectsV2(any(ListObjectsV2Request.class))).thenReturn(listResponse);
+
+    var field = AWSClient.class.getDeclaredField("s3Client");
+    field.setAccessible(true);
+    field.set(awsClient, mockS3Client);
+
+    assertDoesNotThrow(() -> awsClient.deleteContentByPrefix("prefix/").get());
+  }
+
+  @Test
+  void testDeleteContentByPrefixThrowsOnRuntimeException() throws Exception {
+    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
+
+    S3Client mockS3Client = mock(S3Client.class);
+    when(mockS3Client.listObjectsV2(any(ListObjectsV2Request.class)))
+        .thenThrow(new RuntimeException("Simulated failure"));
+
+    var field = AWSClient.class.getDeclaredField("s3Client");
+    field.setAccessible(true);
+    field.set(awsClient, mockS3Client);
+
+    ExecutionException thrown =
+        assertThrows(
+            ExecutionException.class, () -> awsClient.deleteContentByPrefix("prefix/").get());
     assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
   }
 

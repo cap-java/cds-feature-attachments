@@ -272,4 +272,65 @@ class GoogleClientTest {
         assertThrows(ExecutionException.class, () -> googleClient.readContent("file.txt").get());
     assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
   }
+
+  @Test
+  void testDeleteContentByPrefix()
+      throws NoSuchFieldException, IllegalAccessException, InterruptedException,
+          ExecutionException {
+    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
+
+    Storage mockStorage = mock(Storage.class);
+    Page<Blob> mockPage = mock(Page.class);
+    Blob mockBlob1 = mock(Blob.class);
+    when(mockBlob1.getName()).thenReturn("prefix/file1.txt");
+    when(mockBlob1.getGeneration()).thenReturn(1L);
+    Blob mockBlob2 = mock(Blob.class);
+    when(mockBlob2.getName()).thenReturn("prefix/file2.txt");
+    when(mockBlob2.getGeneration()).thenReturn(2L);
+
+    Iterator<Blob> blobIterator = java.util.List.of(mockBlob1, mockBlob2).iterator();
+    when(mockPage.iterateAll()).thenReturn(() -> blobIterator);
+    when(mockStorage.list(anyString(), any(), any())).thenReturn(mockPage);
+    when(mockStorage.delete(any(BlobId.class))).thenReturn(true);
+
+    var field = GoogleClient.class.getDeclaredField("storage");
+    field.setAccessible(true);
+    field.set(googleClient, mockStorage);
+    var executorField = GoogleClient.class.getDeclaredField("executor");
+    executorField.setAccessible(true);
+    executorField.set(googleClient, executor);
+    var bucketField = GoogleClient.class.getDeclaredField("bucketName");
+    bucketField.setAccessible(true);
+    bucketField.set(googleClient, "my-bucket");
+
+    googleClient.deleteContentByPrefix("prefix/").get();
+
+    verify(mockStorage, times(2)).delete(any(BlobId.class));
+  }
+
+  @Test
+  void testDeleteContentByPrefixThrowsOnRuntimeException()
+      throws NoSuchFieldException, IllegalAccessException {
+    GoogleClient googleClient = mock(GoogleClient.class, CALLS_REAL_METHODS);
+
+    Storage mockStorage = mock(Storage.class);
+    when(mockStorage.list(anyString(), any(), any()))
+        .thenThrow(new RuntimeException("Simulated failure"));
+
+    var field = GoogleClient.class.getDeclaredField("storage");
+    field.setAccessible(true);
+    field.set(googleClient, mockStorage);
+    var executorField = GoogleClient.class.getDeclaredField("executor");
+    executorField.setAccessible(true);
+    executorField.set(googleClient, executor);
+    var bucketField = GoogleClient.class.getDeclaredField("bucketName");
+    bucketField.setAccessible(true);
+    bucketField.set(googleClient, "my-bucket");
+
+    ExecutionException thrown =
+        assertThrows(
+            ExecutionException.class,
+            () -> googleClient.deleteContentByPrefix("prefix/").get());
+    assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
+  }
 }
