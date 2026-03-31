@@ -146,7 +146,14 @@ public class GoogleClient implements OSClient {
                     Storage.BlobListOption.prefix(prefix),
                     Storage.BlobListOption.versions(true));
             for (Blob blob : blobs.iterateAll()) {
-              storage.delete(BlobId.of(bucketName, blob.getName(), blob.getGeneration()));
+              boolean deleted =
+                  storage.delete(BlobId.of(bucketName, blob.getName(), blob.getGeneration()));
+              if (!deleted) {
+                logger.warn(
+                    "Failed to delete blob {} (generation {}) during prefix cleanup",
+                    blob.getName(),
+                    blob.getGeneration());
+              }
             }
           } catch (RuntimeException e) {
             throw new ObjectStoreServiceException(

@@ -30,7 +30,7 @@ public class SubscriptionEndpointClient {
   public void subscribeTenant(String tenant) throws Exception {
     SubscriptionPayload payload = new SubscriptionPayload();
     payload.subscribedTenantId = tenant;
-    payload.subscribedSubdomain = tenant.concat("sap.com");
+    payload.subscribedSubdomain = tenant.concat(".sap.com");
     payload.eventType = "CREATE";
 
     client

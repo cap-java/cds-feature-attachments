@@ -3,13 +3,16 @@
  */
 package com.sap.cds.feature.attachments.oss.handler;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.oss.client.OSClient;
+import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.mt.UnsubscribeEventContext;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.Test;
 
 class TenantCleanupHandlerTest {
@@ -58,5 +61,32 @@ class TenantCleanupHandlerTest {
     handler.cleanupTenantData(context);
 
     verify(mockOsClient).deleteContentByPrefix("tenant3/");
+  }
+
+  @Test
+  void testCleanupNullTenantThrowsServiceException() {
+    OSClient mockOsClient = mock(OSClient.class);
+    UnsubscribeEventContext context = mock(UnsubscribeEventContext.class);
+    when(context.getTenant()).thenReturn(null);
+
+    TenantCleanupHandler handler = new TenantCleanupHandler(mockOsClient);
+    assertThrows(ServiceException.class, () -> handler.cleanupTenantData(context));
+  }
+
+  @Test
+  void testCleanupHandlesExecutionException() throws Exception {
+    OSClient mockOsClient = mock(OSClient.class);
+    UnsubscribeEventContext context = mock(UnsubscribeEventContext.class);
+    when(context.getTenant()).thenReturn("tenant4");
+
+    @SuppressWarnings("unchecked")
+    CompletableFuture<Void> future = mock(CompletableFuture.class);
+    when(mockOsClient.deleteContentByPrefix("tenant4/")).thenReturn(future);
+    when(future.get()).thenThrow(new ExecutionException("fail", new RuntimeException("cause")));
+
+    TenantCleanupHandler handler = new TenantCleanupHandler(mockOsClient);
+    handler.cleanupTenantData(context);
+
+    verify(mockOsClient).deleteContentByPrefix("tenant4/");
   }
 }

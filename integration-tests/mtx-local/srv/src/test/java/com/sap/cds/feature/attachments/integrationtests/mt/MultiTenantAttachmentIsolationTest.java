@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("local-with-tenants")
+// TODO: Add tests that upload/download actual binary attachment content across tenants
+//  to verify storage-level isolation (not just entity-level isolation).
 class MultiTenantAttachmentIsolationTest {
 
   private static final String DOCUMENTS_URL = "/odata/v4/MtTestService/Documents";

@@ -8,7 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -295,6 +297,53 @@ class AWSClientTest {
         assertThrows(
             ExecutionException.class, () -> awsClient.deleteContentByPrefix("prefix/").get());
     assertInstanceOf(ObjectStoreServiceException.class, thrown.getCause());
+  }
+
+  @Test
+  void testDeleteContentByPrefixWithPagination() throws Exception {
+    AWSClient awsClient = new AWSClient(getDummyBinding(), executor);
+
+    S3Client mockS3Client = mock(S3Client.class);
+
+    // First page: 2 objects, isTruncated=true
+    S3Object obj1 = S3Object.builder().key("prefix/file1.txt").build();
+    S3Object obj2 = S3Object.builder().key("prefix/file2.txt").build();
+
+    ListObjectsV2Response firstPage = mock(ListObjectsV2Response.class);
+    when(firstPage.contents()).thenReturn(List.of(obj1, obj2));
+    when(firstPage.isTruncated()).thenReturn(true);
+    when(firstPage.nextContinuationToken()).thenReturn("token1");
+
+    // Second page: 1 object, isTruncated=false
+    S3Object obj3 = S3Object.builder().key("prefix/file3.txt").build();
+
+    ListObjectsV2Response secondPage = mock(ListObjectsV2Response.class);
+    when(secondPage.contents()).thenReturn(List.of(obj3));
+    when(secondPage.isTruncated()).thenReturn(false);
+
+    // First call returns first page, second call (with token) returns second page
+    when(mockS3Client.listObjectsV2(
+            argThat((ListObjectsV2Request req) -> req != null && req.continuationToken() == null)))
+        .thenReturn(firstPage);
+    when(mockS3Client.listObjectsV2(
+            argThat(
+                (ListObjectsV2Request req) ->
+                    req != null && "token1".equals(req.continuationToken()))))
+        .thenReturn(secondPage);
+
+    DeleteObjectsResponse deleteResponse = mock(DeleteObjectsResponse.class);
+    when(deleteResponse.hasErrors()).thenReturn(false);
+    when(deleteResponse.errors()).thenReturn(Collections.emptyList());
+    when(mockS3Client.deleteObjects(any(DeleteObjectsRequest.class))).thenReturn(deleteResponse);
+
+    var field = AWSClient.class.getDeclaredField("s3Client");
+    field.setAccessible(true);
+    field.set(awsClient, mockS3Client);
+
+    awsClient.deleteContentByPrefix("prefix/").get();
+
+    // deleteObjects should be called twice — once per page
+    verify(mockS3Client, times(2)).deleteObjects(any(DeleteObjectsRequest.class));
   }
 
   private ServiceBinding getDummyBinding() {

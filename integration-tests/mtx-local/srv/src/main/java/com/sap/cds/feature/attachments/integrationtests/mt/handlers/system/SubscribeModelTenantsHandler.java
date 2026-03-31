@@ -34,14 +34,15 @@ public class SubscribeModelTenantsHandler implements EventHandler {
     if (Boolean.FALSE.equals(multiTenancy.getMock().isEnabled())) {
       return;
     }
-    if (readMockedTenants().isEmpty()) {
+    List<String> tenants = readMockedTenants();
+    if (tenants.isEmpty()) {
       return;
     }
     if (!StringUtils.hasText(multiTenancy.getSidecar().getUrl())) {
       return;
     }
 
-    readMockedTenants().forEach(this::subscribeTenant);
+    tenants.forEach(this::subscribeTenant);
   }
 
   @On(event = ApplicationLifecycleService.EVENT_APPLICATION_STOPPED)
@@ -51,11 +52,12 @@ public class SubscribeModelTenantsHandler implements EventHandler {
     if (Boolean.FALSE.equals(multiTenancy.getMock().isEnabled())) {
       return;
     }
-    if (readMockedTenants().isEmpty()) {
+    List<String> tenants = readMockedTenants();
+    if (tenants.isEmpty()) {
       return;
     }
 
-    readMockedTenants().forEach(this::unsubscribeTenant);
+    tenants.forEach(this::unsubscribeTenant);
   }
 
   private void subscribeTenant(String tenant) {

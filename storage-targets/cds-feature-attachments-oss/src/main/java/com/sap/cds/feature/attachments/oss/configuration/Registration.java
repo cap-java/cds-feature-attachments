@@ -12,6 +12,7 @@ import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,20 @@ public class Registration implements CdsRuntimeConfiguration {
       String objectStoreKind = getObjectStoreKind(env);
 
       ExecutorService executor = Executors.newCachedThreadPool();
+      Runtime.getRuntime()
+          .addShutdownHook(
+              new Thread(
+                  () -> {
+                    executor.shutdown();
+                    try {
+                      if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                        executor.shutdownNow();
+                      }
+                    } catch (InterruptedException e) {
+                      executor.shutdownNow();
+                      Thread.currentThread().interrupt();
+                    }
+                  }));
       OSSAttachmentsServiceHandler handler =
           new OSSAttachmentsServiceHandler(
               bindingOpt.get(), executor, multitenancyEnabled, objectStoreKind);

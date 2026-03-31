@@ -98,4 +98,93 @@ class RegistrationTest {
 
     verify(configurer, never()).eventHandler(any());
   }
+
+  @Test
+  void testMtEnabledNonSharedKindRegistersOnlyOSSHandler() {
+    Registration registration = new Registration();
+    CdsRuntimeConfigurer configurer = mock(CdsRuntimeConfigurer.class);
+    CdsRuntime cdsRuntime = mock(CdsRuntime.class);
+    CdsEnvironment environment = mock(CdsEnvironment.class);
+    ServiceBinding binding = mock(ServiceBinding.class);
+
+    Map<String, Object> credentials = new HashMap<>();
+    credentials.put("host", "aws.example.com");
+    credentials.put("region", "us-east-1");
+    credentials.put("access_key_id", "test-access-key");
+    credentials.put("secret_access_key", "test-secret-key");
+    credentials.put("bucket", "test-bucket");
+
+    when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
+    when(cdsRuntime.getEnvironment()).thenReturn(environment);
+    when(binding.getServiceName()).thenReturn(Optional.of("objectstore"));
+    when(binding.getCredentials()).thenReturn(credentials);
+    when(environment.getServiceBindings()).thenReturn(Stream.of(binding));
+    when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
+        .thenReturn(Boolean.TRUE);
+    when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
+        .thenReturn("dedicated");
+
+    registration.eventHandlers(configurer);
+
+    verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
+    verify(configurer, times(1)).eventHandler(any());
+  }
+
+  @Test
+  void testMtEnabledNullKindRegistersOnlyOSSHandler() {
+    Registration registration = new Registration();
+    CdsRuntimeConfigurer configurer = mock(CdsRuntimeConfigurer.class);
+    CdsRuntime cdsRuntime = mock(CdsRuntime.class);
+    CdsEnvironment environment = mock(CdsEnvironment.class);
+    ServiceBinding binding = mock(ServiceBinding.class);
+
+    Map<String, Object> credentials = new HashMap<>();
+    credentials.put("host", "aws.example.com");
+    credentials.put("region", "us-east-1");
+    credentials.put("access_key_id", "test-access-key");
+    credentials.put("secret_access_key", "test-secret-key");
+    credentials.put("bucket", "test-bucket");
+
+    when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
+    when(cdsRuntime.getEnvironment()).thenReturn(environment);
+    when(binding.getServiceName()).thenReturn(Optional.of("objectstore"));
+    when(binding.getCredentials()).thenReturn(credentials);
+    when(environment.getServiceBindings()).thenReturn(Stream.of(binding));
+    when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
+        .thenReturn(Boolean.TRUE);
+
+    registration.eventHandlers(configurer);
+
+    verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
+    verify(configurer, times(1)).eventHandler(any());
+  }
+
+  @Test
+  void testMtDisabledSharedKindRegistersOnlyOSSHandler() {
+    Registration registration = new Registration();
+    CdsRuntimeConfigurer configurer = mock(CdsRuntimeConfigurer.class);
+    CdsRuntime cdsRuntime = mock(CdsRuntime.class);
+    CdsEnvironment environment = mock(CdsEnvironment.class);
+    ServiceBinding binding = mock(ServiceBinding.class);
+
+    Map<String, Object> credentials = new HashMap<>();
+    credentials.put("host", "aws.example.com");
+    credentials.put("region", "us-east-1");
+    credentials.put("access_key_id", "test-access-key");
+    credentials.put("secret_access_key", "test-secret-key");
+    credentials.put("bucket", "test-bucket");
+
+    when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
+    when(cdsRuntime.getEnvironment()).thenReturn(environment);
+    when(binding.getServiceName()).thenReturn(Optional.of("objectstore"));
+    when(binding.getCredentials()).thenReturn(credentials);
+    when(environment.getServiceBindings()).thenReturn(Stream.of(binding));
+    when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
+        .thenReturn("shared");
+
+    registration.eventHandlers(configurer);
+
+    verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
+    verify(configurer, times(1)).eventHandler(any());
+  }
 }

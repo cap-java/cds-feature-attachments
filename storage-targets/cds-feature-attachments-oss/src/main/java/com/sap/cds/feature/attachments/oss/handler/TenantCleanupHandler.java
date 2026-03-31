@@ -25,6 +25,7 @@ public class TenantCleanupHandler implements EventHandler {
   @After(event = DeploymentService.EVENT_UNSUBSCRIBE)
   void cleanupTenantData(UnsubscribeEventContext context) {
     String tenantId = context.getTenant();
+    OSSAttachmentsServiceHandler.validateTenantId(tenantId);
     String prefix = tenantId + "/";
     try {
       osClient.deleteContentByPrefix(prefix).get();

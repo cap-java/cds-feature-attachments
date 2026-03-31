@@ -217,8 +217,9 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     return tenant != null ? tenant : "default";
   }
 
-  private static void validateTenantId(String tenantId) {
-    if (tenantId.isEmpty()
+  static void validateTenantId(String tenantId) {
+    if (tenantId == null
+        || tenantId.isEmpty()
         || tenantId.contains("/")
         || tenantId.contains("\\")
         || tenantId.contains("..")) {

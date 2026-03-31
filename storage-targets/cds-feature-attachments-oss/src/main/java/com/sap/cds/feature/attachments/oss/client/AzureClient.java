@@ -15,6 +15,7 @@ import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -97,23 +98,22 @@ public class AzureClient implements OSClient {
         () -> {
           try {
             ListBlobsOptions options = new ListBlobsOptions().setPrefix(prefix);
-            List<String> blobNames = new ArrayList<>();
+            int batchSize = 1000;
+            List<String> batch = new ArrayList<>(batchSize);
             for (BlobItem blobItem : blobContainerClient.listBlobs(options, null)) {
-              blobNames.add(blobItem.getName());
+              batch.add(blobItem.getName());
+              if (batch.size() >= batchSize) {
+                deleteBatch(batch);
+                batch.clear();
+              }
             }
-            List<Future<Void>> deleteFutures =
-                blobNames.stream()
-                    .map(
-                        name ->
-                            executor.submit(
-                                () -> {
-                                  blobContainerClient.getBlobClient(name).delete();
-                                  return (Void) null;
-                                }))
-                    .toList();
-            for (Future<Void> f : deleteFutures) {
-              f.get();
+            if (!batch.isEmpty()) {
+              deleteBatch(batch);
             }
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ObjectStoreServiceException(
+                "Interrupted while deleting objects by prefix from the Azure Object Store", e);
           } catch (RuntimeException e) {
             throw new ObjectStoreServiceException(
                 "Failed to delete objects by prefix from the Azure Object Store", e);
@@ -123,5 +123,21 @@ public class AzureClient implements OSClient {
           }
           return null;
         });
+  }
+
+  private void deleteBatch(List<String> blobNames) throws InterruptedException, ExecutionException {
+    List<Future<Void>> deleteFutures =
+        blobNames.stream()
+            .map(
+                name ->
+                    executor.submit(
+                        () -> {
+                          blobContainerClient.getBlobClient(name).delete();
+                          return (Void) null;
+                        }))
+            .toList();
+    for (Future<Void> f : deleteFutures) {
+      f.get();
+    }
   }
 }

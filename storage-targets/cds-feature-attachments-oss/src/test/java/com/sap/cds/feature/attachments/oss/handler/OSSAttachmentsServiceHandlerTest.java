@@ -714,4 +714,70 @@ class OSSAttachmentsServiceHandlerTest {
     assertThrows(ServiceException.class, () -> handler.readAttachment(context));
     verify(context).setCompleted();
   }
+
+  @Test
+  void testReadAttachmentWithMultitenancyBuildsObjectKey()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+    MediaData mockMediaData = mock(MediaData.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getContentId()).thenReturn("content123");
+    when(context.getData()).thenReturn(mockMediaData);
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn("myTenant");
+
+    when(mockOsClient.readContent("myTenant/content123"))
+        .thenReturn(CompletableFuture.completedFuture(new ByteArrayInputStream("test".getBytes())));
+
+    handler.readAttachment(context);
+
+    verify(mockOsClient).readContent("myTenant/content123");
+  }
+
+  @Test
+  void testMarkAsDeletedWithMultitenancyBuildsObjectKey()
+      throws NoSuchFieldException, IllegalAccessException {
+    OSClient mockOsClient = mock(OSClient.class);
+    OSSAttachmentsServiceHandler handler =
+        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+
+    var osClientField = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    osClientField.setAccessible(true);
+    osClientField.set(handler, mockOsClient);
+    var mtField = OSSAttachmentsServiceHandler.class.getDeclaredField("multitenancyEnabled");
+    mtField.setAccessible(true);
+    mtField.set(handler, true);
+    var kindField = OSSAttachmentsServiceHandler.class.getDeclaredField("objectStoreKind");
+    kindField.setAccessible(true);
+    kindField.set(handler, "shared");
+
+    AttachmentMarkAsDeletedEventContext context = mock(AttachmentMarkAsDeletedEventContext.class);
+    UserInfo userInfo = mock(UserInfo.class);
+
+    when(context.getContentId()).thenReturn("content123");
+    when(context.getUserInfo()).thenReturn(userInfo);
+    when(userInfo.getTenant()).thenReturn("myTenant");
+
+    when(mockOsClient.deleteContent("myTenant/content123"))
+        .thenReturn(CompletableFuture.completedFuture(null));
+
+    handler.markAttachmentAsDeleted(context);
+
+    verify(mockOsClient).deleteContent("myTenant/content123");
+  }
 }
