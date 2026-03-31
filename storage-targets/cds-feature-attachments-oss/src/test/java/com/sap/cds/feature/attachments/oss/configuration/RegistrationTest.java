@@ -19,60 +19,52 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class RegistrationTest {
 
-  @Test
-  void testEventHandlersRegistersOSSHandler() {
-    // Arrange
-    Registration registration = new Registration();
-    CdsRuntimeConfigurer configurer = mock(CdsRuntimeConfigurer.class);
-    CdsRuntime cdsRuntime = mock(CdsRuntime.class);
-    CdsEnvironment environment = mock(CdsEnvironment.class);
-    ServiceBinding binding = mock(ServiceBinding.class);
+  private Registration registration;
+  private CdsRuntimeConfigurer configurer;
+  private CdsEnvironment environment;
+  private ServiceBinding awsBinding;
 
-    // Setup valid AWS credentials for the binding
+  private static ServiceBinding createAwsBinding() {
+    ServiceBinding binding = mock(ServiceBinding.class);
     Map<String, Object> credentials = new HashMap<>();
     credentials.put("host", "aws.example.com");
     credentials.put("region", "us-east-1");
     credentials.put("access_key_id", "test-access-key");
     credentials.put("secret_access_key", "test-secret-key");
     credentials.put("bucket", "test-bucket");
-
-    when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
-    when(cdsRuntime.getEnvironment()).thenReturn(environment);
     when(binding.getServiceName()).thenReturn(Optional.of("objectstore"));
     when(binding.getCredentials()).thenReturn(credentials);
-    when(environment.getServiceBindings()).thenReturn(Stream.of(binding));
+    return binding;
+  }
 
-    // Act
+  @BeforeEach
+  void setup() {
+    registration = new Registration();
+    configurer = mock(CdsRuntimeConfigurer.class);
+    CdsRuntime cdsRuntime = mock(CdsRuntime.class);
+    environment = mock(CdsEnvironment.class);
+    when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
+    when(cdsRuntime.getEnvironment()).thenReturn(environment);
+    awsBinding = createAwsBinding();
+  }
+
+  @Test
+  void testEventHandlersRegistersOSSHandler() {
+    when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
+
     registration.eventHandlers(configurer);
 
-    // Assert: OSSAttachmentsServiceHandler should be registered
     verify(configurer).eventHandler(any(OSSAttachmentsServiceHandler.class));
   }
 
   @Test
   void testEventHandlersRegistersCleanupHandlerWhenMultitenancyShared() {
-    Registration registration = new Registration();
-    CdsRuntimeConfigurer configurer = mock(CdsRuntimeConfigurer.class);
-    CdsRuntime cdsRuntime = mock(CdsRuntime.class);
-    CdsEnvironment environment = mock(CdsEnvironment.class);
-    ServiceBinding binding = mock(ServiceBinding.class);
-
-    Map<String, Object> credentials = new HashMap<>();
-    credentials.put("host", "aws.example.com");
-    credentials.put("region", "us-east-1");
-    credentials.put("access_key_id", "test-access-key");
-    credentials.put("secret_access_key", "test-secret-key");
-    credentials.put("bucket", "test-bucket");
-
-    when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
-    when(cdsRuntime.getEnvironment()).thenReturn(environment);
-    when(binding.getServiceName()).thenReturn(Optional.of("objectstore"));
-    when(binding.getCredentials()).thenReturn(credentials);
-    when(environment.getServiceBindings()).thenReturn(Stream.of(binding));
+    when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
     when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
         .thenReturn(Boolean.TRUE);
     when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
@@ -85,13 +77,6 @@ class RegistrationTest {
 
   @Test
   void testEventHandlersNoBindingDoesNotRegister() {
-    Registration registration = new Registration();
-    CdsRuntimeConfigurer configurer = mock(CdsRuntimeConfigurer.class);
-    CdsRuntime cdsRuntime = mock(CdsRuntime.class);
-    CdsEnvironment environment = mock(CdsEnvironment.class);
-
-    when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
-    when(cdsRuntime.getEnvironment()).thenReturn(environment);
     when(environment.getServiceBindings()).thenReturn(Stream.empty());
 
     registration.eventHandlers(configurer);
@@ -101,24 +86,7 @@ class RegistrationTest {
 
   @Test
   void testMtEnabledNonSharedKindRegistersOnlyOSSHandler() {
-    Registration registration = new Registration();
-    CdsRuntimeConfigurer configurer = mock(CdsRuntimeConfigurer.class);
-    CdsRuntime cdsRuntime = mock(CdsRuntime.class);
-    CdsEnvironment environment = mock(CdsEnvironment.class);
-    ServiceBinding binding = mock(ServiceBinding.class);
-
-    Map<String, Object> credentials = new HashMap<>();
-    credentials.put("host", "aws.example.com");
-    credentials.put("region", "us-east-1");
-    credentials.put("access_key_id", "test-access-key");
-    credentials.put("secret_access_key", "test-secret-key");
-    credentials.put("bucket", "test-bucket");
-
-    when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
-    when(cdsRuntime.getEnvironment()).thenReturn(environment);
-    when(binding.getServiceName()).thenReturn(Optional.of("objectstore"));
-    when(binding.getCredentials()).thenReturn(credentials);
-    when(environment.getServiceBindings()).thenReturn(Stream.of(binding));
+    when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
     when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
         .thenReturn(Boolean.TRUE);
     when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
@@ -132,24 +100,7 @@ class RegistrationTest {
 
   @Test
   void testMtEnabledNullKindRegistersOnlyOSSHandler() {
-    Registration registration = new Registration();
-    CdsRuntimeConfigurer configurer = mock(CdsRuntimeConfigurer.class);
-    CdsRuntime cdsRuntime = mock(CdsRuntime.class);
-    CdsEnvironment environment = mock(CdsEnvironment.class);
-    ServiceBinding binding = mock(ServiceBinding.class);
-
-    Map<String, Object> credentials = new HashMap<>();
-    credentials.put("host", "aws.example.com");
-    credentials.put("region", "us-east-1");
-    credentials.put("access_key_id", "test-access-key");
-    credentials.put("secret_access_key", "test-secret-key");
-    credentials.put("bucket", "test-bucket");
-
-    when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
-    when(cdsRuntime.getEnvironment()).thenReturn(environment);
-    when(binding.getServiceName()).thenReturn(Optional.of("objectstore"));
-    when(binding.getCredentials()).thenReturn(credentials);
-    when(environment.getServiceBindings()).thenReturn(Stream.of(binding));
+    when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
     when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
         .thenReturn(Boolean.TRUE);
 
@@ -161,24 +112,7 @@ class RegistrationTest {
 
   @Test
   void testMtDisabledSharedKindRegistersOnlyOSSHandler() {
-    Registration registration = new Registration();
-    CdsRuntimeConfigurer configurer = mock(CdsRuntimeConfigurer.class);
-    CdsRuntime cdsRuntime = mock(CdsRuntime.class);
-    CdsEnvironment environment = mock(CdsEnvironment.class);
-    ServiceBinding binding = mock(ServiceBinding.class);
-
-    Map<String, Object> credentials = new HashMap<>();
-    credentials.put("host", "aws.example.com");
-    credentials.put("region", "us-east-1");
-    credentials.put("access_key_id", "test-access-key");
-    credentials.put("secret_access_key", "test-secret-key");
-    credentials.put("bucket", "test-bucket");
-
-    when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
-    when(cdsRuntime.getEnvironment()).thenReturn(environment);
-    when(binding.getServiceName()).thenReturn(Optional.of("objectstore"));
-    when(binding.getCredentials()).thenReturn(credentials);
-    when(environment.getServiceBindings()).thenReturn(Stream.of(binding));
+    when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
     when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
         .thenReturn("shared");
 

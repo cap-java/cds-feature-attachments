@@ -13,19 +13,28 @@ import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.mt.UnsubscribeEventContext;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class TenantCleanupHandlerTest {
 
+  private OSClient mockOsClient;
+  private TenantCleanupHandler handler;
+
+  @BeforeEach
+  void setup() {
+    mockOsClient = mock(OSClient.class);
+    handler = new TenantCleanupHandler(mockOsClient);
+  }
+
   @Test
   void testCleanupTenantDataCallsDeleteByPrefix() throws Exception {
-    OSClient mockOsClient = mock(OSClient.class);
-    UnsubscribeEventContext context = mock(UnsubscribeEventContext.class);
-    when(context.getTenant()).thenReturn("tenant1");
+    var context = UnsubscribeEventContext.create();
+    context.setTenant("tenant1");
+
     when(mockOsClient.deleteContentByPrefix("tenant1/"))
         .thenReturn(CompletableFuture.completedFuture(null));
 
-    TenantCleanupHandler handler = new TenantCleanupHandler(mockOsClient);
     handler.cleanupTenantData(context);
 
     verify(mockOsClient).deleteContentByPrefix("tenant1/");
@@ -33,16 +42,14 @@ class TenantCleanupHandlerTest {
 
   @Test
   void testCleanupTenantDataHandlesInterruptedException() throws Exception {
-    OSClient mockOsClient = mock(OSClient.class);
-    UnsubscribeEventContext context = mock(UnsubscribeEventContext.class);
-    when(context.getTenant()).thenReturn("tenant2");
+    var context = UnsubscribeEventContext.create();
+    context.setTenant("tenant2");
 
     @SuppressWarnings("unchecked")
     CompletableFuture<Void> future = mock(CompletableFuture.class);
     when(mockOsClient.deleteContentByPrefix("tenant2/")).thenReturn(future);
     when(future.get()).thenThrow(new InterruptedException("interrupted"));
 
-    TenantCleanupHandler handler = new TenantCleanupHandler(mockOsClient);
     handler.cleanupTenantData(context);
 
     verify(mockOsClient).deleteContentByPrefix("tenant2/");
@@ -50,14 +57,12 @@ class TenantCleanupHandlerTest {
 
   @Test
   void testCleanupTenantDataHandlesRuntimeException() throws Exception {
-    OSClient mockOsClient = mock(OSClient.class);
-    UnsubscribeEventContext context = mock(UnsubscribeEventContext.class);
-    when(context.getTenant()).thenReturn("tenant3");
+    var context = UnsubscribeEventContext.create();
+    context.setTenant("tenant3");
 
     when(mockOsClient.deleteContentByPrefix("tenant3/"))
         .thenReturn(CompletableFuture.failedFuture(new RuntimeException("fail")));
 
-    TenantCleanupHandler handler = new TenantCleanupHandler(mockOsClient);
     handler.cleanupTenantData(context);
 
     verify(mockOsClient).deleteContentByPrefix("tenant3/");
@@ -65,26 +70,22 @@ class TenantCleanupHandlerTest {
 
   @Test
   void testCleanupNullTenantThrowsServiceException() {
-    OSClient mockOsClient = mock(OSClient.class);
-    UnsubscribeEventContext context = mock(UnsubscribeEventContext.class);
-    when(context.getTenant()).thenReturn(null);
+    var context = UnsubscribeEventContext.create();
+    // tenant is null by default
 
-    TenantCleanupHandler handler = new TenantCleanupHandler(mockOsClient);
     assertThrows(ServiceException.class, () -> handler.cleanupTenantData(context));
   }
 
   @Test
   void testCleanupHandlesExecutionException() throws Exception {
-    OSClient mockOsClient = mock(OSClient.class);
-    UnsubscribeEventContext context = mock(UnsubscribeEventContext.class);
-    when(context.getTenant()).thenReturn("tenant4");
+    var context = UnsubscribeEventContext.create();
+    context.setTenant("tenant4");
 
     @SuppressWarnings("unchecked")
     CompletableFuture<Void> future = mock(CompletableFuture.class);
     when(mockOsClient.deleteContentByPrefix("tenant4/")).thenReturn(future);
     when(future.get()).thenThrow(new ExecutionException("fail", new RuntimeException("cause")));
 
-    TenantCleanupHandler handler = new TenantCleanupHandler(mockOsClient);
     handler.cleanupTenantData(context);
 
     verify(mockOsClient).deleteContentByPrefix("tenant4/");
