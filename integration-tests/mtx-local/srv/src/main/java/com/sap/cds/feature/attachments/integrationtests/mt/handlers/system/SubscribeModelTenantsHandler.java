@@ -66,8 +66,7 @@ public class SubscribeModelTenantsHandler implements EventHandler {
             c -> {
               service.subscribe(
                   tenant,
-                  new HashMap<>(
-                      Collections.singletonMap("subscribedSubdomain", "mt-" + tenant)));
+                  new HashMap<>(Collections.singletonMap("subscribedSubdomain", "mt-" + tenant)));
             });
   }
 
@@ -82,7 +81,13 @@ public class SubscribeModelTenantsHandler implements EventHandler {
   }
 
   private List<String> readMockedTenants() {
-    return runtime.getEnvironment().getCdsProperties().getSecurity().getMock().getTenants().values()
+    return runtime
+        .getEnvironment()
+        .getCdsProperties()
+        .getSecurity()
+        .getMock()
+        .getTenants()
+        .values()
         .stream()
         .map(CdsProperties.Security.Mock.Tenant::getName)
         .collect(Collectors.toList());
