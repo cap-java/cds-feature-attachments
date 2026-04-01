@@ -170,8 +170,7 @@ public class AWSClient implements OSClient {
                         .build();
                 DeleteObjectsResponse deleteResp = s3Client.deleteObjects(deleteReq);
                 if (deleteResp.hasErrors() && !deleteResp.errors().isEmpty()) {
-                  List<String> failedKeys =
-                      deleteResp.errors().stream().map(S3Error::key).toList();
+                  List<String> failedKeys = deleteResp.errors().stream().map(S3Error::key).toList();
                   logger.warn(
                       "Failed to delete {} objects during prefix cleanup: {}",
                       failedKeys.size(),

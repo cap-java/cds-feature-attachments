@@ -252,7 +252,7 @@
             <phase>post-integration-test</phase>
             <configuration>
               <executable>sh</executable>
-              <commandlineArgs>-c "lsof -ti :4005 | xargs kill 2>/dev/null || true"</commandlineArgs>
+              <commandlineArgs>-c "lsof -ti :4005 | xargs kill 2&gt;/dev/null || true"</commandlineArgs>
             </configuration>
           </execution>
         </executions>

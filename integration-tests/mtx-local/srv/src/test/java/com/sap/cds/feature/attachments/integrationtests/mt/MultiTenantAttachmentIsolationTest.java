@@ -55,8 +55,7 @@ class MultiTenantAttachmentIsolationTest {
             .getContentAsString();
 
     JsonNode values = objectMapper.readTree(response).path("value");
-    values.forEach(
-        node -> assertThat(node.get("title").asText("")).isNotEqualTo(uniqueTitle));
+    values.forEach(node -> assertThat(node.get("title").asText("")).isNotEqualTo(uniqueTitle));
   }
 
   @Test
