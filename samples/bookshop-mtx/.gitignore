@@ -33,6 +33,7 @@ hs_err*
 Makefile_*.mta
 app/portal/
 resources/*.zip
+undeploy.json
 
 # added by cds
 .cdsrc-private.json
