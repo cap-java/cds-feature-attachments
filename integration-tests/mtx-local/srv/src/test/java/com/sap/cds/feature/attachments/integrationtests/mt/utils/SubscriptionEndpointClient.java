@@ -8,7 +8,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.codec.binary.Base64;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,7 +21,7 @@ public class SubscriptionEndpointClient {
   private final ObjectMapper objectMapper;
   private final MockMvc client;
   private final String credentials =
-      "Basic " + new String(Base64.encodeBase64("privileged:".getBytes()));
+      "Basic " + Base64.getEncoder().encodeToString("privileged:".getBytes(StandardCharsets.UTF_8));
 
   public SubscriptionEndpointClient(ObjectMapper objectMapper, MockMvc client) {
     this.objectMapper = objectMapper;
