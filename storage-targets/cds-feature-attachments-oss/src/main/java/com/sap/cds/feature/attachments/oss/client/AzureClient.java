@@ -119,10 +119,10 @@ public class AzureClient implements OSClient {
             Thread.currentThread().interrupt();
             throw new ObjectStoreServiceException(
                 "Interrupted while deleting objects by prefix from the Azure Object Store", e);
-          } catch (RuntimeException e) {
+          } catch (ExecutionException e) {
             throw new ObjectStoreServiceException(
                 "Failed to delete objects by prefix from the Azure Object Store", e);
-          } catch (Exception e) {
+          } catch (RuntimeException e) {
             throw new ObjectStoreServiceException(
                 "Failed to delete objects by prefix from the Azure Object Store", e);
           }
