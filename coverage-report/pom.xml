@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.sap.cds</groupId>
+    <artifactId>cds-feature-attachments-root</artifactId>
+    <version>${revision}</version>
+  </parent>
+
+  <artifactId>cds-feature-attachments-coverage-report</artifactId>
+  <packaging>pom</packaging>
+
+  <name>CDS Feature for Attachments - Coverage Report</name>
+  <description>Aggregated JaCoCo coverage report combining unit tests and integration tests.</description>
+
+  <!-- Dependencies whose coverage data and classes are included in the aggregated report -->
+  <dependencies>
+    <!-- Source module to measure coverage for -->
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-feature-attachments</artifactId>
+    </dependency>
+
+    <!-- Module that produces additional coverage data via @SpringBootTest -->
+    <dependency>
+      <groupId>com.sap.cds.integration-tests</groupId>
+      <artifactId>cds-feature-attachments-integration-tests-srv</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Do not deploy this module -->
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+
+      <!-- Skip static analysis — this module has no source code -->
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>jacoco-aggregate-report</id>
+            <goals>
+              <goal>report-aggregate</goal>
+            </goals>
+            <phase>verify</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
