@@ -212,10 +212,10 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 
   private String getTenant(EventContext context) {
     String tenant = context.getUserInfo().getTenant();
-    if (tenant == null && multitenancyEnabled) {
+    if (tenant == null) {
       throw new ServiceException("Tenant ID is required for multitenant attachment operations");
     }
-    return tenant != null ? tenant : "default";
+    return tenant;
   }
 
   static void validateTenantId(String tenantId) {
