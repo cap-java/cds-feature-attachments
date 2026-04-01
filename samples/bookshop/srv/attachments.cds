@@ -9,8 +9,6 @@ extend my.Books with {
   sizeLimitedAttachments           : Composition of many Attachments;
   @UI.Hidden
   mediaValidatedAttachments        : Composition of many Attachments;
-  @UI.Hidden
-  anotherMediaValidatedAttachments : Composition of many Attachments;
 }
 
 annotate my.Books.sizeLimitedAttachments with {
@@ -42,7 +40,7 @@ annotate adminService.Books with @(UI.Facets: [{
   $Type : 'UI.ReferenceFacet',
   ID    : 'AttachmentsFacet',
   Label : '{i18n>attachments}',
-  Target: 'mediaValidatedAttachments/@UI.LineItem'
+  Target: 'attachments/@UI.LineItem'
 }]);
 
 
