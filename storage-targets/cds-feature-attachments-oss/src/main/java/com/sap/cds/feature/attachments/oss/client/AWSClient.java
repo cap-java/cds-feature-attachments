@@ -6,6 +6,7 @@ package com.sap.cds.feature.attachments.oss.client;
 import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -151,6 +152,7 @@ public class AWSClient implements OSClient {
     return executor.submit(
         () -> {
           try {
+            List<String> allFailedKeys = new ArrayList<>();
             ListObjectsV2Request listReq =
                 ListObjectsV2Request.builder().bucket(this.bucketName).prefix(prefix).build();
             ListObjectsV2Response listResp;
@@ -168,15 +170,27 @@ public class AWSClient implements OSClient {
                         .build();
                 DeleteObjectsResponse deleteResp = s3Client.deleteObjects(deleteReq);
                 if (deleteResp.hasErrors() && !deleteResp.errors().isEmpty()) {
+                  List<String> failedKeys =
+                      deleteResp.errors().stream().map(S3Error::key).toList();
                   logger.warn(
                       "Failed to delete {} objects during prefix cleanup: {}",
-                      deleteResp.errors().size(),
-                      deleteResp.errors().stream().map(S3Error::key).toList());
+                      failedKeys.size(),
+                      failedKeys);
+                  allFailedKeys.addAll(failedKeys);
                 }
               }
               listReq =
                   listReq.toBuilder().continuationToken(listResp.nextContinuationToken()).build();
             } while (listResp.isTruncated());
+            if (!allFailedKeys.isEmpty()) {
+              throw new ObjectStoreServiceException(
+                  "Partial failure during prefix cleanup: "
+                      + allFailedKeys.size()
+                      + " objects could not be deleted: "
+                      + allFailedKeys);
+            }
+          } catch (ObjectStoreServiceException e) {
+            throw e;
           } catch (RuntimeException e) {
             throw new ObjectStoreServiceException(
                 "Failed to delete objects by prefix from the AWS Object Store", e);
