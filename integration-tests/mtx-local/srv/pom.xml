@@ -224,15 +224,10 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.5.0</version>
         <configuration>
-          <executable>${cds.npm.executable}</executable>
           <environmentVariables>
             <PATH>${cds.node.directory}${path.separator}${env.PATH}</PATH>
           </environmentVariables>
           <skip>${skipTests}</skip>
-          <workingDirectory>${sidecar.dir}</workingDirectory>
-          <async>true</async>
-          <useMavenLogger>true</useMavenLogger>
-          <commandlineArgs>run start</commandlineArgs>
         </configuration>
         <executions>
           <execution>
@@ -241,6 +236,24 @@
               <goal>exec</goal>
             </goals>
             <phase>pre-integration-test</phase>
+            <configuration>
+              <executable>${cds.npm.executable}</executable>
+              <workingDirectory>${sidecar.dir}</workingDirectory>
+              <async>true</async>
+              <useMavenLogger>true</useMavenLogger>
+              <commandlineArgs>run start</commandlineArgs>
+            </configuration>
+          </execution>
+          <execution>
+            <id>stop-sidecar</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>post-integration-test</phase>
+            <configuration>
+              <executable>sh</executable>
+              <commandlineArgs>-c "lsof -ti :4005 | xargs kill 2>/dev/null || true"</commandlineArgs>
+            </configuration>
           </execution>
         </executions>
       </plugin>
