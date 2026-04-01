@@ -54,6 +54,12 @@ public class GoogleClient implements OSClient {
     logger.info("Initialized client for Google Cloud Storage with binding: {}", binding);
   }
 
+  GoogleClient(Storage storage, String bucketName, ExecutorService executor) {
+    this.storage = storage;
+    this.bucketName = bucketName;
+    this.executor = executor;
+  }
+
   @Override
   public Future<Void> uploadContent(
       InputStream content, String completeFileName, String contentType) {
@@ -132,6 +138,34 @@ public class GoogleClient implements OSClient {
             throw new ObjectStoreServiceException(
                 "Failed to read file from Google Object Store", e);
           }
+        });
+  }
+
+  @Override
+  public Future<Void> deleteContentByPrefix(String prefix) {
+    return executor.submit(
+        () -> {
+          try {
+            Page<Blob> blobs =
+                storage.list(
+                    bucketName,
+                    Storage.BlobListOption.prefix(prefix),
+                    Storage.BlobListOption.versions(true));
+            for (Blob blob : blobs.iterateAll()) {
+              boolean deleted =
+                  storage.delete(BlobId.of(bucketName, blob.getName(), blob.getGeneration()));
+              if (!deleted) {
+                logger.warn(
+                    "Failed to delete blob {} (generation {}) during prefix cleanup",
+                    blob.getName(),
+                    blob.getGeneration());
+              }
+            }
+          } catch (RuntimeException e) {
+            throw new ObjectStoreServiceException(
+                "Failed to delete objects by prefix from Google Object Store", e);
+          }
+          return null;
         });
   }
 }

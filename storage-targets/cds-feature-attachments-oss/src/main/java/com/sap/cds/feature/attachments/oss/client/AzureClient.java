@@ -6,11 +6,16 @@ package com.sap.cds.feature.attachments.oss.client;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
+import com.azure.storage.blob.models.BlobItem;
+import com.azure.storage.blob.models.ListBlobsOptions;
 import com.azure.storage.blob.specialized.BlobOutputStream;
 import com.azure.storage.blob.specialized.BlockBlobClient;
 import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -31,6 +36,11 @@ public class AzureClient implements OSClient {
                     + binding.getCredentials().get("sas_token").toString())
             .buildClient();
     logger.info("Initialized Azure Blob Storage client");
+  }
+
+  AzureClient(BlobContainerClient blobContainerClient, ExecutorService executor) {
+    this.blobContainerClient = blobContainerClient;
+    this.executor = executor;
   }
 
   @Override
@@ -85,5 +95,54 @@ public class AzureClient implements OSClient {
                 "Failed to read file from the Azure Object Store", e);
           }
         });
+  }
+
+  @Override
+  public Future<Void> deleteContentByPrefix(String prefix) {
+    return executor.submit(
+        () -> {
+          try {
+            ListBlobsOptions options = new ListBlobsOptions().setPrefix(prefix);
+            int batchSize = 1000;
+            List<String> batch = new ArrayList<>(batchSize);
+            for (BlobItem blobItem : blobContainerClient.listBlobs(options, null)) {
+              batch.add(blobItem.getName());
+              if (batch.size() >= batchSize) {
+                deleteBatch(batch);
+                batch.clear();
+              }
+            }
+            if (!batch.isEmpty()) {
+              deleteBatch(batch);
+            }
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ObjectStoreServiceException(
+                "Interrupted while deleting objects by prefix from the Azure Object Store", e);
+          } catch (RuntimeException e) {
+            throw new ObjectStoreServiceException(
+                "Failed to delete objects by prefix from the Azure Object Store", e);
+          } catch (Exception e) {
+            throw new ObjectStoreServiceException(
+                "Failed to delete objects by prefix from the Azure Object Store", e);
+          }
+          return null;
+        });
+  }
+
+  private void deleteBatch(List<String> blobNames) throws InterruptedException, ExecutionException {
+    List<Future<Void>> deleteFutures =
+        blobNames.stream()
+            .map(
+                name ->
+                    executor.submit(
+                        () -> {
+                          blobContainerClient.getBlobClient(name).delete();
+                          return (Void) null;
+                        }))
+            .toList();
+    for (Future<Void> f : deleteFutures) {
+      f.get();
+    }
   }
 }

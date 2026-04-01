@@ -15,6 +15,7 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCr
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
+import com.sap.cds.services.EventContext;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
@@ -39,6 +40,8 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(OSSAttachmentsServiceHandler.class);
   private final OSClient osClient;
+  private final boolean multitenancyEnabled;
+  private final String objectStoreKind;
 
   /**
    * Creates a new OSSAttachmentsServiceHandler using the provided {@link ServiceBinding}.
@@ -55,9 +58,18 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
    * </ul>
    *
    * @param binding the {@link ServiceBinding} containing credentials for the object store service
+   * @param executor the {@link ExecutorService} for async operations
+   * @param multitenancyEnabled whether multitenancy is enabled
+   * @param objectStoreKind the object store kind (e.g. "shared")
    * @throws ObjectStoreServiceException if no valid object store service binding is found
    */
-  public OSSAttachmentsServiceHandler(ServiceBinding binding, ExecutorService executor) {
+  public OSSAttachmentsServiceHandler(
+      ServiceBinding binding,
+      ExecutorService executor,
+      boolean multitenancyEnabled,
+      String objectStoreKind) {
+    this.multitenancyEnabled = multitenancyEnabled;
+    this.objectStoreKind = objectStoreKind;
     final String host = (String) binding.getCredentials().get("host"); // AWS
     final String containerUri = (String) binding.getCredentials().get("container_uri"); // Azure
     final String base64EncodedPrivateKeyData =
@@ -106,9 +118,10 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     String contentId = (String) context.getAttachmentIds().get(Attachments.ID);
     MediaData data = context.getData();
     String fileName = data.getFileName();
+    String objectKey = buildObjectKey(context, contentId);
 
     try {
-      osClient.uploadContent(data.getContent(), contentId, data.getMimeType()).get();
+      osClient.uploadContent(data.getContent(), objectKey, data.getMimeType()).get();
       logger.info("Uploaded file {}", fileName);
       context.getData().setStatus(StatusCode.SCANNING);
       context.setIsInternalStored(false);
@@ -126,11 +139,13 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
   @On
   void markAttachmentAsDeleted(AttachmentMarkAsDeletedEventContext context) {
     logger.info(
-        "OS Attachment Service handler called for marking attachment as deleted with document id {}",
+        "OS Attachment Service handler called for marking attachment as deleted with document id"
+            + " {}",
         context.getContentId());
 
     try {
-      osClient.deleteContent(context.getContentId()).get();
+      String objectKey = buildObjectKey(context, context.getContentId());
+      osClient.deleteContent(objectKey).get();
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
       throw new ServiceException(
@@ -159,7 +174,8 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
         "OS Attachment Service handler called for reading attachment with document id: {}",
         context.getContentId());
     try {
-      Future<InputStream> future = osClient.readContent(context.getContentId());
+      String objectKey = buildObjectKey(context, context.getContentId());
+      Future<InputStream> future = osClient.readContent(objectKey);
       InputStream inputStream = future.get(); // Wait for the content to be read
       if (inputStream != null) {
         context.getData().setContent(inputStream);
@@ -177,6 +193,51 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
           "Failed to read file with document id {}", context.getContentId(), ex);
     } finally {
       context.setCompleted();
+    }
+  }
+
+  public OSClient getOsClient() {
+    return osClient;
+  }
+
+  private String buildObjectKey(EventContext context, String contentId) {
+    if (multitenancyEnabled && "shared".equals(objectStoreKind)) {
+      String tenant = getTenant(context);
+      validateTenantId(tenant);
+      validateContentId(contentId);
+      return tenant + "/" + contentId;
+    }
+    return contentId;
+  }
+
+  private String getTenant(EventContext context) {
+    String tenant = context.getUserInfo().getTenant();
+    if (tenant == null && multitenancyEnabled) {
+      throw new ServiceException("Tenant ID is required for multitenant attachment operations");
+    }
+    return tenant != null ? tenant : "default";
+  }
+
+  static void validateTenantId(String tenantId) {
+    if (tenantId == null
+        || tenantId.isEmpty()
+        || tenantId.contains("/")
+        || tenantId.contains("\\")
+        || tenantId.contains("..")) {
+      throw new ServiceException(
+          "Invalid tenant ID for attachment storage: must not be empty or contain path separators");
+    }
+  }
+
+  private static void validateContentId(String contentId) {
+    if (contentId == null
+        || contentId.isEmpty()
+        || contentId.contains("/")
+        || contentId.contains("\\")
+        || contentId.contains("..")) {
+      throw new ServiceException(
+          "Invalid content ID for attachment storage: must not be empty or contain path"
+              + " separators");
     }
   }
 }

@@ -15,6 +15,7 @@ target/
 
 .flattened-pom.xml
 node_modules
+package-lock.json
 
 ## PMD
 .pmd

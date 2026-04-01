@@ -7,6 +7,11 @@
     },
     "fiori": {
       "draft_messages": false
+    },
+    "build": {
+      "tasks": [
+        { "for": "java", "src": "generic" }
+      ]
     }
   }
 }
