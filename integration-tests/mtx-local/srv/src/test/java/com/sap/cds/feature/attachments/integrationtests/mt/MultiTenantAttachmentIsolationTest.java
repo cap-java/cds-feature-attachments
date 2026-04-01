@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -33,13 +34,15 @@ class MultiTenantAttachmentIsolationTest {
 
   @Test
   void createDocumentInTenant1_notVisibleInTenant2() throws Exception {
+    String uniqueTitle = "Only-in-T1-" + UUID.randomUUID();
+
     // Create a document in tenant-1
     client
         .perform(
             post(DOCUMENTS_URL)
                 .with(httpBasic("user-in-tenant-1", ""))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{ \"title\": \"Only in tenant-1\" }"))
+                .content("{ \"title\": \"" + uniqueTitle + "\" }"))
         .andExpect(status().isCreated());
 
     // Read documents in tenant-2 — should NOT see the tenant-1 document
@@ -53,18 +56,21 @@ class MultiTenantAttachmentIsolationTest {
 
     JsonNode values = objectMapper.readTree(response).path("value");
     values.forEach(
-        node -> assertThat(node.get("title").asText("")).isNotEqualTo("Only in tenant-1"));
+        node -> assertThat(node.get("title").asText("")).isNotEqualTo(uniqueTitle));
   }
 
   @Test
   void createDocumentsInBothTenants_eachSeeOnlyOwn() throws Exception {
+    String titleT1 = "Doc-T1-" + UUID.randomUUID();
+    String titleT2 = "Doc-T2-" + UUID.randomUUID();
+
     // Create in tenant-1
     client
         .perform(
             post(DOCUMENTS_URL)
                 .with(httpBasic("user-in-tenant-1", ""))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{ \"title\": \"Doc-T1\" }"))
+                .content("{ \"title\": \"" + titleT1 + "\" }"))
         .andExpect(status().isCreated());
 
     // Create in tenant-2
@@ -73,10 +79,10 @@ class MultiTenantAttachmentIsolationTest {
             post(DOCUMENTS_URL)
                 .with(httpBasic("user-in-tenant-2", ""))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{ \"title\": \"Doc-T2\" }"))
+                .content("{ \"title\": \"" + titleT2 + "\" }"))
         .andExpect(status().isCreated());
 
-    // Read from tenant-1 — should see Doc-T1 but not Doc-T2
+    // Read from tenant-1 — should see titleT1 but not titleT2
     String response1 =
         client
             .perform(get(DOCUMENTS_URL).with(httpBasic("user-in-tenant-1", "")))
@@ -88,14 +94,14 @@ class MultiTenantAttachmentIsolationTest {
     JsonNode values1 = objectMapper.readTree(response1).path("value");
     boolean foundT1 = false;
     for (JsonNode node : values1) {
-      assertThat(node.get("title").asText("")).isNotEqualTo("Doc-T2");
-      if ("Doc-T1".equals(node.get("title").asText(""))) {
+      assertThat(node.get("title").asText("")).isNotEqualTo(titleT2);
+      if (titleT1.equals(node.get("title").asText(""))) {
         foundT1 = true;
       }
     }
     assertThat(foundT1).isTrue();
 
-    // Read from tenant-2 — should see Doc-T2 but not Doc-T1
+    // Read from tenant-2 — should see titleT2 but not titleT1
     String response2 =
         client
             .perform(get(DOCUMENTS_URL).with(httpBasic("user-in-tenant-2", "")))
@@ -107,8 +113,8 @@ class MultiTenantAttachmentIsolationTest {
     JsonNode values2 = objectMapper.readTree(response2).path("value");
     boolean foundT2 = false;
     for (JsonNode node : values2) {
-      assertThat(node.get("title").asText("")).isNotEqualTo("Doc-T1");
-      if ("Doc-T2".equals(node.get("title").asText(""))) {
+      assertThat(node.get("title").asText("")).isNotEqualTo(titleT1);
+      if (titleT2.equals(node.get("title").asText(""))) {
         foundT2 = true;
       }
     }
