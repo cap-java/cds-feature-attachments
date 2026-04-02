@@ -58,6 +58,11 @@ public class Registration implements CdsRuntimeConfiguration {
   private static final Logger logger = LoggerFactory.getLogger(Registration.class);
 
   @Override
+  public void providers(CdsRuntimeConfigurer configurer) {
+    configurer.provider(new AttachmentsLocalizedMessageProvider());
+  }
+
+  @Override
   public void services(CdsRuntimeConfigurer configurer) {
     configurer.service(new AttachmentsServiceImpl());
   }

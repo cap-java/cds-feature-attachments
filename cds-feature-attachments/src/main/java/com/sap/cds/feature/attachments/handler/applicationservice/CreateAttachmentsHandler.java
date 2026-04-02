@@ -6,6 +6,7 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.feature.attachments.configuration.MessageKeys;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
@@ -95,12 +96,10 @@ public class CreateAttachmentsHandler implements EventHandler {
         String maxSizeStr = (String) context.get("attachment.MaxSize");
         if (maxSizeStr != null) {
           throw new ServiceException(
-              ExtendedErrorStatuses.CONTENT_TOO_LARGE,
-              "File size exceeds the limit of {}.",
-              maxSizeStr);
+              ExtendedErrorStatuses.CONTENT_TOO_LARGE, MessageKeys.FILE_SIZE_EXCEEDED, maxSizeStr);
         }
         throw new ServiceException(
-            ExtendedErrorStatuses.CONTENT_TOO_LARGE, "File size exceeds the limit.");
+            ExtendedErrorStatuses.CONTENT_TOO_LARGE, MessageKeys.FILE_SIZE_EXCEEDED_NO_SIZE);
       }
       throw e;
     }

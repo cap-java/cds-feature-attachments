@@ -6,6 +6,7 @@ package com.sap.cds.feature.attachments.handler.applicationservice.helper;
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
+import com.sap.cds.feature.attachments.configuration.MessageKeys;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
@@ -94,9 +95,7 @@ public final class ModifyApplicationHandlerHelper {
         maxSizeStr); // make max size available in context for error handling later
     ServiceException tooLargeException =
         new ServiceException(
-            ExtendedErrorStatuses.CONTENT_TOO_LARGE,
-            "File size exceeds the limit of {}.",
-            maxSizeStr);
+            ExtendedErrorStatuses.CONTENT_TOO_LARGE, MessageKeys.FILE_SIZE_EXCEEDED, maxSizeStr);
 
     if (contentLength != null) {
       try {
@@ -104,7 +103,7 @@ public final class ModifyApplicationHandlerHelper {
           throw tooLargeException;
         }
       } catch (NumberFormatException e) {
-        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Invalid Content-Length header");
+        throw new ServiceException(ErrorStatuses.BAD_REQUEST, MessageKeys.INVALID_CONTENT_LENGTH);
       }
     }
     CountingInputStream wrappedContent =
