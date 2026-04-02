@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 @ServiceName(value = "*", type = AttachmentService.class)
 public class DefaultAttachmentsServiceHandler implements EventHandler {
 
+  // Positions this handler very late (order 1020) so it runs after all standard and custom handlers
   private static final int DEFAULT_ON = 10 * HandlerOrder.AFTER + HandlerOrder.LATE;
 
   private static final Logger logger =
