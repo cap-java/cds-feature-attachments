@@ -75,9 +75,10 @@ public class Registration implements CdsRuntimeConfiguration {
     List<String> updatedPaths =
         existingPaths != null ? new ArrayList<>(existingPaths) : new ArrayList<>();
 
+    updatedPaths.add("target/cds/com.sap.cds/cds-feature-attachments/**");
     updatedPaths.add("../target/cds/com.sap.cds/cds-feature-attachments/**");
 
-    logger.info("Adding CSV paths for ScanStates data: {}", updatedPaths);
+    logger.debug("Adding CSV paths for ScanStates data: {}", updatedPaths);
 
     csvConfig.setPaths(updatedPaths);
   }

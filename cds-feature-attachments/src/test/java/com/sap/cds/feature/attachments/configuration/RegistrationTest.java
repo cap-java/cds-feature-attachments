@@ -201,7 +201,10 @@ class RegistrationTest {
     ArgumentCaptor<List<String>> pathsCaptor = ArgumentCaptor.forClass(List.class);
     verify(csvConfig).setPaths(pathsCaptor.capture());
     assertThat(pathsCaptor.getValue())
-        .contains("existing/path/**", "../target/cds/com.sap.cds/cds-feature-attachments/**");
+        .contains(
+            "existing/path/**",
+            "target/cds/com.sap.cds/cds-feature-attachments/**",
+            "../target/cds/com.sap.cds/cds-feature-attachments/**");
   }
 
   @Test
@@ -238,7 +241,9 @@ class RegistrationTest {
     ArgumentCaptor<List<String>> pathsCaptor = ArgumentCaptor.forClass(List.class);
     verify(csvConfig).setPaths(pathsCaptor.capture());
     assertThat(pathsCaptor.getValue())
-        .containsExactly("../target/cds/com.sap.cds/cds-feature-attachments/**");
+        .containsExactly(
+            "target/cds/com.sap.cds/cds-feature-attachments/**",
+            "../target/cds/com.sap.cds/cds-feature-attachments/**");
   }
 
   private void isHandlerForClassIncluded(

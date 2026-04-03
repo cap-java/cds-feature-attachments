@@ -16,9 +16,9 @@
       "collectionName": "attachments_data",
       "folders": [
         {
-          "startingFolderPath": "cds-feature-attachments/src/main/resources/cds/data",
-          "targetFolderPath": "cds-feature-attachments/src/main/resources/cds/data",
-          "oneQFolderPath": "cds-feature-attachments/src/main/resources/cds/data",
+          "startingFolderPath": "cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/data",
+          "targetFolderPath": "cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/data",
+          "oneQFolderPath": "cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/data",
           "sourceFilters": ["**/*_texts.csv"]
         }
       ]
