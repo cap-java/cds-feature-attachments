@@ -196,10 +196,21 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     }
   }
 
+  /**
+   * Returns the underlying {@link OSClient} instance. Intended for use by {@link
+   * TenantCleanupHandler} wiring in {@link
+   * com.sap.cds.feature.attachments.oss.configuration.Registration}.
+   *
+   * @return the object store client
+   */
   public OSClient getOsClient() {
     return osClient;
   }
 
+  /**
+   * Builds the object key for storage operations. In shared multitenancy mode, the key is prefixed
+   * with the tenant ID ({@code tenantId/contentId}). Otherwise, the raw content ID is used.
+   */
   private String buildObjectKey(EventContext context, String contentId) {
     if (multitenancyEnabled && "shared".equals(objectStoreKind)) {
       String tenant = getTenant(context);
@@ -218,6 +229,14 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     return tenant;
   }
 
+  /**
+   * Validates that the tenant ID is safe for use in object key construction. Rejects null, empty,
+   * or values containing path separators ({@code /}, {@code \}, {@code ..}) to prevent path
+   * traversal attacks.
+   *
+   * @param tenantId the tenant ID to validate
+   * @throws ServiceException if the tenant ID is invalid
+   */
   static void validateTenantId(String tenantId) {
     if (tenantId == null
         || tenantId.isEmpty()

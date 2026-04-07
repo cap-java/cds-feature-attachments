@@ -12,6 +12,10 @@ import com.sap.cds.services.mt.UnsubscribeEventContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Event handler that cleans up a tenant's attachment data from the shared object store when the
+ * tenant unsubscribes. Registered only in shared multitenancy mode.
+ */
 @ServiceName(DeploymentService.DEFAULT_NAME)
 public class TenantCleanupHandler implements EventHandler {
 
