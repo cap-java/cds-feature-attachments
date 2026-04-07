@@ -6,6 +6,20 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Version 1.4.0 - 2026-03-31
+
+### Added
+- Added support to restrict allowed MIME types via `@Core.AcceptableMediaTypes` annotation (#732)
+- Added malware scan check upon attachment download (#762)
+- Added mTLS authentication support for Malware Scanning Service (#765)
+- Added `isSystemUser` to `DeletionUserInfo` (#769)
+
+### Changed
+- Optimized MIME type validation to only run when `@Core.AcceptableMediaTypes` annotation exists (#761)
+
+### Fixed
+- Fixed malware scan status stuck at `Scanning` after draft activation (#771)
+
 ## Version 1.3.3 - 2026-03-15
 
 ### Fixed
