@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Factory for creating {@link OSClient} instances from object store service bindings. Detects the
- * storage backend (AWS S3, Azure Blob Storage, Google Cloud Storage) based on the credentials in the
- * binding.
+ * storage backend (AWS S3, Azure Blob Storage, Google Cloud Storage) based on the credentials in
+ * the binding.
  */
 public final class OSClientFactory {
 

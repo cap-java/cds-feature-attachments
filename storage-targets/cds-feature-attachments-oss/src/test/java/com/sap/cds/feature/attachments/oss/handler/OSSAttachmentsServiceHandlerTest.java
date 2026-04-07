@@ -99,8 +99,7 @@ class OSSAttachmentsServiceHandlerTest {
       when(binding.getCredentials()).thenReturn(creds);
 
       assertThrows(
-          ObjectStoreServiceException.class,
-          () -> OSClientFactory.create(binding, executor));
+          ObjectStoreServiceException.class, () -> OSClientFactory.create(binding, executor));
     }
 
     @Test
@@ -114,8 +113,7 @@ class OSSAttachmentsServiceHandlerTest {
       when(binding.getCredentials()).thenReturn(creds);
 
       assertThrows(
-          ObjectStoreServiceException.class,
-          () -> OSClientFactory.create(binding, executor));
+          ObjectStoreServiceException.class, () -> OSClientFactory.create(binding, executor));
     }
 
     @Test
@@ -126,8 +124,7 @@ class OSSAttachmentsServiceHandlerTest {
       when(binding.getCredentials()).thenReturn(creds);
 
       assertThrows(
-          ObjectStoreServiceException.class,
-          () -> OSClientFactory.create(binding, executor));
+          ObjectStoreServiceException.class, () -> OSClientFactory.create(binding, executor));
     }
 
     @Test
@@ -138,8 +135,7 @@ class OSSAttachmentsServiceHandlerTest {
       when(binding.getCredentials()).thenReturn(creds);
 
       assertThrows(
-          ObjectStoreServiceException.class,
-          () -> OSClientFactory.create(binding, executor));
+          ObjectStoreServiceException.class, () -> OSClientFactory.create(binding, executor));
     }
   }
 
