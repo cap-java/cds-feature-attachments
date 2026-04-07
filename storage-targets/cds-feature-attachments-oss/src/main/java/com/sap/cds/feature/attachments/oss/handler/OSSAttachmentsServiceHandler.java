@@ -6,9 +6,6 @@ package com.sap.cds.feature.attachments.oss.handler;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
-import com.sap.cds.feature.attachments.oss.client.AWSClient;
-import com.sap.cds.feature.attachments.oss.client.AzureClient;
-import com.sap.cds.feature.attachments.oss.client.GoogleClient;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -20,14 +17,9 @@ import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
-import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,69 +36,20 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
   private final String objectStoreKind;
 
   /**
-   * Creates a new OSSAttachmentsServiceHandler using the provided {@link ServiceBinding}.
+   * Creates a new OSSAttachmentsServiceHandler with the given {@link OSClient}.
    *
-   * <p>The handler will automatically detect the storage backend (AWS S3, Azure Blob Storage,
-   * Google Cloud Storage) based on the credentials in the service binding. If no valid binding is
-   * found, an {@link ObjectStoreServiceException} is thrown.
+   * <p>Use {@link com.sap.cds.feature.attachments.oss.client.OSClientFactory#create
+   * OSClientFactory.create()} to obtain an {@link OSClient} from a service binding.
    *
-   * <ul>
-   *   <li>For AWS, the binding must contain a "host" with "aws", "s3", or "amazon".
-   *   <li>For Azure, the binding must contain a "container_uri" with "azure" or "windows".
-   *   <li>For Google, the binding must contain a valid "base64EncodedPrivateKeyData" containing
-   *       "google" or "gcp".
-   * </ul>
-   *
-   * @param binding the {@link ServiceBinding} containing credentials for the object store service
-   * @param executor the {@link ExecutorService} for async operations
+   * @param osClient the object store client for storage operations
    * @param multitenancyEnabled whether multitenancy is enabled
    * @param objectStoreKind the object store kind (e.g. "shared")
-   * @throws ObjectStoreServiceException if no valid object store service binding is found
    */
   public OSSAttachmentsServiceHandler(
-      ServiceBinding binding,
-      ExecutorService executor,
-      boolean multitenancyEnabled,
-      String objectStoreKind) {
+      OSClient osClient, boolean multitenancyEnabled, String objectStoreKind) {
+    this.osClient = osClient;
     this.multitenancyEnabled = multitenancyEnabled;
     this.objectStoreKind = objectStoreKind;
-    final String host = (String) binding.getCredentials().get("host"); // AWS
-    final String containerUri = (String) binding.getCredentials().get("container_uri"); // Azure
-    final String base64EncodedPrivateKeyData =
-        (String) binding.getCredentials().get("base64EncodedPrivateKeyData"); // GCP
-
-    // Check the service binding credentials to determine which client to use.
-    if (host != null && Stream.of("aws", "s3", "amazon").anyMatch(host::contains)) {
-      this.osClient = new AWSClient(binding, executor);
-    } else if (containerUri != null
-        && Stream.of("azure", "windows").anyMatch(containerUri::contains)) {
-      this.osClient = new AzureClient(binding, executor);
-    } else if (base64EncodedPrivateKeyData != null) {
-      String decoded = "";
-      try {
-        decoded =
-            new String(
-                Base64.getDecoder().decode(base64EncodedPrivateKeyData), StandardCharsets.UTF_8);
-      } catch (IllegalArgumentException e) {
-        throw new ObjectStoreServiceException(
-            "No valid base64EncodedPrivateKeyData found in Google service binding: %s"
-                .formatted(binding),
-            e);
-      }
-      // Redeclaring is needed here to make the variable effectively final for the
-      // lambda expression
-      final String dec = decoded;
-      if (Stream.of("google", "gcp").anyMatch(dec::contains)) {
-        this.osClient = new GoogleClient(binding, executor);
-      } else {
-        throw new ObjectStoreServiceException(
-            "No valid Google service binding found in binding: %s".formatted(binding));
-      }
-    } else {
-      throw new ObjectStoreServiceException(
-          "No valid object store service found in binding: %s. Please ensure you have a valid AWS S3, Azure Blob Storage, or Google Cloud Storage service binding."
-              .formatted(binding));
-    }
   }
 
   @On
@@ -194,17 +137,6 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     } finally {
       context.setCompleted();
     }
-  }
-
-  /**
-   * Returns the underlying {@link OSClient} instance. Intended for use by {@link
-   * TenantCleanupHandler} wiring in {@link
-   * com.sap.cds.feature.attachments.oss.configuration.Registration}.
-   *
-   * @return the object store client
-   */
-  public OSClient getOsClient() {
-    return osClient;
   }
 
   /**

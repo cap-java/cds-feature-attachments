@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
+import com.sap.cds.feature.attachments.oss.client.OSClientFactory;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
@@ -39,8 +40,9 @@ public class OSSAttachmentsServiceHandlerTestUtils {
     String testFileName = "testFileName-" + System.currentTimeMillis() + ".txt";
     String testFileContent = "test";
 
+    OSClient osClient = OSClientFactory.create(binding, executor);
     OSSAttachmentsServiceHandler handler =
-        new OSSAttachmentsServiceHandler(binding, executor, false, null);
+        new OSSAttachmentsServiceHandler(osClient, false, null);
 
     // Create an AttachmentCreateEventContext with mocked data - to upload a test attachment
     MediaData createMediaData = mock(MediaData.class);

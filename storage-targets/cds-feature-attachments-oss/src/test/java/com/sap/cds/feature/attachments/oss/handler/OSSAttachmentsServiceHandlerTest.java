@@ -16,6 +16,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
+import com.sap.cds.feature.attachments.oss.client.OSClientFactory;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
@@ -59,13 +60,6 @@ class OSSAttachmentsServiceHandlerTest {
     return binding;
   }
 
-  private static void injectOsClient(OSSAttachmentsServiceHandler handler, OSClient client)
-      throws NoSuchFieldException, IllegalAccessException {
-    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
-    field.setAccessible(true);
-    field.set(handler, client);
-  }
-
   private static CdsEntity stubEntity(String name) {
     CdsEntity entity = mock(CdsEntity.class);
     when(entity.getQualifiedName()).thenReturn(name);
@@ -95,10 +89,10 @@ class OSSAttachmentsServiceHandlerTest {
   }
 
   @Nested
-  class ConstructorTests {
+  class FactoryTests {
 
     @Test
-    void testConstructorHandlesInvalidBase64EncodedPrivateKeyData() {
+    void testFactoryHandlesInvalidBase64EncodedPrivateKeyData() {
       ServiceBinding binding = mock(ServiceBinding.class);
       HashMap<String, Object> creds = new HashMap<>();
       creds.put("base64EncodedPrivateKeyData", "not-a-valid-base64-string");
@@ -106,11 +100,11 @@ class OSSAttachmentsServiceHandlerTest {
 
       assertThrows(
           ObjectStoreServiceException.class,
-          () -> new OSSAttachmentsServiceHandler(binding, executor, false, null));
+          () -> OSClientFactory.create(binding, executor));
     }
 
     @Test
-    void testConstructorHandlesValidBase64ButNoGoogleOrGcp() {
+    void testFactoryHandlesValidBase64ButNoGoogleOrGcp() {
       String plain = "this is just a dummy string without keywords";
       String base64 = Base64.getEncoder().encodeToString(plain.getBytes(StandardCharsets.UTF_8));
 
@@ -121,11 +115,11 @@ class OSSAttachmentsServiceHandlerTest {
 
       assertThrows(
           ObjectStoreServiceException.class,
-          () -> new OSSAttachmentsServiceHandler(binding, executor, false, null));
+          () -> OSClientFactory.create(binding, executor));
     }
 
     @Test
-    void testConstructorHandlesInValidBase64() {
+    void testFactoryHandlesInValidBase64() {
       ServiceBinding binding = mock(ServiceBinding.class);
       HashMap<String, Object> creds = new HashMap<>();
       creds.put("base64EncodedPrivateKeyData", "this is just a dummy string without keywords");
@@ -133,11 +127,11 @@ class OSSAttachmentsServiceHandlerTest {
 
       assertThrows(
           ObjectStoreServiceException.class,
-          () -> new OSSAttachmentsServiceHandler(binding, executor, false, null));
+          () -> OSClientFactory.create(binding, executor));
     }
 
     @Test
-    void testConstructorHandlesNoValidObjectStoreService() {
+    void testFactoryHandlesNoValidObjectStoreService() {
       ServiceBinding binding = mock(ServiceBinding.class);
       HashMap<String, Object> creds = new HashMap<>();
       creds.put("someOtherField", "someValue");
@@ -145,7 +139,7 @@ class OSSAttachmentsServiceHandlerTest {
 
       assertThrows(
           ObjectStoreServiceException.class,
-          () -> new OSSAttachmentsServiceHandler(binding, executor, false, null));
+          () -> OSClientFactory.create(binding, executor));
     }
   }
 
@@ -153,10 +147,9 @@ class OSSAttachmentsServiceHandlerTest {
   class SingleTenantOperations {
 
     @BeforeEach
-    void setup() throws NoSuchFieldException, IllegalAccessException {
-      handler = new OSSAttachmentsServiceHandler(createAwsBinding(), executor, false, null);
+    void setup() {
       mockOsClient = mock(OSClient.class);
-      injectOsClient(handler, mockOsClient);
+      handler = new OSSAttachmentsServiceHandler(mockOsClient, false, null);
     }
 
     @Test
@@ -233,10 +226,9 @@ class OSSAttachmentsServiceHandlerTest {
   class ExceptionHandling {
 
     @BeforeEach
-    void setup() throws NoSuchFieldException, IllegalAccessException {
-      handler = new OSSAttachmentsServiceHandler(createAwsBinding(), executor, false, null);
+    void setup() {
       mockOsClient = mock(OSClient.class);
-      injectOsClient(handler, mockOsClient);
+      handler = new OSSAttachmentsServiceHandler(mockOsClient, false, null);
     }
 
     @Test
@@ -343,10 +335,9 @@ class OSSAttachmentsServiceHandlerTest {
   class MultitenancyTests {
 
     @BeforeEach
-    void setup() throws NoSuchFieldException, IllegalAccessException {
-      handler = new OSSAttachmentsServiceHandler(createAwsBinding(), executor, true, "shared");
+    void setup() {
       mockOsClient = mock(OSClient.class);
-      injectOsClient(handler, mockOsClient);
+      handler = new OSSAttachmentsServiceHandler(mockOsClient, true, "shared");
     }
 
     @Test

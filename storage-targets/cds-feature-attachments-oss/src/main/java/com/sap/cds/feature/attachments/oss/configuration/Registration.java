@@ -3,6 +3,8 @@
  */
 package com.sap.cds.feature.attachments.oss.configuration;
 
+import com.sap.cds.feature.attachments.oss.client.OSClient;
+import com.sap.cds.feature.attachments.oss.client.OSClientFactory;
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.oss.handler.TenantCleanupHandler;
 import com.sap.cds.services.environment.CdsEnvironment;
@@ -50,13 +52,13 @@ public class Registration implements CdsRuntimeConfiguration {
                       Thread.currentThread().interrupt();
                     }
                   }));
+      OSClient osClient = OSClientFactory.create(bindingOpt.get(), executor);
       OSSAttachmentsServiceHandler handler =
-          new OSSAttachmentsServiceHandler(
-              bindingOpt.get(), executor, multitenancyEnabled, objectStoreKind);
+          new OSSAttachmentsServiceHandler(osClient, multitenancyEnabled, objectStoreKind);
       configurer.eventHandler(handler);
 
       if (multitenancyEnabled && "shared".equals(objectStoreKind)) {
-        configurer.eventHandler(new TenantCleanupHandler(handler.getOsClient()));
+        configurer.eventHandler(new TenantCleanupHandler(osClient));
         logger.info(
             "Registered OSS Attachments Service Handler with shared multitenancy mode and tenant cleanup.");
       } else {

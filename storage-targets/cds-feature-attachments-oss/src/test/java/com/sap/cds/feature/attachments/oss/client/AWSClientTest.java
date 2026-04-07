@@ -14,8 +14,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
-import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandlerTestUtils;
 import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
@@ -49,11 +47,8 @@ class AWSClientTest {
   ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
-  void testConstructorWithAwsBindingUsesAwsClient()
-      throws NoSuchFieldException, IllegalAccessException {
-    OSSAttachmentsServiceHandler handler =
-        new OSSAttachmentsServiceHandler(getDummyBinding(), executor, false, null);
-    OSClient client = OSSAttachmentsServiceHandlerTestUtils.getOsClient(handler);
+  void testFactoryWithAwsBindingCreatesAwsClient() {
+    OSClient client = OSClientFactory.create(getDummyBinding(), executor);
     assertInstanceOf(AWSClient.class, client);
   }
 
