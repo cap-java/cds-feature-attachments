@@ -26,12 +26,14 @@ import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.environment.CdsEnvironment;
+import com.sap.cds.services.environment.CdsProperties;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntime;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -179,6 +181,69 @@ class RegistrationTest {
     isHandlerForClassMissing(handlers, DraftPatchAttachmentsHandler.class);
     isHandlerForClassMissing(handlers, DraftCancelAttachmentsHandler.class);
     isHandlerForClassMissing(handlers, DraftActiveAttachmentsHandler.class);
+  }
+
+  @Test
+  void environmentAddsCsvPath() {
+    CdsEnvironment environment = mock(CdsEnvironment.class);
+    CdsProperties cdsProperties = mock(CdsProperties.class);
+    CdsProperties.DataSource dataSource = mock(CdsProperties.DataSource.class);
+    CdsProperties.DataSource.Csv csvConfig = mock(CdsProperties.DataSource.Csv.class);
+
+    when(configurer.getCdsRuntime().getEnvironment()).thenReturn(environment);
+    when(environment.getCdsProperties()).thenReturn(cdsProperties);
+    when(cdsProperties.getDataSource()).thenReturn(dataSource);
+    when(dataSource.getCsv()).thenReturn(csvConfig);
+    when(csvConfig.getPaths()).thenReturn(new ArrayList<>(List.of("existing/path/**")));
+
+    cut.environment(configurer);
+
+    ArgumentCaptor<List<String>> pathsCaptor = ArgumentCaptor.forClass(List.class);
+    verify(csvConfig).setPaths(pathsCaptor.capture());
+    assertThat(pathsCaptor.getValue())
+        .contains(
+            "existing/path/**",
+            "target/cds/com.sap.cds/cds-feature-attachments/**",
+            "../target/cds/com.sap.cds/cds-feature-attachments/**");
+  }
+
+  @Test
+  void environmentSkipsWhenCsvConfigIsNull() {
+    CdsEnvironment environment = mock(CdsEnvironment.class);
+    CdsProperties cdsProperties = mock(CdsProperties.class);
+    CdsProperties.DataSource dataSource = mock(CdsProperties.DataSource.class);
+
+    when(configurer.getCdsRuntime().getEnvironment()).thenReturn(environment);
+    when(environment.getCdsProperties()).thenReturn(cdsProperties);
+    when(cdsProperties.getDataSource()).thenReturn(dataSource);
+    when(dataSource.getCsv()).thenReturn(null);
+
+    cut.environment(configurer);
+
+    // No exception should be thrown, and no setPaths should be called
+  }
+
+  @Test
+  void environmentHandlesNullExistingPaths() {
+    CdsEnvironment environment = mock(CdsEnvironment.class);
+    CdsProperties cdsProperties = mock(CdsProperties.class);
+    CdsProperties.DataSource dataSource = mock(CdsProperties.DataSource.class);
+    CdsProperties.DataSource.Csv csvConfig = mock(CdsProperties.DataSource.Csv.class);
+
+    when(configurer.getCdsRuntime().getEnvironment()).thenReturn(environment);
+    when(environment.getCdsProperties()).thenReturn(cdsProperties);
+    when(cdsProperties.getDataSource()).thenReturn(dataSource);
+    when(dataSource.getCsv()).thenReturn(csvConfig);
+    when(csvConfig.getPaths()).thenReturn(null);
+
+    cut.environment(configurer);
+
+    ArgumentCaptor<List<String>> pathsCaptor = ArgumentCaptor.forClass(List.class);
+    verify(csvConfig).setPaths(pathsCaptor.capture());
+    assertThat(pathsCaptor.getValue())
+        .containsExactly(
+            "target/cds/com.sap.cds/cds-feature-attachments/**",
+            "../target/cds/com.sap.cds/cds-feature-attachments/**");
   }
 
   private void isHandlerForClassIncluded(
