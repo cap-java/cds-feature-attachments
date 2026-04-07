@@ -189,11 +189,11 @@ class GoogleClientTest {
     Iterator<Blob> blobIterator = java.util.List.of(mockBlob1, mockBlob2).iterator();
     when(mockPage.iterateAll()).thenReturn(() -> blobIterator);
     when(mockStorage.list(anyString(), any(), any())).thenReturn(mockPage);
-    when(mockStorage.delete(any(BlobId.class))).thenReturn(true);
+    when(mockStorage.delete(anyList())).thenReturn(java.util.List.of(true, true));
 
     googleClient.deleteContentByPrefix("prefix/").get();
 
-    verify(mockStorage, times(2)).delete(any(BlobId.class));
+    verify(mockStorage).delete(anyList());
   }
 
   @Test

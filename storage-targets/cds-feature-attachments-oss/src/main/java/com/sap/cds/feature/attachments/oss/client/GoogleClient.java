@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -151,14 +153,17 @@ public class GoogleClient implements OSClient {
                     bucketName,
                     Storage.BlobListOption.prefix(prefix),
                     Storage.BlobListOption.versions(true));
+            List<BlobId> blobIds = new ArrayList<>();
             for (Blob blob : blobs.iterateAll()) {
-              boolean deleted =
-                  storage.delete(BlobId.of(bucketName, blob.getName(), blob.getGeneration()));
-              if (!deleted) {
-                logger.warn(
-                    "Failed to delete blob {} (generation {}) during prefix cleanup",
-                    blob.getName(),
-                    blob.getGeneration());
+              blobIds.add(BlobId.of(bucketName, blob.getName(), blob.getGeneration()));
+            }
+            if (!blobIds.isEmpty()) {
+              List<Boolean> results = storage.delete(blobIds);
+              for (int i = 0; i < results.size(); i++) {
+                if (!results.get(i)) {
+                  logger.warn(
+                      "Failed to delete blob {} during prefix cleanup", blobIds.get(i).getName());
+                }
               }
             }
           } catch (RuntimeException e) {
