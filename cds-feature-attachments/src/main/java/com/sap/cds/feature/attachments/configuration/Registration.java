@@ -59,6 +59,8 @@ import org.slf4j.LoggerFactory;
 public class Registration implements CdsRuntimeConfiguration {
 
   private static final Logger logger = LoggerFactory.getLogger(Registration.class);
+  private static final int DEFAULT_TIMEOUT_SECONDS = 120;
+  private static final int DEFAULT_MAX_CONNECTIONS = 20;
 
   @Override
   public void environment(CdsRuntimeConfigurer configurer) {
@@ -232,8 +234,10 @@ public class Registration implements CdsRuntimeConfiguration {
     // the common prefix for the connection pool configuration
     final String prefix = "cds.attachments.malwareScanner.http.%s";
     Duration timeout =
-        Duration.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, 120));
-    int maxConnections = env.getProperty(prefix.formatted("maxConnections"), Integer.class, 20);
+        Duration.ofSeconds(
+            env.getProperty(prefix.formatted("timeout"), Integer.class, DEFAULT_TIMEOUT_SECONDS));
+    int maxConnections =
+        env.getProperty(prefix.formatted("maxConnections"), Integer.class, DEFAULT_MAX_CONNECTIONS);
     logger.debug(
         "Connection pool configuration: timeout={}, maxConnections={}", timeout, maxConnections);
     return new ConnectionPool(timeout, maxConnections, maxConnections);
