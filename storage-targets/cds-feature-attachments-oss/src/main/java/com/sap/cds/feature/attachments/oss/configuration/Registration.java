@@ -28,7 +28,14 @@ public class Registration implements CdsRuntimeConfiguration {
       boolean multitenancyEnabled = isMultitenancyEnabled(env);
       String objectStoreKind = getObjectStoreKind(env);
 
-      ExecutorService executor = Executors.newCachedThreadPool();
+      ExecutorService executor =
+          Executors.newFixedThreadPool(
+              16,
+              r -> {
+                Thread t = new Thread(r, "attachment-oss-tasks");
+                t.setDaemon(true);
+                return t;
+              });
       Runtime.getRuntime()
           .addShutdownHook(
               new Thread(
