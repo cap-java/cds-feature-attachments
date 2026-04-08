@@ -28,8 +28,8 @@ import org.junit.jupiter.api.TestInstance;
  * attachment operations (create, read, delete, update, tenant isolation, tenant cleanup) against a
  * real object store with shared-bucket multitenancy enabled.
  *
- * <p>Uses the {@link OSClient} directly with tenant-prefixed object keys ({@code tenantId/contentId})
- * to simulate the key structure used by {@link
+ * <p>Uses the {@link OSClient} directly with tenant-prefixed object keys ({@code
+ * tenantId/contentId}) to simulate the key structure used by {@link
  * com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler} in shared multitenancy
  * mode.
  *
