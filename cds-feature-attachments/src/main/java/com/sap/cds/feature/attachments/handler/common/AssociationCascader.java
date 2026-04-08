@@ -27,20 +27,21 @@ public class AssociationCascader {
   public List<String> findMediaEntityNames(CdsModel model, CdsEntity entity) {
     NodeTree tree = findEntityPath(model, entity);
     List<String> result = new ArrayList<>();
-    collect(tree, result);
+    collect(model, tree, result);
     return result;
   }
 
-  private void collect(NodeTree node, List<String> result) {
-    String entityName = node.getIdentifier().fullEntityName();
-
+  private void collect(CdsModel model, NodeTree node, List<String> result) {
     if (!node.getChildren().isEmpty()) {
       for (NodeTree child : node.getChildren()) {
-        collect(child, result);
+        collect(model, child, result);
       }
     } else {
-      // leaf = media entity
-      result.add(entityName);
+      String entityName = node.getIdentifier().fullEntityName();
+      model
+          .findEntity(entityName)
+          .filter(ApplicationHandlerHelper::isMediaEntity)
+          .ifPresent(e -> result.add(entityName));
     }
   }
 

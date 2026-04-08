@@ -16,6 +16,13 @@ entity Roots : cuid {
     sizeLimitedAttachments    : Composition of many Attachments;
     mediaValidatedAttachments : Composition of many Attachments;
     mimeValidatedAttachments  : Composition of many Attachments;
+    contributors              : Composition of many Contributors
+                                    on contributors.rootId = $self.ID;
+}
+
+entity Contributors : cuid {
+    rootId : UUID;
+    name   : String;
 }
 
 entity Items : cuid {
