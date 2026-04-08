@@ -50,6 +50,8 @@ class RegistrationTest {
     environment = mock(CdsEnvironment.class);
     when(configurer.getCdsRuntime()).thenReturn(cdsRuntime);
     when(cdsRuntime.getEnvironment()).thenReturn(environment);
+    when(environment.getProperty("cds.attachments.objectStore.threadPoolSize", Integer.class, 16))
+        .thenReturn(16);
     awsBinding = createAwsBinding();
   }
 
