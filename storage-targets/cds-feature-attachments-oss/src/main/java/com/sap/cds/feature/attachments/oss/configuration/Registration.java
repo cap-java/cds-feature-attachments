@@ -30,9 +30,13 @@ public class Registration implements CdsRuntimeConfiguration {
       boolean multitenancyEnabled = isMultitenancyEnabled(env);
       String objectStoreKind = getObjectStoreKind(env);
 
+      // Fixed thread pool for background I/O operations (upload, download, delete).
+      // Default 16 is tuned for I/O-bound cloud storage calls, not CPU-bound work.
+      int threadPoolSize =
+          env.getProperty("cds.attachments.objectStore.threadPoolSize", Integer.class, 16);
       ExecutorService executor =
           Executors.newFixedThreadPool(
-              16,
+              threadPoolSize,
               r -> {
                 Thread t = new Thread(r, "attachment-oss-tasks");
                 t.setDaemon(true);
