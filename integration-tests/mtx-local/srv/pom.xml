@@ -60,6 +60,13 @@
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-feature-attachments-oss</artifactId>
+      <version>${revision}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
