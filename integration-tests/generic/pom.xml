@@ -8,10 +8,10 @@
     <version>${revision}</version>
   </parent>
 
-  <artifactId>cds-feature-attachments-integration-tests-srv</artifactId>
+  <artifactId>cds-feature-attachments-integration-tests-generic</artifactId>
   <packaging>jar</packaging>
 
-  <name>Integration Tests - Service</name>
+  <name>Integration Tests - Generic</name>
 
   <properties>
     <generation-package>com.sap.cds.feature.attachments.generated</generation-package>
@@ -97,7 +97,7 @@
               <workingDirectory>${project.basedir}/..</workingDirectory>
               <commands>
                 <command>build --for java</command>
-                <command>deploy --to h2 --dry &gt;
+                <command>deploy --to h2 --dry db generic &gt;
                                     "${project.basedir}/src/main/resources/schema.sql"</command>
               </commands>
             </configuration>
@@ -110,6 +110,7 @@
             </goals>
             <configuration>
               <workingDirectory>${project.basedir}/..</workingDirectory>
+              <csnFile>${project.basedir}/src/main/resources/edmx/csn.json</csnFile>
               <basePackage>${generation-package}.integration.test.cds4j</basePackage>
             </configuration>
           </execution>

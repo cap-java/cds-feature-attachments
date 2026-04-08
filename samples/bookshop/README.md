@@ -120,6 +120,35 @@ This sample uses the default in-memory storage, which stores attachments directl
 
 For advanced topics like object store integration, malware scanning, and security configuration, see the [main project documentation](../../README.md).
 
+## Multi-Tenancy
+
+This sample also supports multi-tenant mode via profiles.
+
+### Local MTX
+
+Run the MTX sidecar and the Java app in separate terminals:
+
+```bash
+# Terminal 1: Start the sidecar
+cd mtx/sidecar
+npm install
+cds watch
+
+# Terminal 2: Start the Java app with MTX profiles
+cds watch --profile with-mtx-sidecar
+# or: mvn spring-boot:run -Dspring-boot.run.profiles=local-mtxs
+```
+
+Mock users with tenant assignments: `admin`/`admin` (tenant t1), `erin`/`erin` (tenant t2).
+
+### Cloud Foundry Deployment
+
+```bash
+cds add xsuaa,attachments   # if not already done
+cds build --production
+cf deploy gen/mta.tar
+```
+
 ## Troubleshooting
 
 - **Port conflicts**: If port 8080 is in use, specify a different port: `mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"`

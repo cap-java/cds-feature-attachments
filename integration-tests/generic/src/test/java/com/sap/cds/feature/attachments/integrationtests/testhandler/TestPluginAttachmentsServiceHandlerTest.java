@@ -6,7 +6,6 @@ package com.sap.cds.feature.attachments.integrationtests.testhandler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.*;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
@@ -17,7 +16,6 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRe
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
@@ -75,12 +73,10 @@ class TestPluginAttachmentsServiceHandlerTest {
   }
 
   @Test
-  void dummyTestForCreate() throws IOException {
+  void dummyTestForCreate() {
     var context = AttachmentCreateEventContext.create();
     context.setData(MediaData.create());
-    var stream = mock(InputStream.class);
-    when(stream.readAllBytes()).thenReturn("test".getBytes(StandardCharsets.UTF_8));
-    context.getData().setContent(stream);
+    context.getData().setContent(new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8)));
 
     assertDoesNotThrow(() -> cut.createAttachment(context));
   }

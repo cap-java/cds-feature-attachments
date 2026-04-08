@@ -1,0 +1,23 @@
+cds:
+  multi-tenancy:
+    sidecar:
+      url: http://localhost:4005
+  security:
+    mock:
+      users:
+        - name: user-in-tenant-1
+          tenant: tenant-1
+        - name: user-in-tenant-2
+          tenant: tenant-2
+        - name: user-in-tenant-3
+          tenant: tenant-3
+
+---
+spring:
+  config.activate.on-profile: local-with-tenants
+cds:
+  security:
+    mock:
+      tenants:
+        - name: tenant-1
+        - name: tenant-2
