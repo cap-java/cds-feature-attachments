@@ -47,8 +47,8 @@
 			<!-- CDS ATTACHMENTS FEATURE -->
 			<dependency>
 				<groupId>com.sap.cds</groupId>
-				<artifactId>cds-feature-attachments-oss</artifactId>
-				<version>1.4.0-SNAPSHOT</version>
+				<artifactId>cds-feature-attachments</artifactId>
+				<version>1.4.1</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

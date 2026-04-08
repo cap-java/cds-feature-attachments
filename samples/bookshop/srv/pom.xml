@@ -64,7 +64,7 @@
 		<!-- CDS ATTACHMENTS FEATURE DEPENDENCY -->
 		<dependency>
 			<groupId>com.sap.cds</groupId>
-			<artifactId>cds-feature-attachments-oss</artifactId>
+			<artifactId>cds-feature-attachments</artifactId>
 		</dependency>
 
 		<!-- CDS MULTITENANCY FEATURE -->
