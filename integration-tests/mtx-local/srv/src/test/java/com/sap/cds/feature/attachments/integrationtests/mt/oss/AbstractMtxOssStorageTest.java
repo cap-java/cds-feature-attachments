@@ -11,6 +11,7 @@ import com.sap.cds.feature.attachments.oss.client.OSClientFactory;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -101,7 +102,7 @@ abstract class AbstractMtxOssStorageTest {
   }
 
   @Test
-  void tenantIsolation_tenant2CannotReadTenant1Attachment() throws Exception {
+  void readWithDifferentTenantPrefix_fails() throws Exception {
     String contentId = uniqueId("isolation");
     String t1Key = objectKey(TENANT_1, contentId);
     String t2Key = objectKey(TENANT_2, contentId);
@@ -218,7 +219,7 @@ abstract class AbstractMtxOssStorageTest {
   }
 
   private void uploadContent(String objectKey, String content) throws Exception {
-    InputStream stream = new ByteArrayInputStream(content.getBytes());
+    InputStream stream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
     osClient.uploadContent(stream, objectKey, MIME_TYPE).get();
     createdObjectKeys.add(objectKey);
   }
@@ -228,7 +229,7 @@ abstract class AbstractMtxOssStorageTest {
       if (stream == null) {
         throw new RuntimeException("Content not found for key: " + objectKey);
       }
-      return new String(stream.readAllBytes());
+      return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
     }
   }
 }
