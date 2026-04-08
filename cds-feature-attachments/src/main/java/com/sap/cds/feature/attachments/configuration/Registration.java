@@ -36,6 +36,7 @@ import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.environment.CdsEnvironment;
+import com.sap.cds.services.environment.CdsProperties;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -45,6 +46,8 @@ import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 import com.sap.cds.services.utils.environment.ServiceBindingUtils;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +59,31 @@ import org.slf4j.LoggerFactory;
 public class Registration implements CdsRuntimeConfiguration {
 
   private static final Logger logger = LoggerFactory.getLogger(Registration.class);
+  private static final int DEFAULT_TIMEOUT_SECONDS = 120;
+  private static final int DEFAULT_MAX_CONNECTIONS = 20;
+
+  @Override
+  public void environment(CdsRuntimeConfigurer configurer) {
+    CdsEnvironment environment = configurer.getCdsRuntime().getEnvironment();
+    CdsProperties cdsProperties = environment.getCdsProperties();
+
+    CdsProperties.DataSource.Csv csvConfig = cdsProperties.getDataSource().getCsv();
+    if (csvConfig == null) {
+      logger.warn("CSV configuration is not available, skipping CSV path addition");
+      return;
+    }
+
+    List<String> existingPaths = csvConfig.getPaths();
+    List<String> updatedPaths =
+        existingPaths != null ? new ArrayList<>(existingPaths) : new ArrayList<>();
+
+    updatedPaths.add("target/cds/com.sap.cds/cds-feature-attachments/**");
+    updatedPaths.add("../target/cds/com.sap.cds/cds-feature-attachments/**");
+
+    logger.debug("Adding CSV paths for ScanStates data: {}", updatedPaths);
+
+    csvConfig.setPaths(updatedPaths);
+  }
 
   @Override
   public void services(CdsRuntimeConfigurer configurer) {
@@ -206,8 +234,10 @@ public class Registration implements CdsRuntimeConfiguration {
     // the common prefix for the connection pool configuration
     final String prefix = "cds.attachments.malwareScanner.http.%s";
     Duration timeout =
-        Duration.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, 120));
-    int maxConnections = env.getProperty(prefix.formatted("maxConnections"), Integer.class, 20);
+        Duration.ofSeconds(
+            env.getProperty(prefix.formatted("timeout"), Integer.class, DEFAULT_TIMEOUT_SECONDS));
+    int maxConnections =
+        env.getProperty(prefix.formatted("maxConnections"), Integer.class, DEFAULT_MAX_CONNECTIONS);
     logger.debug(
         "Connection pool configuration: timeout={}, maxConnections={}", timeout, maxConnections);
     return new ConnectionPool(timeout, maxConnections, maxConnections);
