@@ -177,10 +177,8 @@ abstract class AbstractMtxOssStorageTest {
       String objectKey = objectKey(TENANT_1, uniqueId("multi-" + i));
       objectKeys.add(objectKey);
       uploadContent(objectKey, "file " + i);
-    }
-
-    for (int i = 0; i < 3; i++) {
-      assertThat(downloadContent(objectKeys.get(i))).isEqualTo("file " + i);
+      // read-back immediately to avoid S3 eventual consistency issues
+      assertThat(downloadContent(objectKey)).isEqualTo("file " + i);
     }
   }
 
