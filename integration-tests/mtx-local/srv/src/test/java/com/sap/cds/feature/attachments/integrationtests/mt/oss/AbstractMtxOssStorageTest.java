@@ -184,9 +184,13 @@ abstract class AbstractMtxOssStorageTest {
 
   @Test
   void tenantCleanup_deleteByPrefixRemovesAllTenantObjects() throws Exception {
+    // Use a dedicated tenant prefix so deleteContentByPrefix only touches objects created here,
+    // avoiding 404s from blobs already deleted by other tests (Azure lists-then-deletes).
+    String cleanupTenant = "cleanup-tenant-" + testRunId;
+
     List<String> t1Keys = new ArrayList<>();
     for (int i = 0; i < 3; i++) {
-      String objectKey = objectKey(TENANT_1, uniqueId("cleanup-t1-" + i));
+      String objectKey = objectKey(cleanupTenant, uniqueId("cleanup-t1-" + i));
       t1Keys.add(objectKey);
       uploadContent(objectKey, "t1 cleanup data " + i);
     }
@@ -194,12 +198,12 @@ abstract class AbstractMtxOssStorageTest {
     String t2Key = objectKey(TENANT_2, uniqueId("cleanup-t2"));
     uploadContent(t2Key, "t2 data survives cleanup");
 
-    osClient.deleteContentByPrefix(TENANT_1 + "/").get();
+    osClient.deleteContentByPrefix(cleanupTenant + "/").get();
     createdObjectKeys.removeAll(t1Keys);
 
     for (String key : t1Keys) {
       assertThatThrownBy(() -> downloadContent(key))
-          .as("Tenant-1 object should have been deleted by cleanup: " + key)
+          .as("Object should have been deleted by cleanup: " + key)
           .isInstanceOf(Exception.class);
     }
 
