@@ -100,8 +100,7 @@ public class ServiceManagerClient {
     String bindingId = binding.get("id").asText();
     String instanceId = binding.get("service_instance_id").asText();
     @SuppressWarnings("unchecked")
-    Map<String, Object> credentials =
-        MAPPER.convertValue(binding.get("credentials"), Map.class);
+    Map<String, Object> credentials = MAPPER.convertValue(binding.get("credentials"), Map.class);
     return Optional.of(new ServiceManagerBindingResult(bindingId, instanceId, credentials));
   }
 
@@ -238,7 +237,9 @@ public class ServiceManagerClient {
 
       JsonNode json = sendGet(url);
       String state =
-          json.has("state") ? json.get("state").asText() : json.path("last_operation").path("state").asText("");
+          json.has("state")
+              ? json.get("state").asText()
+              : json.path("last_operation").path("state").asText("");
       if ("succeeded".equals(state)) {
         return json;
       } else if ("failed".equals(state)) {

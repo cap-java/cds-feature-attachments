@@ -80,7 +80,8 @@ public class ObjectStoreLifecycleHandler {
 
     var bindingResult = smClient.getBinding(tenantId);
     if (bindingResult.isEmpty()) {
-      logger.warn("No binding found for tenant {} during unsubscribe, nothing to clean up", tenantId);
+      logger.warn(
+          "No binding found for tenant {} during unsubscribe, nothing to clean up", tenantId);
       clientProvider.evict(tenantId);
       return;
     }

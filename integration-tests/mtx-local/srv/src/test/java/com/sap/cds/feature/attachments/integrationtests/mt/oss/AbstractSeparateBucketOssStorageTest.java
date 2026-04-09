@@ -98,16 +98,14 @@ abstract class AbstractSeparateBucketOssStorageTest {
   void createAndReadInTenant1Bucket() throws Exception {
     String contentId = uniqueId("crud-t1");
     uploadContent(tenant1Client, tenant1CreatedKeys, contentId, "hello from tenant 1 bucket");
-    assertThat(downloadContent(tenant1Client, contentId))
-        .isEqualTo("hello from tenant 1 bucket");
+    assertThat(downloadContent(tenant1Client, contentId)).isEqualTo("hello from tenant 1 bucket");
   }
 
   @Test
   void createAndReadInTenant2Bucket() throws Exception {
     String contentId = uniqueId("crud-t2");
     uploadContent(tenant2Client, tenant2CreatedKeys, contentId, "hello from tenant 2 bucket");
-    assertThat(downloadContent(tenant2Client, contentId))
-        .isEqualTo("hello from tenant 2 bucket");
+    assertThat(downloadContent(tenant2Client, contentId)).isEqualTo("hello from tenant 2 bucket");
   }
 
   // --- Tenant isolation: cross-bucket reads fail ---
@@ -261,8 +259,7 @@ abstract class AbstractSeparateBucketOssStorageTest {
     tenant1CreatedKeys.remove(t1Key);
 
     // Tenant-1 object gone
-    assertThatThrownBy(() -> downloadContent(tenant1Client, t1Key))
-        .isInstanceOf(Exception.class);
+    assertThatThrownBy(() -> downloadContent(tenant1Client, t1Key)).isInstanceOf(Exception.class);
 
     // Tenant-2 object survives — different bucket entirely
     assertThat(downloadContent(tenant2Client, t2Key)).isEqualTo("t2 should survive");
@@ -398,8 +395,8 @@ abstract class AbstractSeparateBucketOssStorageTest {
     return "sep-test-" + label + "-" + testRunId;
   }
 
-  private void uploadContent(
-      OSClient client, Set<String> tracker, String contentId, String content) throws Exception {
+  private void uploadContent(OSClient client, Set<String> tracker, String contentId, String content)
+      throws Exception {
     InputStream stream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
     client.uploadContent(stream, contentId, MIME_TYPE).get();
     tracker.add(contentId);

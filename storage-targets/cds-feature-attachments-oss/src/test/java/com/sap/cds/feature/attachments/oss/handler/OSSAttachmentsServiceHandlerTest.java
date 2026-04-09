@@ -146,7 +146,8 @@ class OSSAttachmentsServiceHandlerTest {
     @BeforeEach
     void setup() {
       mockOsClient = mock(OSClient.class);
-      handler = new OSSAttachmentsServiceHandler(new SharedOSClientProvider(mockOsClient), false, null);
+      handler =
+          new OSSAttachmentsServiceHandler(new SharedOSClientProvider(mockOsClient), false, null);
     }
 
     @Test
@@ -225,7 +226,8 @@ class OSSAttachmentsServiceHandlerTest {
     @BeforeEach
     void setup() {
       mockOsClient = mock(OSClient.class);
-      handler = new OSSAttachmentsServiceHandler(new SharedOSClientProvider(mockOsClient), false, null);
+      handler =
+          new OSSAttachmentsServiceHandler(new SharedOSClientProvider(mockOsClient), false, null);
     }
 
     @Test
@@ -334,7 +336,9 @@ class OSSAttachmentsServiceHandlerTest {
     @BeforeEach
     void setup() {
       mockOsClient = mock(OSClient.class);
-      handler = new OSSAttachmentsServiceHandler(new SharedOSClientProvider(mockOsClient), true, "shared");
+      handler =
+          new OSSAttachmentsServiceHandler(
+              new SharedOSClientProvider(mockOsClient), true, "shared");
     }
 
     @Test

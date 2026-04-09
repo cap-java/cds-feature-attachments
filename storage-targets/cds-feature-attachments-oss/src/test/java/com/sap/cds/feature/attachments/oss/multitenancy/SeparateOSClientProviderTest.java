@@ -35,8 +35,17 @@ class SeparateOSClientProviderTest {
 
   private void stubBinding(String tenantId) {
     Map<String, Object> creds =
-        Map.of("host", "s3.aws.com", "bucket", "b-" + tenantId, "region", "us-east-1",
-            "access_key_id", "ak", "secret_access_key", "sk");
+        Map.of(
+            "host",
+            "s3.aws.com",
+            "bucket",
+            "b-" + tenantId,
+            "region",
+            "us-east-1",
+            "access_key_id",
+            "ak",
+            "secret_access_key",
+            "sk");
     when(smClient.getBinding(tenantId))
         .thenReturn(Optional.of(new ServiceManagerBindingResult("bind-1", "inst-1", creds)));
   }

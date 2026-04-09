@@ -12,8 +12,7 @@ import java.util.Set;
 
 /**
  * Adapts a Service Manager binding response (JSON credentials map) into the {@link ServiceBinding}
- * interface expected by {@link
- * com.sap.cds.feature.attachments.oss.client.OSClientFactory#create}.
+ * interface expected by {@link com.sap.cds.feature.attachments.oss.client.OSClientFactory#create}.
  */
 public class ServiceManagerBinding implements ServiceBinding {
 

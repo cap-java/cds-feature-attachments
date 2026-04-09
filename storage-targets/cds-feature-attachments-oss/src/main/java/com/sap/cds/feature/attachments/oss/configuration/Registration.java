@@ -149,8 +149,7 @@ public class Registration implements CdsRuntimeConfiguration {
   private static Optional<ServiceBinding> getServiceManagerBinding(CdsEnvironment environment) {
     return environment
         .getServiceBindings()
-        .filter(
-            b -> b.getServiceName().map(name -> name.equals("service-manager")).orElse(false))
+        .filter(b -> b.getServiceName().map(name -> name.equals("service-manager")).orElse(false))
         .findFirst();
   }
 

@@ -122,9 +122,7 @@ class ObjectStoreLifecycleHandlerTest {
     void testUnsubscribeContinuesOnDeleteBindingFailure() {
       when(smClient.getBinding("t1"))
           .thenReturn(Optional.of(new ServiceManagerBindingResult("bind-1", "inst-1", AWS_CREDS)));
-      doThrow(new ServiceManagerException("delete failed"))
-          .when(smClient)
-          .deleteBinding("bind-1");
+      doThrow(new ServiceManagerException("delete failed")).when(smClient).deleteBinding("bind-1");
 
       handler.onTenantUnsubscribe("t1"); // should not throw
 

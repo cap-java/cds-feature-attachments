@@ -63,8 +63,7 @@ class ServiceManagerClientTest {
     @Test
     void testGetOfferingIdReturnsId() throws Exception {
       doReturn(
-              mockResponse(
-                  200, "{\"items\":[{\"id\":\"offering-123\",\"name\":\"objectstore\"}]}"))
+              mockResponse(200, "{\"items\":[{\"id\":\"offering-123\",\"name\":\"objectstore\"}]}"))
           .when(httpClient)
           .send(any(), any());
 
@@ -166,7 +165,9 @@ class ServiceManagerClientTest {
       // First call: async 202 with Location header
       HttpResponse<String> asyncResponse =
           mockResponse(
-              202, "", Map.of("Location", List.of("/v1/service_instances/inst-new/operations/op1")));
+              202,
+              "",
+              Map.of("Location", List.of("/v1/service_instances/inst-new/operations/op1")));
       // Second call (poll): succeeded
       HttpResponse<String> pollResponse =
           mockResponse(200, "{\"id\":\"inst-new\",\"state\":\"succeeded\"}");
@@ -202,8 +203,7 @@ class ServiceManagerClientTest {
     void testCreateBindingThrowsOnError() throws Exception {
       doReturn(mockResponse(400, "Bad Request")).when(httpClient).send(any(), any());
 
-      assertThrows(
-          ServiceManagerException.class, () -> client.createBinding("tenant-1", "inst-1"));
+      assertThrows(ServiceManagerException.class, () -> client.createBinding("tenant-1", "inst-1"));
     }
 
     @Test
@@ -231,8 +231,7 @@ class ServiceManagerClientTest {
     void testDeleteInstanceAsyncSucceeds() throws Exception {
       HttpResponse<String> asyncResponse =
           mockResponse(202, "", Map.of("Location", List.of("/v1/service_instances/inst-1/op")));
-      HttpResponse<String> pollResponse =
-          mockResponse(200, "{\"state\":\"succeeded\"}");
+      HttpResponse<String> pollResponse = mockResponse(200, "{\"state\":\"succeeded\"}");
       doReturn(asyncResponse).doReturn(pollResponse).when(httpClient).send(any(), any());
 
       client.deleteInstance("inst-1"); // should not throw
@@ -257,8 +256,7 @@ class ServiceManagerClientTest {
           .send(any(), any());
 
       assertThrows(
-          ServiceManagerException.class,
-          () -> client.pollUntilDone("https://sm.example.com/op/1"));
+          ServiceManagerException.class, () -> client.pollUntilDone("https://sm.example.com/op/1"));
     }
 
     @Test

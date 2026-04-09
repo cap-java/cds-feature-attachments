@@ -33,8 +33,7 @@ public class ServiceManagerTokenProvider {
   private String cachedToken;
   private Instant tokenExpiry = Instant.MIN;
 
-  public ServiceManagerTokenProvider(
-      ServiceManagerCredentials credentials, HttpClient httpClient) {
+  public ServiceManagerTokenProvider(ServiceManagerCredentials credentials, HttpClient httpClient) {
     this.credentials = credentials;
     this.httpClient = httpClient;
   }
