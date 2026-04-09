@@ -17,6 +17,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
 import com.sap.cds.feature.attachments.oss.client.OSClientFactory;
+import com.sap.cds.feature.attachments.oss.client.SharedOSClientProvider;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
@@ -145,7 +146,7 @@ class OSSAttachmentsServiceHandlerTest {
     @BeforeEach
     void setup() {
       mockOsClient = mock(OSClient.class);
-      handler = new OSSAttachmentsServiceHandler(mockOsClient, false, null);
+      handler = new OSSAttachmentsServiceHandler(new SharedOSClientProvider(mockOsClient), false, null);
     }
 
     @Test
@@ -224,7 +225,7 @@ class OSSAttachmentsServiceHandlerTest {
     @BeforeEach
     void setup() {
       mockOsClient = mock(OSClient.class);
-      handler = new OSSAttachmentsServiceHandler(mockOsClient, false, null);
+      handler = new OSSAttachmentsServiceHandler(new SharedOSClientProvider(mockOsClient), false, null);
     }
 
     @Test
@@ -333,7 +334,7 @@ class OSSAttachmentsServiceHandlerTest {
     @BeforeEach
     void setup() {
       mockOsClient = mock(OSClient.class);
-      handler = new OSSAttachmentsServiceHandler(mockOsClient, true, "shared");
+      handler = new OSSAttachmentsServiceHandler(new SharedOSClientProvider(mockOsClient), true, "shared");
     }
 
     @Test

@@ -11,6 +11,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
+import com.sap.cds.feature.attachments.oss.multitenancy.ObjectStoreSubscribeHandler;
+import com.sap.cds.feature.attachments.oss.multitenancy.ObjectStoreUnsubscribeHandler;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.runtime.CdsRuntime;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
@@ -20,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class RegistrationTest {
@@ -42,6 +45,18 @@ class RegistrationTest {
     return binding;
   }
 
+  private static ServiceBinding createServiceManagerBinding() {
+    ServiceBinding binding = mock(ServiceBinding.class);
+    Map<String, Object> credentials = new HashMap<>();
+    credentials.put("sm_url", "https://sm.example.com");
+    credentials.put("url", "https://auth.example.com");
+    credentials.put("clientid", "test-client");
+    credentials.put("clientsecret", "test-secret");
+    when(binding.getServiceName()).thenReturn(Optional.of("service-manager"));
+    when(binding.getCredentials()).thenReturn(credentials);
+    return binding;
+  }
+
   @BeforeEach
   void setup() {
     registration = new Registration();
@@ -55,72 +70,114 @@ class RegistrationTest {
     awsBinding = createAwsBinding();
   }
 
-  @Test
-  void testEventHandlersRegistersOSSHandler() {
-    when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
+  @Nested
+  class SharedAndSingleTenantMode {
 
-    registration.eventHandlers(configurer);
+    @Test
+    void testEventHandlersRegistersOSSHandler() {
+      when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
 
-    verify(configurer).eventHandler(any(OSSAttachmentsServiceHandler.class));
+      registration.eventHandlers(configurer);
+
+      verify(configurer).eventHandler(any(OSSAttachmentsServiceHandler.class));
+    }
+
+    @Test
+    void testEventHandlersRegistersCleanupHandlerWhenMultitenancyShared() {
+      when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
+      when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
+          .thenReturn(Boolean.TRUE);
+      when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
+          .thenReturn("shared");
+
+      registration.eventHandlers(configurer);
+
+      verify(configurer, times(2)).eventHandler(any());
+    }
+
+    @Test
+    void testEventHandlersNoBindingDoesNotRegister() {
+      when(environment.getServiceBindings()).thenReturn(Stream.empty());
+
+      registration.eventHandlers(configurer);
+
+      verify(configurer, never()).eventHandler(any());
+    }
+
+    @Test
+    void testMtEnabledNonSharedKindRegistersOnlyOSSHandler() {
+      when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
+      when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
+          .thenReturn(Boolean.TRUE);
+      when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
+          .thenReturn("dedicated");
+
+      registration.eventHandlers(configurer);
+
+      verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
+      verify(configurer, times(1)).eventHandler(any());
+    }
+
+    @Test
+    void testMtEnabledNullKindRegistersOnlyOSSHandler() {
+      when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
+      when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
+          .thenReturn(Boolean.TRUE);
+
+      registration.eventHandlers(configurer);
+
+      verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
+      verify(configurer, times(1)).eventHandler(any());
+    }
+
+    @Test
+    void testMtDisabledSharedKindRegistersOnlyOSSHandler() {
+      when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
+      when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
+          .thenReturn("shared");
+
+      registration.eventHandlers(configurer);
+
+      verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
+      verify(configurer, times(1)).eventHandler(any());
+    }
   }
 
-  @Test
-  void testEventHandlersRegistersCleanupHandlerWhenMultitenancyShared() {
-    when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
-    when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
-        .thenReturn(Boolean.TRUE);
-    when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
-        .thenReturn("shared");
+  @Nested
+  class SeparateMode {
 
-    registration.eventHandlers(configurer);
+    @Test
+    void testSeparateModeRegistersHandlerAndLifecycleHandlers() {
+      ServiceBinding smBinding = createServiceManagerBinding();
+      when(environment.getServiceBindings()).thenReturn(Stream.of(smBinding));
+      when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
+          .thenReturn(Boolean.TRUE);
+      when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
+          .thenReturn("separate");
+      when(environment.getProperty(
+              "cds.attachments.objectStore.separate.credentialTtlHours", Integer.class, 11))
+          .thenReturn(11);
 
-    verify(configurer, times(2)).eventHandler(any());
-  }
+      registration.eventHandlers(configurer);
 
-  @Test
-  void testEventHandlersNoBindingDoesNotRegister() {
-    when(environment.getServiceBindings()).thenReturn(Stream.empty());
+      // Should register: OSSAttachmentsServiceHandler + SubscribeHandler + UnsubscribeHandler = 3
+      verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
+      verify(configurer, times(1)).eventHandler(any(ObjectStoreSubscribeHandler.class));
+      verify(configurer, times(1)).eventHandler(any(ObjectStoreUnsubscribeHandler.class));
+      verify(configurer, times(3)).eventHandler(any());
+    }
 
-    registration.eventHandlers(configurer);
+    @Test
+    void testSeparateModeWithoutSmBindingDoesNotRegister() {
+      when(environment.getServiceBindings()).thenReturn(Stream.empty());
+      when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
+          .thenReturn(Boolean.TRUE);
+      when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
+          .thenReturn("separate");
 
-    verify(configurer, never()).eventHandler(any());
-  }
+      registration.eventHandlers(configurer);
 
-  @Test
-  void testMtEnabledNonSharedKindRegistersOnlyOSSHandler() {
-    when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
-    when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
-        .thenReturn(Boolean.TRUE);
-    when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
-        .thenReturn("dedicated");
-
-    registration.eventHandlers(configurer);
-
-    verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
-    verify(configurer, times(1)).eventHandler(any());
-  }
-
-  @Test
-  void testMtEnabledNullKindRegistersOnlyOSSHandler() {
-    when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
-    when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
-        .thenReturn(Boolean.TRUE);
-
-    registration.eventHandlers(configurer);
-
-    verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
-    verify(configurer, times(1)).eventHandler(any());
-  }
-
-  @Test
-  void testMtDisabledSharedKindRegistersOnlyOSSHandler() {
-    when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
-    when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
-        .thenReturn("shared");
-
-    registration.eventHandlers(configurer);
-
-    verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
-    verify(configurer, times(1)).eventHandler(any());
+      verify(configurer, never()).eventHandler(any());
+    }
   }
 }

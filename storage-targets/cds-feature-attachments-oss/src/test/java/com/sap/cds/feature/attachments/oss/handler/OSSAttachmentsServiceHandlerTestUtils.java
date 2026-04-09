@@ -16,6 +16,8 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
 import com.sap.cds.feature.attachments.oss.client.OSClientFactory;
+import com.sap.cds.feature.attachments.oss.client.OSClientProvider;
+import com.sap.cds.feature.attachments.oss.client.SharedOSClientProvider;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
@@ -41,7 +43,8 @@ public class OSSAttachmentsServiceHandlerTestUtils {
     String testFileContent = "test";
 
     OSClient osClient = OSClientFactory.create(binding, executor);
-    OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(osClient, false, null);
+    OSSAttachmentsServiceHandler handler =
+        new OSSAttachmentsServiceHandler(new SharedOSClientProvider(osClient), false, null);
 
     // Create an AttachmentCreateEventContext with mocked data - to upload a test attachment
     MediaData createMediaData = mock(MediaData.class);
@@ -104,11 +107,11 @@ public class OSSAttachmentsServiceHandlerTestUtils {
     verify(deleteContext).setCompleted();
   }
 
-  // Helper to access private static osClient
-  public static OSClient getOsClient(OSSAttachmentsServiceHandler handler)
+  // Helper to access private osClientProvider
+  public static OSClientProvider getOsClientProvider(OSSAttachmentsServiceHandler handler)
       throws NoSuchFieldException, IllegalAccessException {
-    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
+    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClientProvider");
     field.setAccessible(true);
-    return (OSClient) field.get(handler);
+    return (OSClientProvider) field.get(handler);
   }
 }

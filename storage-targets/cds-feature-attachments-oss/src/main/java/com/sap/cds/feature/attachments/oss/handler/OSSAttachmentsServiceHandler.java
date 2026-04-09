@@ -7,6 +7,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
+import com.sap.cds.feature.attachments.oss.client.OSClientProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
@@ -31,23 +32,20 @@ import org.slf4j.LoggerFactory;
 public class OSSAttachmentsServiceHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(OSSAttachmentsServiceHandler.class);
-  private final OSClient osClient;
+  private final OSClientProvider osClientProvider;
   private final boolean multitenancyEnabled;
   private final String objectStoreKind;
 
   /**
-   * Creates a new OSSAttachmentsServiceHandler with the given {@link OSClient}.
+   * Creates a new OSSAttachmentsServiceHandler with the given {@link OSClientProvider}.
    *
-   * <p>Use {@link com.sap.cds.feature.attachments.oss.client.OSClientFactory#create
-   * OSClientFactory.create()} to obtain an {@link OSClient} from a service binding.
-   *
-   * @param osClient the object store client for storage operations
+   * @param osClientProvider the provider for resolving the object store client per tenant
    * @param multitenancyEnabled whether multitenancy is enabled
-   * @param objectStoreKind the object store kind (e.g. "shared")
+   * @param objectStoreKind the object store kind (e.g. "shared", "separate")
    */
   public OSSAttachmentsServiceHandler(
-      OSClient osClient, boolean multitenancyEnabled, String objectStoreKind) {
-    this.osClient = osClient;
+      OSClientProvider osClientProvider, boolean multitenancyEnabled, String objectStoreKind) {
+    this.osClientProvider = osClientProvider;
     this.multitenancyEnabled = multitenancyEnabled;
     this.objectStoreKind = objectStoreKind;
   }
@@ -64,6 +62,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     String objectKey = buildObjectKey(context, contentId);
 
     try {
+      OSClient osClient = resolveClient(context);
       osClient.uploadContent(data.getContent(), objectKey, data.getMimeType()).get();
       logger.info("Uploaded file {}", fileName);
       context.getData().setStatus(StatusCode.SCANNING);
@@ -88,6 +87,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 
     try {
       String objectKey = buildObjectKey(context, context.getContentId());
+      OSClient osClient = resolveClient(context);
       osClient.deleteContent(objectKey).get();
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
@@ -118,6 +118,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
         context.getContentId());
     try {
       String objectKey = buildObjectKey(context, context.getContentId());
+      OSClient osClient = resolveClient(context);
       Future<InputStream> future = osClient.readContent(objectKey);
       InputStream inputStream = future.get(); // Wait for the content to be read
       if (inputStream != null) {
@@ -151,6 +152,14 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
       return tenant + "/" + contentId;
     }
     return contentId;
+  }
+
+  private OSClient resolveClient(EventContext context) {
+    if (multitenancyEnabled) {
+      String tenantId = getTenant(context);
+      return osClientProvider.getClient(tenantId);
+    }
+    return osClientProvider.getClient(null);
   }
 
   private String getTenant(EventContext context) {
