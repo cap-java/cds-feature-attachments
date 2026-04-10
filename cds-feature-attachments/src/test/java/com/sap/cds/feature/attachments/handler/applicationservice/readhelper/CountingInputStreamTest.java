@@ -313,9 +313,10 @@ class CountingInputStreamTest {
   @Test
   void close_withNullDelegate_doesNotThrow() {
     // CountingInputStream.close() guards against null delegate
-    assertDoesNotThrow(() -> {
-      var cut = new CountingInputStream(null, "100");
-      cut.close();
-    });
+    assertDoesNotThrow(
+        () -> {
+          var cut = new CountingInputStream(null, "100");
+          cut.close();
+        });
   }
 }
