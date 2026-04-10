@@ -66,10 +66,12 @@ annotate AdminService.Books with @(UI: {
     {Value: modifiedAt}
   ]},
   FieldGroup #ProfileIcon: {Data: [
-    {Value: profileIcon_content}
+    {Value: profileIcon_content},
+    {Value: profileIcon_status}
   ]},
   FieldGroup #CoverImage: {Data: [
-    {Value: coverImage_content}
+    {Value: coverImage_content},
+    {Value: coverImage_status}
   ]}
 });
 
