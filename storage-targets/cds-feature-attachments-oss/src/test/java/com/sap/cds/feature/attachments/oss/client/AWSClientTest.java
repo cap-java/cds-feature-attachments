@@ -4,6 +4,7 @@
 package com.sap.cds.feature.attachments.oss.client;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -42,6 +43,7 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.ServerSideEncryption;
 
 class AWSClientTest {
   ExecutorService executor = Executors.newCachedThreadPool();
@@ -86,6 +88,32 @@ class AWSClientTest {
     awsClient
         .uploadContent(new ByteArrayInputStream("test".getBytes()), "test.txt", "text/plain")
         .get();
+  }
+
+  @Test
+  void testUploadContentSetsServerSideEncryption() throws Exception {
+    S3AsyncClient mockAsyncClient = mock(S3AsyncClient.class);
+    AWSClient awsClient = new AWSClient(mock(S3Client.class), mockAsyncClient, "bucket", executor);
+
+    PutObjectResponse mockPutRes = mock(PutObjectResponse.class);
+    SdkHttpResponse mockHttpRes = mock(SdkHttpResponse.class);
+    when(mockHttpRes.isSuccessful()).thenReturn(true);
+    when(mockPutRes.sdkHttpResponse()).thenReturn(mockHttpRes);
+    CompletableFuture<PutObjectResponse> successFuture =
+        CompletableFuture.completedFuture(mockPutRes);
+    when(mockAsyncClient.putObject(any(PutObjectRequest.class), any(AsyncRequestBody.class)))
+        .thenReturn(successFuture);
+
+    awsClient
+        .uploadContent(new ByteArrayInputStream("test".getBytes()), "test.txt", "text/plain")
+        .get();
+
+    verify(mockAsyncClient)
+        .putObject(
+            argThat(
+                (PutObjectRequest req) ->
+                    req.serverSideEncryption() == ServerSideEncryption.AES256),
+            any(AsyncRequestBody.class));
   }
 
   @Test
