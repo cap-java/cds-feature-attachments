@@ -74,15 +74,7 @@ class AWSClientTest {
   void testUploadContent() throws Exception {
     S3AsyncClient mockAsyncClient = mock(S3AsyncClient.class);
     AWSClient awsClient = new AWSClient(mock(S3Client.class), mockAsyncClient, "bucket", executor);
-
-    PutObjectResponse mockPutRes = mock(PutObjectResponse.class);
-    SdkHttpResponse mockHttpRes = mock(SdkHttpResponse.class);
-    when(mockHttpRes.isSuccessful()).thenReturn(true);
-    when(mockPutRes.sdkHttpResponse()).thenReturn(mockHttpRes);
-    CompletableFuture<PutObjectResponse> successFuture =
-        CompletableFuture.completedFuture(mockPutRes);
-    when(mockAsyncClient.putObject(any(PutObjectRequest.class), any(AsyncRequestBody.class)))
-        .thenReturn(successFuture);
+    configureSuccessfulPut(mockAsyncClient);
 
     awsClient
         .uploadContent(new ByteArrayInputStream("test".getBytes()), "test.txt", "text/plain")
@@ -93,15 +85,7 @@ class AWSClientTest {
   void testUploadContentSetsServerSideEncryption() throws Exception {
     S3AsyncClient mockAsyncClient = mock(S3AsyncClient.class);
     AWSClient awsClient = new AWSClient(mock(S3Client.class), mockAsyncClient, "bucket", executor);
-
-    PutObjectResponse mockPutRes = mock(PutObjectResponse.class);
-    SdkHttpResponse mockHttpRes = mock(SdkHttpResponse.class);
-    when(mockHttpRes.isSuccessful()).thenReturn(true);
-    when(mockPutRes.sdkHttpResponse()).thenReturn(mockHttpRes);
-    CompletableFuture<PutObjectResponse> successFuture =
-        CompletableFuture.completedFuture(mockPutRes);
-    when(mockAsyncClient.putObject(any(PutObjectRequest.class), any(AsyncRequestBody.class)))
-        .thenReturn(successFuture);
+    configureSuccessfulPut(mockAsyncClient);
 
     awsClient
         .uploadContent(new ByteArrayInputStream("test".getBytes()), "test.txt", "text/plain")
@@ -312,6 +296,17 @@ class AWSClientTest {
 
     // deleteObjects should be called twice — once per page
     verify(mockS3Client, times(2)).deleteObjects(any(DeleteObjectsRequest.class));
+  }
+
+  private void configureSuccessfulPut(S3AsyncClient mockAsyncClient) {
+    PutObjectResponse mockPutRes = mock(PutObjectResponse.class);
+    SdkHttpResponse mockHttpRes = mock(SdkHttpResponse.class);
+    when(mockHttpRes.isSuccessful()).thenReturn(true);
+    when(mockPutRes.sdkHttpResponse()).thenReturn(mockHttpRes);
+    CompletableFuture<PutObjectResponse> successFuture =
+        CompletableFuture.completedFuture(mockPutRes);
+    when(mockAsyncClient.putObject(any(PutObjectRequest.class), any(AsyncRequestBody.class)))
+        .thenReturn(successFuture);
   }
 
   private ServiceBinding getDummyBinding() {
