@@ -282,4 +282,35 @@ class BeforeReadItemsModifierTest {
             .count();
     assertThat(inlineFieldCount).isEqualTo(0);
   }
+
+  @Test
+  void inlineFieldsNotAddedWhenContentIdAlreadySelected() {
+    // Both profilePicture_content AND profilePicture_contentId are explicitly selected.
+    // The modifier should NOT add duplicate contentId/status/scannedAt fields.
+    CqnSelect select =
+        Select.from(RootTable_.class)
+            .columns(
+                RootTable_::ID,
+                b -> b.get("profilePicture_content"),
+                b -> b.get("profilePicture_contentId"));
+
+    cut = new BeforeReadItemsModifier(List.of(), List.of("profilePicture"));
+    List<CqnSelectListItem> resultItems = cut.items(select.items());
+
+    // contentId already in select, so it should appear exactly once (no duplicate added)
+    var contentIdCount =
+        resultItems.stream()
+            .filter(
+                item ->
+                    item.isRef() && item.asRef().displayName().equals("profilePicture_contentId"))
+            .count();
+    assertThat(contentIdCount).isEqualTo(1);
+    // status and scannedAt should NOT be added either since the guard prevents it
+    var statusCount =
+        resultItems.stream()
+            .filter(
+                item -> item.isRef() && item.asRef().displayName().equals("profilePicture_status"))
+            .count();
+    assertThat(statusCount).isEqualTo(0);
+  }
 }

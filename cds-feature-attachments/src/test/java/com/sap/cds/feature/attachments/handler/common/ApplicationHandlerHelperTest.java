@@ -6,12 +6,15 @@ package com.sap.cds.feature.attachments.handler.common;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -278,5 +281,15 @@ class ApplicationHandlerHelperTest {
 
     // Use containsContentField which internally uses MEDIA_CONTENT_FILTER
     assertThat(ApplicationHandlerHelper.containsContentField(entity, List.of(data))).isTrue();
+  }
+
+  @Test
+  void getInlineAttachmentFieldNamesWithNullElementsReturnsEmpty() {
+    CdsStructuredType entity = mock(CdsStructuredType.class);
+    when(entity.elements()).thenReturn(null);
+
+    var result = ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
+
+    assertThat(result).isEmpty();
   }
 }
