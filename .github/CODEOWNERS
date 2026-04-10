@@ -1,0 +1,7 @@
+# Each pull request will require review and approval from the code owners
+# before it can be merged.
+#
+# Learn more: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global ownership — cdsmunich team owns everything
+* @cap-java/cdsmunich
