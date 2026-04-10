@@ -44,6 +44,12 @@ entity EventItems {
         defaultSizeLimitedAttachments : Composition of many Attachments;
 }
 
+// Entity with only inline attachment (no composition)
+entity InlineOnly : cuid {
+    title   : String;
+    avatar  : AttachmentType;
+}
+
 annotate EventItems.sizeLimitedAttachments with {
     content @Validation.Maximum: '10KB';
 };

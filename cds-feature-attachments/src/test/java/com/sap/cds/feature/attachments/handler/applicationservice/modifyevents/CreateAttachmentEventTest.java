@@ -293,4 +293,30 @@ class CreateAttachmentEventTest {
     assertThat(values).containsEntry(Attachments.CONTENT_ID, "doc-999");
     assertThat(values).containsEntry(Attachments.STATUS, "ok");
   }
+
+  @Test
+  void processEventWritesScannedAtWhenNonNull() {
+    CdsEntity realEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", UUID.randomUUID().toString());
+    values.put("profilePicture_mimeType", "image/png");
+    values.put("profilePicture_fileName", "photo.png");
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+
+    var scannedAt = java.time.Instant.now();
+    var content = mock(InputStream.class);
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "doc-scan", "Clean", scannedAt));
+
+    cut.processEvent(
+        path, content, Attachments.create(), eventContext, Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_contentId", "doc-scan");
+    assertThat(values).containsEntry("profilePicture_status", "Clean");
+    assertThat(values).containsEntry("profilePicture_scannedAt", scannedAt);
+  }
 }

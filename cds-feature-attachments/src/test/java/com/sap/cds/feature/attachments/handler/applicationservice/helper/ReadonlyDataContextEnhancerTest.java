@@ -181,4 +181,18 @@ class ReadonlyDataContextEnhancerTest {
     assertThat(data.containsKey(DRAFT_READONLY_CONTEXT)).isFalse();
     assertThat(data.containsKey("profilePicture_" + DRAFT_READONLY_CONTEXT)).isFalse();
   }
+
+  @Test
+  void restoreReadonlyFieldsInlineWithNullBackupDoesNothing() {
+    CdsData data = CdsData.create();
+    data.put("ID", "123");
+    // Inline backup key exists but value is null
+    data.put("profilePicture_" + DRAFT_READONLY_CONTEXT, null);
+
+    ReadonlyDataContextEnhancer.restoreReadonlyFields(data);
+
+    // null backup is skipped, key remains
+    assertThat(data.get("ID")).isEqualTo("123");
+    assertThat(data.containsKey("profilePicture_contentId")).isFalse();
+  }
 }

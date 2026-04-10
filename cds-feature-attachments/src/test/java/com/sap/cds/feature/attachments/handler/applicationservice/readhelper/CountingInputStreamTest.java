@@ -309,4 +309,13 @@ class CountingInputStreamTest {
     assertThat(exception.getMessage()).contains("Error parsing max size annotation value");
     assertThat(exception.getCause()).isInstanceOf(ArithmeticException.class);
   }
+
+  @Test
+  void close_withNullDelegate_doesNotThrow() {
+    // CountingInputStream.close() guards against null delegate
+    assertDoesNotThrow(() -> {
+      var cut = new CountingInputStream(null, "100");
+      cut.close();
+    });
+  }
 }
