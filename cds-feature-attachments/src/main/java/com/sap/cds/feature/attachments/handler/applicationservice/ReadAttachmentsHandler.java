@@ -77,18 +77,21 @@ public class ReadAttachmentsHandler implements EventHandler {
   private final AttachmentStatusValidator statusValidator;
   private final AsyncMalwareScanExecutor scanExecutor;
   private final PersistenceService persistenceService;
+  private final boolean scannerAvailable;
 
   public ReadAttachmentsHandler(
       AttachmentService attachmentService,
       AttachmentStatusValidator statusValidator,
       AsyncMalwareScanExecutor scanExecutor,
-      PersistenceService persistenceService) {
+      PersistenceService persistenceService,
+      boolean scannerAvailable) {
     this.attachmentService =
         requireNonNull(attachmentService, "attachmentService must not be null");
     this.statusValidator = requireNonNull(statusValidator, "statusValidator must not be null");
     this.scanExecutor = requireNonNull(scanExecutor, "scanExecutor must not be null");
     this.persistenceService =
         requireNonNull(persistenceService, "persistenceService must not be null");
+    this.scannerAvailable = scannerAvailable;
   }
 
   @Before
@@ -174,7 +177,7 @@ public class ReadAttachmentsHandler implements EventHandler {
           "In verify status for content id {} and status {}",
           attachment.getContentId(),
           currentStatus);
-      if (needsScan(currentStatus, attachment.getScannedAt())) {
+      if (scannerAvailable && needsScan(currentStatus, attachment.getScannedAt())) {
         if (StatusCode.CLEAN.equals(currentStatus)) {
           transitionToScanning(path.target().entity(), attachment);
         }

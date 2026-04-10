@@ -82,7 +82,8 @@ class ReadAttachmentsHandlerTest {
             attachmentService,
             attachmentStatusValidator,
             asyncMalwareScanExecutor,
-            persistenceService);
+            persistenceService,
+            true);
 
     readEventContext = mock(CdsReadEventContext.class);
   }
@@ -421,6 +422,79 @@ class ReadAttachmentsHandlerTest {
 
     verifyNoInteractions(attachmentStatusValidator);
     assertThat(attachment.getContent()).isNull();
+  }
+
+  @Test
+  void scannerNotAvailable_staleCleanAttachmentIsNotRescanned() {
+    var handlerWithoutScanner =
+        new ReadAttachmentsHandler(
+            attachmentService,
+            attachmentStatusValidator,
+            asyncMalwareScanExecutor,
+            persistenceService,
+            false);
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(Instant.now().minus(4, ChronoUnit.DAYS));
+
+    handlerWithoutScanner.processAfter(readEventContext, List.of(attachment));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.CLEAN);
+  }
+
+  @Test
+  void scannerNotAvailable_cleanAttachmentWithNullScannedAtIsNotRescanned() {
+    var handlerWithoutScanner =
+        new ReadAttachmentsHandler(
+            attachmentService,
+            attachmentStatusValidator,
+            asyncMalwareScanExecutor,
+            persistenceService,
+            false);
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(null);
+
+    handlerWithoutScanner.processAfter(readEventContext, List.of(attachment));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.CLEAN);
+  }
+
+  @Test
+  void scannerNotAvailable_unscannedAttachmentStillFailsValidation() {
+    var handlerWithoutScanner =
+        new ReadAttachmentsHandler(
+            attachmentService,
+            attachmentStatusValidator,
+            asyncMalwareScanExecutor,
+            persistenceService,
+            false);
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.UNSCANNED);
+    doThrow(AttachmentStatusException.class)
+        .when(attachmentStatusValidator)
+        .verifyStatus(StatusCode.UNSCANNED);
+
+    List<CdsData> attachments = List.of(attachment);
+    assertThrows(
+        AttachmentStatusException.class,
+        () -> handlerWithoutScanner.processAfter(readEventContext, attachments));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
   }
 
   private void mockEventContext(String entityName, CqnSelect select) {
