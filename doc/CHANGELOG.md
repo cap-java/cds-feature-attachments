@@ -6,6 +6,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Version 1.5.0 - 2026-04-10
+
+### Added
+- Added shared-bucket multitenancy support for OSS attachments (#767)
+- Added integration tests for multitenancy scenarios (#782)
+
+### Fixed
+- Fixed rescan-on-download being triggered when no malware scanner is bound (#783)
+
 ## Version 1.4.1 - 2026-04-08
 
 ### Added
