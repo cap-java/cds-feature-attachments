@@ -46,7 +46,8 @@ class ReadonlyDataContextEnhancerTest {
     assertThat(backup)
         .containsEntry(Attachments.CONTENT_ID, "doc-123")
         .containsEntry(Attachments.STATUS, "Clean")
-        .containsEntry(Attachments.SCANNED_AT, scannedAt);
+        .containsEntry(Attachments.SCANNED_AT, scannedAt)
+        .doesNotContainKey(Attachments.CONTENT);
   }
 
   @Test
@@ -109,5 +110,33 @@ class ReadonlyDataContextEnhancerTest {
     assertThat(data).doesNotContainKey(Attachments.CONTENT_ID);
     assertThat(data).doesNotContainKey(Attachments.STATUS);
     assertThat(data).doesNotContainKey(Attachments.SCANNED_AT);
+  }
+
+  @Test
+  void restoreReadonlyFields_withPartialBackup_nullsOverwriteExistingValues() {
+    var data = CdsData.create();
+    data.put(Attachments.STATUS, "Clean");
+    var backup = CdsData.create();
+    backup.put(Attachments.CONTENT_ID, "restored-id");
+    // STATUS and SCANNED_AT intentionally absent from backup
+    data.put(DRAFT_READONLY_CONTEXT, backup);
+
+    ReadonlyDataContextEnhancer.restoreReadonlyFields(data);
+
+    assertThat(data.get(Attachments.CONTENT_ID)).isEqualTo("restored-id");
+    assertThat(data.get(Attachments.STATUS)).isNull();
+    assertThat(data.get(Attachments.SCANNED_AT)).isNull();
+    assertThat(data.get(DRAFT_READONLY_CONTEXT)).isNull();
+  }
+
+  @Test
+  void preserveReadonlyFields_isNotDraft_noExistingBackup_nothingHappens() {
+    CdsEntity entity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
+    var attachment = Attachments.create();
+    attachment.setContent(null);
+
+    ReadonlyDataContextEnhancer.preserveReadonlyFields(entity, List.of(attachment), false);
+
+    assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
   }
 }
