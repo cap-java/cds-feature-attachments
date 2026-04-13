@@ -4,6 +4,8 @@
 package com.sap.cds.feature.attachments.service.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,6 +25,7 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.impl.changeset.ChangeSetContextImpl;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import org.junit.jupiter.api.AfterEach;
@@ -161,6 +164,92 @@ class AttachmentsServiceImplHandlerTest {
     cut.afterCreateAttachment(createContext);
 
     verify(malwareScanProvider).getChangeSetListener(entity, "contentId");
+  }
+
+  @Test
+  void createAttachment_setsContentIdFromAttachmentIds() {
+    var expectedContentId = "unique-attachment-id-123";
+    var createContext = AttachmentCreateEventContext.create();
+    createContext.setAttachmentIds(
+        Map.of(Attachments.ID, expectedContentId, "someOtherKey", "irrelevant-value"));
+    createContext.setData(MediaData.create());
+    createContext.setAttachmentEntity(mock(CdsEntity.class));
+    ChangeSetContextImpl.open(false);
+
+    cut.createAttachment(createContext);
+
+    assertThat(createContext.getContentId())
+        .as("contentId must be set from the Attachments.ID key in attachmentIds map")
+        .isEqualTo(expectedContentId);
+  }
+
+  @Test
+  void createAttachment_emptyAttachmentIds_handlesGracefully() {
+    var createContext = AttachmentCreateEventContext.create();
+    createContext.setAttachmentIds(Collections.emptyMap());
+    createContext.setData(MediaData.create());
+    createContext.setAttachmentEntity(mock(CdsEntity.class));
+    ChangeSetContextImpl.open(false);
+
+    cut.createAttachment(createContext);
+
+    assertThat(createContext.getContentId())
+        .as("contentId should be null when Attachments.ID key is missing from attachmentIds")
+        .isNull();
+    assertThat(createContext.isCompleted()).isTrue();
+  }
+
+  @Test
+  void afterCreateAttachment_registersChangeSetListener() {
+    var listener = mock(ChangeSetListener.class);
+    var entity = mock(CdsEntity.class);
+    when(malwareScanProvider.getChangeSetListener(entity, "scan-id")).thenReturn(listener);
+    var createContext = AttachmentCreateEventContext.create();
+    createContext.setAttachmentIds(Map.of(Attachments.ID, "scan-id"));
+    createContext.setData(MediaData.create());
+    createContext.setAttachmentEntity(entity);
+    ChangeSetContextImpl.open(false);
+
+    cut.createAttachment(createContext);
+    cut.afterCreateAttachment(createContext);
+
+    var changeSetContext = createContext.getChangeSetContext();
+    assertThat(changeSetContext).isNotNull();
+    verify(malwareScanProvider).getChangeSetListener(entity, "scan-id");
+  }
+
+  @Test
+  void afterCreateAttachment_noChangeSetContext_throws() {
+    var listener = mock(ChangeSetListener.class);
+    var entity = mock(CdsEntity.class);
+    when(malwareScanProvider.getChangeSetListener(any(), any())).thenReturn(listener);
+    var createContext = AttachmentCreateEventContext.create();
+    createContext.setAttachmentIds(Map.of(Attachments.ID, "some-id"));
+    createContext.setData(MediaData.create());
+    createContext.setAttachmentEntity(entity);
+
+    cut.createAttachment(createContext);
+
+    assertThatThrownBy(() -> cut.afterCreateAttachment(createContext))
+        .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  void createAttachment_verifyStatusAndInternalStored() {
+    var createContext = AttachmentCreateEventContext.create();
+    createContext.setAttachmentIds(Map.of(Attachments.ID, "any-id"));
+    createContext.setData(MediaData.create());
+    createContext.setAttachmentEntity(mock(CdsEntity.class));
+    ChangeSetContextImpl.open(false);
+
+    cut.createAttachment(createContext);
+
+    assertThat(createContext.getData().getStatus())
+        .as("status must be set to SCANNING")
+        .isEqualTo(StatusCode.SCANNING);
+    assertThat(createContext.getIsInternalStored())
+        .as("isInternalStored must be true for default DB storage")
+        .isTrue();
   }
 
   private void closeChangeSetContext() throws Exception {
