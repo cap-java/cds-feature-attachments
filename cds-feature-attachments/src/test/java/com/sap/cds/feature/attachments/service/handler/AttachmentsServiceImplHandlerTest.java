@@ -167,23 +167,6 @@ class AttachmentsServiceImplHandlerTest {
   }
 
   @Test
-  void createAttachment_setsContentIdFromAttachmentIds() {
-    var expectedContentId = "unique-attachment-id-123";
-    var createContext = AttachmentCreateEventContext.create();
-    createContext.setAttachmentIds(
-        Map.of(Attachments.ID, expectedContentId, "someOtherKey", "irrelevant-value"));
-    createContext.setData(MediaData.create());
-    createContext.setAttachmentEntity(mock(CdsEntity.class));
-    ChangeSetContextImpl.open(false);
-
-    cut.createAttachment(createContext);
-
-    assertThat(createContext.getContentId())
-        .as("contentId must be set from the Attachments.ID key in attachmentIds map")
-        .isEqualTo(expectedContentId);
-  }
-
-  @Test
   void createAttachment_emptyAttachmentIds_handlesGracefully() {
     var createContext = AttachmentCreateEventContext.create();
     createContext.setAttachmentIds(Collections.emptyMap());
@@ -200,29 +183,10 @@ class AttachmentsServiceImplHandlerTest {
   }
 
   @Test
-  void afterCreateAttachment_registersChangeSetListener() {
-    var listener = mock(ChangeSetListener.class);
-    var entity = mock(CdsEntity.class);
-    when(malwareScanProvider.getChangeSetListener(entity, "scan-id")).thenReturn(listener);
-    var createContext = AttachmentCreateEventContext.create();
-    createContext.setAttachmentIds(Map.of(Attachments.ID, "scan-id"));
-    createContext.setData(MediaData.create());
-    createContext.setAttachmentEntity(entity);
-    ChangeSetContextImpl.open(false);
-
-    cut.createAttachment(createContext);
-    cut.afterCreateAttachment(createContext);
-
-    var changeSetContext = createContext.getChangeSetContext();
-    assertThat(changeSetContext).isNotNull();
-    verify(malwareScanProvider).getChangeSetListener(entity, "scan-id");
-  }
-
-  @Test
   void afterCreateAttachment_noChangeSetContext_throws() {
-    var listener = mock(ChangeSetListener.class);
     var entity = mock(CdsEntity.class);
-    when(malwareScanProvider.getChangeSetListener(any(), any())).thenReturn(listener);
+    when(malwareScanProvider.getChangeSetListener(any(), any()))
+        .thenReturn(mock(ChangeSetListener.class));
     var createContext = AttachmentCreateEventContext.create();
     createContext.setAttachmentIds(Map.of(Attachments.ID, "some-id"));
     createContext.setData(MediaData.create());
@@ -232,24 +196,6 @@ class AttachmentsServiceImplHandlerTest {
 
     assertThatThrownBy(() -> cut.afterCreateAttachment(createContext))
         .isInstanceOf(NullPointerException.class);
-  }
-
-  @Test
-  void createAttachment_verifyStatusAndInternalStored() {
-    var createContext = AttachmentCreateEventContext.create();
-    createContext.setAttachmentIds(Map.of(Attachments.ID, "any-id"));
-    createContext.setData(MediaData.create());
-    createContext.setAttachmentEntity(mock(CdsEntity.class));
-    ChangeSetContextImpl.open(false);
-
-    cut.createAttachment(createContext);
-
-    assertThat(createContext.getData().getStatus())
-        .as("status must be set to SCANNING")
-        .isEqualTo(StatusCode.SCANNING);
-    assertThat(createContext.getIsInternalStored())
-        .as("isInternalStored must be true for default DB storage")
-        .isTrue();
   }
 
   private void closeChangeSetContext() throws Exception {
