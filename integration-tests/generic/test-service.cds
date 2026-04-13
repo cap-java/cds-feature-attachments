@@ -19,6 +19,12 @@ annotate db.Roots.mimeValidatedAttachments with {
 service TestService {
     entity Roots            as projection on db.Roots;
     entity AttachmentEntity as projection on db.AttachmentEntity;
+
+    type ScanResult {
+        status : String;
+    }
+
+    action scanContent(content : LargeBinary) returns ScanResult;
 }
 
 service TestDraftService {
