@@ -90,6 +90,7 @@ public class AWSClient implements OSClient {
             .bucket(this.bucketName)
             .key(completeFileName)
             .contentType(contentType)
+            // Azure and Google Cloud Storage encrypt at rest by default; S3 requires explicit opt-in
             .serverSideEncryption(ServerSideEncryption.AES256)
             .build();
 
