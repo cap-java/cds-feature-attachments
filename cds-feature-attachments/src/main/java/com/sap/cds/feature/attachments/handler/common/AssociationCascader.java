@@ -70,15 +70,25 @@ public class AssociationCascader {
     var currentList = new LinkedList<AssociationIdentifier>();
     var localProcessEntities = new ArrayList<String>();
 
-    var isMediaEntity = ApplicationHandlerHelper.isDirectMediaEntity(entity);
-    if (isMediaEntity) {
+    var isDirectMediaEntity = ApplicationHandlerHelper.isDirectMediaEntity(entity);
+    var hasInlineAttachments = ApplicationHandlerHelper.hasInlineAttachmentElements(entity);
+
+    // Direct media entities (e.g. Attachments) are always leaf nodes
+    // No need to traverse compositions
+    if (isDirectMediaEntity) {
       var identifier = new AssociationIdentifier(associationName, entity.getQualifiedName());
       firstList.addLast(identifier);
-    }
-
-    if (isMediaEntity) {
       internalResultList.add(firstList);
       return internalResultList;
+    }
+
+    // Entities with inline attachment fields (e.g. Items with receipt : Attachment)
+    // are treated as media entities, but may also have compositions that need traversal.
+    // Record this entity as a path AND continue to discover child compositions.
+    if (hasInlineAttachments) {
+      var inlinePath = new LinkedList<>(firstList);
+      inlinePath.addLast(new AssociationIdentifier(associationName, entity.getQualifiedName()));
+      internalResultList.add(inlinePath);
     }
 
     Map<String, CdsEntity> associations =
