@@ -18,6 +18,7 @@ It supports the [AWS, Azure, and Google object stores](storage-targets/cds-featu
 * [Usage](#usage)
   * [MVN Setup](#mvn-setup)
   * [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
+  * [Single (Inline) Attachments](#single-inline-attachments)
   * [Try the Bookshop Sample](#try-the-bookshop-sample)
   * [Storage Targets](#storage-targets)
   * [Malware Scanner](#malware-scanner)
@@ -114,6 +115,86 @@ annotate service.Incidents with @(
 ```
 
 The UI Facet can also be added directly after other UI Facets in a `cds` file in the `app` folder.
+
+### Single (Inline) Attachments
+
+In addition to the composition-based `Attachments` aspect (which supports multiple files), CDS provides the `Attachment` type for **single-file** attachment fields directly on an entity. This is useful when an entity needs exactly one file, for example a profile icon or a cover image.
+
+```cds
+using { sap.attachments.Attachment } from 'com.sap.cds/cds-feature-attachments';
+
+entity Books {
+  key ID   : UUID;
+  title    : String;
+  profileIcon : Attachment;
+  coverImage  : Attachment;
+}
+```
+
+CDS flattens inline attachment fields onto the parent entity. For example, `profileIcon : Attachment` generates the following columns on the `Books` table:
+
+- `profileIcon_content` (LargeBinary)
+- `profileIcon_mimeType` (String)
+- `profileIcon_fileName` (String)
+- `profileIcon_contentId` (String)
+- `profileIcon_status` (StatusCode)
+- `profileIcon_scannedAt` (Timestamp)
+
+All plugin features: malware scanning, status tracking, storage targets, maximum file size, and MIME type validation work the same way for inline attachments as for composition-based attachments.
+
+#### UI Annotations for Inline Attachments
+
+To display inline attachments in a Fiori Elements UI, use a `FieldGroup` referencing the flattened field names:
+
+```cds
+annotate AdminService.Books with @(UI: {
+  Facets: [
+    // ... other facets ...
+    {
+      $Type : 'UI.ReferenceFacet',
+      Label : 'Profile Icon',
+      Target: '@UI.FieldGroup#ProfileIcon'
+    }
+  ],
+  FieldGroup #ProfileIcon: {Data: [
+    {Value: profileIcon_content},
+    {Value: profileIcon_status}
+  ]}
+});
+```
+
+> [!Note]
+> For inline attachments, the `content` field is annotated with `@Core.MediaType: 'application/octet-stream'` (a static value) instead of a path reference to the `mimeType` field. This is because CDS flattening rewrites `content` to `profileIcon_content` but does **not** rewrite path references like `mimeType` to `profileIcon_mimeType`, which would result in a broken reference. Static annotations propagate correctly through CDS flattening.
+
+#### Inline Attachments on Composition Children
+
+Inline attachments also work on entities that are composition children. For example, if `Items` is a composition of `Orders`, you can add an inline attachment field to `Items`:
+
+```cds
+entity Orders {
+  key ID : UUID;
+  items  : Composition of many Items;
+}
+entity Items {
+  key ID  : UUID;
+  title   : String;
+  receipt : Attachment;
+}
+```
+
+The plugin automatically discovers inline attachment fields at any level of the composition tree.
+
+#### Combining Inline and Composition-Based Attachments
+
+An entity can use both inline single attachments and composition-based multiple attachments simultaneously:
+
+```cds
+entity Books {
+  key ID      : UUID;
+  profileIcon : Attachment;                        // single file
+  attachments : Composition of many Attachments;   // multiple files
+}
+```
 
 ### Try the Bookshop Sample
 
