@@ -81,8 +81,8 @@ class MarkAsDeletedAttachmentEventTest {
         .containsEntry(Attachments.CONTENT_ID, null)
         .containsEntry(Attachments.STATUS, null)
         .containsEntry(Attachments.SCANNED_AT, null)
-        .containsEntry(MediaData.MIME_TYPE, null)
-        .containsEntry(MediaData.FILE_NAME, null);
+        .doesNotContainKey(MediaData.MIME_TYPE)
+        .doesNotContainKey(MediaData.FILE_NAME);
   }
 
   @Test
@@ -97,8 +97,8 @@ class MarkAsDeletedAttachmentEventTest {
     verifyNoInteractions(attachmentService);
     assertThat(currentData)
         .containsEntry(Attachments.CONTENT_ID, null)
-        .containsEntry(MediaData.MIME_TYPE, null)
-        .containsEntry(MediaData.FILE_NAME, null);
+        .doesNotContainKey(MediaData.MIME_TYPE)
+        .doesNotContainKey(MediaData.FILE_NAME);
   }
 
   @Test
@@ -116,8 +116,8 @@ class MarkAsDeletedAttachmentEventTest {
     verifyNoInteractions(attachmentService);
     assertThat(currentData)
         .containsEntry(Attachments.CONTENT_ID, null)
-        .containsEntry(MediaData.MIME_TYPE, null)
-        .containsEntry(MediaData.FILE_NAME, null);
+        .doesNotContainKey(MediaData.MIME_TYPE)
+        .doesNotContainKey(MediaData.FILE_NAME);
   }
 
   @Test

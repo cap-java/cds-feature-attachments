@@ -69,8 +69,15 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
         path.target().values().put(contentIdField, null);
         path.target().values().put(statusField, null);
         path.target().values().put(scannedAtField, null);
-        path.target().values().put(mimeTypeField, null);
-        path.target().values().put(fileNameField, null);
+        // For inline attachments, also clear mimeType/fileName on the parent entity.
+        // For composition-based attachments these live on the attachment entity itself and must NOT
+        // be cleared here.
+        // Otherwise UpdateAttachmentEvent's delete step would destroy them before the subsequent
+        // create step can use them.
+        if (inlinePrefix.isPresent()) {
+          path.target().values().put(mimeTypeField, null);
+          path.target().values().put(fileNameField, null);
+        }
       }
     }
     return content;
