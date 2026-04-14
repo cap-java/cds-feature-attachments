@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsElement;
@@ -17,7 +18,6 @@ import com.sap.cds.services.EventContext;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
@@ -51,7 +51,8 @@ class DoNothingAttachmentEventTest {
     when(entity.getQualifiedName()).thenReturn("some.qualified.name");
 
     var result =
-        cut.processEvent(path, streamInput, data, mock(EventContext.class), Optional.empty());
+        cut.processEvent(
+            path, streamInput, data, mock(EventContext.class), AttachmentFieldResolver.DIRECT);
 
     assertThat(result).isEqualTo(streamInput);
     verifyNoInteractions(element, data);

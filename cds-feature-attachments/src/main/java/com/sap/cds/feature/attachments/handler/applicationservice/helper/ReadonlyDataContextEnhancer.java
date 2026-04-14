@@ -8,6 +8,7 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.reflect.CdsEntity;
 import java.util.List;
 import java.util.Objects;
@@ -37,20 +38,18 @@ public final class ReadonlyDataContextEnhancer {
         (path, element, value) -> {
           if (isDraft) {
             // Determine if this is an inline attachment field
-            Optional<String> inlinePrefix =
-                ApplicationHandlerHelper.getInlineAttachmentPrefix(
-                    path.target().type(), element.getName());
-            if (inlinePrefix.isPresent()) {
+            AttachmentFieldResolver resolver =
+                AttachmentFieldResolver.of(
+                    ApplicationHandlerHelper.getInlineAttachmentPrefix(
+                        path.target().type(), element.getName()));
+            if (resolver.isInline()) {
               // Inline attachment: use prefixed field names
-              String prefix = inlinePrefix.get() + "_";
               Attachments attachment = Attachments.create();
-              attachment.setContentId(
-                  (String) path.target().values().get(prefix + Attachments.CONTENT_ID));
-              attachment.setStatus(
-                  (String) path.target().values().get(prefix + Attachments.STATUS));
+              attachment.setContentId((String) path.target().values().get(resolver.contentId()));
+              attachment.setStatus((String) path.target().values().get(resolver.status()));
               attachment.setScannedAt(
-                  (java.time.Instant) path.target().values().get(prefix + Attachments.SCANNED_AT));
-              path.target().values().put(prefix + DRAFT_READONLY_CONTEXT, attachment);
+                  (java.time.Instant) path.target().values().get(resolver.scannedAt()));
+              path.target().values().put(resolver.resolve(DRAFT_READONLY_CONTEXT), attachment);
             } else {
               // Composition-based attachment: use direct field names
               Attachments values = Attachments.of(path.target().values());
@@ -98,13 +97,10 @@ public final class ReadonlyDataContextEnhancer {
         String prefix = key.substring(0, key.length() - DRAFT_READONLY_CONTEXT.length() - 1);
         CdsData inlineReadOnlyData = (CdsData) data.get(key);
         if (Objects.nonNull(inlineReadOnlyData)) {
-          data.put(
-              prefix + "_" + Attachments.CONTENT_ID,
-              inlineReadOnlyData.get(Attachments.CONTENT_ID));
-          data.put(prefix + "_" + Attachments.STATUS, inlineReadOnlyData.get(Attachments.STATUS));
-          data.put(
-              prefix + "_" + Attachments.SCANNED_AT,
-              inlineReadOnlyData.get(Attachments.SCANNED_AT));
+          AttachmentFieldResolver resolver = AttachmentFieldResolver.of(Optional.of(prefix));
+          data.put(resolver.contentId(), inlineReadOnlyData.get(Attachments.CONTENT_ID));
+          data.put(resolver.status(), inlineReadOnlyData.get(Attachments.STATUS));
+          data.put(resolver.scannedAt(), inlineReadOnlyData.get(Attachments.SCANNED_AT));
           data.remove(key);
         }
       }

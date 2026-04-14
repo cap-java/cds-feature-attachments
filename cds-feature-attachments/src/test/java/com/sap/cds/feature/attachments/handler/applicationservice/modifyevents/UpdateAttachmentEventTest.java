@@ -8,12 +8,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 import java.io.InputStream;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,11 +45,14 @@ class UpdateAttachmentEventTest {
     var existingData = Attachments.create();
     var eventContext = mock(EventContext.class);
 
-    cut.processEvent(path, testContentStream, existingData, eventContext, Optional.empty());
+    cut.processEvent(
+        path, testContentStream, existingData, eventContext, AttachmentFieldResolver.DIRECT);
 
     verify(createEvent)
-        .processEvent(path, testContentStream, existingData, eventContext, Optional.empty());
+        .processEvent(
+            path, testContentStream, existingData, eventContext, AttachmentFieldResolver.DIRECT);
     verify(deleteEvent)
-        .processEvent(path, testContentStream, existingData, eventContext, Optional.empty());
+        .processEvent(
+            path, testContentStream, existingData, eventContext, AttachmentFieldResolver.DIRECT);
   }
 }

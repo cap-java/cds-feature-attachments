@@ -10,6 +10,7 @@ import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
@@ -19,7 +20,6 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,15 +54,12 @@ public class DeleteAttachmentsHandler implements EventHandler {
 
     Converter converter =
         (path, element, value) -> {
-          Optional<String> inlinePrefix =
-              ApplicationHandlerHelper.getInlineAttachmentPrefix(
-                  path.target().entity(), element.getName());
+          AttachmentFieldResolver resolver =
+              AttachmentFieldResolver.of(
+                  ApplicationHandlerHelper.getInlineAttachmentPrefix(
+                      path.target().entity(), element.getName()));
           return deleteEvent.processEvent(
-              path,
-              (InputStream) value,
-              Attachments.of(path.target().values()),
-              context,
-              inlinePrefix);
+              path, (InputStream) value, Attachments.of(path.target().values()), context, resolver);
         };
 
     CdsDataProcessor.create()

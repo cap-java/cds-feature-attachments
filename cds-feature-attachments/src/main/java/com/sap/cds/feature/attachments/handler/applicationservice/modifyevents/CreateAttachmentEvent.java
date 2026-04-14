@@ -10,6 +10,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
@@ -47,7 +48,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
       InputStream content,
       Attachments attachment,
       EventContext eventContext,
-      Optional<String> inlinePrefix) {
+      AttachmentFieldResolver resolver) {
     logger.debug(
         "Calling attachment service with create event for entity {}",
         path.target().entity().getQualifiedName());
@@ -55,9 +56,9 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 
     Optional<String> mimeTypeOptional =
-        getFieldValue(MediaData.MIME_TYPE, values, attachment, inlinePrefix);
+        getFieldValue(MediaData.MIME_TYPE, values, attachment, resolver);
     Optional<String> fileNameOptional =
-        getFieldValue(MediaData.FILE_NAME, values, attachment, inlinePrefix);
+        getFieldValue(MediaData.FILE_NAME, values, attachment, resolver);
 
     CreateAttachmentInput createEventInput =
         new CreateAttachmentInput(
@@ -66,23 +67,16 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
             fileNameOptional.orElse(null),
             mimeTypeOptional.orElse(null),
             content,
-            inlinePrefix);
+            resolver);
     AttachmentModificationResult result = attachmentService.createAttachment(createEventInput);
     ChangeSetListener createListener =
         listenerProvider.provideListener(result.contentId(), eventContext.getCdsRuntime());
 
     eventContext.getChangeSetContext().register(createListener);
-    // Set contentId and status using correct field names (prefixed for inline)
-    String contentIdField =
-        inlinePrefix.map(p -> p + "_" + Attachments.CONTENT_ID).orElse(Attachments.CONTENT_ID);
-    String statusField =
-        inlinePrefix.map(p -> p + "_" + Attachments.STATUS).orElse(Attachments.STATUS);
-    path.target().values().put(contentIdField, result.contentId());
-    path.target().values().put(statusField, result.status());
+    path.target().values().put(resolver.contentId(), result.contentId());
+    path.target().values().put(resolver.status(), result.status());
     if (nonNull(result.scannedAt())) {
-      String scannedAtField =
-          inlinePrefix.map(p -> p + "_" + Attachments.SCANNED_AT).orElse(Attachments.SCANNED_AT);
-      path.target().values().put(scannedAtField, result.scannedAt());
+      path.target().values().put(resolver.scannedAt(), result.scannedAt());
     }
     return result.isInternalStored() ? content : null;
   }
@@ -91,10 +85,10 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
       String fieldName,
       Map<String, Object> values,
       Attachments attachment,
-      Optional<String> inlinePrefix) {
+      AttachmentFieldResolver resolver) {
     // Try prefixed field name first (for inline types)
-    if (inlinePrefix.isPresent()) {
-      Object prefixedValue = values.get(inlinePrefix.get() + "_" + fieldName);
+    if (resolver.isInline()) {
+      Object prefixedValue = values.get(resolver.resolve(fieldName));
       if (nonNull(prefixedValue)) return Optional.of((String) prefixedValue);
     }
     // Fall back to direct field name

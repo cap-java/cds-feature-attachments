@@ -5,6 +5,7 @@ package com.sap.cds.feature.attachments.service.handler;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -68,10 +69,10 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
   @After
   void afterCreateAttachment(AttachmentCreateEventContext context) {
     String prefix = (String) context.get("attachment.inlinePrefix");
-    Optional<String> inlinePrefix = Optional.ofNullable(prefix);
+    AttachmentFieldResolver resolver = AttachmentFieldResolver.of(Optional.ofNullable(prefix));
     ChangeSetListener listener =
         malwareScanProvider.getChangeSetListener(
-            context.getAttachmentEntity(), context.getContentId(), inlinePrefix);
+            context.getAttachmentEntity(), context.getContentId(), resolver);
     context.getChangeSetContext().register(listener);
   }
 

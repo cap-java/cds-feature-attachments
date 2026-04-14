@@ -15,6 +15,7 @@ import static org.mockito.Mockito.when;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
@@ -96,7 +97,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     attachment.getContent(),
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    Optional.empty()));
+                    AttachmentFieldResolver.DIRECT));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -151,7 +152,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     content,
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    Optional.empty()));
+                    AttachmentFieldResolver.DIRECT));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -184,7 +185,7 @@ class ModifyApplicationHandlerHelperTest {
                 path,
                 content,
                 ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                Optional.empty()));
+                AttachmentFieldResolver.DIRECT));
   }
 
   @Test
@@ -217,7 +218,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     content,
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    Optional.empty()));
+                    AttachmentFieldResolver.DIRECT));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
   }
@@ -249,7 +250,7 @@ class ModifyApplicationHandlerHelperTest {
         path,
         (InputStream) values.get("profilePicture_content"),
         ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-        Optional.of("profilePicture"));
+        AttachmentFieldResolver.of(Optional.of("profilePicture")));
 
     // Verify eventFactory was called with the resolved contentId
     verify(eventFactory).getEvent(any(), eq("existing-doc-77"), any());

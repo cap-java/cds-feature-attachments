@@ -11,6 +11,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.M
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsAnnotation;
 import com.sap.cds.reflect.CdsEntity;
@@ -53,9 +54,10 @@ public final class ModifyApplicationHandlerHelper {
 
     Converter converter =
         (path, element, value) -> {
-          Optional<String> inlinePrefix =
-              ApplicationHandlerHelper.getInlineAttachmentPrefix(
-                  path.target().entity(), element.getName());
+          AttachmentFieldResolver resolver =
+              AttachmentFieldResolver.of(
+                  ApplicationHandlerHelper.getInlineAttachmentPrefix(
+                      path.target().entity(), element.getName()));
           return handleAttachmentForEntity(
               condensedExistingAttachments,
               eventFactory,
@@ -63,7 +65,7 @@ public final class ModifyApplicationHandlerHelper {
               path,
               (InputStream) value,
               defaultMaxSize,
-              inlinePrefix);
+              resolver);
         };
 
     CdsDataProcessor.create()
@@ -80,7 +82,7 @@ public final class ModifyApplicationHandlerHelper {
    * @param path the {@link Path} of the attachment
    * @param content the content of the attachment
    * @param defaultMaxSize the default max size to use when no annotation is present
-   * @param inlinePrefix the inline attachment field prefix, or empty for composition-based
+   * @param resolver resolves field names for composition-based or inline attachments
    * @return the processed content as an {@link InputStream}
    */
   public static InputStream handleAttachmentForEntity(
@@ -90,19 +92,12 @@ public final class ModifyApplicationHandlerHelper {
       Path path,
       InputStream content,
       String defaultMaxSize,
-      Optional<String> inlinePrefix) {
+      AttachmentFieldResolver resolver) {
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
     ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values());
     Attachments attachment = getExistingAttachment(keys, existingAttachments);
 
-    // For inline attachment fields, extract contentId using the known prefix
-    String contentId;
-    if (inlinePrefix.isPresent()) {
-      contentId =
-          (String) path.target().values().get(inlinePrefix.get() + "_" + Attachments.CONTENT_ID);
-    } else {
-      contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
-    }
+    String contentId = (String) path.target().values().get(resolver.contentId());
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
     String maxSizeStr = getValMaxValue(path.target().entity(), defaultMaxSize);
     eventContext.put(
@@ -128,8 +123,7 @@ public final class ModifyApplicationHandlerHelper {
     ModifyAttachmentEvent eventToProcess =
         eventFactory.getEvent(wrappedContent, contentId, attachment);
     try {
-      return eventToProcess.processEvent(
-          path, wrappedContent, attachment, eventContext, inlinePrefix);
+      return eventToProcess.processEvent(path, wrappedContent, attachment, eventContext, resolver);
     } catch (Exception e) {
       if (wrappedContent != null && wrappedContent.isLimitExceeded()) {
         throw tooLargeException;

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -151,7 +152,8 @@ class AttachmentsServiceImplHandlerTest {
   void malwareScannerRegisteredForEndOfTransaction() {
     var listener = mock(ChangeSetListener.class);
     var entity = mock(CdsEntity.class);
-    when(malwareScanProvider.getChangeSetListener(entity, "contentId", Optional.empty()))
+    when(malwareScanProvider.getChangeSetListener(
+            entity, "contentId", AttachmentFieldResolver.DIRECT))
         .thenReturn(listener);
     var createContext = AttachmentCreateEventContext.create();
     createContext.setAttachmentIds(Map.of(Attachments.ID, "contentId"));
@@ -162,14 +164,16 @@ class AttachmentsServiceImplHandlerTest {
     cut.createAttachment(createContext);
     cut.afterCreateAttachment(createContext);
 
-    verify(malwareScanProvider).getChangeSetListener(entity, "contentId", Optional.empty());
+    verify(malwareScanProvider)
+        .getChangeSetListener(entity, "contentId", AttachmentFieldResolver.DIRECT);
   }
 
   @Test
   void malwareScannerRegisteredWithInlinePrefixFromContext() {
     var listener = mock(ChangeSetListener.class);
     var entity = mock(CdsEntity.class);
-    when(malwareScanProvider.getChangeSetListener(entity, "contentId", Optional.of("profileIcon")))
+    when(malwareScanProvider.getChangeSetListener(
+            entity, "contentId", AttachmentFieldResolver.of(Optional.of("profileIcon"))))
         .thenReturn(listener);
     var createContext = AttachmentCreateEventContext.create();
     createContext.setAttachmentIds(Map.of(Attachments.ID, "contentId"));
@@ -182,7 +186,8 @@ class AttachmentsServiceImplHandlerTest {
     cut.afterCreateAttachment(createContext);
 
     verify(malwareScanProvider)
-        .getChangeSetListener(entity, "contentId", Optional.of("profileIcon"));
+        .getChangeSetListener(
+            entity, "contentId", AttachmentFieldResolver.of(Optional.of("profileIcon")));
   }
 
   private void closeChangeSetContext() throws Exception {

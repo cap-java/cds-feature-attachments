@@ -12,6 +12,7 @@ import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
@@ -100,12 +101,13 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   private Validator buildDeleteContentValidator(
       DraftCancelEventContext context, List<? extends CdsData> activeCondensedAttachments) {
     return (path, element, value) -> {
-      Optional<String> inlinePrefix =
-          ApplicationHandlerHelper.getInlineAttachmentPrefix(
-              path.target().entity(), element.getName());
+      AttachmentFieldResolver resolver =
+          AttachmentFieldResolver.of(
+              ApplicationHandlerHelper.getInlineAttachmentPrefix(
+                  path.target().entity(), element.getName()));
       Attachments attachment = Attachments.of(path.target().values());
       if (Boolean.FALSE.equals(attachment.get(Drafts.HAS_ACTIVE_ENTITY))) {
-        deleteEvent.processEvent(path, null, attachment, context, inlinePrefix);
+        deleteEvent.processEvent(path, null, attachment, context, resolver);
         return;
       }
       Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
@@ -116,7 +118,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
       existingEntry.ifPresent(
           entry -> {
             if (!entry.get(Attachments.CONTENT_ID).equals(value)) {
-              deleteEvent.processEvent(null, null, attachment, context, inlinePrefix);
+              deleteEvent.processEvent(null, null, attachment, context, resolver);
             }
           });
     };

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -99,7 +100,12 @@ class AttachmentsServiceImplTest {
     Map<String, Object> ids = Map.of("ID1", "value1", "id2", "Value2");
     var input =
         new CreateAttachmentInput(
-            ids, mock(CdsEntity.class), "fileName", "mimeType", stream, Optional.empty());
+            ids,
+            mock(CdsEntity.class),
+            "fileName",
+            "mimeType",
+            stream,
+            AttachmentFieldResolver.DIRECT);
 
     var result = cut.createAttachment(input);
 
@@ -132,7 +138,7 @@ class AttachmentsServiceImplTest {
             "fileName",
             "mimeType",
             mock(InputStream.class),
-            Optional.empty());
+            AttachmentFieldResolver.DIRECT);
 
     var result = cut.createAttachment(input);
 
@@ -160,7 +166,7 @@ class AttachmentsServiceImplTest {
             "fileName",
             "mimeType",
             mock(InputStream.class),
-            Optional.of("profileIcon"));
+            AttachmentFieldResolver.of(Optional.of("profileIcon")));
 
     cut.createAttachment(input);
 
@@ -189,7 +195,7 @@ class AttachmentsServiceImplTest {
             "fileName",
             "mimeType",
             mock(InputStream.class),
-            Optional.empty());
+            AttachmentFieldResolver.DIRECT);
 
     cut.createAttachment(input);
 

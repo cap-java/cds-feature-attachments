@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
@@ -26,7 +27,6 @@ import com.sap.cds.services.persistence.PersistenceService;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,10 +67,11 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
           Result result = persistence.run(select);
 
           List<Attachments> existingAttachments;
-          Optional<String> inlinePrefix =
-              ApplicationHandlerHelper.getInlineAttachmentPrefix(
-                  path.target().entity(), element.getName());
-          if (inlinePrefix.isPresent()) {
+          AttachmentFieldResolver resolver =
+              AttachmentFieldResolver.of(
+                  ApplicationHandlerHelper.getInlineAttachmentPrefix(
+                      path.target().entity(), element.getName()));
+          if (resolver.isInline()) {
             // For inline attachments, the DB result has flattened column names (e.g.
             // profileIcon_contentId).
             // Extract to unprefixed Attachments and carry over parent entity keys for matching.
@@ -81,7 +82,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
                         raw -> {
                           Attachments extracted =
                               ApplicationHandlerHelper.extractInlineAttachment(
-                                  raw, inlinePrefix.get());
+                                  raw, resolver.inlinePrefix().get());
                           parentKeys.forEach(extracted::putIfAbsent);
                           return extracted;
                         })
@@ -97,7 +98,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
               path,
               (InputStream) value,
               defaultMaxSize,
-              inlinePrefix);
+              resolver);
         };
 
     CdsDataProcessor.create()

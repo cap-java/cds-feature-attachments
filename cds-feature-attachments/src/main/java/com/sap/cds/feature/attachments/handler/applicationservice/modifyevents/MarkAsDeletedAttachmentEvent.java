@@ -7,14 +7,13 @@ import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.handler.common.AttachmentFieldResolver;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.draft.DraftService;
 import java.io.InputStream;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +38,7 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
       InputStream content,
       Attachments attachment,
       EventContext eventContext,
-      Optional<String> inlinePrefix) {
+      AttachmentFieldResolver resolver) {
     String qualifiedName = eventContext.getTarget().getQualifiedName();
     logger.debug(
         "Processing the event for calling attachment service with mark as delete event for entity {}",
@@ -57,33 +56,23 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
           qualifiedName);
     }
     if (nonNull(path)) {
-      String contentIdField = resolveField(Attachments.CONTENT_ID, inlinePrefix);
-      String statusField = resolveField(Attachments.STATUS, inlinePrefix);
-      String scannedAtField = resolveField(Attachments.SCANNED_AT, inlinePrefix);
-      String mimeTypeField = resolveField(MediaData.MIME_TYPE, inlinePrefix);
-      String fileNameField = resolveField(MediaData.FILE_NAME, inlinePrefix);
-
-      String newContentId = (String) path.target().values().get(contentIdField);
+      String newContentId = (String) path.target().values().get(resolver.contentId());
       if (nonNull(newContentId) && newContentId.equals(attachment.getContentId())
-          || !path.target().values().containsKey(contentIdField)) {
-        path.target().values().put(contentIdField, null);
-        path.target().values().put(statusField, null);
-        path.target().values().put(scannedAtField, null);
+          || !path.target().values().containsKey(resolver.contentId())) {
+        path.target().values().put(resolver.contentId(), null);
+        path.target().values().put(resolver.status(), null);
+        path.target().values().put(resolver.scannedAt(), null);
         // For inline attachments, also clear mimeType/fileName on the parent entity.
         // For composition-based attachments these live on the attachment entity itself and must NOT
         // be cleared here.
         // Otherwise UpdateAttachmentEvent's delete step would destroy them before the subsequent
         // create step can use them.
-        if (inlinePrefix.isPresent()) {
-          path.target().values().put(mimeTypeField, null);
-          path.target().values().put(fileNameField, null);
+        if (resolver.isInline()) {
+          path.target().values().put(resolver.mimeType(), null);
+          path.target().values().put(resolver.fileName(), null);
         }
       }
     }
     return content;
-  }
-
-  private static String resolveField(String fieldName, Optional<String> inlinePrefix) {
-    return inlinePrefix.map(p -> p + "_" + fieldName).orElse(fieldName);
   }
 }
