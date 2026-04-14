@@ -48,8 +48,9 @@ mvn verify -Platest-test-version     # Test against latest CAP Java
 - **License header** required on every Java file:
   ```java
   /*
-   * YEAR SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+   * © YEAR SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
    */
+  ```
   ```
 - **Imports:** static first, then non-static, both alphabetical (handled by Spotless).
 
