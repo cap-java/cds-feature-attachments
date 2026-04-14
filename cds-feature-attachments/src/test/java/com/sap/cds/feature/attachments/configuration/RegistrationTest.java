@@ -19,7 +19,9 @@ import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmen
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.MalwareScannerService;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
+import com.sap.cds.feature.attachments.service.handler.DefaultMalwareScannerServiceHandler;
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.services.Service;
 import com.sap.cds.services.ServiceCatalog;
@@ -96,13 +98,16 @@ class RegistrationTest {
   void serviceIsRegistered() {
     cut.services(configurer);
 
-    verify(configurer).service(serviceArgumentCaptor.capture());
+    verify(configurer, times(2)).service(serviceArgumentCaptor.capture());
     var services = serviceArgumentCaptor.getAllValues();
-    assertThat(services).hasSize(1);
+    assertThat(services).hasSize(2);
 
     var attachmentServiceFound = services.stream().anyMatch(AttachmentService.class::isInstance);
+    var malwareScannerServiceFound =
+        services.stream().anyMatch(MalwareScannerService.class::isInstance);
 
     assertThat(attachmentServiceFound).isTrue();
+    assertThat(malwareScannerServiceFound).isTrue();
   }
 
   @Test
@@ -119,7 +124,7 @@ class RegistrationTest {
 
     cut.eventHandlers(configurer);
 
-    var handlerSize = 8;
+    var handlerSize = 9;
     verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
     checkHandlers(handlerArgumentCaptor.getAllValues(), handlerSize);
   }
@@ -139,7 +144,7 @@ class RegistrationTest {
 
     cut.eventHandlers(configurer);
 
-    var handlerSize = 8;
+    var handlerSize = 9;
     verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
     checkHandlers(handlerArgumentCaptor.getAllValues(), handlerSize);
   }
@@ -147,6 +152,7 @@ class RegistrationTest {
   private void checkHandlers(List<EventHandler> handlers, int handlerSize) {
     assertThat(handlers).hasSize(handlerSize);
     isHandlerForClassIncluded(handlers, DefaultAttachmentsServiceHandler.class);
+    isHandlerForClassIncluded(handlers, DefaultMalwareScannerServiceHandler.class);
     isHandlerForClassIncluded(handlers, CreateAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, UpdateAttachmentsHandler.class);
     isHandlerForClassIncluded(handlers, DeleteAttachmentsHandler.class);
@@ -167,11 +173,12 @@ class RegistrationTest {
 
     cut.eventHandlers(configurer);
 
-    var handlerSize = 1;
+    var handlerSize = 2;
     verify(configurer, times(handlerSize)).eventHandler(handlerArgumentCaptor.capture());
     var handlers = handlerArgumentCaptor.getAllValues();
     assertThat(handlers).hasSize(handlerSize);
     isHandlerForClassIncluded(handlers, DefaultAttachmentsServiceHandler.class);
+    isHandlerForClassIncluded(handlers, DefaultMalwareScannerServiceHandler.class);
     // event handlers for application services are not registered
     isHandlerForClassMissing(handlers, CreateAttachmentsHandler.class);
     isHandlerForClassMissing(handlers, UpdateAttachmentsHandler.class);
