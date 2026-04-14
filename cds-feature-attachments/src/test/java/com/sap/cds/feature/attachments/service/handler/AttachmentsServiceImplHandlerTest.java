@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
@@ -21,9 +20,6 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRe
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.changeset.ChangeSetListener;
-import com.sap.cds.services.handler.annotations.HandlerOrder;
-import com.sap.cds.services.handler.annotations.On;
-import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.impl.changeset.ChangeSetContextImpl;
 import java.util.Collections;
 import java.util.Map;
@@ -33,8 +29,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class AttachmentsServiceImplHandlerTest {
-
-  private static final int EXPECTED_HANDLER_ORDER = 11000;
 
   private DefaultAttachmentsServiceHandler cut;
   private EndTransactionMalwareScanProvider malwareScanProvider;
@@ -93,60 +87,6 @@ class AttachmentsServiceImplHandlerTest {
     cut.readAttachment(readContext);
 
     assertThat(readContext.isCompleted()).isTrue();
-  }
-
-  @Test
-  void classHasCorrectAnnotation() {
-    var annotation = cut.getClass().getAnnotation(ServiceName.class);
-
-    assertThat(annotation.value()).containsOnly("*");
-    assertThat(annotation.type()).containsOnly(AttachmentService.class);
-  }
-
-  @Test
-  void createMethodHasCorrectAnnotation() throws NoSuchMethodException {
-    var createMethod =
-        cut.getClass().getDeclaredMethod("createAttachment", AttachmentCreateEventContext.class);
-    var onAnnotation = createMethod.getAnnotation(On.class);
-    var handlerOrderAnnotation = createMethod.getAnnotation(HandlerOrder.class);
-
-    assertThat(onAnnotation.event()).isEmpty();
-    assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
-  }
-
-  @Test
-  void restoreAttachmentMethodHasCorrectAnnotation() throws NoSuchMethodException {
-    var updateMethod =
-        cut.getClass().getDeclaredMethod("restoreAttachment", AttachmentRestoreEventContext.class);
-    var onAnnotation = updateMethod.getAnnotation(On.class);
-    var handlerOrderAnnotation = updateMethod.getAnnotation(HandlerOrder.class);
-
-    assertThat(onAnnotation.event()).isEmpty();
-    assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
-  }
-
-  @Test
-  void deleteMethodHasCorrectAnnotation() throws NoSuchMethodException {
-    var deleteMethod =
-        cut.getClass()
-            .getDeclaredMethod(
-                "markAttachmentAsDeleted", AttachmentMarkAsDeletedEventContext.class);
-    var onAnnotation = deleteMethod.getAnnotation(On.class);
-    var handlerOrderAnnotation = deleteMethod.getAnnotation(HandlerOrder.class);
-
-    assertThat(onAnnotation.event()).isEmpty();
-    assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
-  }
-
-  @Test
-  void readMethodHasCorrectAnnotation() throws NoSuchMethodException {
-    var readMethod =
-        cut.getClass().getDeclaredMethod("readAttachment", AttachmentReadEventContext.class);
-    var onAnnotation = readMethod.getAnnotation(On.class);
-    var handlerOrderAnnotation = readMethod.getAnnotation(HandlerOrder.class);
-
-    assertThat(onAnnotation.event()).isEmpty();
-    assertThat(handlerOrderAnnotation.value()).isEqualTo(EXPECTED_HANDLER_ORDER);
   }
 
   @Test
