@@ -32,6 +32,7 @@ import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Error;
+import software.amazon.awssdk.services.s3.model.ServerSideEncryption;
 
 public class AWSClient implements OSClient {
   private final S3Client s3Client;
@@ -89,6 +90,9 @@ public class AWSClient implements OSClient {
             .bucket(this.bucketName)
             .key(completeFileName)
             .contentType(contentType)
+            // Azure and Google Cloud Storage encrypt at rest by default; S3 requires explicit
+            // opt-in
+            .serverSideEncryption(ServerSideEncryption.AES256)
             .build();
 
     CompletableFuture<PutObjectResponse> putFuture = this.s3AsyncClient.putObject(putRequest, body);
