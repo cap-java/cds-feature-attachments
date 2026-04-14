@@ -40,6 +40,8 @@ mvn spotless:apply                   # Fix formatting
 mvn verify -Platest-test-version     # Test against latest CAP Java
 ```
 
+**Note:** `mvn clean compile` or `mvn clean install` can occasionally fail due to a file lock. If this happens, run `mvn clean` and `mvn compile`/`mvn install` as separate commands, or just drop the `clean`.
+
 ## Code Style
 
 - **Formatter:** Google Java Format via Spotless. Run `mvn spotless:apply` before committing.
