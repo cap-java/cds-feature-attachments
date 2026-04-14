@@ -38,7 +38,7 @@
     <module>integration-tests</module>
   </modules>
 
-  <scm>
+  <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
     <connection>scm:git:https://github.com/cap-java/cds-feature-attachments.git</connection>
     <developerConnection>scm:git:git@github.com:cap-java/cds-feature-attachments.git</developerConnection>
     <url>https://github.com/cap-java/cds-feature-attachments</url>
