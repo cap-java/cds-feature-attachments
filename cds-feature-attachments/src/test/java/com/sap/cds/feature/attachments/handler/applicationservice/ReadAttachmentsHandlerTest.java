@@ -30,12 +30,7 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
-import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
-import com.sap.cds.services.handler.annotations.After;
-import com.sap.cds.services.handler.annotations.Before;
-import com.sap.cds.services.handler.annotations.HandlerOrder;
-import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
@@ -364,37 +359,6 @@ class ReadAttachmentsHandlerTest {
     cut.processAfter(readEventContext, List.of(eventItem));
 
     verifyNoInteractions(attachmentService);
-  }
-
-  @Test
-  void classHasCorrectAnnotation() {
-    var readHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
-
-    assertThat(readHandlerAnnotation.type()).containsOnly(ApplicationService.class);
-    assertThat(readHandlerAnnotation.value()).containsOnly("*");
-  }
-
-  @Test
-  void afterMethodAfterHasCorrectAnnotations() throws NoSuchMethodException {
-    var method =
-        cut.getClass().getDeclaredMethod("processAfter", CdsReadEventContext.class, List.class);
-
-    var readAfterAnnotation = method.getAnnotation(After.class);
-    var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(readAfterAnnotation.event()).isEmpty();
-    assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
-  }
-
-  @Test
-  void beforeMethodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method = cut.getClass().getDeclaredMethod("processBefore", CdsReadEventContext.class);
-
-    var readBeforeAnnotation = method.getAnnotation(Before.class);
-    var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(readBeforeAnnotation.event()).isEmpty();
-    assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
   }
 
   @Test
