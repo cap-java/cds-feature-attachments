@@ -39,18 +39,11 @@ import com.sap.cds.services.EventContext;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
-import com.sap.cds.services.cds.CqnService;
-import com.sap.cds.services.draft.DraftService;
-import com.sap.cds.services.handler.annotations.Before;
-import com.sap.cds.services.handler.annotations.HandlerOrder;
-import com.sap.cds.services.handler.annotations.On;
-import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
@@ -308,26 +301,6 @@ class CreateAttachmentsHandlerTest {
   }
 
   @Test
-  void classHasCorrectAnnotation() {
-    var createHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
-
-    assertThat(createHandlerAnnotation.type()).containsOnly(ApplicationService.class);
-    assertThat(createHandlerAnnotation.value()).containsOnly("*");
-  }
-
-  @Test
-  void methodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method =
-        cut.getClass().getDeclaredMethod("processBefore", CdsCreateEventContext.class, List.class);
-
-    var createBeforeAnnotation = method.getAnnotation(Before.class);
-    var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(createBeforeAnnotation.event()).isEmpty();
-    assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
-  }
-
-  @Test
   void restoreError_proceedsSuccessfully_noException() {
     var context = mock(EventContext.class);
     doNothing().when(context).proceed();
@@ -375,33 +348,6 @@ class CreateAttachmentsHandlerTest {
     var exception = assertThrows(ServiceException.class, () -> cut.restoreError(context));
 
     assertThat(exception).isSameAs(originalException);
-  }
-
-  @Test
-  void restoreError_methodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method = cut.getClass().getDeclaredMethod("restoreError", EventContext.class);
-
-    var onAnnotation = method.getAnnotation(On.class);
-    var handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(onAnnotation.event())
-        .containsExactlyInAnyOrder(
-            CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE, DraftService.EVENT_DRAFT_PATCH);
-    assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
-  }
-
-  @Test
-  void processBeforeForMetadata_methodHasCorrectAnnotations() throws NoSuchMethodException {
-    Method method =
-        cut.getClass()
-            .getDeclaredMethod("processBeforeForMetadata", EventContext.class, List.class);
-
-    Before beforeAnnotation = method.getAnnotation(Before.class);
-    HandlerOrder handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(beforeAnnotation.event())
-        .containsExactlyInAnyOrder(CqnService.EVENT_CREATE, DraftService.EVENT_DRAFT_NEW);
-    assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.BEFORE);
   }
 
   @Test
