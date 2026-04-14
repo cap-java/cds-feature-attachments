@@ -20,7 +20,6 @@ type Attachment @(_is_media_data) {
     fileName  : String(5000);
     contentId : String     @readonly; // id of attachment in external storage, if database storage is used, same as id
     status    : StatusCode default 'Unscanned' @readonly;
-    statusNav : Association to one ScanStates on statusNav.code = status;
     scannedAt : Timestamp  @readonly;
 }
 
@@ -29,7 +28,9 @@ entity ScanStates : CodeList {
         name        : localized String(64);
         criticality : Integer     @UI.Hidden;
 }
-aspect MediaData           : Attachment {}
+aspect MediaData           : Attachment {
+    statusNav : Association to one ScanStates on statusNav.code = status;
+}
 
 aspect Attachments : cuid, managed, MediaData {
     note : String(5000);
