@@ -4,6 +4,8 @@
 package com.sap.cds.feature.attachments.service.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,6 +21,7 @@ import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRe
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.changeset.ChangeSetListener;
 import com.sap.cds.services.impl.changeset.ChangeSetContextImpl;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import org.junit.jupiter.api.AfterEach;
@@ -101,6 +104,38 @@ class AttachmentsServiceImplHandlerTest {
     cut.afterCreateAttachment(createContext);
 
     verify(malwareScanProvider).getChangeSetListener(entity, "contentId");
+  }
+
+  @Test
+  void createAttachment_emptyAttachmentIds_handlesGracefully() {
+    var createContext = AttachmentCreateEventContext.create();
+    createContext.setAttachmentIds(Collections.emptyMap());
+    createContext.setData(MediaData.create());
+    createContext.setAttachmentEntity(mock(CdsEntity.class));
+    ChangeSetContextImpl.open(false);
+
+    cut.createAttachment(createContext);
+
+    assertThat(createContext.getContentId())
+        .as("contentId should be null when Attachments.ID key is missing from attachmentIds")
+        .isNull();
+    assertThat(createContext.isCompleted()).isTrue();
+  }
+
+  @Test
+  void afterCreateAttachment_noChangeSetContext_throws() {
+    var entity = mock(CdsEntity.class);
+    when(malwareScanProvider.getChangeSetListener(any(), any()))
+        .thenReturn(mock(ChangeSetListener.class));
+    var createContext = AttachmentCreateEventContext.create();
+    createContext.setAttachmentIds(Map.of(Attachments.ID, "some-id"));
+    createContext.setData(MediaData.create());
+    createContext.setAttachmentEntity(entity);
+
+    cut.createAttachment(createContext);
+
+    assertThatThrownBy(() -> cut.afterCreateAttachment(createContext))
+        .isInstanceOf(NullPointerException.class);
   }
 
   private void closeChangeSetContext() throws Exception {
