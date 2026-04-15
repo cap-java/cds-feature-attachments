@@ -59,6 +59,25 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     Optional<String> fileNameOptional =
         getFieldValue(MediaData.FILE_NAME, values, attachment, inlinePrefix);
 
+    // For inline attachments, CDS flattening breaks the Core.ContentDisposition.Filename and
+    // Core.MediaType path references, so the framework won't extract fileName/mimeType from the
+    // upload request headers. Extract them manually and persist into the prefixed fields.
+    if (inlinePrefix.isPresent()) {
+      if (fileNameOptional.isEmpty()) {
+        fileNameOptional = extractFileNameFromHeader(eventContext);
+        fileNameOptional.ifPresent(
+            fn -> values.put(inlinePrefix.get() + "_" + MediaData.FILE_NAME, fn));
+      }
+      if (mimeTypeOptional.isEmpty()
+          || "application/octet-stream".equals(mimeTypeOptional.get())) {
+        Optional<String> headerMimeType = extractMimeTypeFromHeader(eventContext);
+        if (headerMimeType.isPresent()) {
+          mimeTypeOptional = headerMimeType;
+          values.put(inlinePrefix.get() + "_" + MediaData.MIME_TYPE, mimeTypeOptional.get());
+        }
+      }
+    }
+
     CreateAttachmentInput createEventInput =
         new CreateAttachmentInput(
             keys,
@@ -101,5 +120,46 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     Object annotationValue = values.get(fieldName);
     Object value = nonNull(annotationValue) ? annotationValue : attachment.get(fieldName);
     return Optional.ofNullable((String) value);
+  }
+
+  private static Optional<String> extractFileNameFromHeader(EventContext eventContext) {
+    String header = eventContext.getParameterInfo().getHeader("Content-Disposition");
+    if (header != null) {
+      // Try RFC 5987 encoded filename first (filename*=UTF-8''...)
+      java.util.regex.Matcher utf8 =
+          java.util.regex.Pattern.compile(
+                  "filename\\*=UTF-8''(.+)", java.util.regex.Pattern.CASE_INSENSITIVE)
+              .matcher(header);
+      if (utf8.find()) {
+        try {
+          return Optional.of(java.net.URLDecoder.decode(utf8.group(1), "UTF-8"));
+        } catch (java.io.UnsupportedEncodingException e) {
+          logger.debug("Failed to decode RFC 5987 filename", e);
+        }
+      }
+      // Fall back to plain filename=
+      java.util.regex.Matcher plain =
+          java.util.regex.Pattern.compile(
+                  "filename=\"?([^\";]+)\"?", java.util.regex.Pattern.CASE_INSENSITIVE)
+              .matcher(header);
+      if (plain.find()) {
+        return Optional.of(plain.group(1).trim());
+      }
+    }
+    // Fiori Elements may use the slug header instead
+    String slug = eventContext.getParameterInfo().getHeader("slug");
+    return Optional.ofNullable(slug);
+  }
+
+  private static Optional<String> extractMimeTypeFromHeader(EventContext eventContext) {
+    String contentType = eventContext.getParameterInfo().getHeader("Content-Type");
+    if (contentType == null) {
+      return Optional.empty();
+    }
+    String mimeType = contentType.split(";")[0].trim();
+    if (mimeType.isEmpty() || "application/octet-stream".equalsIgnoreCase(mimeType)) {
+      return Optional.empty();
+    }
+    return Optional.of(mimeType);
   }
 }

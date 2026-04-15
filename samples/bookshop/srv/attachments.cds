@@ -1,6 +1,6 @@
 using {sap.capire.bookshop as my} from '../db/schema';
-using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
-using {sap.attachments.Attachment} from 'com.sap.cds/cds-feature-attachments';
+using {Attachments} from 'com.sap.cds/cds-feature-attachments';
+using {Attachment} from 'com.sap.cds/cds-feature-attachments';
 
 // Extend Books entity to support file attachments (images, PDFs, documents)
 // Each book can have multiple attachments via composition relationship
@@ -40,11 +40,3 @@ annotate service.Books with @(UI.Facets: [{
   Target: 'attachments/@UI.LineItem'
 }]);
 
-// AdminService Facets (including attachments and profileIcon) are defined in
-// app/admin-books/fiori-service.cds. Don't re-annotate UI.Facets here,
-// as it would override the complete facet list defined there.
-
-
-service nonDraft {
-  entity Books as projection on my.Books;
-}
