@@ -7,10 +7,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.Result;
+import com.sap.cds.ResultBuilder;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
@@ -34,7 +36,9 @@ import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -173,6 +177,38 @@ class DraftPatchAttachmentsHandlerTest {
 
     assertThat(beforeAnnotation.event()).isEmpty();
     assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
+  }
+
+  @Test
+  void inlineAttachmentContentIsProcessed() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+    var content = mock(InputStream.class);
+    Map<String, Object> data = new HashMap<>();
+    data.put("ID", UUID.randomUUID().toString());
+    data.put(RootTable_.PROFILE_PICTURE_CONTENT, content);
+
+    Map<String, Object> existingRow = new HashMap<>();
+    existingRow.put(RootTable_.PROFILE_PICTURE_CONTENT_ID, "old-content-id");
+    existingRow.put(RootTable_.PROFILE_PICTURE_STATUS, "Unscanned");
+    var result = ResultBuilder.selectedRows(List.of(existingRow)).result();
+    when(persistence.run(any(CqnSelect.class))).thenReturn(result);
+
+    cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(data)));
+
+    verify(eventFactory).getEvent(any(), eq("old-content-id"), any());
+    verify(event).processEvent(any(), any(), any(), eq(eventContext));
+  }
+
+  @Test
+  void inlineAttachmentContentNotInDataIsSkipped() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+    Map<String, Object> data = new HashMap<>();
+    data.put("ID", UUID.randomUUID().toString());
+    data.put("title", "new title");
+
+    cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(data)));
+
+    verify(eventFactory, never()).getEvent(any(), any(), any());
   }
 
   private RootTable buildRooWithAttachment(Attachments attachments) {

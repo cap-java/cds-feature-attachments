@@ -11,8 +11,11 @@ import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.InlineAttachmentHelper;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
@@ -25,6 +28,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,5 +79,52 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
         .process(data, context.getTarget());
+
+    handleInlineDraftPatch(context, data);
+  }
+
+  private void handleInlineDraftPatch(
+      DraftPatchEventContext context, List<? extends CdsData> data) {
+    CdsEntity entity = context.getTarget();
+    List<String> inlinePrefixes = InlineAttachmentHelper.findInlineAttachmentPrefixes(entity);
+    if (inlinePrefixes.isEmpty()) {
+      return;
+    }
+
+    CdsEntity draftEntity = DraftUtils.getDraftEntity(entity);
+
+    for (CdsData row : data) {
+      for (String prefix : inlinePrefixes) {
+        String contentField = InlineAttachmentHelper.buildInlineFieldName(prefix, "content");
+        if (!row.containsKey(contentField)) {
+          continue;
+        }
+
+        Object contentValue = row.get(contentField);
+        InputStream content = contentValue instanceof InputStream is ? is : null;
+
+        Map<String, Object> keys = ApplicationHandlerHelper.extractKeys(row, entity);
+        CqnSelect select = Select.from(draftEntity).matching(keys);
+        Result result = persistence.run(select);
+
+        Attachments existingAttachment =
+            result.first().isPresent()
+                ? readExistingInlineState(result, prefix)
+                : Attachments.create();
+
+        CountingInputStream wrappedContent =
+            content != null ? new CountingInputStream(content, defaultMaxSize) : null;
+        ModifyAttachmentEvent eventToProcess =
+            eventFactory.getEvent(
+                wrappedContent, existingAttachment.getContentId(), existingAttachment);
+        InputStream processed =
+            eventToProcess.processEvent(null, wrappedContent, existingAttachment, context);
+        row.put(contentField, processed);
+      }
+    }
+  }
+
+  private static Attachments readExistingInlineState(Result result, String prefix) {
+    return InlineAttachmentHelper.toAttachments(result.single(), prefix);
   }
 }

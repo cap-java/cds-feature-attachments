@@ -107,15 +107,8 @@ public final class InlineAttachmentHelper {
           entity.keyElements().forEach(key -> keys.put(key.getName(), row.get(key.getName())));
 
           for (String prefix : prefixes) {
-            Attachments att = Attachments.create();
+            Attachments att = toAttachments(row, prefix);
             att.putAll(keys);
-            att.setContentId(
-                (String) row.get(buildInlineFieldName(prefix, Attachments.CONTENT_ID)));
-            att.setStatus((String) row.get(buildInlineFieldName(prefix, Attachments.STATUS)));
-            Object scannedAt = row.get(buildInlineFieldName(prefix, Attachments.SCANNED_AT));
-            if (scannedAt instanceof java.time.Instant instant) {
-              att.setScannedAt(instant);
-            }
             attachments.add(att);
           }
         });
@@ -156,6 +149,29 @@ public final class InlineAttachmentHelper {
     return findInlineAttachmentPrefixes(entity).stream()
         .map(prefix -> buildInlineFieldName(prefix, "content"))
         .collect(Collectors.toList());
+  }
+
+  /**
+   * Maps a row with prefixed inline attachment fields to an {@link Attachments} instance with
+   * unprefixed field names (contentId, status, scannedAt, content).
+   *
+   * @param row the source row containing prefixed fields
+   * @param prefix the inline attachment prefix (e.g. {@code "avatar"})
+   * @return an {@link Attachments} with unprefixed field names
+   */
+  public static Attachments toAttachments(Map<String, Object> row, String prefix) {
+    Attachments att = Attachments.create();
+    att.setContentId((String) row.get(buildInlineFieldName(prefix, Attachments.CONTENT_ID)));
+    att.setStatus((String) row.get(buildInlineFieldName(prefix, Attachments.STATUS)));
+    Object scannedAt = row.get(buildInlineFieldName(prefix, Attachments.SCANNED_AT));
+    if (scannedAt instanceof java.time.Instant instant) {
+      att.setScannedAt(instant);
+    }
+    Object content = row.get(buildInlineFieldName(prefix, Attachments.CONTENT));
+    if (content instanceof java.io.InputStream is) {
+      att.setContent(is);
+    }
+    return att;
   }
 
   private InlineAttachmentHelper() {

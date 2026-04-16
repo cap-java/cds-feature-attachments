@@ -90,6 +90,7 @@ class DraftCancelAttachmentsHandlerTest {
     when(mockEntity.getQualifiedName()).thenReturn("TestService.RegularEntity");
     when(mockEntity.getAnnotationValue("_is_media_data", false)).thenReturn(false);
     when(mockEntity.compositions()).thenReturn(java.util.stream.Stream.empty());
+    when(mockEntity.elements()).thenReturn(java.util.stream.Stream.empty());
 
     when(eventContext.getTarget()).thenReturn(mockEntity);
     when(eventContext.getCqn()).thenReturn(Delete.from("RegularEntity"));
@@ -297,6 +298,76 @@ class DraftCancelAttachmentsHandlerTest {
     cut.processBeforeDraftCancel(eventContext);
 
     // Should not call deleteEvent since keys don't match
+    verifyNoInteractions(deleteContentAttachmentEvent);
+  }
+
+  @Test
+  void deepSearchReturnsTrueForEntityWithInlineAttachments() {
+    // RootTable has profilePicture inline attachment - deepSearchForAttachments should return true
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(RootTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    cut.processBeforeDraftCancel(eventContext);
+
+    // Should have processed - readAttachments is called meaning deepSearch returned true
+    verify(attachmentsReader, atLeastOnce()).readAttachments(any(), any(), any());
+  }
+
+  @Test
+  void inlineDraftCancelDeletesChangedContent() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(RootTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    // Draft inline attachment has a different contentId than active
+    Attachments draftInline = Attachments.create();
+    draftInline.setContentId("draft-content-id");
+
+    Attachments activeInline = Attachments.create();
+    activeInline.setContentId("active-content-id");
+
+    CdsEntity target = eventContext.getTarget();
+    CdsEntity sibling = target.getTargetOf(Drafts.SIBLING_ENTITY);
+    when(attachmentsReader.readInlineAttachments(eq(sibling), any()))
+        .thenReturn(List.of(draftInline));
+    when(attachmentsReader.readInlineAttachments(eq(target), any()))
+        .thenReturn(List.of(activeInline));
+
+    cut.processBeforeDraftCancel(eventContext);
+
+    verify(deleteContentAttachmentEvent)
+        .processEvent(eq(null), eq(null), eq(draftInline), eq(eventContext));
+  }
+
+  @Test
+  void inlineDraftCancelNoDeleteWhenContentIdMatches() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(RootTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    String sameContentId = UUID.randomUUID().toString();
+    Attachments draftInline = Attachments.create();
+    draftInline.setContentId(sameContentId);
+
+    Attachments activeInline = Attachments.create();
+    activeInline.setContentId(sameContentId);
+
+    CdsEntity target = eventContext.getTarget();
+    CdsEntity sibling = target.getTargetOf(Drafts.SIBLING_ENTITY);
+    when(attachmentsReader.readInlineAttachments(eq(sibling), any()))
+        .thenReturn(List.of(draftInline));
+    when(attachmentsReader.readInlineAttachments(eq(target), any()))
+        .thenReturn(List.of(activeInline));
+
+    cut.processBeforeDraftCancel(eventContext);
+
     verifyNoInteractions(deleteContentAttachmentEvent);
   }
 

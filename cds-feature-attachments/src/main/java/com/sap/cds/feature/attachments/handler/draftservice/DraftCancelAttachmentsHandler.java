@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.InlineAttachmentHelper;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
 import com.sap.cds.reflect.CdsAssociationType;
@@ -77,6 +78,8 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
       CdsDataProcessor.create()
           .addValidator(contentIdFilter, validator)
           .process(draftAttachments, context.getTarget());
+
+      handleInlineDraftCancel(context, draftEntity, activeEntity);
     } else {
       logger.debug(
           "Skipping processing before {} event for entity {}",
@@ -122,6 +125,10 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
       return true;
     }
 
+    if (InlineAttachmentHelper.hasInlineAttachments(entity)) {
+      return true;
+    }
+
     return entity
         .compositions()
         .map(element -> element.getType().as(CdsAssociationType.class))
@@ -146,5 +153,37 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
       DraftCancelEventContext context, CdsStructuredType activeEntity) {
     List<Attachments> attachments = readAttachments(context, activeEntity, true);
     return ApplicationHandlerHelper.condenseAttachments(attachments, context.getTarget());
+  }
+
+  private void handleInlineDraftCancel(
+      DraftCancelEventContext context, CdsEntity draftEntity, CdsEntity activeEntity) {
+    List<String> prefixes = InlineAttachmentHelper.findInlineAttachmentPrefixes(draftEntity);
+    if (prefixes.isEmpty()) {
+      return;
+    }
+
+    CqnDelete draftCqn =
+        CQL.copy(
+            context.getCqn(), new ModifierToCreateFlatCQN(false, draftEntity.getQualifiedName()));
+    List<Attachments> draftInline = attachmentsReader.readInlineAttachments(draftEntity, draftCqn);
+
+    CqnDelete activeCqn =
+        CQL.copy(
+            context.getCqn(), new ModifierToCreateFlatCQN(true, activeEntity.getQualifiedName()));
+    List<Attachments> activeInline =
+        attachmentsReader.readInlineAttachments(activeEntity, activeCqn);
+
+    for (Attachments draftAtt : draftInline) {
+      String draftContentId = draftAtt.getContentId();
+      if (draftContentId == null) {
+        continue;
+      }
+
+      Optional<Attachments> activeMatch =
+          activeInline.stream().filter(a -> draftContentId.equals(a.getContentId())).findAny();
+      if (activeMatch.isEmpty()) {
+        deleteEvent.processEvent(null, null, draftAtt, context);
+      }
+    }
   }
 }
