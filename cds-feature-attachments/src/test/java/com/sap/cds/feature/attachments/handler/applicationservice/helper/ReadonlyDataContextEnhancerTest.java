@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -239,5 +240,40 @@ class ReadonlyDataContextEnhancerTest {
     // null backup is skipped, key remains
     assertThat(data.get("ID")).isEqualTo("123");
     assertThat(data.containsKey("profilePicture_contentId")).isFalse();
+  }
+
+  @Test
+  void restoreReadonlyFieldsCompositionWithFileName() {
+    CdsData data = CdsData.create();
+    Attachments backup = Attachments.create();
+    backup.setContentId("cid-fn");
+    backup.setStatus("Clean");
+    backup.setFileName("document.pdf");
+    data.put(DRAFT_READONLY_CONTEXT, backup);
+
+    ReadonlyDataContextEnhancer.restoreReadonlyFields(data);
+
+    assertThat(data.get(Attachments.CONTENT_ID)).isEqualTo("cid-fn");
+    assertThat(data.get(Attachments.STATUS)).isEqualTo("Clean");
+    assertThat(data.get(MediaData.FILE_NAME)).isEqualTo("document.pdf");
+    assertThat(data.containsKey(DRAFT_READONLY_CONTEXT)).isFalse();
+  }
+
+  @Test
+  void restoreReadonlyFieldsInlineWithFileName() {
+    CdsData data = CdsData.create();
+    data.put("ID", "123");
+    Attachments backup = Attachments.create();
+    backup.setContentId("cid-inline-fn");
+    backup.setStatus("Clean");
+    backup.setFileName("avatar.png");
+    data.put("profilePicture_" + DRAFT_READONLY_CONTEXT, backup);
+
+    ReadonlyDataContextEnhancer.restoreReadonlyFields(data);
+
+    assertThat(data.get("profilePicture_contentId")).isEqualTo("cid-inline-fn");
+    assertThat(data.get("profilePicture_status")).isEqualTo("Clean");
+    assertThat(data.get("profilePicture_fileName")).isEqualTo("avatar.png");
+    assertThat(data.containsKey("profilePicture_" + DRAFT_READONLY_CONTEXT)).isFalse();
   }
 }

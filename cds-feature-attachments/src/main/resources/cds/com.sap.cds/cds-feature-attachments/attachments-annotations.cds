@@ -14,10 +14,12 @@ annotate sap.attachments.MediaData with @UI.MediaResource: {Stream: content} {
     content   @(
         title                           : '{i18n>attachment_content}',
         Core.ContentDisposition.Type    : 'inline',
-        Core.MediaType                  : 'application/octet-stream'
+        Core.MediaType                  : 'application/octet-stream',
+        odata.draft.skip
     );
     mimeType  @(
-        title: '{i18n>attachment_mimeType}'
+        title: '{i18n>attachment_mimeType}',
+        Core.IsMediaType
     );
     fileName  @(
         title: '{i18n>attachment_fileName}',

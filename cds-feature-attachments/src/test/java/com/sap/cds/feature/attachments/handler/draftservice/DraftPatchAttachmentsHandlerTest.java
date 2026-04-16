@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,6 +26,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.M
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.CqnSelect;
+import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
@@ -254,5 +256,137 @@ class DraftPatchAttachmentsHandlerTest {
     verify(eventFactory).getEvent(any(), any(), attachmentCaptor.capture());
     Attachments captured = attachmentCaptor.getValue();
     assertThat(captured.getContentId()).isEqualTo(existingContentId);
+  }
+
+  // --- persistInlineAttachmentMetadata Tests ---
+
+  @Test
+  void inlinePatchPersistsMetadataWhenContentIdMimeTypeAndFileNamePresent() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+
+    var data = CdsData.create();
+    data.put("ID", UUID.randomUUID().toString());
+    data.put("profilePicture_content", mock(InputStream.class));
+
+    var result = mock(Result.class);
+    when(persistence.run(any(CqnSelect.class))).thenReturn(result);
+
+    // The event.processEvent simulates CreateAttachmentEvent putting metadata into data
+    when(event.processEvent(any(), any(), any(), any(), any()))
+        .thenAnswer(
+            invocation -> {
+              data.put("profilePicture_contentId", "cid-123");
+              data.put("profilePicture_mimeType", "image/png");
+              data.put("profilePicture_fileName", "photo.png");
+              return null;
+            });
+
+    cut.processBeforeDraftPatch(eventContext, List.of(data));
+
+    ArgumentCaptor<CqnUpdate> updateCaptor = ArgumentCaptor.forClass(CqnUpdate.class);
+    verify(persistence).run(updateCaptor.capture());
+    CqnUpdate update = updateCaptor.getValue();
+    assertThat(update.entries()).isNotEmpty();
+    assertThat(update.entries().get(0)).containsEntry("profilePicture_mimeType", "image/png");
+    assertThat(update.entries().get(0)).containsEntry("profilePicture_fileName", "photo.png");
+  }
+
+  @Test
+  void inlinePatchSkipsWhenContentIdNull() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+
+    var data = CdsData.create();
+    data.put("ID", UUID.randomUUID().toString());
+    data.put("profilePicture_content", mock(InputStream.class));
+
+    var result = mock(Result.class);
+    when(persistence.run(any(CqnSelect.class))).thenReturn(result);
+
+    // processEvent does NOT put profilePicture_contentId → contentId remains null
+    when(event.processEvent(any(), any(), any(), any(), any())).thenReturn(null);
+
+    cut.processBeforeDraftPatch(eventContext, List.of(data));
+
+    verify(persistence, never()).run(any(CqnUpdate.class));
+  }
+
+  @Test
+  void inlinePatchSkipsUpdateWhenNoMetadata() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+
+    var data = CdsData.create();
+    data.put("ID", UUID.randomUUID().toString());
+    data.put("profilePicture_content", mock(InputStream.class));
+
+    var result = mock(Result.class);
+    when(persistence.run(any(CqnSelect.class))).thenReturn(result);
+
+    // processEvent puts contentId but no mimeType/fileName
+    when(event.processEvent(any(), any(), any(), any(), any()))
+        .thenAnswer(
+            invocation -> {
+              data.put("profilePicture_contentId", "cid-456");
+              return null;
+            });
+
+    cut.processBeforeDraftPatch(eventContext, List.of(data));
+
+    verify(persistence, never()).run(any(CqnUpdate.class));
+  }
+
+  @Test
+  void inlinePatchPersistsOnlyMimeType() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+
+    var data = CdsData.create();
+    data.put("ID", UUID.randomUUID().toString());
+    data.put("profilePicture_content", mock(InputStream.class));
+
+    var result = mock(Result.class);
+    when(persistence.run(any(CqnSelect.class))).thenReturn(result);
+
+    when(event.processEvent(any(), any(), any(), any(), any()))
+        .thenAnswer(
+            invocation -> {
+              data.put("profilePicture_contentId", "cid-789");
+              data.put("profilePicture_mimeType", "text/plain");
+              return null;
+            });
+
+    cut.processBeforeDraftPatch(eventContext, List.of(data));
+
+    ArgumentCaptor<CqnUpdate> updateCaptor = ArgumentCaptor.forClass(CqnUpdate.class);
+    verify(persistence).run(updateCaptor.capture());
+    CqnUpdate update = updateCaptor.getValue();
+    assertThat(update.entries().get(0)).containsEntry("profilePicture_mimeType", "text/plain");
+    assertThat(update.entries().get(0)).doesNotContainKey("profilePicture_fileName");
+  }
+
+  @Test
+  void inlinePatchPersistsOnlyFileName() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+
+    var data = CdsData.create();
+    data.put("ID", UUID.randomUUID().toString());
+    data.put("profilePicture_content", mock(InputStream.class));
+
+    var result = mock(Result.class);
+    when(persistence.run(any(CqnSelect.class))).thenReturn(result);
+
+    when(event.processEvent(any(), any(), any(), any(), any()))
+        .thenAnswer(
+            invocation -> {
+              data.put("profilePicture_contentId", "cid-000");
+              data.put("profilePicture_fileName", "document.pdf");
+              return null;
+            });
+
+    cut.processBeforeDraftPatch(eventContext, List.of(data));
+
+    ArgumentCaptor<CqnUpdate> updateCaptor = ArgumentCaptor.forClass(CqnUpdate.class);
+    verify(persistence).run(updateCaptor.capture());
+    CqnUpdate update = updateCaptor.getValue();
+    assertThat(update.entries().get(0)).containsEntry("profilePicture_fileName", "document.pdf");
+    assertThat(update.entries().get(0)).doesNotContainKey("profilePicture_mimeType");
   }
 }

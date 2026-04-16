@@ -6,6 +6,7 @@ package com.sap.cds.feature.attachments.handler.applicationservice.modifyevents;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,6 +24,7 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.changeset.ChangeSetContext;
 import com.sap.cds.services.changeset.ChangeSetListener;
+import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -52,6 +54,7 @@ class CreateAttachmentEventTest {
   private ArgumentCaptor<CreateAttachmentInput> contextArgumentCaptor;
   private EventContext eventContext;
   private ChangeSetContext changeSetContext;
+  private ParameterInfo parameterInfo;
 
   @BeforeEach
   void setup() {
@@ -66,6 +69,8 @@ class CreateAttachmentEventTest {
     eventContext = mock(EventContext.class);
     changeSetContext = mock(ChangeSetContext.class);
     when(eventContext.getChangeSetContext()).thenReturn(changeSetContext);
+    parameterInfo = mock(ParameterInfo.class);
+    when(eventContext.getParameterInfo()).thenReturn(parameterInfo);
     when(target.entity()).thenReturn(entity);
     when(path.target()).thenReturn(target);
   }
@@ -318,5 +323,182 @@ class CreateAttachmentEventTest {
     assertThat(values).containsEntry("profilePicture_contentId", "doc-scan");
     assertThat(values).containsEntry("profilePicture_status", "Clean");
     assertThat(values).containsEntry("profilePicture_scannedAt", scannedAt);
+  }
+
+  // --- Inline Header Extraction Tests ---
+
+  private Map<String, Object> prepareInlineValuesWithoutMetadata() {
+    CdsEntity realEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", UUID.randomUUID().toString());
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "ok", null));
+    return values;
+  }
+
+  @Test
+  void inlineExtractsFileNameFromRfc5987Header() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename*=UTF-8''my%20file.txt");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_fileName", "my file.txt");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file.txt");
+  }
+
+  @Test
+  void inlineExtractsFileNameFromPlainHeader() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename=\"report.pdf\"");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_fileName", "report.pdf");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("report.pdf");
+  }
+
+  @Test
+  void inlineExtractsFileNameFromSlugHeader() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    when(parameterInfo.getHeader("Content-Disposition")).thenReturn(null);
+    when(parameterInfo.getHeader("slug")).thenReturn("slug-file.png");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_fileName", "slug-file.png");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("slug-file.png");
+  }
+
+  @Test
+  void inlineBothHeadersNullReturnsEmptyFileName() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    when(parameterInfo.getHeader("Content-Disposition")).thenReturn(null);
+    when(parameterInfo.getHeader("slug")).thenReturn(null);
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).doesNotContainKey("profilePicture_fileName");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isNull();
+  }
+
+  @Test
+  void inlineExtractsMimeTypeFromContentTypeHeader() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    // No mimeType in values → mimeTypeOptional.isEmpty() triggers header extraction
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("image/jpeg; charset=utf-8");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_mimeType", "image/jpeg");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("image/jpeg");
+  }
+
+  @Test
+  void inlineMimeTypeOctetStreamOverriddenByHeader() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    values.put("profilePicture_mimeType", "application/octet-stream");
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("image/png");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_mimeType", "image/png");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("image/png");
+  }
+
+  @Test
+  void inlineMimeTypeNullContentTypeReturnsEmpty() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    // No mimeType in values, Content-Type header is null
+    when(parameterInfo.getHeader("Content-Type")).thenReturn(null);
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).doesNotContainKey("profilePicture_mimeType");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isNull();
+  }
+
+  @Test
+  void inlineMimeTypeOctetStreamContentTypeNotUsed() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    // No mimeType in values, Content-Type header is application/octet-stream → returns empty
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("application/octet-stream");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).doesNotContainKey("profilePicture_mimeType");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isNull();
+  }
+
+  @Test
+  void inlineFileNameAlreadyPresentSkipsHeaderExtraction() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    values.put("profilePicture_fileName", "already-set.pdf");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    // Header extraction should not be attempted
+    verify(parameterInfo, never()).getHeader("Content-Disposition");
+    assertThat(values).containsEntry("profilePicture_fileName", "already-set.pdf");
   }
 }
