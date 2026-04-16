@@ -147,7 +147,7 @@ class AttachmentsServiceImplHandlerTest {
   @Test
   void afterCreateAttachment_noChangeSetContext_throws() {
     var entity = mock(CdsEntity.class);
-    when(malwareScanProvider.getChangeSetListener(any(), any()))
+    when(malwareScanProvider.getChangeSetListener(any(), any(), any()))
         .thenReturn(mock(ChangeSetListener.class));
     var createContext = AttachmentCreateEventContext.create();
     createContext.setAttachmentIds(Map.of(Attachments.ID, "some-id"));
