@@ -1,5 +1,5 @@
 /*
- * © 2024-2025 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.handler.applicationservice.helper;
 
@@ -7,6 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
@@ -19,8 +21,9 @@ import org.junit.jupiter.api.Test;
 
 class ReadonlyDataContextEnhancerTest {
 
-  private static CdsRuntime runtime;
   private static final String DRAFT_READONLY_CONTEXT = "DRAFT_READONLY_CONTEXT";
+
+  private static CdsRuntime runtime;
 
   @BeforeAll
   static void classSetup() {
@@ -99,6 +102,48 @@ class ReadonlyDataContextEnhancerTest {
 
     assertThat(data.get("ID")).isEqualTo("123");
     assertThat(data).hasSize(1);
+  }
+
+  // --- Edge-case tests from main ---
+
+  @Test
+  void preserveReadonlyFields_isDraft_noAttachmentEntity_nothingHappens() {
+    CdsEntity entity = runtime.getCdsModel().findEntity(Events_.CDS_NAME).orElseThrow();
+
+    var data = CdsData.create();
+    data.put("content", "some text");
+
+    ReadonlyDataContextEnhancer.preserveReadonlyFields(entity, List.of(data), true);
+
+    assertThat(data.get(DRAFT_READONLY_CONTEXT)).isNull();
+  }
+
+  @Test
+  void restoreReadonlyFields_withPartialBackup_nullsOverwriteExistingValues() {
+    var data = CdsData.create();
+    data.put(Attachments.STATUS, "Clean");
+    var backup = CdsData.create();
+    backup.put(Attachments.CONTENT_ID, "restored-id");
+    // STATUS and SCANNED_AT intentionally absent from backup
+    data.put(DRAFT_READONLY_CONTEXT, backup);
+
+    ReadonlyDataContextEnhancer.restoreReadonlyFields(data);
+
+    assertThat(data.get(Attachments.CONTENT_ID)).isEqualTo("restored-id");
+    assertThat(data.get(Attachments.STATUS)).isNull();
+    assertThat(data.get(Attachments.SCANNED_AT)).isNull();
+    assertThat(data.get(DRAFT_READONLY_CONTEXT)).isNull();
+  }
+
+  @Test
+  void preserveReadonlyFields_isNotDraft_noExistingBackup_nothingHappens() {
+    CdsEntity entity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
+    var attachment = Attachments.create();
+    attachment.setContent(null);
+
+    ReadonlyDataContextEnhancer.preserveReadonlyFields(entity, List.of(attachment), false);
+
+    assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
   }
 
   // --- Inline attachment preserve/restore tests ---

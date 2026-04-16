@@ -38,7 +38,7 @@
     <module>integration-tests</module>
   </modules>
 
-  <scm>
+  <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
     <connection>scm:git:https://github.com/cap-java/cds-feature-attachments.git</connection>
     <developerConnection>scm:git:git@github.com:cap-java/cds-feature-attachments.git</developerConnection>
     <url>https://github.com/cap-java/cds-feature-attachments</url>
@@ -58,14 +58,14 @@
   </distributionManagement>
 
   <properties>
-    <revision>1.5.0</revision>
+    <revision>1.6.0-SNAPSHOT</revision>
     <java.version>17</java.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.42.28</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-s3-version>2.42.33</software.amazon.awssdk-s3-version>
     <software.amazon.awssdk-crt-version>0.44.0</software.amazon.awssdk-crt-version>
 
     <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
