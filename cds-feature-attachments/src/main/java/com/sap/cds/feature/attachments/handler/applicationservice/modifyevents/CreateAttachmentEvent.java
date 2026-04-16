@@ -68,8 +68,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
         fileNameOptional.ifPresent(
             fn -> values.put(inlinePrefix.get() + "_" + MediaData.FILE_NAME, fn));
       }
-      if (mimeTypeOptional.isEmpty()
-          || "application/octet-stream".equals(mimeTypeOptional.get())) {
+      if (mimeTypeOptional.isEmpty() || "application/octet-stream".equals(mimeTypeOptional.get())) {
         Optional<String> headerMimeType = extractMimeTypeFromHeader(eventContext);
         if (headerMimeType.isPresent()) {
           mimeTypeOptional = headerMimeType;

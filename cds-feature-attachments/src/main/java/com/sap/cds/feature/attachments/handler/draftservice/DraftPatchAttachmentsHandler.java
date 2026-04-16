@@ -114,10 +114,8 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
     persistInlineAttachmentMetadata(context.getTarget(), data);
   }
 
-  private void persistInlineAttachmentMetadata(
-      CdsEntity target, List<? extends CdsData> data) {
-    List<String> inlinePrefixes =
-        ApplicationHandlerHelper.getInlineAttachmentFieldNames(target);
+  private void persistInlineAttachmentMetadata(CdsEntity target, List<? extends CdsData> data) {
+    List<String> inlinePrefixes = ApplicationHandlerHelper.getInlineAttachmentFieldNames(target);
     if (inlinePrefixes.isEmpty()) {
       return;
     }

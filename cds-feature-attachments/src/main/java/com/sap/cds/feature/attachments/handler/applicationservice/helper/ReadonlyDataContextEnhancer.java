@@ -115,8 +115,7 @@ public final class ReadonlyDataContextEnhancer {
               inlineReadOnlyData.get(Attachments.SCANNED_AT));
           if (inlineReadOnlyData.get(MediaData.FILE_NAME) != null) {
             data.put(
-                prefix + "_" + MediaData.FILE_NAME,
-                inlineReadOnlyData.get(MediaData.FILE_NAME));
+                prefix + "_" + MediaData.FILE_NAME, inlineReadOnlyData.get(MediaData.FILE_NAME));
           }
           data.remove(key);
         }
