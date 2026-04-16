@@ -87,57 +87,113 @@ public final class ModifyApplicationHandlerHelper {
         if (!row.containsKey(contentField)) {
           continue;
         }
-        Object contentValue = row.get(contentField);
-        InputStream content = contentValue instanceof InputStream is ? is : null;
-        String contentIdField =
-            InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.CONTENT_ID);
-        String contentId = (String) row.get(contentIdField);
 
         Attachments existingAttachment =
             findExistingInlineAttachment(entity, row, existingAttachments);
 
-        String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
-        String maxSizeStr = defaultMaxSize;
-        eventContext.put("attachment.MaxSize", maxSizeStr);
-        ServiceException tooLargeException =
-            new ServiceException(
-                ExtendedErrorStatuses.CONTENT_TOO_LARGE,
-                "File size exceeds the limit of {}.",
-                maxSizeStr);
-
-        if (contentLength != null) {
-          try {
-            if (Long.parseLong(contentLength) > FileSizeUtils.parseFileSizeToBytes(maxSizeStr)) {
-              throw tooLargeException;
-            }
-          } catch (NumberFormatException e) {
-            throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Invalid Content-Length header");
-          }
-        }
-
-        CountingInputStream wrappedContent =
-            content != null ? new CountingInputStream(content, maxSizeStr) : null;
-        ModifyAttachmentEvent eventToProcess =
-            eventFactory.getEvent(wrappedContent, contentId, existingAttachment);
-        try {
-          InputStream result =
-              eventToProcess.processEvent(null, wrappedContent, existingAttachment, eventContext);
-          row.put(contentField, result);
-        } catch (Exception e) {
-          if (wrappedContent != null && wrappedContent.isLimitExceeded()) {
-            throw tooLargeException;
-          }
-          throw e;
-        }
+        processInlineAttachmentRow(
+            row, prefix, existingAttachment, entity, eventFactory, eventContext, defaultMaxSize);
       }
     }
   }
 
-  private static Attachments findExistingInlineAttachment(
+  /**
+   * Processes a single inline attachment field within a data row. This method handles content size
+   * validation, delegates to the event factory, and writes back attachment metadata (contentId,
+   * status, scannedAt) to the row.
+   *
+   * @param row the data row containing the inline attachment field
+   * @param prefix the inline attachment prefix (e.g. "avatar")
+   * @param existingAttachment the existing attachment state from the database
+   * @param entity the target entity
+   * @param eventFactory the event factory for processing
+   * @param eventContext the current event context
+   * @param defaultMaxSize the default max size to use when no annotation is present
+   */
+  public static void processInlineAttachmentRow(
+      CdsData row,
+      String prefix,
+      Attachments existingAttachment,
+      CdsEntity entity,
+      ModifyAttachmentEventFactory eventFactory,
+      EventContext eventContext,
+      String defaultMaxSize) {
+    String contentField = InlineAttachmentHelper.buildInlineFieldName(prefix, "content");
+    Object contentValue = row.get(contentField);
+    InputStream content = contentValue instanceof InputStream is ? is : null;
+    String contentIdField =
+        InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.CONTENT_ID);
+    String contentId = (String) row.get(contentIdField);
+
+    String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
+    String maxSizeStr = defaultMaxSize;
+    eventContext.put("attachment.MaxSize", maxSizeStr);
+    ServiceException tooLargeException =
+        new ServiceException(
+            ExtendedErrorStatuses.CONTENT_TOO_LARGE,
+            "File size exceeds the limit of {}.",
+            maxSizeStr);
+
+    if (contentLength != null) {
+      try {
+        if (Long.parseLong(contentLength) > FileSizeUtils.parseFileSizeToBytes(maxSizeStr)) {
+          throw tooLargeException;
+        }
+      } catch (NumberFormatException e) {
+        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Invalid Content-Length header");
+      }
+    }
+
+    CountingInputStream wrappedContent =
+        content != null ? new CountingInputStream(content, maxSizeStr) : null;
+
+    Map<String, Object> keys = ApplicationHandlerHelper.extractKeys(row, entity);
+    Map<String, Object> cleanKeys = ApplicationHandlerHelper.removeDraftKey(keys);
+
+    try {
+      InputStream result =
+          eventFactory.processInlineEvent(
+              wrappedContent, contentId, existingAttachment, eventContext, entity, cleanKeys);
+      row.put(contentField, result);
+
+      // Only write back metadata when the event actually modified the attachment.
+      // For doNothing (e.g. during draft activation), existingAttachment stays empty
+      // and we must not overwrite already-restored values in the row.
+      if (existingAttachment.containsKey(Attachments.CONTENT_ID)) {
+        row.put(
+            InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.CONTENT_ID),
+            existingAttachment.getContentId());
+        row.put(
+            InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.STATUS),
+            existingAttachment.getStatus());
+        if (existingAttachment.getScannedAt() != null) {
+          row.put(
+              InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.SCANNED_AT),
+              existingAttachment.getScannedAt());
+        }
+      }
+    } catch (Exception e) {
+      if (wrappedContent != null && wrappedContent.isLimitExceeded()) {
+        throw tooLargeException;
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Finds the existing inline attachment for a given row by matching entity keys.
+   *
+   * @param entity the entity to extract keys from
+   * @param row the data row
+   * @param existingAttachments the list of existing attachments to search
+   * @return the matching attachment, or an empty {@link Attachments} if none found
+   */
+  public static Attachments findExistingInlineAttachment(
       CdsEntity entity, CdsData row, List<Attachments> existingAttachments) {
     Map<String, Object> keys = ApplicationHandlerHelper.extractKeys(row, entity);
     Map<String, Object> cleanKeys = ApplicationHandlerHelper.removeDraftKey(keys);
     return existingAttachments.stream()
+        .filter(existing -> existing.containsKey(Attachments.CONTENT_ID))
         .filter(existing -> ApplicationHandlerHelper.areKeysInData(cleanKeys, existing))
         .findAny()
         .orElse(Attachments.create());

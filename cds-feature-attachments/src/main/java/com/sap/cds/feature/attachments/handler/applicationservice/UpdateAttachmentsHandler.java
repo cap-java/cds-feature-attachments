@@ -68,8 +68,9 @@ public class UpdateAttachmentsHandler implements EventHandler {
     // before the attachment's readonly fields are removed by the runtime, preserve
     // them in a custom
     // field in data
-    ReadonlyDataContextEnhancer.preserveReadonlyFields(
-        context.getTarget(), data, storageReader.get());
+    boolean isDraft = storageReader.get();
+    ReadonlyDataContextEnhancer.preserveReadonlyFields(context.getTarget(), data, isDraft);
+    ReadonlyDataContextEnhancer.preserveInlineReadonlyFields(context.getTarget(), data, isDraft);
   }
 
   @Before
@@ -82,6 +83,8 @@ public class UpdateAttachmentsHandler implements EventHandler {
 
     if (containsContent || !associationsAreUnchanged) {
       logger.debug("Processing before {} event for entity {}", context.getEvent(), target);
+
+      ReadonlyDataContextEnhancer.restoreInlineReadonlyFields(data);
 
       // Query database only for validation (single query for all attachments)
       CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());

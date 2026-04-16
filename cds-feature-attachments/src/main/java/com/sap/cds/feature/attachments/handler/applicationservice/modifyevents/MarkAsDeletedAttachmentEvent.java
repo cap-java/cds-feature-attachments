@@ -31,6 +31,10 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
         requireNonNull(attachmentService, "attachmentService must not be null");
   }
 
+  AttachmentService getAttachmentService() {
+    return attachmentService;
+  }
+
   @Override
   public InputStream processEvent(
       Path path, InputStream content, Attachments attachment, EventContext eventContext) {

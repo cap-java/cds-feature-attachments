@@ -13,6 +13,9 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.InlineAttachmentHelper;
+import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
 import com.sap.cds.reflect.CdsAssociationType;
@@ -49,12 +52,17 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
   private final AttachmentsReader attachmentsReader;
   private final MarkAsDeletedAttachmentEvent deleteEvent;
+  private final AttachmentService attachmentService;
 
   public DraftCancelAttachmentsHandler(
-      AttachmentsReader attachmentsReader, MarkAsDeletedAttachmentEvent deleteEvent) {
+      AttachmentsReader attachmentsReader,
+      MarkAsDeletedAttachmentEvent deleteEvent,
+      AttachmentService attachmentService) {
     this.attachmentsReader =
         requireNonNull(attachmentsReader, "attachmentsReader must not be null");
     this.deleteEvent = requireNonNull(deleteEvent, "deleteEvent must not be null");
+    this.attachmentService =
+        requireNonNull(attachmentService, "attachmentService must not be null");
   }
 
   @Before
@@ -77,11 +85,45 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
       CdsDataProcessor.create()
           .addValidator(contentIdFilter, validator)
           .process(draftAttachments, context.getTarget());
+
+      cancelInlineAttachments(context, draftEntity, activeEntity);
     } else {
       logger.debug(
           "Skipping processing before {} event for entity {}",
           context.getEvent(),
           context.getTarget());
+    }
+  }
+
+  private void cancelInlineAttachments(
+      DraftCancelEventContext context, CdsEntity draftEntity, CdsEntity activeEntity) {
+    if (!InlineAttachmentHelper.hasInlineAttachments(context.getTarget())) {
+      return;
+    }
+    CqnDelete draftCqn =
+        CQL.copy(
+            context.getCqn(), new ModifierToCreateFlatCQN(false, draftEntity.getQualifiedName()));
+    List<Attachments> draftInline = attachmentsReader.readInlineAttachments(draftEntity, draftCqn);
+
+    CqnDelete activeCqn =
+        CQL.copy(
+            context.getCqn(), new ModifierToCreateFlatCQN(true, activeEntity.getQualifiedName()));
+    List<Attachments> activeInline =
+        attachmentsReader.readInlineAttachments(activeEntity, activeCqn);
+
+    for (Attachments draftAtt : draftInline) {
+      String draftContentId = draftAtt.getContentId();
+      if (draftContentId == null) {
+        continue;
+      }
+      boolean existsInActive =
+          activeInline.stream()
+              .anyMatch(activeAtt -> draftContentId.equals(activeAtt.getContentId()));
+      if (!existsInActive) {
+        logger.debug("Marking inline attachment {} as deleted during draft cancel", draftContentId);
+        attachmentService.markAttachmentAsDeleted(
+            new MarkAsDeletedInput(draftContentId, context.getUserInfo()));
+      }
     }
   }
 
@@ -119,6 +161,10 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     visited.add(entity.getQualifiedName());
 
     if (ApplicationHandlerHelper.isMediaEntity(entity)) {
+      return true;
+    }
+
+    if (InlineAttachmentHelper.hasInlineAttachments(entity)) {
       return true;
     }
 

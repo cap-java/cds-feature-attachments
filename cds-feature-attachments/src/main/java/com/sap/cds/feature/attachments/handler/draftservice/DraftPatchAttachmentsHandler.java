@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.InlineAttachmentHelper;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.reflect.CdsEntity;
@@ -25,6 +26,7 @@ import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,5 +77,38 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
         .process(data, context.getTarget());
+
+    handleInlineAttachments(context, data);
+  }
+
+  private void handleInlineAttachments(
+      DraftPatchEventContext context, List<? extends CdsData> data) {
+    CdsEntity entity = context.getTarget();
+    List<String> inlinePrefixes = InlineAttachmentHelper.findInlineAttachmentPrefixes(entity);
+    if (inlinePrefixes.isEmpty()) {
+      return;
+    }
+
+    for (CdsData row : data) {
+      for (String prefix : inlinePrefixes) {
+        String contentField = InlineAttachmentHelper.buildInlineFieldName(prefix, "content");
+        if (!row.containsKey(contentField)) {
+          continue;
+        }
+
+        Map<String, Object> keys = ApplicationHandlerHelper.extractKeys(row, entity);
+
+        CdsEntity draftEntity = DraftUtils.getDraftEntity(entity);
+        List<Attachments> existingInline =
+            InlineAttachmentHelper.readInlineAttachmentState(
+                persistence, draftEntity, Select.from(draftEntity).matching(keys), List.of(prefix));
+        Attachments existingAttachment =
+            ModifyApplicationHandlerHelper.findExistingInlineAttachment(
+                entity, row, existingInline);
+
+        ModifyApplicationHandlerHelper.processInlineAttachmentRow(
+            row, prefix, existingAttachment, entity, eventFactory, context, defaultMaxSize);
+      }
+    }
   }
 }

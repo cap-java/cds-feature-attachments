@@ -27,8 +27,8 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
 annotate Attachment with @UI.MediaResource: {Stream: content} {
     content   @(
         title                           : '{i18n>attachment_content}',
-        Core.MediaType                  : mimeType,
-        Core.ContentDisposition.Filename: fileName,
+        Core.MediaType                  : 'application/octet-stream',
+        Core.ContentDisposition.Filename: null,
         Core.ContentDisposition.Type    : 'inline'
     );
     mimeType  @(

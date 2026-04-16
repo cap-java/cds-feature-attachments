@@ -8,8 +8,11 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.InlineAttachmentHelper;
 import com.sap.cds.reflect.CdsEntity;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -19,6 +22,7 @@ import java.util.Objects;
 public final class ReadonlyDataContextEnhancer {
 
   private static final String DRAFT_READONLY_CONTEXT = "DRAFT_READONLY_CONTEXT";
+  private static final String INLINE_READONLY_CONTEXT = "INLINE_READONLY_CONTEXT";
 
   /**
    * Preserves the readonly fields of an {@link Attachments attachment} in a custom field with the
@@ -64,6 +68,66 @@ public final class ReadonlyDataContextEnhancer {
       data.put(Attachments.STATUS, readOnlyData.get(Attachments.STATUS));
       data.put(Attachments.SCANNED_AT, readOnlyData.get(Attachments.SCANNED_AT));
       data.remove(DRAFT_READONLY_CONTEXT);
+    }
+  }
+
+  /**
+   * Preserves the inline attachment readonly fields (contentId, status, scannedAt) in a custom
+   * context field so they survive the runtime's readonly field stripping during draft activation.
+   *
+   * @param target the target entity
+   * @param data the data rows to preserve fields from
+   * @param isDraft true if this is a draft activation
+   */
+  public static void preserveInlineReadonlyFields(
+      CdsEntity target, List<CdsData> data, boolean isDraft) {
+    List<String> prefixes = InlineAttachmentHelper.findInlineAttachmentPrefixes(target);
+    if (prefixes.isEmpty()) {
+      return;
+    }
+    for (CdsData row : data) {
+      if (isDraft) {
+        Map<String, Object> backup = new HashMap<>();
+        for (String prefix : prefixes) {
+          String contentIdField =
+              InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.CONTENT_ID);
+          String statusField =
+              InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.STATUS);
+          String scannedAtField =
+              InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.SCANNED_AT);
+          if (row.containsKey(contentIdField)) {
+            backup.put(contentIdField, row.get(contentIdField));
+          }
+          if (row.containsKey(statusField)) {
+            backup.put(statusField, row.get(statusField));
+          }
+          if (row.containsKey(scannedAtField)) {
+            backup.put(scannedAtField, row.get(scannedAtField));
+          }
+        }
+        if (!backup.isEmpty()) {
+          row.put(INLINE_READONLY_CONTEXT, backup);
+        }
+      } else {
+        row.remove(INLINE_READONLY_CONTEXT);
+      }
+    }
+  }
+
+  /**
+   * Restores inline attachment readonly fields that were preserved by {@link
+   * #preserveInlineReadonlyFields}.
+   *
+   * @param data the data rows to restore inline readonly fields to
+   */
+  @SuppressWarnings("unchecked")
+  public static void restoreInlineReadonlyFields(List<CdsData> data) {
+    for (CdsData row : data) {
+      Object backupObj = row.get(INLINE_READONLY_CONTEXT);
+      if (backupObj instanceof Map<?, ?> backup) {
+        ((Map<String, Object>) backup).forEach(row::put);
+        row.remove(INLINE_READONLY_CONTEXT);
+      }
     }
   }
 

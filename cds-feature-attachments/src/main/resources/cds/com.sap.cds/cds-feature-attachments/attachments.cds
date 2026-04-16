@@ -31,7 +31,7 @@ entity ScanStates : CodeList {
 }
 
 type Attachment @(_is_media_data) {
-    content   : LargeBinary;
+    content   : LargeBinary @Core.ContentDisposition.Filename: null;
     mimeType  : String;
     fileName  : String(5000);
     contentId : String     @readonly;

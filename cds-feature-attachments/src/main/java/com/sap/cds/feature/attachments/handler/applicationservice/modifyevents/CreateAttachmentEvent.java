@@ -41,6 +41,14 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     this.listenerProvider = requireNonNull(listenerProvider, "listenerProvider must not be null");
   }
 
+  AttachmentService getAttachmentService() {
+    return attachmentService;
+  }
+
+  ListenerProvider getListenerProvider() {
+    return listenerProvider;
+  }
+
   @Override
   public InputStream processEvent(
       Path path, InputStream content, Attachments attachment, EventContext eventContext) {

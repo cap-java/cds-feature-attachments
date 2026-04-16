@@ -380,12 +380,13 @@ class CreateAttachmentsHandlerTest {
     row.setId("test-id");
     var testStream = mock(InputStream.class);
     row.setAvatarContent(testStream);
-    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
     cut.processBefore(createContext, List.of(row));
 
     ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
-    verify(eventFactory).getEvent(streamCaptor.capture(), eq((String) null), any());
+    verify(eventFactory)
+        .processInlineEvent(
+            streamCaptor.capture(), eq((String) null), any(), eq(createContext), any(), any());
     InputStream captured = streamCaptor.getValue();
     assertThat(captured).isInstanceOf(CountingInputStream.class);
     assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
@@ -409,11 +410,11 @@ class CreateAttachmentsHandlerTest {
     var row = InlineOnlyTable.create();
     row.setId("test-id");
     row.put(InlineOnlyTable.AVATAR_CONTENT, null);
-    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
     cut.processBefore(createContext, List.of(row));
 
-    verify(eventFactory).getEvent(eq(null), eq((String) null), any());
+    verify(eventFactory)
+        .processInlineEvent(eq(null), eq((String) null), any(), eq(createContext), any(), any());
   }
 
   @Test
@@ -451,8 +452,8 @@ class CreateAttachmentsHandlerTest {
     row.setId("test-id");
     var testStream = mock(InputStream.class);
     row.setAvatarContent(testStream);
-    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
-    when(event.processEvent(any(), any(), any(), any())).thenThrow(new RuntimeException("test"));
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+        .thenThrow(new RuntimeException("test"));
 
     List<CdsData> data = List.of(row);
     var exception =
@@ -470,11 +471,10 @@ class CreateAttachmentsHandlerTest {
     ParameterInfo paramInfo = mock(ParameterInfo.class);
     when(paramInfo.getHeader("Content-Length")).thenReturn("100");
     when(createContext.getParameterInfo()).thenReturn(paramInfo);
-    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
 
     cut.processBefore(createContext, List.of(row));
 
-    verify(event).processEvent(any(), any(), any(), any());
+    verify(eventFactory).processInlineEvent(any(), any(), any(), eq(createContext), any(), any());
   }
 
   private void getEntityAndMockContext(String cdsName) {

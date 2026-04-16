@@ -63,8 +63,9 @@ public class CreateAttachmentsHandler implements EventHandler {
     // before the attachment's readonly fields are removed by the runtime, preserve
     // them in a custom
     // field in data
-    ReadonlyDataContextEnhancer.preserveReadonlyFields(
-        context.getTarget(), data, storageReader.get());
+    boolean isDraft = storageReader.get();
+    ReadonlyDataContextEnhancer.preserveReadonlyFields(context.getTarget(), data, isDraft);
+    ReadonlyDataContextEnhancer.preserveInlineReadonlyFields(context.getTarget(), data, isDraft);
   }
 
   @Before(event = {CqnService.EVENT_CREATE, DraftService.EVENT_DRAFT_NEW})
@@ -80,6 +81,7 @@ public class CreateAttachmentsHandler implements EventHandler {
     if (ApplicationHandlerHelper.containsContentField(context.getTarget(), data)) {
       logger.debug(
           "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
+      ReadonlyDataContextEnhancer.restoreInlineReadonlyFields(data);
       ModifyApplicationHandlerHelper.handleAttachmentForEntities(
           context.getTarget(), data, new ArrayList<>(), eventFactory, context, defaultMaxSize);
     }
