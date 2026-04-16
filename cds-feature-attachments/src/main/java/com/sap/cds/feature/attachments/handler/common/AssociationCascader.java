@@ -28,6 +28,14 @@ public class AssociationCascader {
     NodeTree tree = findEntityPath(model, entity);
     List<String> result = new ArrayList<>();
     collect(model, tree, result);
+
+    if (InlineAttachmentHelper.hasInlineAttachments(entity)) {
+      String entityName = entity.getQualifiedName();
+      if (!result.contains(entityName)) {
+        result.add(entityName);
+      }
+    }
+
     return result;
   }
 

@@ -17,6 +17,8 @@ import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
@@ -494,6 +496,61 @@ class UpdateAttachmentsHandlerTest {
     verify(attachmentService).markAttachmentAsDeleted(deletionInputCaptor.capture());
     assertThat(deletionInputCaptor.getValue().contentId()).isEqualTo(attachment.getContentId());
     assertThat(deletionInputCaptor.getValue().userInfo()).isEqualTo(userInfo);
+  }
+
+  @Test
+  void inlineAttachmentContentTriggersEventProcessing() {
+    var id = getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    var testStream = mock(InputStream.class);
+    var row = InlineOnlyTable.create();
+    row.setId(id);
+    row.setAvatarContent(testStream);
+    when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
+        .thenReturn(List.of());
+    when(attachmentsReader.readInlineAttachments(any(), any(CqnFilterableStatement.class)))
+        .thenReturn(List.of());
+
+    cut.processBefore(updateContext, List.of(row));
+
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
+    verify(eventFactory).getEvent(streamCaptor.capture(), eq((String) null), any());
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
+  }
+
+  @Test
+  void inlineAttachmentWithNoContentNoProcessing() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    var row = InlineOnlyTable.create();
+    row.setId(UUID.randomUUID().toString());
+    row.setTitle("just a title update");
+
+    cut.processBefore(updateContext, List.of(row));
+
+    verifyNoInteractions(eventFactory);
+    verifyNoInteractions(attachmentsReader);
+    verifyNoInteractions(attachmentService);
+  }
+
+  @Test
+  void inlineAttachmentWithExistingAttachmentMatchedByKeys() {
+    var id = getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    var testStream = mock(InputStream.class);
+    var row = InlineOnlyTable.create();
+    row.setId(id);
+    row.setAvatarContent(testStream);
+    var existingAttachment = Attachments.create();
+    existingAttachment.put("ID", id);
+    existingAttachment.setContentId("existing-doc-id");
+    when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
+        .thenReturn(List.of());
+    when(attachmentsReader.readInlineAttachments(any(), any(CqnFilterableStatement.class)))
+        .thenReturn(List.of(existingAttachment));
+
+    cut.processBefore(updateContext, List.of(row));
+
+    verify(eventFactory).getEvent(any(), eq((String) null), eq(existingAttachment));
   }
 
   private RootTable fillRootData(InputStream testStream, String id) {

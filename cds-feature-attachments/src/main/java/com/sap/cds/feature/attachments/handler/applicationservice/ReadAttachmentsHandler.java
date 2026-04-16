@@ -15,6 +15,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Att
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.BeforeReadItemsModifier;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.InlineAttachmentHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.CQL;
@@ -111,9 +112,10 @@ public class ReadAttachmentsHandler implements EventHandler {
   @After
   @HandlerOrder(HandlerOrder.EARLY)
   void processAfter(CdsReadEventContext context, List<CdsData> data) {
-    if (ApplicationHandlerHelper.containsContentField(context.getTarget(), data)) {
-      logger.debug(
-          "Processing after {} event for entity {}", context.getEvent(), context.getTarget());
+    CdsEntity target = context.getTarget();
+
+    if (ApplicationHandlerHelper.containsContentField(target, data)) {
+      logger.debug("Processing after {} event for entity {}", context.getEvent(), target);
 
       Converter converter =
           (path, element, value) -> {
@@ -133,7 +135,44 @@ public class ReadAttachmentsHandler implements EventHandler {
 
       CdsDataProcessor.create()
           .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
-          .process(data, context.getTarget());
+          .process(data, target);
+    }
+
+    processInlineAfterRead(target, data);
+  }
+
+  private void processInlineAfterRead(CdsEntity target, List<CdsData> data) {
+    List<String> inlinePrefixes = InlineAttachmentHelper.findInlineAttachmentPrefixes(target);
+    if (inlinePrefixes.isEmpty()) {
+      return;
+    }
+
+    logger.debug("Processing inline attachments for entity {}", target.getQualifiedName());
+
+    for (CdsData row : data) {
+      for (String prefix : inlinePrefixes) {
+        String contentField = InlineAttachmentHelper.buildInlineFieldName(prefix, "content");
+        String contentIdField =
+            InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.CONTENT_ID);
+        String statusField =
+            InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.STATUS);
+
+        if (!row.containsKey(contentField)) {
+          continue;
+        }
+
+        Object contentValue = row.get(contentField);
+        String contentId = (String) row.get(contentIdField);
+        String status = (String) row.get(statusField);
+
+        if (nonNull(contentId)) {
+          Supplier<InputStream> supplier =
+              nonNull(contentValue) && contentValue instanceof InputStream existingContent
+                  ? () -> existingContent
+                  : () -> attachmentService.readAttachment(contentId);
+          row.put(contentField, new LazyProxyInputStream(supplier, statusValidator, status));
+        }
+      }
     }
   }
 
@@ -142,6 +181,11 @@ public class ReadAttachmentsHandler implements EventHandler {
     List<String> associationNames = new ArrayList<>();
     if (ApplicationHandlerHelper.isMediaEntity(entity)) {
       associationNames.add(associationName);
+    }
+
+    List<String> inlinePrefixes = InlineAttachmentHelper.findInlineAttachmentPrefixes(entity);
+    for (String prefix : inlinePrefixes) {
+      associationNames.add(BeforeReadItemsModifier.INLINE_PREFIX + prefix);
     }
 
     Map<String, CdsEntity> annotatedEntities =

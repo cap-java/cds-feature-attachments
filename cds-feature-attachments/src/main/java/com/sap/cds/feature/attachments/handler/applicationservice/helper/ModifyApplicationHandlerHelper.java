@@ -11,6 +11,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.M
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.InlineAttachmentHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsAnnotation;
 import com.sap.cds.reflect.CdsEntity;
@@ -63,6 +64,83 @@ public final class ModifyApplicationHandlerHelper {
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
         .process(data, entity);
+
+    handleInlineAttachments(
+        entity, data, existingAttachments, eventFactory, eventContext, defaultMaxSize);
+  }
+
+  private static void handleInlineAttachments(
+      CdsEntity entity,
+      List<CdsData> data,
+      List<Attachments> existingAttachments,
+      ModifyAttachmentEventFactory eventFactory,
+      EventContext eventContext,
+      String defaultMaxSize) {
+    List<String> inlinePrefixes = InlineAttachmentHelper.findInlineAttachmentPrefixes(entity);
+    if (inlinePrefixes.isEmpty()) {
+      return;
+    }
+
+    for (CdsData row : data) {
+      for (String prefix : inlinePrefixes) {
+        String contentField = InlineAttachmentHelper.buildInlineFieldName(prefix, "content");
+        if (!row.containsKey(contentField)) {
+          continue;
+        }
+        Object contentValue = row.get(contentField);
+        InputStream content = contentValue instanceof InputStream is ? is : null;
+        String contentIdField =
+            InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.CONTENT_ID);
+        String contentId = (String) row.get(contentIdField);
+
+        Attachments existingAttachment =
+            findExistingInlineAttachment(entity, row, existingAttachments);
+
+        String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
+        String maxSizeStr = defaultMaxSize;
+        eventContext.put("attachment.MaxSize", maxSizeStr);
+        ServiceException tooLargeException =
+            new ServiceException(
+                ExtendedErrorStatuses.CONTENT_TOO_LARGE,
+                "File size exceeds the limit of {}.",
+                maxSizeStr);
+
+        if (contentLength != null) {
+          try {
+            if (Long.parseLong(contentLength) > FileSizeUtils.parseFileSizeToBytes(maxSizeStr)) {
+              throw tooLargeException;
+            }
+          } catch (NumberFormatException e) {
+            throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Invalid Content-Length header");
+          }
+        }
+
+        CountingInputStream wrappedContent =
+            content != null ? new CountingInputStream(content, maxSizeStr) : null;
+        ModifyAttachmentEvent eventToProcess =
+            eventFactory.getEvent(wrappedContent, contentId, existingAttachment);
+        try {
+          InputStream result =
+              eventToProcess.processEvent(null, wrappedContent, existingAttachment, eventContext);
+          row.put(contentField, result);
+        } catch (Exception e) {
+          if (wrappedContent != null && wrappedContent.isLimitExceeded()) {
+            throw tooLargeException;
+          }
+          throw e;
+        }
+      }
+    }
+  }
+
+  private static Attachments findExistingInlineAttachment(
+      CdsEntity entity, CdsData row, List<Attachments> existingAttachments) {
+    Map<String, Object> keys = ApplicationHandlerHelper.extractKeys(row, entity);
+    Map<String, Object> cleanKeys = ApplicationHandlerHelper.removeDraftKey(keys);
+    return existingAttachments.stream()
+        .filter(existing -> ApplicationHandlerHelper.areKeysInData(cleanKeys, existing))
+        .findAny()
+        .orElse(Attachments.create());
   }
 
   /**

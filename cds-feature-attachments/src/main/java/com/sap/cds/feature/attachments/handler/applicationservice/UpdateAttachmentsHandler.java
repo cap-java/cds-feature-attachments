@@ -87,9 +87,13 @@ public class UpdateAttachmentsHandler implements EventHandler {
       CqnSelect select = CqnUtils.toSelect(context.getCqn(), context.getTarget());
       List<Attachments> attachments =
           attachmentsReader.readAttachments(context.getModel(), target, select);
+      List<Attachments> inlineAttachments = attachmentsReader.readInlineAttachments(target, select);
+
+      List<Attachments> allAttachments = new java.util.ArrayList<>(attachments);
+      allAttachments.addAll(inlineAttachments);
 
       ModifyApplicationHandlerHelper.handleAttachmentForEntities(
-          target, data, attachments, eventFactory, context, defaultMaxSize);
+          target, data, allAttachments, eventFactory, context, defaultMaxSize);
 
       if (!associationsAreUnchanged) {
         deleteRemovedAttachments(attachments, data, target, context.getUserInfo());

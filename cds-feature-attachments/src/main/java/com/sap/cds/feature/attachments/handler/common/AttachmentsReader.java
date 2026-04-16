@@ -53,9 +53,28 @@ public class AttachmentsReader {
     statement.where().ifPresent(select::where);
 
     Result result = persistence.run(select);
-    List<Attachments> attachments = result.listOf(Attachments.class);
+    List<Attachments> attachments = new ArrayList<>(result.listOf(Attachments.class));
     logResultData(entity, attachments);
     return attachments;
+  }
+
+  /**
+   * Reads inline attachment state (contentId, status, scannedAt) from the database for entities
+   * that have inline attachment fields.
+   *
+   * @param entity the entity to query
+   * @param statement the filterable statement providing the entity ref and where clause
+   * @return a list of {@link Attachments} with unprefixed field names, or empty if no inline
+   *     attachments exist
+   */
+  public List<Attachments> readInlineAttachments(
+      CdsEntity entity, CqnFilterableStatement statement) {
+    List<String> inlinePrefixes = InlineAttachmentHelper.findInlineAttachmentPrefixes(entity);
+    if (inlinePrefixes.isEmpty()) {
+      return List.of();
+    }
+    return InlineAttachmentHelper.readInlineAttachmentState(
+        persistence, entity, statement, inlinePrefixes);
   }
 
   private List<Expand<?>> buildExpandList(NodeTree root) {

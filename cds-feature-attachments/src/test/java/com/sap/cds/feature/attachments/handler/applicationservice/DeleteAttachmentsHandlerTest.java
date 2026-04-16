@@ -17,6 +17,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
@@ -110,6 +111,37 @@ class DeleteAttachmentsHandlerTest {
             any(Path.class), eq(inputStream), eq(Attachments.of(attachment2)), eq(context));
     assertThat(attachment1.getContent()).isNull();
     assertThat(attachment2.getContent()).isNull();
+  }
+
+  @Test
+  void inlineAttachmentDataExistsServiceIsCalled() {
+    var entity = runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+    when(context.getTarget()).thenReturn(entity);
+    when(context.getModel()).thenReturn(runtime.getCdsModel());
+    var inlineAttachment = Attachments.create();
+    inlineAttachment.setContentId("inline-doc-id");
+    when(attachmentsReader.readInlineAttachments(entity, context.getCqn()))
+        .thenReturn(List.of(inlineAttachment));
+
+    cut.processBefore(context);
+
+    verify(modifyAttachmentEvent)
+        .processEvent(eq(null), eq(null), eq(inlineAttachment), eq(context));
+  }
+
+  @Test
+  void inlineAttachmentWithoutContentIdNotDeleted() {
+    var entity = runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+    when(context.getTarget()).thenReturn(entity);
+    when(context.getModel()).thenReturn(runtime.getCdsModel());
+    var inlineAttachment = Attachments.create();
+    // no contentId set
+    when(attachmentsReader.readInlineAttachments(entity, context.getCqn()))
+        .thenReturn(List.of(inlineAttachment));
+
+    cut.processBefore(context);
+
+    verifyNoInteractions(modifyAttachmentEvent);
   }
 
   private Attachment buildAttachment(String id, InputStream inputStream) {

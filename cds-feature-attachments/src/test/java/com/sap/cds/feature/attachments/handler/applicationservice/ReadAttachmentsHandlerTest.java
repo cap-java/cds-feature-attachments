@@ -19,6 +19,8 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Atta
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -459,6 +461,95 @@ class ReadAttachmentsHandlerTest {
 
     verifyNoInteractions(asyncMalwareScanExecutor);
     verifyNoInteractions(persistenceService);
+  }
+
+  @Test
+  void fieldNamesCorrectReadForInlineOnlyEntity() {
+    var select = Select.from(InlineOnlyTable_.class).columns(InlineOnlyTable_::ID);
+    mockEventContext(InlineOnlyTable_.CDS_NAME, select);
+
+    cut.processBefore(readEventContext);
+  }
+
+  @Test
+  void inlineAttachmentContentWrappedWithLazyProxy() {
+    mockEventContext(InlineOnlyTable_.CDS_NAME, mock(CqnSelect.class));
+
+    var row = InlineOnlyTable.create();
+    row.setId(UUID.randomUUID().toString());
+    row.setAvatarContentId("inline-content-id");
+    row.setAvatarStatus(StatusCode.CLEAN);
+    row.setAvatarContent(null);
+
+    cut.processAfter(readEventContext, List.of(row));
+
+    assertThat(row.getAvatarContent()).isInstanceOf(LazyProxyInputStream.class);
+    verifyNoInteractions(attachmentService);
+  }
+
+  @Test
+  void inlineAttachmentWithoutContentIdNotWrapped() {
+    mockEventContext(InlineOnlyTable_.CDS_NAME, mock(CqnSelect.class));
+
+    var row = InlineOnlyTable.create();
+    row.setId(UUID.randomUUID().toString());
+    row.put(InlineOnlyTable.AVATAR_CONTENT, null);
+
+    cut.processAfter(readEventContext, List.of(row));
+
+    assertThat(row.getAvatarContent()).isNull();
+    verifyNoInteractions(attachmentService);
+  }
+
+  @Test
+  void inlineAttachmentWithExistingStreamIsWrapped() throws IOException {
+    var testString = "inline-test";
+    try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+      mockEventContext(InlineOnlyTable_.CDS_NAME, mock(CqnSelect.class));
+      when(attachmentService.readAttachment(any())).thenReturn(testStream);
+
+      var row = InlineOnlyTable.create();
+      row.setId(UUID.randomUUID().toString());
+      row.setAvatarContentId("inline-content-id");
+      row.setAvatarStatus(StatusCode.CLEAN);
+      row.setAvatarContent(testStream);
+
+      cut.processAfter(readEventContext, List.of(row));
+
+      assertThat(row.getAvatarContent()).isInstanceOf(LazyProxyInputStream.class);
+      verifyNoInteractions(attachmentService);
+      byte[] bytes = row.getAvatarContent().readAllBytes();
+      assertThat(bytes).isEqualTo(testString.getBytes(StandardCharsets.UTF_8));
+    }
+  }
+
+  @Test
+  void inlineAttachmentRowWithoutContentFieldSkipped() {
+    mockEventContext(InlineOnlyTable_.CDS_NAME, mock(CqnSelect.class));
+
+    var row = InlineOnlyTable.create();
+    row.setId(UUID.randomUUID().toString());
+    row.setTitle("test");
+    // avatar_content not present in data at all
+
+    cut.processAfter(readEventContext, List.of(row));
+
+    verifyNoInteractions(attachmentService);
+  }
+
+  @Test
+  void inlineAttachmentNotProcessedForEntityWithoutInline() {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(null);
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(Instant.now());
+
+    cut.processAfter(readEventContext, List.of(attachment));
+
+    assertThat(attachment.getContent()).isInstanceOf(LazyProxyInputStream.class);
   }
 
   private void mockEventContext(String entityName, CqnSelect select) {

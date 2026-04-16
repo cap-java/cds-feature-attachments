@@ -37,7 +37,7 @@ public final class ApplicationHandlerHelper {
               && element.findAnnotation(ANNOTATION_CORE_MEDIA_TYPE).isPresent();
 
   /**
-   * Checks if the data contains a content field.
+   * Checks if the data contains a content field, including inline attachment content fields.
    *
    * @param entity The {@link CdsEntity entity} type of the given the data to check
    * @param data The data to check
@@ -48,7 +48,23 @@ public final class ApplicationHandlerHelper {
     CdsDataProcessor.create()
         .addValidator(MEDIA_CONTENT_FILTER, (path, element, value) -> isIncluded.set(true))
         .process(data, entity);
-    return isIncluded.get();
+    if (isIncluded.get()) {
+      return true;
+    }
+    return containsInlineContentField(entity, data);
+  }
+
+  /**
+   * Checks if the data contains any inline attachment content fields.
+   *
+   * @param entity the entity to inspect
+   * @param data the data to check
+   * @return {@code true} if inline content fields are present in the data
+   */
+  public static boolean containsInlineContentField(CdsEntity entity, List<? extends CdsData> data) {
+    List<String> inlineContentElements = InlineAttachmentHelper.findInlineContentElements(entity);
+    return inlineContentElements.stream()
+        .anyMatch(contentField -> data.stream().anyMatch(d -> d.containsKey(contentField)));
   }
 
   /**

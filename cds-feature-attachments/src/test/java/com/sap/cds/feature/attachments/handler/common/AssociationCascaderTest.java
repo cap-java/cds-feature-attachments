@@ -40,6 +40,7 @@ class AssociationCascaderTest {
 
     assertThat(result)
         .containsExactlyInAnyOrder(
+            RootTable_.CDS_NAME,
             "unit.test.TestService.RootTable.attachments",
             Attachment_.CDS_NAME,
             "unit.test.TestService.Items.itemAttachments",
@@ -53,8 +54,10 @@ class AssociationCascaderTest {
 
     var result = cut.findMediaEntityNames(runtime.getCdsModel(), entity);
 
-    // RootTable and Items should NOT be included (they have children)
-    assertThat(result).doesNotContain(RootTable_.CDS_NAME).doesNotContain(Items_.CDS_NAME);
+    // Items should NOT be included (it is a non-leaf node without inline attachments)
+    // RootTable IS included because it has inline attachments (profilePicture)
+    assertThat(result).doesNotContain(Items_.CDS_NAME);
+    assertThat(result).contains(RootTable_.CDS_NAME);
   }
 
   @Test

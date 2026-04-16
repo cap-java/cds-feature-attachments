@@ -30,6 +30,15 @@ entity ScanStates : CodeList {
         criticality : Integer     @UI.Hidden;
 }
 
+type Attachment @(_is_media_data) {
+    content   : LargeBinary;
+    mimeType  : String;
+    fileName  : String(5000);
+    contentId : String     @readonly;
+    status    : StatusCode default 'Unscanned' @readonly;
+    scannedAt : Timestamp  @readonly;
+};
+
 aspect Attachments : cuid, managed, MediaData {
     note : String(5000);
 }

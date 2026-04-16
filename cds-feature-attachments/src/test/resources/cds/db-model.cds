@@ -2,6 +2,7 @@ namespace unit.test;
 
 using {cuid} from '@sap/cds/common';
 using {sap.attachments.Attachments} from '../../../main/resources/cds/com.sap.cds/cds-feature-attachments';
+using {sap.attachments.Attachment as InlineAttachment} from '../../../main/resources/cds/com.sap.cds/cds-feature-attachments';
 using from '@sap/cds/srv/outbox';
 
 entity Attachment : Attachments {
@@ -9,9 +10,15 @@ entity Attachment : Attachments {
 
 entity Roots : cuid {
     title              : String;
+    profilePicture     : InlineAttachment;
     itemTable          : Composition of many Items
                              on itemTable.rootId = $self.ID;
     attachments        : Composition of many Attachments;
+}
+
+entity InlineOnly : cuid {
+    title  : String;
+    avatar : InlineAttachment;
 }
 
 entity Items : cuid {

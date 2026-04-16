@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.ql.Select;
@@ -135,6 +136,100 @@ class BeforeReadItemsModifierTest {
         Select.from(Attachment_.class).columns(Attachment_::content, Attachment_::contentId);
 
     runTestForDirectSelect(select, 1);
+  }
+
+  @Test
+  void inlineSelectExtendsWithContentIdAndStatusAndScannedAt() {
+    CqnSelect select =
+        Select.from(InlineOnlyTable_.class)
+            .columns(InlineOnlyTable_::ID, InlineOnlyTable_::avatar_content);
+
+    cut = new BeforeReadItemsModifier(List.of(BeforeReadItemsModifier.INLINE_PREFIX + "avatar"));
+    List<CqnSelectListItem> resultItems = cut.items(select.items());
+
+    long contentIdCount =
+        resultItems.stream()
+            .filter(
+                item ->
+                    item.isRef()
+                        && item.asRef().displayName().equals("avatar_" + Attachments.CONTENT_ID))
+            .count();
+    long statusCount =
+        resultItems.stream()
+            .filter(
+                item ->
+                    item.isRef()
+                        && item.asRef().displayName().equals("avatar_" + Attachments.STATUS))
+            .count();
+    long scannedAtCount =
+        resultItems.stream()
+            .filter(
+                item ->
+                    item.isRef()
+                        && item.asRef().displayName().equals("avatar_" + Attachments.SCANNED_AT))
+            .count();
+    assertThat(contentIdCount).isEqualTo(1);
+    assertThat(statusCount).isEqualTo(1);
+    assertThat(scannedAtCount).isEqualTo(1);
+  }
+
+  @Test
+  void inlineSelectDoesNotExtendIfNoContentField() {
+    CqnSelect select = Select.from(InlineOnlyTable_.class).columns(InlineOnlyTable_::ID);
+
+    cut = new BeforeReadItemsModifier(List.of(BeforeReadItemsModifier.INLINE_PREFIX + "avatar"));
+    List<CqnSelectListItem> resultItems = cut.items(select.items());
+
+    long contentIdCount =
+        resultItems.stream()
+            .filter(
+                item ->
+                    item.isRef()
+                        && item.asRef().displayName().equals("avatar_" + Attachments.CONTENT_ID))
+            .count();
+    assertThat(contentIdCount).isZero();
+  }
+
+  @Test
+  void inlineSelectDoesNotExtendIfContentIdAlreadyPresent() {
+    CqnSelect select =
+        Select.from(InlineOnlyTable_.class)
+            .columns(
+                InlineOnlyTable_::ID,
+                InlineOnlyTable_::avatar_content,
+                InlineOnlyTable_::avatar_contentId);
+
+    cut = new BeforeReadItemsModifier(List.of(BeforeReadItemsModifier.INLINE_PREFIX + "avatar"));
+    List<CqnSelectListItem> resultItems = cut.items(select.items());
+
+    long contentIdCount =
+        resultItems.stream()
+            .filter(
+                item ->
+                    item.isRef()
+                        && item.asRef().displayName().equals("avatar_" + Attachments.CONTENT_ID))
+            .count();
+    // already present, should not be duplicated
+    assertThat(contentIdCount).isEqualTo(1);
+  }
+
+  @Test
+  void inlineSelectDoesNotExtendForNonInlinePrefix() {
+    CqnSelect select =
+        Select.from(InlineOnlyTable_.class)
+            .columns(InlineOnlyTable_::ID, InlineOnlyTable_::avatar_content);
+
+    cut = new BeforeReadItemsModifier(List.of("attachments"));
+    List<CqnSelectListItem> resultItems = cut.items(select.items());
+
+    long contentIdCount =
+        resultItems.stream()
+            .filter(
+                item ->
+                    item.isRef()
+                        && item.asRef().displayName().equals("avatar_" + Attachments.CONTENT_ID))
+            .count();
+    assertThat(contentIdCount).isZero();
   }
 
   private void runTestForExpand(

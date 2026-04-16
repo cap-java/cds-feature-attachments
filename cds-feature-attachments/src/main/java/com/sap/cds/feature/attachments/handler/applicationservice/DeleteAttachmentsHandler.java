@@ -59,5 +59,13 @@ public class DeleteAttachmentsHandler implements EventHandler {
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
         .process(attachments, context.getTarget());
+
+    List<Attachments> inlineAttachments =
+        attachmentsReader.readInlineAttachments(context.getTarget(), context.getCqn());
+    for (Attachments inlineAttachment : inlineAttachments) {
+      if (inlineAttachment.getContentId() != null) {
+        deleteEvent.processEvent(null, null, inlineAttachment, context);
+      }
+    }
   }
 }

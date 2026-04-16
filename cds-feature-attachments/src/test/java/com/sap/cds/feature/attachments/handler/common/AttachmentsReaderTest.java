@@ -5,16 +5,21 @@ package com.sap.cds.feature.attachments.handler.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import ch.qos.logback.classic.Level;
 import com.sap.cds.Result;
+import com.sap.cds.Row;
+import com.sap.cds.Struct;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.helper.LogObserver;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Delete;
@@ -189,6 +194,57 @@ class AttachmentsReaderTest {
     assertThat(traceEvents.get(0).getFormattedMessage())
         .contains("IsActiveEntity=true")
         .contains("ID=" + dataEntry.get("ID"));
+  }
+
+  @Test
+  void readInlineAttachmentsReturnsEmptyForMediaEntity() {
+    var mediaEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
+    CqnDelete statement = Delete.from(Attachment_.CDS_NAME).byId("test");
+
+    var result = cut.readInlineAttachments(mediaEntity, statement);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void readInlineAttachmentsReturnsEmptyForEntityWithoutInline() {
+    var itemsEntity = RuntimeHelper.runtime.getCdsModel().findEntity(Items_.CDS_NAME).orElseThrow();
+    CqnDelete statement = Delete.from(Items_.CDS_NAME).byId("test");
+
+    var result = cut.readInlineAttachments(itemsEntity, statement);
+
+    assertThat(result).isEmpty();
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void readInlineAttachmentsReturnsDataForInlineEntity() {
+    var inlineEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+    CqnDelete statement = Delete.from(InlineOnlyTable_.CDS_NAME).byId("test");
+
+    java.util.Map<String, Object> map = new HashMap<>();
+    map.put("ID", "test");
+    map.put("avatar_contentId", "doc-123");
+    map.put("avatar_status", "Clean");
+    map.put("avatar_scannedAt", null);
+    Row row = Struct.access(map).as(Row.class);
+    Result inlineResult = mock(Result.class);
+    doAnswer(
+            invocation -> {
+              java.util.function.Consumer<Row> consumer = invocation.getArgument(0);
+              List.of(row).forEach(consumer);
+              return null;
+            })
+        .when(inlineResult)
+        .forEach(any(java.util.function.Consumer.class));
+    when(persistenceService.run(any(CqnSelect.class))).thenReturn(inlineResult);
+
+    var result = cut.readInlineAttachments(inlineEntity, statement);
+
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getContentId()).isEqualTo("doc-123");
   }
 
   private HashMap<String, Object> buildDefaultKeyMap() {

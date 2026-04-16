@@ -1,6 +1,7 @@
 using {
     sap.attachments.MediaData,
-    sap.attachments.Attachments
+    sap.attachments.Attachments,
+    sap.attachments.Attachment
 } from './attachments';
 
 annotate MediaData with @UI.MediaResource: {Stream: content} {
@@ -19,6 +20,26 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
         UI.MultiLineText
         );
     status    @(title: '{i18n>attachment_status}', Common.Text : statusNav.name, Common.TextArrangement : #TextOnly);
+    contentId @(UI.Hidden: true);
+    scannedAt @(UI.Hidden: true);
+}
+
+annotate Attachment with @UI.MediaResource: {Stream: content} {
+    content   @(
+        title                           : '{i18n>attachment_content}',
+        Core.MediaType                  : mimeType,
+        Core.ContentDisposition.Filename: fileName,
+        Core.ContentDisposition.Type    : 'inline'
+    );
+    mimeType  @(
+        title: '{i18n>attachment_mimeType}',
+        Core.IsMediaType
+    );
+    fileName  @(
+        title: '{i18n>attachment_fileName}',
+        UI.MultiLineText
+        );
+    status    @(title: '{i18n>attachment_status}');
     contentId @(UI.Hidden: true);
     scannedAt @(UI.Hidden: true);
 }

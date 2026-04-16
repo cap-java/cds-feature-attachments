@@ -22,6 +22,8 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -369,6 +371,110 @@ class CreateAttachmentsHandlerTest {
       helper.verify(
           () -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime));
     }
+  }
+
+  @Test
+  void inlineAttachmentContentTriggersEventProcessing() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    var row = InlineOnlyTable.create();
+    row.setId("test-id");
+    var testStream = mock(InputStream.class);
+    row.setAvatarContent(testStream);
+    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+
+    cut.processBefore(createContext, List.of(row));
+
+    ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
+    verify(eventFactory).getEvent(streamCaptor.capture(), eq((String) null), any());
+    InputStream captured = streamCaptor.getValue();
+    assertThat(captured).isInstanceOf(CountingInputStream.class);
+    assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
+  }
+
+  @Test
+  void inlineAttachmentWithNoContentNoProcessing() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    var row = InlineOnlyTable.create();
+    row.setId("test-id");
+    row.setTitle("just a title");
+
+    cut.processBefore(createContext, List.of(row));
+
+    verifyNoInteractions(eventFactory);
+  }
+
+  @Test
+  void inlineAttachmentWithNullContentValueProcessed() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    var row = InlineOnlyTable.create();
+    row.setId("test-id");
+    row.put(InlineOnlyTable.AVATAR_CONTENT, null);
+    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+
+    cut.processBefore(createContext, List.of(row));
+
+    verify(eventFactory).getEvent(eq(null), eq((String) null), any());
+  }
+
+  @Test
+  void inlineAttachmentContentLengthExceedsLimitThrows() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    var row = InlineOnlyTable.create();
+    row.setId("test-id");
+    row.setAvatarContent(mock(InputStream.class));
+    ParameterInfo paramInfo = mock(ParameterInfo.class);
+    when(paramInfo.getHeader("Content-Length")).thenReturn("999999999999");
+    when(createContext.getParameterInfo()).thenReturn(paramInfo);
+
+    List<CdsData> data = List.of(row);
+    assertThrows(ServiceException.class, () -> cut.processBefore(createContext, data));
+  }
+
+  @Test
+  void inlineAttachmentInvalidContentLengthThrows() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    var row = InlineOnlyTable.create();
+    row.setId("test-id");
+    row.setAvatarContent(mock(InputStream.class));
+    ParameterInfo paramInfo = mock(ParameterInfo.class);
+    when(paramInfo.getHeader("Content-Length")).thenReturn("not-a-number");
+    when(createContext.getParameterInfo()).thenReturn(paramInfo);
+
+    List<CdsData> data = List.of(row);
+    assertThrows(ServiceException.class, () -> cut.processBefore(createContext, data));
+  }
+
+  @Test
+  void inlineAttachmentLimitExceededDuringProcessingThrows() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    var row = InlineOnlyTable.create();
+    row.setId("test-id");
+    var testStream = mock(InputStream.class);
+    row.setAvatarContent(testStream);
+    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+    when(event.processEvent(any(), any(), any(), any())).thenThrow(new RuntimeException("test"));
+
+    List<CdsData> data = List.of(row);
+    var exception =
+        assertThrows(RuntimeException.class, () -> cut.processBefore(createContext, data));
+    assertThat(exception.getMessage()).isEqualTo("test");
+  }
+
+  @Test
+  void inlineAttachmentContentLengthWithinLimitProcesses() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    var row = InlineOnlyTable.create();
+    row.setId("test-id");
+    var testStream = mock(InputStream.class);
+    row.setAvatarContent(testStream);
+    ParameterInfo paramInfo = mock(ParameterInfo.class);
+    when(paramInfo.getHeader("Content-Length")).thenReturn("100");
+    when(createContext.getParameterInfo()).thenReturn(paramInfo);
+    when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);
+
+    cut.processBefore(createContext, List.of(row));
+
+    verify(event).processEvent(any(), any(), any(), any());
   }
 
   private void getEntityAndMockContext(String cdsName) {
