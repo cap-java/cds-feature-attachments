@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -27,6 +28,7 @@ import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -309,7 +311,7 @@ class ModifyApplicationHandlerHelperTest {
     var existing = Attachments.create();
     existing.setContentId("result-cid");
     existing.setStatus("Clean");
-    existing.setScannedAt(java.time.Instant.parse("2025-01-01T00:00:00Z"));
+    existing.setScannedAt(Instant.parse("2025-01-01T00:00:00Z"));
 
     when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
         .thenReturn(null);
@@ -325,8 +327,7 @@ class ModifyApplicationHandlerHelperTest {
 
     assertThat(row.get("avatar_contentId")).isEqualTo("result-cid");
     assertThat(row.get("avatar_status")).isEqualTo("Clean");
-    assertThat(row.get("avatar_scannedAt"))
-        .isEqualTo(java.time.Instant.parse("2025-01-01T00:00:00Z"));
+    assertThat(row.get("avatar_scannedAt")).isEqualTo(Instant.parse("2025-01-01T00:00:00Z"));
   }
 
   @Test
@@ -485,7 +486,6 @@ class ModifyApplicationHandlerHelperTest {
         ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
 
     // No inline processing since avatar_content is not in the row
-    verify(eventFactory, org.mockito.Mockito.never())
-        .processInlineEvent(any(), any(), any(), any(), any(), any());
+    verify(eventFactory, never()).processInlineEvent(any(), any(), any(), any(), any(), any());
   }
 }

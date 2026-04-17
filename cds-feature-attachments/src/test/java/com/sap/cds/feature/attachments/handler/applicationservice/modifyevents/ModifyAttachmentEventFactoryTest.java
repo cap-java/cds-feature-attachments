@@ -213,11 +213,8 @@ class ModifyAttachmentEventFactoryTest {
     existing.put(Attachments.FILE_NAME, "avatar.png");
     Map<String, Object> keys = Map.of("ID", "k1");
 
-    when(attachmentService.createAttachment(any()))
-        .thenReturn(new AttachmentModificationResult(false, "new-cid", "Clean", Instant.now()));
-    when(listenerProvider.provideListener(any(), any())).thenReturn(mock(ChangeSetListener.class));
-    var cdsRuntime = mock(CdsRuntime.class);
-    when(eventContext.getCdsRuntime()).thenReturn(cdsRuntime);
+    stubCreateAttachment(
+        new AttachmentModificationResult(false, "new-cid", "Clean", Instant.now()));
 
     InputStream result =
         cut.processInlineEvent(content, null, existing, eventContext, entity, keys);
@@ -235,11 +232,7 @@ class ModifyAttachmentEventFactoryTest {
     var existing = Attachments.create();
     Map<String, Object> keys = Map.of("ID", "k1");
 
-    when(attachmentService.createAttachment(any()))
-        .thenReturn(new AttachmentModificationResult(true, "new-cid", "Clean", null));
-    when(listenerProvider.provideListener(any(), any())).thenReturn(mock(ChangeSetListener.class));
-    var cdsRuntime = mock(CdsRuntime.class);
-    when(eventContext.getCdsRuntime()).thenReturn(cdsRuntime);
+    stubCreateAttachment(new AttachmentModificationResult(true, "new-cid", "Clean", null));
 
     InputStream result =
         cut.processInlineEvent(content, null, existing, eventContext, entity, keys);
@@ -255,11 +248,7 @@ class ModifyAttachmentEventFactoryTest {
     existing.setContentId("old-cid");
     Map<String, Object> keys = Map.of("ID", "k1");
 
-    when(attachmentService.createAttachment(any()))
-        .thenReturn(new AttachmentModificationResult(false, "new-cid", "Clean", null));
-    when(listenerProvider.provideListener(any(), any())).thenReturn(mock(ChangeSetListener.class));
-    var cdsRuntime = mock(CdsRuntime.class);
-    when(eventContext.getCdsRuntime()).thenReturn(cdsRuntime);
+    stubCreateAttachment(new AttachmentModificationResult(false, "new-cid", "Clean", null));
 
     InputStream result =
         cut.processInlineEvent(content, null, existing, eventContext, entity, keys);
@@ -309,11 +298,7 @@ class ModifyAttachmentEventFactoryTest {
     Map<String, Object> keys = Map.of("ID", "k1");
     when(eventContext.getEvent()).thenReturn(DraftService.EVENT_DRAFT_PATCH);
 
-    when(attachmentService.createAttachment(any()))
-        .thenReturn(new AttachmentModificationResult(false, "new-cid", "Clean", null));
-    when(listenerProvider.provideListener(any(), any())).thenReturn(mock(ChangeSetListener.class));
-    var cdsRuntime = mock(CdsRuntime.class);
-    when(eventContext.getCdsRuntime()).thenReturn(cdsRuntime);
+    stubCreateAttachment(new AttachmentModificationResult(false, "new-cid", "Clean", null));
 
     InputStream result =
         cut.processInlineEvent(content, null, existing, eventContext, entity, keys);
@@ -333,5 +318,11 @@ class ModifyAttachmentEventFactoryTest {
 
     assertThat(result).isNull();
     verifyNoInteractions(deleteAttachmentService);
+  }
+
+  private void stubCreateAttachment(AttachmentModificationResult result) {
+    when(attachmentService.createAttachment(any())).thenReturn(result);
+    when(listenerProvider.provideListener(any(), any())).thenReturn(mock(ChangeSetListener.class));
+    when(eventContext.getCdsRuntime()).thenReturn(mock(CdsRuntime.class));
   }
 }
