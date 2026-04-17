@@ -1,35 +1,15 @@
 using {
+    sap.attachments.Attachment,
     sap.attachments.MediaData,
-    sap.attachments.Attachments,
-    sap.attachments.Attachment
+    sap.attachments.Attachments
 } from './attachments';
 
-annotate MediaData with @UI.MediaResource: {Stream: content} {
+annotate sap.attachments.MediaData with @UI.MediaResource: {Stream: content} {
     content   @(
         title                           : '{i18n>attachment_content}',
-        Core.MediaType                  : mimeType,
-        Core.ContentDisposition.Filename: fileName,
-        Core.ContentDisposition.Type    : 'inline'
-    );
-    mimeType  @(
-        title: '{i18n>attachment_mimeType}',
-        Core.IsMediaType
-    );
-    fileName  @(
-        title: '{i18n>attachment_fileName}',
-        UI.MultiLineText
-        );
-    status    @(title: '{i18n>attachment_status}', Common.Text : statusNav.name, Common.TextArrangement : #TextOnly);
-    contentId @(UI.Hidden: true);
-    scannedAt @(UI.Hidden: true);
-}
-
-annotate Attachment with @UI.MediaResource: {Stream: content} {
-    content   @(
-        title                           : '{i18n>attachment_content}',
+        Core.ContentDisposition.Type    : 'inline',
         Core.MediaType                  : 'application/octet-stream',
-        Core.ContentDisposition.Filename: null,
-        Core.ContentDisposition.Type    : 'inline'
+        odata.draft.skip
     );
     mimeType  @(
         title: '{i18n>attachment_mimeType}',
@@ -37,14 +17,20 @@ annotate Attachment with @UI.MediaResource: {Stream: content} {
     );
     fileName  @(
         title: '{i18n>attachment_fileName}',
-        UI.MultiLineText
+        UI.MultiLineText,
+        readonly
         );
-    status    @(title: '{i18n>attachment_status}');
-    contentId @(UI.Hidden: true);
-    scannedAt @(UI.Hidden: true);
+    status    @(title: '{i18n>attachment_status}', readonly);
+    contentId @(UI.Hidden: true, readonly);
+    scannedAt @(UI.Hidden: true, readonly);
 }
 
-annotate Attachments with @UI: {
+annotate sap.attachments.Attachments with
+@Capabilities: {
+    UpdateRestrictions.NonUpdateableProperties: [content],
+    SortRestrictions: { NonSortableProperties: [content] }
+}
+@UI: {
     HeaderInfo: {
         TypeName      : '{i18n>attachment}',
         TypeNamePlural: '{i18n>attachments}',
@@ -57,7 +43,17 @@ annotate Attachments with @UI: {
         {Value: note,      @HTML5.CssDefaults: {width: '25%'}},
         {Value: up__ID, @UI.Hidden}
     ]
-} {
+}
+@Common: {SideEffects #ContentChanged: {
+    SourceProperties: [content],
+    TargetProperties: ['status']
+}} {
+    content    @(
+        Core.ContentDisposition.Filename: fileName,
+        Core.MediaType: mimeType
+    );
+    mimeType   @Core.IsMediaType;
+    status     @(Common.Text : statusNav.name, Common.TextArrangement : #TextOnly);
     note       @(
         title: '{i18n>attachment_note}',
         UI.MultiLineText
@@ -65,7 +61,6 @@ annotate Attachments with @UI: {
     modifiedAt @(odata.etag);
 }
 
-annotate Attachments with @Common: {SideEffects #ContentChanged: {
-    SourceProperties: [content],
-    TargetProperties: ['status']
-}} {};
+annotate sap.attachments.Attachment with {
+    content @Core.ContentDisposition.Filename: fileName;
+}
