@@ -1,5 +1,5 @@
 using {sap.capire.bookshop as my} from '../db/schema';
-using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
+using {Attachments, Attachment} from 'com.sap.cds/cds-feature-attachments';
 
 // Extend Books entity to support file attachments (images, PDFs, documents)
 // Each book can have multiple attachments via composition relationship
@@ -9,6 +9,8 @@ extend my.Books with {
   sizeLimitedAttachments           : Composition of many Attachments;
   @UI.Hidden
   mediaValidatedAttachments        : Composition of many Attachments;
+  profileIcon : Attachment;
+  coverImage  : Attachment;
 }
 
 annotate my.Books.sizeLimitedAttachments with {
@@ -33,17 +35,3 @@ annotate service.Books with @(UI.Facets: [{
   Target: 'attachments/@UI.LineItem'
 }]);
 
-// Adding the UI Component (a table) to the Administrator App
-using {AdminService as adminService} from '../app/services';
-
-annotate adminService.Books with @(UI.Facets: [{
-  $Type : 'UI.ReferenceFacet',
-  ID    : 'AttachmentsFacet',
-  Label : '{i18n>attachments}',
-  Target: 'attachments/@UI.LineItem'
-}]);
-
-
-service nonDraft {
-  entity Books as projection on my.Books;
-}
