@@ -190,12 +190,13 @@ class DraftPatchAttachmentsHandlerTest {
     when(persistence.run(any(CqnSelect.class))).thenReturn(result);
     when(result.listOf(Attachments.class)).thenReturn(List.of());
 
-    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(null);
 
     cut.processBeforeDraftPatch(eventContext, List.of(row));
 
-    verify(eventFactory).processInlineEvent(any(), any(), any(), eq(eventContext), any(), any());
+    verify(eventFactory)
+        .processInlineEvent(any(), any(), any(), eq(eventContext), any(), any(), any(), any());
   }
 
   @Test
@@ -208,7 +209,8 @@ class DraftPatchAttachmentsHandlerTest {
 
     cut.processBeforeDraftPatch(eventContext, List.of(attachment));
 
-    verify(eventFactory, never()).processInlineEvent(any(), any(), any(), any(), any(), any());
+    verify(eventFactory, never())
+        .processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any());
   }
 
   @Test
@@ -222,7 +224,8 @@ class DraftPatchAttachmentsHandlerTest {
 
     cut.processBeforeDraftPatch(eventContext, List.of(row));
 
-    verify(eventFactory, never()).processInlineEvent(any(), any(), any(), any(), any(), any());
+    verify(eventFactory, never())
+        .processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any());
   }
 
   private RootTable buildRooWithAttachment(Attachments attachments) {

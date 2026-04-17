@@ -231,7 +231,7 @@ class ModifyApplicationHandlerHelperTest {
 
     var existing = Attachments.create();
 
-    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(null);
 
     ModifyApplicationHandlerHelper.processInlineAttachmentRow(
@@ -244,7 +244,7 @@ class ModifyApplicationHandlerHelperTest {
         ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
 
     // content should be null since the value was not an InputStream
-    verify(eventFactory).processInlineEvent(any(), any(), any(), any(), any(), any());
+    verify(eventFactory).processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any());
   }
 
   @Test
@@ -313,7 +313,7 @@ class ModifyApplicationHandlerHelperTest {
     existing.setStatus("Clean");
     existing.setScannedAt(Instant.parse("2025-01-01T00:00:00Z"));
 
-    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(null);
 
     ModifyApplicationHandlerHelper.processInlineAttachmentRow(
@@ -343,7 +343,7 @@ class ModifyApplicationHandlerHelperTest {
     // Existing attachment without contentId key - simulates doNothing result
     var existing = Attachments.create();
 
-    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(mock(InputStream.class));
 
     ModifyApplicationHandlerHelper.processInlineAttachmentRow(
@@ -371,7 +371,7 @@ class ModifyApplicationHandlerHelperTest {
 
     var existing = Attachments.create();
 
-    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any()))
         .thenAnswer(
             invocation -> {
               InputStream wrapped = invocation.getArgument(0);
@@ -403,7 +403,7 @@ class ModifyApplicationHandlerHelperTest {
 
     var existing = Attachments.create();
 
-    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any()))
         .thenThrow(new RuntimeException("unexpected"));
 
     assertThrows(
@@ -430,7 +430,7 @@ class ModifyApplicationHandlerHelperTest {
 
     var existing = Attachments.create();
 
-    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(null);
 
     assertDoesNotThrow(
@@ -454,7 +454,7 @@ class ModifyApplicationHandlerHelperTest {
     row.put("ID", UUID.randomUUID().toString());
     row.put("avatar_content", mock(InputStream.class));
 
-    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any()))
         .thenReturn(null);
 
     ModifyApplicationHandlerHelper.handleAttachmentForEntities(
@@ -465,7 +465,7 @@ class ModifyApplicationHandlerHelperTest {
         eventContext,
         ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
 
-    verify(eventFactory).processInlineEvent(any(), any(), any(), any(), any(), any());
+    verify(eventFactory).processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any());
   }
 
   @Test
@@ -486,6 +486,7 @@ class ModifyApplicationHandlerHelperTest {
         ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
 
     // No inline processing since avatar_content is not in the row
-    verify(eventFactory, never()).processInlineEvent(any(), any(), any(), any(), any(), any());
+    verify(eventFactory, never())
+        .processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any());
   }
 }

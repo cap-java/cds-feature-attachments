@@ -515,7 +515,14 @@ class UpdateAttachmentsHandlerTest {
     ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(eventFactory)
         .processInlineEvent(
-            streamCaptor.capture(), eq((String) null), any(), eq(updateContext), any(), any());
+            streamCaptor.capture(),
+            eq((String) null),
+            any(),
+            eq(updateContext),
+            any(),
+            any(),
+            any(),
+            any());
     InputStream captured = streamCaptor.getValue();
     assertThat(captured).isInstanceOf(CountingInputStream.class);
     assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
@@ -554,7 +561,14 @@ class UpdateAttachmentsHandlerTest {
 
     verify(eventFactory)
         .processInlineEvent(
-            any(), eq((String) null), eq(existingAttachment), eq(updateContext), any(), any());
+            any(),
+            eq((String) null),
+            eq(existingAttachment),
+            eq(updateContext),
+            any(),
+            any(),
+            any(),
+            any());
   }
 
   private RootTable fillRootData(InputStream testStream, String id) {

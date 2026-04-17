@@ -386,7 +386,14 @@ class CreateAttachmentsHandlerTest {
     ArgumentCaptor<InputStream> streamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(eventFactory)
         .processInlineEvent(
-            streamCaptor.capture(), eq((String) null), any(), eq(createContext), any(), any());
+            streamCaptor.capture(),
+            eq((String) null),
+            any(),
+            eq(createContext),
+            any(),
+            any(),
+            any(),
+            any());
     InputStream captured = streamCaptor.getValue();
     assertThat(captured).isInstanceOf(CountingInputStream.class);
     assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(testStream);
@@ -414,7 +421,8 @@ class CreateAttachmentsHandlerTest {
     cut.processBefore(createContext, List.of(row));
 
     verify(eventFactory)
-        .processInlineEvent(eq(null), eq((String) null), any(), eq(createContext), any(), any());
+        .processInlineEvent(
+            eq(null), eq((String) null), any(), eq(createContext), any(), any(), any(), any());
   }
 
   @Test
@@ -452,7 +460,7 @@ class CreateAttachmentsHandlerTest {
     row.setId("test-id");
     var testStream = mock(InputStream.class);
     row.setAvatarContent(testStream);
-    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any(), any(), any()))
         .thenThrow(new RuntimeException("test"));
 
     List<CdsData> data = List.of(row);
@@ -474,7 +482,8 @@ class CreateAttachmentsHandlerTest {
 
     cut.processBefore(createContext, List.of(row));
 
-    verify(eventFactory).processInlineEvent(any(), any(), any(), eq(createContext), any(), any());
+    verify(eventFactory)
+        .processInlineEvent(any(), any(), any(), eq(createContext), any(), any(), any(), any());
   }
 
   private void getEntityAndMockContext(String cdsName) {

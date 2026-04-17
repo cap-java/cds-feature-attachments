@@ -7,6 +7,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.common.InlineAttachmentHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
@@ -90,7 +91,9 @@ public class ModifyAttachmentEventFactory {
       Attachments existingAttachment,
       EventContext eventContext,
       CdsEntity entity,
-      Map<String, Object> keys) {
+      Map<String, Object> keys,
+      CdsData row,
+      String prefix) {
     ModifyAttachmentEvent event = getEvent(content, contentId, existingAttachment);
 
     if (event == doNothingEvent) {
@@ -99,11 +102,13 @@ public class ModifyAttachmentEventFactory {
 
     if (event == updateEvent) {
       markAsDeletedIfNeeded(existingAttachment, eventContext, entity);
-      return createInlineAttachment(content, existingAttachment, eventContext, entity, keys);
+      return createInlineAttachment(
+          content, existingAttachment, eventContext, entity, keys, row, prefix);
     }
 
     if (event == createEvent) {
-      return createInlineAttachment(content, existingAttachment, eventContext, entity, keys);
+      return createInlineAttachment(
+          content, existingAttachment, eventContext, entity, keys, row, prefix);
     }
 
     if (event == deleteEvent) {
@@ -122,13 +127,25 @@ public class ModifyAttachmentEventFactory {
       Attachments existingAttachment,
       EventContext eventContext,
       CdsEntity entity,
-      Map<String, Object> keys) {
+      Map<String, Object> keys,
+      CdsData row,
+      String prefix) {
     logger.debug(
         "Calling attachment service with create event for inline attachment on entity {}",
         entity.getQualifiedName());
 
-    String mimeType = (String) existingAttachment.get(Attachments.MIME_TYPE);
-    String fileName = (String) existingAttachment.get(Attachments.FILE_NAME);
+    String mimeType =
+        getInlineFieldValue(
+            Attachments.MIME_TYPE,
+            row,
+            InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.MIME_TYPE),
+            existingAttachment);
+    String fileName =
+        getInlineFieldValue(
+            Attachments.FILE_NAME,
+            row,
+            InlineAttachmentHelper.buildInlineFieldName(prefix, Attachments.FILE_NAME),
+            existingAttachment);
 
     CreateAttachmentInput createInput =
         new CreateAttachmentInput(keys, entity, fileName, mimeType, content);
@@ -190,5 +207,11 @@ public class ModifyAttachmentEventFactory {
       }
     }
     return Optional.ofNullable(event);
+  }
+
+  private static String getInlineFieldValue(
+      String fieldName, CdsData row, String prefixedFieldName, Attachments existing) {
+    Object fromRow = row.get(prefixedFieldName);
+    return (String) (fromRow != null ? fromRow : existing.get(fieldName));
   }
 }

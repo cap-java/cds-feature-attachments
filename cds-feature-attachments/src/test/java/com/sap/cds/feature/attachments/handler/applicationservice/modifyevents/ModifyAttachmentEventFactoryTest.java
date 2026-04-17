@@ -10,10 +10,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
+import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
@@ -31,6 +33,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 
 class ModifyAttachmentEventFactoryTest {
 
@@ -44,6 +47,8 @@ class ModifyAttachmentEventFactoryTest {
   private ListenerProvider listenerProvider;
   private EventContext eventContext;
   private CdsEntity entity;
+  private CdsData row;
+  private static final String PREFIX = "avatar";
 
   @BeforeEach
   void setup() {
@@ -71,6 +76,7 @@ class ModifyAttachmentEventFactoryTest {
     when(target.getQualifiedName()).thenReturn("test.Entity");
     var userInfo = mock(UserInfo.class);
     when(eventContext.getUserInfo()).thenReturn(userInfo);
+    row = CdsData.create();
   }
 
   @Test
@@ -200,7 +206,8 @@ class ModifyAttachmentEventFactoryTest {
     Map<String, Object> keys = Map.of("ID", "k1");
 
     InputStream result =
-        cut.processInlineEvent(content, "same-id", existing, eventContext, entity, keys);
+        cut.processInlineEvent(
+            content, "same-id", existing, eventContext, entity, keys, row, PREFIX);
 
     assertThat(result).isSameAs(content);
   }
@@ -217,13 +224,37 @@ class ModifyAttachmentEventFactoryTest {
         new AttachmentModificationResult(false, "new-cid", "Clean", Instant.now()));
 
     InputStream result =
-        cut.processInlineEvent(content, null, existing, eventContext, entity, keys);
+        cut.processInlineEvent(content, null, existing, eventContext, entity, keys, row, PREFIX);
 
     verify(attachmentService).createAttachment(any());
     assertThat(existing.getContentId()).isEqualTo("new-cid");
     assertThat(existing.getStatus()).isEqualTo("Clean");
     assertThat(existing.getScannedAt()).isNotNull();
     assertThat(result).isNull();
+  }
+
+  @Test
+  void processInlineEvent_create_readsMetadataFromRowPrefixedFields() {
+    var content = mock(InputStream.class);
+    var existing = Attachments.create();
+    existing.put(Attachments.MIME_TYPE, "old/type");
+    existing.put(Attachments.FILE_NAME, "old.txt");
+    Map<String, Object> keys = Map.of("ID", "k1");
+
+    row.put("avatar_mimeType", "image/png");
+    row.put("avatar_fileName", "new-avatar.png");
+
+    stubCreateAttachment(
+        new AttachmentModificationResult(false, "new-cid", "Clean", Instant.now()));
+
+    ArgumentCaptor<CreateAttachmentInput> inputCaptor =
+        ArgumentCaptor.forClass(CreateAttachmentInput.class);
+
+    cut.processInlineEvent(content, null, existing, eventContext, entity, keys, row, PREFIX);
+
+    verify(attachmentService).createAttachment(inputCaptor.capture());
+    assertThat(inputCaptor.getValue().fileName()).isEqualTo("new-avatar.png");
+    assertThat(inputCaptor.getValue().mimeType()).isEqualTo("image/png");
   }
 
   @Test
@@ -235,7 +266,7 @@ class ModifyAttachmentEventFactoryTest {
     stubCreateAttachment(new AttachmentModificationResult(true, "new-cid", "Clean", null));
 
     InputStream result =
-        cut.processInlineEvent(content, null, existing, eventContext, entity, keys);
+        cut.processInlineEvent(content, null, existing, eventContext, entity, keys, row, PREFIX);
 
     assertThat(result).isSameAs(content);
     assertThat(existing.getScannedAt()).isNull();
@@ -251,7 +282,7 @@ class ModifyAttachmentEventFactoryTest {
     stubCreateAttachment(new AttachmentModificationResult(false, "new-cid", "Clean", null));
 
     InputStream result =
-        cut.processInlineEvent(content, null, existing, eventContext, entity, keys);
+        cut.processInlineEvent(content, null, existing, eventContext, entity, keys, row, PREFIX);
 
     verify(deleteAttachmentService).markAttachmentAsDeleted(any(MarkAsDeletedInput.class));
     verify(attachmentService).createAttachment(any());
@@ -267,7 +298,8 @@ class ModifyAttachmentEventFactoryTest {
     existing.setScannedAt(Instant.now());
     Map<String, Object> keys = Map.of("ID", "k1");
 
-    InputStream result = cut.processInlineEvent(null, null, existing, eventContext, entity, keys);
+    InputStream result =
+        cut.processInlineEvent(null, null, existing, eventContext, entity, keys, row, PREFIX);
 
     verify(deleteAttachmentService).markAttachmentAsDeleted(any(MarkAsDeletedInput.class));
     assertThat(existing.getContentId()).isNull();
@@ -283,7 +315,8 @@ class ModifyAttachmentEventFactoryTest {
     Map<String, Object> keys = Map.of("ID", "k1");
     when(eventContext.getEvent()).thenReturn(DraftService.EVENT_DRAFT_PATCH);
 
-    InputStream result = cut.processInlineEvent(null, null, existing, eventContext, entity, keys);
+    InputStream result =
+        cut.processInlineEvent(null, null, existing, eventContext, entity, keys, row, PREFIX);
 
     verifyNoInteractions(deleteAttachmentService);
     assertThat(existing.getContentId()).isNull();
@@ -301,7 +334,7 @@ class ModifyAttachmentEventFactoryTest {
     stubCreateAttachment(new AttachmentModificationResult(false, "new-cid", "Clean", null));
 
     InputStream result =
-        cut.processInlineEvent(content, null, existing, eventContext, entity, keys);
+        cut.processInlineEvent(content, null, existing, eventContext, entity, keys, row, PREFIX);
 
     verifyNoInteractions(deleteAttachmentService);
     verify(attachmentService).createAttachment(any());
@@ -314,7 +347,8 @@ class ModifyAttachmentEventFactoryTest {
     var existing = Attachments.create();
     Map<String, Object> keys = Map.of("ID", "k1");
 
-    InputStream result = cut.processInlineEvent(null, null, existing, eventContext, entity, keys);
+    InputStream result =
+        cut.processInlineEvent(null, null, existing, eventContext, entity, keys, row, PREFIX);
 
     assertThat(result).isNull();
     verifyNoInteractions(deleteAttachmentService);

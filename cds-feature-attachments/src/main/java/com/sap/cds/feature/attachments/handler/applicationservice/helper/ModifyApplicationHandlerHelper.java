@@ -153,7 +153,14 @@ public final class ModifyApplicationHandlerHelper {
     try {
       InputStream result =
           eventFactory.processInlineEvent(
-              wrappedContent, contentId, existingAttachment, eventContext, entity, cleanKeys);
+              wrappedContent,
+              contentId,
+              existingAttachment,
+              eventContext,
+              entity,
+              cleanKeys,
+              row,
+              prefix);
       row.put(contentField, result);
 
       // Only write back metadata when the event actually modified the attachment.
