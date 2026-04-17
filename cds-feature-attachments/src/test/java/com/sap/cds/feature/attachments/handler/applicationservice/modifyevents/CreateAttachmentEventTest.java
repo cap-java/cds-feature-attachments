@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -124,6 +125,23 @@ class CreateAttachmentEventTest {
 
     assertThat(attachment.getContentId()).isEqualTo(attachmentServiceResult.contentId());
     assertThat(attachment.getStatus()).isEqualTo(attachmentServiceResult.status());
+  }
+
+  @Test
+  void scannedAtStoredInPathWhenNonNull() {
+    var attachment = Attachments.create();
+    attachment.setId("test");
+    Instant scannedAt = Instant.parse("2025-06-01T10:00:00Z");
+    var attachmentServiceResult =
+        new AttachmentModificationResult(false, "some document id", "Clean", scannedAt);
+    when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
+    when(target.values()).thenReturn(attachment);
+
+    cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
+
+    assertThat(attachment.getContentId()).isEqualTo("some document id");
+    assertThat(attachment.getStatus()).isEqualTo("Clean");
+    assertThat(attachment.get(Attachments.SCANNED_AT)).isEqualTo(scannedAt);
   }
 
   @Test

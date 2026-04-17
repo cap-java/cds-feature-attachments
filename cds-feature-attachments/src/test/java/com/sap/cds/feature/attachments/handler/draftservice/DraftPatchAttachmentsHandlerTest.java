@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,6 +16,8 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -173,6 +176,53 @@ class DraftPatchAttachmentsHandlerTest {
 
     assertThat(beforeAnnotation.event()).isEmpty();
     assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
+  }
+
+  @Test
+  void handleInlineAttachments_entityWithInlineContent_processesInline() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+
+    var row = InlineOnlyTable.create();
+    row.setId(UUID.randomUUID().toString());
+    row.put("avatar_content", mock(InputStream.class));
+
+    var result = mock(Result.class);
+    when(persistence.run(any(CqnSelect.class))).thenReturn(result);
+    when(result.listOf(Attachments.class)).thenReturn(List.of());
+
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+        .thenReturn(null);
+
+    cut.processBeforeDraftPatch(eventContext, List.of(row));
+
+    verify(eventFactory).processInlineEvent(any(), any(), any(), eq(eventContext), any(), any());
+  }
+
+  @Test
+  void handleInlineAttachments_entityWithoutInline_skipped() {
+    var draftAttachmentName = Attachment_.CDS_NAME + DraftUtils.DRAFT_TABLE_POSTFIX;
+    getEntityAndMockContext(draftAttachmentName);
+    var attachment = Attachments.create();
+    attachment.setContent(mock(InputStream.class));
+    when(persistence.run(any(CqnSelect.class))).thenReturn(mock(Result.class));
+
+    cut.processBeforeDraftPatch(eventContext, List.of(attachment));
+
+    verify(eventFactory, never()).processInlineEvent(any(), any(), any(), any(), any(), any());
+  }
+
+  @Test
+  void handleInlineAttachments_rowWithoutContentField_skipped() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+
+    var row = InlineOnlyTable.create();
+    row.setId(UUID.randomUUID().toString());
+    row.setTitle("no inline content");
+    // avatar_content is NOT set
+
+    cut.processBeforeDraftPatch(eventContext, List.of(row));
+
+    verify(eventFactory, never()).processInlineEvent(any(), any(), any(), any(), any(), any());
   }
 
   private RootTable buildRooWithAttachment(Attachments attachments) {

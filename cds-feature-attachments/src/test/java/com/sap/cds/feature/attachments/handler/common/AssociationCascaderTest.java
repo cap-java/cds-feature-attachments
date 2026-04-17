@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
@@ -67,6 +68,15 @@ class AssociationCascaderTest {
     var result = cut.findMediaEntityNames(runtime.getCdsModel(), entity);
 
     assertThat(result).containsExactly(Attachment_.CDS_NAME);
+  }
+
+  @Test
+  void findMediaEntityNames_includesEntityWithInlineAttachments() {
+    var entity = runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+
+    var result = cut.findMediaEntityNames(runtime.getCdsModel(), entity);
+
+    assertThat(result).containsExactly(InlineOnlyTable_.CDS_NAME);
   }
 
   @Test

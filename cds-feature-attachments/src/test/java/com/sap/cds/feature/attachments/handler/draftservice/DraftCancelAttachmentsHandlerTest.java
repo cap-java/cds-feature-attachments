@@ -11,16 +11,19 @@ import static org.mockito.Mockito.*;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.Delete;
 import com.sap.cds.ql.cqn.CqnDelete;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.DraftCancelEventContext;
 import com.sap.cds.services.draft.Drafts;
+import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.util.List;
 import java.util.Optional;
@@ -303,6 +306,97 @@ class DraftCancelAttachmentsHandlerTest {
 
     // Should not call deleteEvent since keys don't match
     verifyNoInteractions(deleteContentAttachmentEvent);
+  }
+
+  @Test
+  void cancelInlineAttachments_draftContentIdNotInActive_marksAsDeleted() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(InlineOnlyTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    var userInfo = mock(UserInfo.class);
+    when(eventContext.getUserInfo()).thenReturn(userInfo);
+
+    var draftInline = Attachments.create();
+    draftInline.setContentId("draft-inline-cid");
+    when(attachmentsReader.readInlineAttachments(any(), any()))
+        .thenReturn(List.of(draftInline))
+        .thenReturn(List.of());
+
+    cut.processBeforeDraftCancel(eventContext);
+
+    var captor = ArgumentCaptor.forClass(MarkAsDeletedInput.class);
+    verify(attachmentService).markAttachmentAsDeleted(captor.capture());
+    assertThat(captor.getValue().contentId()).isEqualTo("draft-inline-cid");
+  }
+
+  @Test
+  void cancelInlineAttachments_draftContentIdExistsInActive_notDeleted() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(InlineOnlyTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    var draftInline = Attachments.create();
+    draftInline.setContentId("shared-cid");
+    var activeInline = Attachments.create();
+    activeInline.setContentId("shared-cid");
+    when(attachmentsReader.readInlineAttachments(any(), any()))
+        .thenReturn(List.of(draftInline))
+        .thenReturn(List.of(activeInline));
+
+    cut.processBeforeDraftCancel(eventContext);
+
+    verify(attachmentService, never()).markAttachmentAsDeleted(any());
+  }
+
+  @Test
+  void cancelInlineAttachments_draftContentIdNull_skipped() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(InlineOnlyTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    var draftInline = Attachments.create();
+    // contentId is null
+    when(attachmentsReader.readInlineAttachments(any(), any()))
+        .thenReturn(List.of(draftInline))
+        .thenReturn(List.of());
+
+    cut.processBeforeDraftCancel(eventContext);
+
+    verify(attachmentService, never()).markAttachmentAsDeleted(any());
+  }
+
+  @Test
+  void cancelInlineAttachments_entityWithoutInline_skipped() {
+    getEntityAndMockContext(Attachment_.CDS_NAME);
+    CqnDelete delete = Delete.from(Attachment_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    cut.processBeforeDraftCancel(eventContext);
+
+    verify(attachmentsReader, never()).readInlineAttachments(any(), any());
+  }
+
+  @Test
+  void deepSearch_entityWithInlineAttachments_returnsTrue() {
+    getEntityAndMockContext(InlineOnlyTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(InlineOnlyTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    // Should not skip - InlineOnlyTable has inline attachments
+    cut.processBeforeDraftCancel(eventContext);
+
+    verify(attachmentsReader, atLeastOnce()).readAttachments(any(), any(), any());
   }
 
   private Attachment buildAttachmentAndReturnByReader(

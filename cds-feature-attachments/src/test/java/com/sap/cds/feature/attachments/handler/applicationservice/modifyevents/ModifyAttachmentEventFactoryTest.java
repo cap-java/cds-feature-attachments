@@ -4,10 +4,27 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.modifyevents;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
+import com.sap.cds.feature.attachments.service.AttachmentService;
+import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
+import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
+import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.services.EventContext;
+import com.sap.cds.services.changeset.ChangeSetContext;
+import com.sap.cds.services.changeset.ChangeSetListener;
+import com.sap.cds.services.draft.DraftService;
+import com.sap.cds.services.request.UserInfo;
+import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.InputStream;
+import java.time.Instant;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,17 +39,38 @@ class ModifyAttachmentEventFactoryTest {
   private UpdateAttachmentEvent updateEvent;
   private MarkAsDeletedAttachmentEvent deleteContentEvent;
   private DoNothingAttachmentEvent doNothingEvent;
+  private AttachmentService attachmentService;
+  private AttachmentService deleteAttachmentService;
+  private ListenerProvider listenerProvider;
+  private EventContext eventContext;
+  private CdsEntity entity;
 
   @BeforeEach
   void setup() {
-    createEvent = mock(CreateAttachmentEvent.class);
-    updateEvent = mock(UpdateAttachmentEvent.class);
-    deleteContentEvent = mock(MarkAsDeletedAttachmentEvent.class);
-    doNothingEvent = mock(DoNothingAttachmentEvent.class);
+    attachmentService = mock(AttachmentService.class);
+    deleteAttachmentService = mock(AttachmentService.class);
+    listenerProvider = mock(ListenerProvider.class);
+    createEvent = new CreateAttachmentEvent(attachmentService, listenerProvider);
+    updateEvent =
+        new UpdateAttachmentEvent(
+            createEvent, new MarkAsDeletedAttachmentEvent(deleteAttachmentService));
+    deleteContentEvent = new MarkAsDeletedAttachmentEvent(deleteAttachmentService);
+    doNothingEvent = new DoNothingAttachmentEvent();
 
     cut =
         new ModifyAttachmentEventFactory(
             createEvent, updateEvent, deleteContentEvent, doNothingEvent);
+
+    eventContext = mock(EventContext.class);
+    entity = mock(CdsEntity.class);
+    when(entity.getQualifiedName()).thenReturn("test.Entity");
+    var changeSetContext = mock(ChangeSetContext.class);
+    when(eventContext.getChangeSetContext()).thenReturn(changeSetContext);
+    var target = mock(CdsEntity.class);
+    when(eventContext.getTarget()).thenReturn(target);
+    when(target.getQualifiedName()).thenReturn("test.Entity");
+    var userInfo = mock(UserInfo.class);
+    when(eventContext.getUserInfo()).thenReturn(userInfo);
   }
 
   @Test
@@ -152,5 +190,148 @@ class ModifyAttachmentEventFactoryTest {
     var event = cut.getEvent(mock(InputStream.class), "someValue", data);
 
     assertThat(event).isEqualTo(updateEvent);
+  }
+
+  @Test
+  void processInlineEvent_doNothing_returnsContentUnchanged() {
+    var content = mock(InputStream.class);
+    var existing = Attachments.create();
+    existing.setContentId("same-id");
+    Map<String, Object> keys = Map.of("ID", "k1");
+
+    InputStream result =
+        cut.processInlineEvent(content, "same-id", existing, eventContext, entity, keys);
+
+    assertThat(result).isSameAs(content);
+  }
+
+  @Test
+  void processInlineEvent_create_callsAttachmentService() {
+    var content = mock(InputStream.class);
+    var existing = Attachments.create();
+    existing.put(Attachments.MIME_TYPE, "image/png");
+    existing.put(Attachments.FILE_NAME, "avatar.png");
+    Map<String, Object> keys = Map.of("ID", "k1");
+
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "new-cid", "Clean", Instant.now()));
+    when(listenerProvider.provideListener(any(), any())).thenReturn(mock(ChangeSetListener.class));
+    var cdsRuntime = mock(CdsRuntime.class);
+    when(eventContext.getCdsRuntime()).thenReturn(cdsRuntime);
+
+    InputStream result =
+        cut.processInlineEvent(content, null, existing, eventContext, entity, keys);
+
+    verify(attachmentService).createAttachment(any());
+    assertThat(existing.getContentId()).isEqualTo("new-cid");
+    assertThat(existing.getStatus()).isEqualTo("Clean");
+    assertThat(existing.getScannedAt()).isNotNull();
+    assertThat(result).isNull();
+  }
+
+  @Test
+  void processInlineEvent_create_internalStored_returnsContent() {
+    var content = mock(InputStream.class);
+    var existing = Attachments.create();
+    Map<String, Object> keys = Map.of("ID", "k1");
+
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(true, "new-cid", "Clean", null));
+    when(listenerProvider.provideListener(any(), any())).thenReturn(mock(ChangeSetListener.class));
+    var cdsRuntime = mock(CdsRuntime.class);
+    when(eventContext.getCdsRuntime()).thenReturn(cdsRuntime);
+
+    InputStream result =
+        cut.processInlineEvent(content, null, existing, eventContext, entity, keys);
+
+    assertThat(result).isSameAs(content);
+    assertThat(existing.getScannedAt()).isNull();
+  }
+
+  @Test
+  void processInlineEvent_update_deletesOldAndCreatesNew() {
+    var content = mock(InputStream.class);
+    var existing = Attachments.create();
+    existing.setContentId("old-cid");
+    Map<String, Object> keys = Map.of("ID", "k1");
+
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "new-cid", "Clean", null));
+    when(listenerProvider.provideListener(any(), any())).thenReturn(mock(ChangeSetListener.class));
+    var cdsRuntime = mock(CdsRuntime.class);
+    when(eventContext.getCdsRuntime()).thenReturn(cdsRuntime);
+
+    InputStream result =
+        cut.processInlineEvent(content, null, existing, eventContext, entity, keys);
+
+    verify(deleteAttachmentService).markAttachmentAsDeleted(any(MarkAsDeletedInput.class));
+    verify(attachmentService).createAttachment(any());
+    assertThat(existing.getContentId()).isEqualTo("new-cid");
+    assertThat(result).isNull();
+  }
+
+  @Test
+  void processInlineEvent_delete_marksAsDeletedAndClearsFields() {
+    var existing = Attachments.create();
+    existing.setContentId("old-cid");
+    existing.setStatus("Clean");
+    existing.setScannedAt(Instant.now());
+    Map<String, Object> keys = Map.of("ID", "k1");
+
+    InputStream result = cut.processInlineEvent(null, null, existing, eventContext, entity, keys);
+
+    verify(deleteAttachmentService).markAttachmentAsDeleted(any(MarkAsDeletedInput.class));
+    assertThat(existing.getContentId()).isNull();
+    assertThat(existing.getStatus()).isNull();
+    assertThat(existing.getScannedAt()).isNull();
+    assertThat(result).isNull();
+  }
+
+  @Test
+  void processInlineEvent_deleteWithDraftPatchEvent_skipsMarkAsDeleted() {
+    var existing = Attachments.create();
+    existing.setContentId("old-cid");
+    Map<String, Object> keys = Map.of("ID", "k1");
+    when(eventContext.getEvent()).thenReturn(DraftService.EVENT_DRAFT_PATCH);
+
+    InputStream result = cut.processInlineEvent(null, null, existing, eventContext, entity, keys);
+
+    verifyNoInteractions(deleteAttachmentService);
+    assertThat(existing.getContentId()).isNull();
+    assertThat(result).isNull();
+  }
+
+  @Test
+  void processInlineEvent_updateWithDraftPatchEvent_skipsMarkAsDeletedButCreates() {
+    var content = mock(InputStream.class);
+    var existing = Attachments.create();
+    existing.setContentId("old-cid");
+    Map<String, Object> keys = Map.of("ID", "k1");
+    when(eventContext.getEvent()).thenReturn(DraftService.EVENT_DRAFT_PATCH);
+
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "new-cid", "Clean", null));
+    when(listenerProvider.provideListener(any(), any())).thenReturn(mock(ChangeSetListener.class));
+    var cdsRuntime = mock(CdsRuntime.class);
+    when(eventContext.getCdsRuntime()).thenReturn(cdsRuntime);
+
+    InputStream result =
+        cut.processInlineEvent(content, null, existing, eventContext, entity, keys);
+
+    verifyNoInteractions(deleteAttachmentService);
+    verify(attachmentService).createAttachment(any());
+    assertThat(existing.getContentId()).isEqualTo("new-cid");
+    assertThat(result).isNull();
+  }
+
+  @Test
+  void processInlineEvent_deleteWithNullContentId_skipsMarkAsDeleted() {
+    var existing = Attachments.create();
+    Map<String, Object> keys = Map.of("ID", "k1");
+
+    InputStream result = cut.processInlineEvent(null, null, existing, eventContext, entity, keys);
+
+    assertThat(result).isNull();
+    verifyNoInteractions(deleteAttachmentService);
   }
 }

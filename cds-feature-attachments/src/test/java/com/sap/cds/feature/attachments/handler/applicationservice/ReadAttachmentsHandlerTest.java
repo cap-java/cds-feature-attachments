@@ -488,6 +488,28 @@ class ReadAttachmentsHandlerTest {
   }
 
   @Test
+  void inlineAttachmentContentReadsFromServiceWhenContentIsNull() throws IOException {
+    var testString = "inline-read";
+    try (var testStream = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+      mockEventContext(InlineOnlyTable_.CDS_NAME, mock(CqnSelect.class));
+      when(attachmentService.readAttachment("inline-cid-2")).thenReturn(testStream);
+
+      var row = InlineOnlyTable.create();
+      row.setId(UUID.randomUUID().toString());
+      row.setAvatarContentId("inline-cid-2");
+      row.setAvatarStatus(StatusCode.CLEAN);
+      row.setAvatarContent(null);
+
+      cut.processAfter(readEventContext, List.of(row));
+
+      assertThat(row.getAvatarContent()).isInstanceOf(LazyProxyInputStream.class);
+      byte[] bytes = row.getAvatarContent().readAllBytes();
+      assertThat(bytes).isEqualTo(testString.getBytes(StandardCharsets.UTF_8));
+      verify(attachmentService).readAttachment("inline-cid-2");
+    }
+  }
+
+  @Test
   void inlineAttachmentWithoutContentIdNotWrapped() {
     mockEventContext(InlineOnlyTable_.CDS_NAME, mock(CqnSelect.class));
 

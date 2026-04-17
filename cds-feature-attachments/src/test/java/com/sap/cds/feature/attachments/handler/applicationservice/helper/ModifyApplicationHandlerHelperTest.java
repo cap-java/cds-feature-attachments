@@ -8,9 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnlyTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
@@ -213,5 +216,276 @@ class ModifyApplicationHandlerHelperTest {
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
+  }
+
+  @Test
+  void processInlineAttachmentRow_contentIsNotInputStream_treatedAsNull() {
+    CdsEntity inlineEntity =
+        runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+
+    var row = CdsData.create();
+    row.put("ID", UUID.randomUUID().toString());
+    row.put("avatar_content", "not-an-input-stream");
+
+    var existing = Attachments.create();
+
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+        .thenReturn(null);
+
+    ModifyApplicationHandlerHelper.processInlineAttachmentRow(
+        row,
+        "avatar",
+        existing,
+        inlineEntity,
+        eventFactory,
+        eventContext,
+        ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+
+    // content should be null since the value was not an InputStream
+    verify(eventFactory).processInlineEvent(any(), any(), any(), any(), any(), any());
+  }
+
+  @Test
+  void processInlineAttachmentRow_contentLengthExceedsLimit_throwsException() {
+    CdsEntity inlineEntity =
+        runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+
+    var row = CdsData.create();
+    row.put("ID", UUID.randomUUID().toString());
+    row.put("avatar_content", mock(InputStream.class));
+
+    var existing = Attachments.create();
+
+    when(parameterInfo.getHeader("Content-Length")).thenReturn("999999999999");
+
+    var exception =
+        assertThrows(
+            ServiceException.class,
+            () ->
+                ModifyApplicationHandlerHelper.processInlineAttachmentRow(
+                    row, "avatar", existing, inlineEntity, eventFactory, eventContext, "10KB"));
+
+    assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
+  }
+
+  @Test
+  void processInlineAttachmentRow_invalidContentLengthHeader_throwsBadRequest() {
+    CdsEntity inlineEntity =
+        runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+
+    var row = CdsData.create();
+    row.put("ID", UUID.randomUUID().toString());
+    row.put("avatar_content", mock(InputStream.class));
+
+    var existing = Attachments.create();
+
+    when(parameterInfo.getHeader("Content-Length")).thenReturn("abc");
+
+    var exception =
+        assertThrows(
+            ServiceException.class,
+            () ->
+                ModifyApplicationHandlerHelper.processInlineAttachmentRow(
+                    row,
+                    "avatar",
+                    existing,
+                    inlineEntity,
+                    eventFactory,
+                    eventContext,
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+
+    assertThat(exception.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
+  }
+
+  @Test
+  void processInlineAttachmentRow_writesBackMetadata() {
+    CdsEntity inlineEntity =
+        runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+
+    var row = CdsData.create();
+    row.put("ID", UUID.randomUUID().toString());
+    row.put("avatar_content", mock(InputStream.class));
+
+    var existing = Attachments.create();
+    existing.setContentId("result-cid");
+    existing.setStatus("Clean");
+    existing.setScannedAt(java.time.Instant.parse("2025-01-01T00:00:00Z"));
+
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+        .thenReturn(null);
+
+    ModifyApplicationHandlerHelper.processInlineAttachmentRow(
+        row,
+        "avatar",
+        existing,
+        inlineEntity,
+        eventFactory,
+        eventContext,
+        ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+
+    assertThat(row.get("avatar_contentId")).isEqualTo("result-cid");
+    assertThat(row.get("avatar_status")).isEqualTo("Clean");
+    assertThat(row.get("avatar_scannedAt"))
+        .isEqualTo(java.time.Instant.parse("2025-01-01T00:00:00Z"));
+  }
+
+  @Test
+  void processInlineAttachmentRow_doNothingEvent_doesNotWriteBackMetadata() {
+    CdsEntity inlineEntity =
+        runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+
+    var row = CdsData.create();
+    row.put("ID", UUID.randomUUID().toString());
+    row.put("avatar_content", mock(InputStream.class));
+    row.put("avatar_contentId", "pre-existing-cid");
+
+    // Existing attachment without contentId key - simulates doNothing result
+    var existing = Attachments.create();
+
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+        .thenReturn(mock(InputStream.class));
+
+    ModifyApplicationHandlerHelper.processInlineAttachmentRow(
+        row,
+        "avatar",
+        existing,
+        inlineEntity,
+        eventFactory,
+        eventContext,
+        ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+
+    // Pre-existing contentId should be preserved since existing doesn't contain CONTENT_ID key
+    assertThat(row.get("avatar_contentId")).isEqualTo("pre-existing-cid");
+  }
+
+  @Test
+  void processInlineAttachmentRow_limitExceeded_throwsTooLarge() {
+    CdsEntity inlineEntity =
+        runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+
+    var row = CdsData.create();
+    row.put("ID", UUID.randomUUID().toString());
+    byte[] largeContent = new byte[15000]; // 15KB
+    row.put("avatar_content", new ByteArrayInputStream(largeContent));
+
+    var existing = Attachments.create();
+
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+        .thenAnswer(
+            invocation -> {
+              InputStream wrapped = invocation.getArgument(0);
+              if (wrapped != null) {
+                byte[] buffer = new byte[1024];
+                while (wrapped.read(buffer) != -1) {}
+              }
+              return null;
+            });
+
+    var exception =
+        assertThrows(
+            ServiceException.class,
+            () ->
+                ModifyApplicationHandlerHelper.processInlineAttachmentRow(
+                    row, "avatar", existing, inlineEntity, eventFactory, eventContext, "10KB"));
+
+    assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
+  }
+
+  @Test
+  void processInlineAttachmentRow_nonLimitException_rethrown() {
+    CdsEntity inlineEntity =
+        runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+
+    var row = CdsData.create();
+    row.put("ID", UUID.randomUUID().toString());
+    row.put("avatar_content", mock(InputStream.class));
+
+    var existing = Attachments.create();
+
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+        .thenThrow(new RuntimeException("unexpected"));
+
+    assertThrows(
+        RuntimeException.class,
+        () ->
+            ModifyApplicationHandlerHelper.processInlineAttachmentRow(
+                row,
+                "avatar",
+                existing,
+                inlineEntity,
+                eventFactory,
+                eventContext,
+                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+  }
+
+  @Test
+  void processInlineAttachmentRow_nullContent_noCountingInputStream() {
+    CdsEntity inlineEntity =
+        runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+
+    var row = CdsData.create();
+    row.put("ID", UUID.randomUUID().toString());
+    row.put("avatar_content", null);
+
+    var existing = Attachments.create();
+
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+        .thenReturn(null);
+
+    assertDoesNotThrow(
+        () ->
+            ModifyApplicationHandlerHelper.processInlineAttachmentRow(
+                row,
+                "avatar",
+                existing,
+                inlineEntity,
+                eventFactory,
+                eventContext,
+                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+  }
+
+  @Test
+  void handleAttachmentForEntities_withInlineAttachments_processesInline() {
+    CdsEntity inlineEntity =
+        runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+
+    var row = CdsData.create();
+    row.put("ID", UUID.randomUUID().toString());
+    row.put("avatar_content", mock(InputStream.class));
+
+    when(eventFactory.processInlineEvent(any(), any(), any(), any(), any(), any()))
+        .thenReturn(null);
+
+    ModifyApplicationHandlerHelper.handleAttachmentForEntities(
+        inlineEntity,
+        List.of(row),
+        List.of(),
+        eventFactory,
+        eventContext,
+        ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+
+    verify(eventFactory).processInlineEvent(any(), any(), any(), any(), any(), any());
+  }
+
+  @Test
+  void handleAttachmentForEntities_withoutInlineContent_skipsInline() {
+    CdsEntity inlineEntity =
+        runtime.getCdsModel().findEntity(InlineOnlyTable_.CDS_NAME).orElseThrow();
+
+    var row = CdsData.create();
+    row.put("ID", UUID.randomUUID().toString());
+    row.put("title", "no inline");
+
+    ModifyApplicationHandlerHelper.handleAttachmentForEntities(
+        inlineEntity,
+        List.of(row),
+        List.of(),
+        eventFactory,
+        eventContext,
+        ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+
+    // No inline processing since avatar_content is not in the row
+    verify(eventFactory, org.mockito.Mockito.never())
+        .processInlineEvent(any(), any(), any(), any(), any(), any());
   }
 }
