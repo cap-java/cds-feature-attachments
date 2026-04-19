@@ -62,18 +62,21 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     // For inline attachments, CDS flattening breaks the Core.ContentDisposition.Filename and
     // Core.MediaType path references, so the framework won't extract fileName/mimeType from the
     // upload request headers. Extract them manually and persist into the prefixed fields.
-    if (inlinePrefix.isPresent()) {
-      if (fileNameOptional.isEmpty()) {
-        fileNameOptional = extractFileNameFromHeader(eventContext);
-        fileNameOptional.ifPresent(
-            fn -> values.put(inlinePrefix.get() + "_" + MediaData.FILE_NAME, fn));
-      }
-      if (mimeTypeOptional.isEmpty() || "application/octet-stream".equals(mimeTypeOptional.get())) {
-        Optional<String> headerMimeType = extractMimeTypeFromHeader(eventContext);
-        if (headerMimeType.isPresent()) {
-          mimeTypeOptional = headerMimeType;
-          values.put(inlinePrefix.get() + "_" + MediaData.MIME_TYPE, mimeTypeOptional.get());
-        }
+    if (inlinePrefix.isPresent() && fileNameOptional.isEmpty()) {
+      fileNameOptional = extractFileNameFromHeader(eventContext);
+      fileNameOptional.ifPresent(
+          fn -> values.put(inlinePrefix.get() + "_" + MediaData.FILE_NAME, fn));
+    }
+
+    // Extract mimeType from Content-Type header for ALL attachment types (inline and composition)
+    // when mimeType is not already set or is the default 'application/octet-stream'
+    if (mimeTypeOptional.isEmpty() || "application/octet-stream".equals(mimeTypeOptional.get())) {
+      Optional<String> headerMimeType = extractMimeTypeFromHeader(eventContext);
+      if (headerMimeType.isPresent()) {
+        mimeTypeOptional = headerMimeType;
+        String mimeTypeField =
+            inlinePrefix.map(p -> p + "_" + MediaData.MIME_TYPE).orElse(MediaData.MIME_TYPE);
+        values.put(mimeTypeField, mimeTypeOptional.get());
       }
     }
 

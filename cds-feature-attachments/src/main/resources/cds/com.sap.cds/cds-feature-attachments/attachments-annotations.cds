@@ -8,8 +8,8 @@ annotate sap.attachments.MediaData with @UI.MediaResource: {Stream: content} {
     content   @(
         title                           : '{i18n>attachment_content}',
         Core.ContentDisposition.Type    : 'inline',
-        Core.MediaType                  : 'application/octet-stream',
-        odata.draft.skip
+        Core.MediaType                  : (mimeType),
+        Core.ContentDisposition.Filename: (fileName),
     );
     mimeType  @(
         title: '{i18n>attachment_mimeType}',
@@ -17,10 +17,13 @@ annotate sap.attachments.MediaData with @UI.MediaResource: {Stream: content} {
     );
     fileName  @(
         title: '{i18n>attachment_fileName}',
-        UI.MultiLineText,
-        readonly
+        UI.MultiLineText
         );
     status    @(title: '{i18n>attachment_status}', readonly);
+    note      @(
+        title: '{i18n>attachment_note}',
+        UI.MultiLineText
+    );
     contentId @(UI.Hidden: true, readonly);
     scannedAt @(UI.Hidden: true, readonly);
 }
@@ -54,13 +57,10 @@ annotate sap.attachments.Attachments with
     );
     mimeType   @Core.IsMediaType;
     status     @(Common.Text : statusNav.name, Common.TextArrangement : #TextOnly);
-    note       @(
-        title: '{i18n>attachment_note}',
-        UI.MultiLineText
-    );
     modifiedAt @(odata.etag);
 }
 
 annotate sap.attachments.Attachment with {
-    content @Core.ContentDisposition.Filename: fileName;
+    content @Core.ContentDisposition.Filename: (fileName);
 }
+

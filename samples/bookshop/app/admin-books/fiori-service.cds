@@ -66,7 +66,7 @@ annotate AdminService.Books with @(UI: {
     {Value: modifiedAt}
   ]},
   FieldGroup #ProfileIcon: {Data: [
-    {Value: profileIcon_content},
+    {Value: profileIcon_content, Label: 'Download'},
     {Value: profileIcon_fileName},
     {Value: profileIcon_status},
     {Value: profileIcon_note}

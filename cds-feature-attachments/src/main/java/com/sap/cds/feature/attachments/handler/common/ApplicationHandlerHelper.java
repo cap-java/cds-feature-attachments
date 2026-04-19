@@ -31,6 +31,13 @@ public final class ApplicationHandlerHelper {
   private static final String ANNOTATION_CORE_MEDIA_TYPE = "Core.MediaType";
 
   /**
+   * Internal marker key used to store the inline attachment prefix in extracted attachment data.
+   * This enables correct matching of inline attachments when operating on multiple inline
+   * attachments on the same entity.
+   */
+  public static final String INLINE_PREFIX_MARKER = "_inlinePrefix";
+
+  /**
    * A filter for media content fields. The filter checks if the entity is a media entity and if the
    * element has the annotation "Core.MediaType". Also supports inline attachment type fields where
    * the structured type is flattened into the parent entity.
@@ -249,6 +256,8 @@ public final class ApplicationHandlerHelper {
             attachment.put(logicalName, value);
           }
         });
+    // Store the inline prefix so we can match later
+    attachment.put(INLINE_PREFIX_MARKER, prefix);
     return attachment;
   }
 

@@ -51,6 +51,8 @@ public class AttachmentsReader {
     List<String> inlineFields = ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
     List<CqnSelectListItem> inlineColumns = new ArrayList<>();
     for (String fieldName : inlineFields) {
+      // Include the content field so CdsDataProcessor's MEDIA_CONTENT_FILTER can match it
+      inlineColumns.add(CQL.get(fieldName + "_content"));
       inlineColumns.add(CQL.get(fieldName + "_" + Attachments.CONTENT_ID));
       inlineColumns.add(CQL.get(fieldName + "_" + Attachments.STATUS));
     }

@@ -57,12 +57,17 @@ public class DeleteAttachmentsHandler implements EventHandler {
           Optional<String> inlinePrefix =
               ApplicationHandlerHelper.getInlineAttachmentPrefix(
                   path.target().entity(), element.getName());
+          // For inline attachments, extract the prefixed fields to get proper contentId
+          Attachments attachment;
+          if (inlinePrefix.isPresent()) {
+            attachment =
+                ApplicationHandlerHelper.extractInlineAttachment(
+                    path.target().values(), inlinePrefix.get());
+          } else {
+            attachment = Attachments.of(path.target().values());
+          }
           return deleteEvent.processEvent(
-              path,
-              (InputStream) value,
-              Attachments.of(path.target().values()),
-              context,
-              inlinePrefix);
+              path, (InputStream) value, attachment, context, inlinePrefix);
         };
 
     CdsDataProcessor.create()

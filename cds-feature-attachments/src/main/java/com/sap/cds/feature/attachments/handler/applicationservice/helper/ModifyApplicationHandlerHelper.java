@@ -93,7 +93,7 @@ public final class ModifyApplicationHandlerHelper {
       Optional<String> inlinePrefix) {
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
     ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values());
-    Attachments attachment = getExistingAttachment(keys, existingAttachments);
+    Attachments attachment = getExistingAttachment(keys, existingAttachments, inlinePrefix);
 
     // For inline attachment fields, extract contentId using the known prefix
     String contentId;
@@ -103,6 +103,7 @@ public final class ModifyApplicationHandlerHelper {
     } else {
       contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
     }
+    
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
     String maxSizeStr = getValMaxValue(path.target().entity(), defaultMaxSize);
     eventContext.put(
@@ -161,9 +162,21 @@ public final class ModifyApplicationHandlerHelper {
   }
 
   private static Attachments getExistingAttachment(
-      Map<String, Object> keys, List<Attachments> existingAttachments) {
+      Map<String, Object> keys,
+      List<Attachments> existingAttachments,
+      Optional<String> inlinePrefix) {
     return existingAttachments.stream()
-        .filter(existingData -> ApplicationHandlerHelper.areKeysInData(keys, existingData))
+        .filter(
+            existingData -> {
+              // For inline attachments, match by the prefix marker
+              if (inlinePrefix.isPresent()) {
+                String existingPrefix =
+                    (String) existingData.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER);
+                return inlinePrefix.get().equals(existingPrefix);
+              }
+              // For composition-based attachments, match by keys
+              return ApplicationHandlerHelper.areKeysInData(keys, existingData);
+            })
         .findAny()
         .orElse(Attachments.create());
   }
