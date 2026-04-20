@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -420,9 +419,6 @@ class SingleAttachmentNonDraftTest {
   }
 
   @Test
-  @Disabled(
-      "Known issue: Deleting root with inline attachment on item does not trigger expected deletion"
-          + " event")
   void deleteRootDeletesInlineAttachmentOnItemContent() throws Exception {
     var root = buildRootWithItem();
     postServiceRoot(root);
@@ -443,8 +439,6 @@ class SingleAttachmentNonDraftTest {
   }
 
   @Test
-  @Disabled(
-      "Known issue: Delete of root with multiple inline attachments not triggering expected events")
   void deleteRootDeletesBothRootAndItemInlineAttachments() throws Exception {
     var root = buildRootWithItem();
     postServiceRoot(root);

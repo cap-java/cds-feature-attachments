@@ -45,17 +45,10 @@ public class AttachmentsReader {
     logger.debug("Start reading attachments for entity {}", entity.getQualifiedName());
 
     NodeTree nodePath = cascader.findEntityPath(model, entity);
-    List<Expand<?>> expandList = buildExpandList(nodePath);
+    List<Expand<?>> expandList = buildExpandList(model, nodePath);
 
     // Also include inline attachment fields directly in the select
-    List<String> inlineFields = ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
-    List<CqnSelectListItem> inlineColumns = new ArrayList<>();
-    for (String fieldName : inlineFields) {
-      // Include the content field so CdsDataProcessor's MEDIA_CONTENT_FILTER can match it
-      inlineColumns.add(CQL.get(fieldName + "_content"));
-      inlineColumns.add(CQL.get(fieldName + "_" + Attachments.CONTENT_ID));
-      inlineColumns.add(CQL.get(fieldName + "_" + Attachments.STATUS));
-    }
+    List<CqnSelectListItem> inlineColumns = buildInlineAttachmentColumns(entity);
 
     Select<?> select;
     if (!expandList.isEmpty() || !inlineColumns.isEmpty()) {
@@ -73,18 +66,46 @@ public class AttachmentsReader {
     return attachments;
   }
 
-  private List<Expand<?>> buildExpandList(NodeTree root) {
+  private List<CqnSelectListItem> buildInlineAttachmentColumns(CdsEntity entity) {
+    List<String> inlineFields = ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
+    List<CqnSelectListItem> columns = new ArrayList<>();
+    for (String fieldName : inlineFields) {
+      // Include the content field so CdsDataProcessor's MEDIA_CONTENT_FILTER can match it
+      columns.add(CQL.get(fieldName + "_content"));
+      columns.add(CQL.get(fieldName + "_" + Attachments.CONTENT_ID));
+      columns.add(CQL.get(fieldName + "_" + Attachments.STATUS));
+    }
+    return columns;
+  }
+
+  private List<Expand<?>> buildExpandList(CdsModel model, NodeTree root) {
     List<Expand<?>> expandResultList = new ArrayList<>();
-    root.getChildren().forEach(child -> expandResultList.add(buildExpandFromTree(child)));
+    root.getChildren().forEach(child -> expandResultList.add(buildExpandFromTree(model, child)));
 
     return expandResultList;
   }
 
-  private Expand<?> buildExpandFromTree(NodeTree node) {
-    return node.getChildren().isEmpty()
+  private Expand<?> buildExpandFromTree(CdsModel model, NodeTree node) {
+    // Look up the entity for this node to check for inline attachments
+    CdsEntity nodeEntity = model.findEntity(node.getIdentifier().fullEntityName()).orElse(null);
+
+    // Build inline attachment columns for this child entity if it has any
+    List<CqnSelectListItem> inlineColumns =
+        nodeEntity != null ? buildInlineAttachmentColumns(nodeEntity) : List.of();
+
+    // Build child expands recursively
+    List<CqnSelectListItem> childExpands = new ArrayList<>();
+    for (NodeTree child : node.getChildren()) {
+      childExpands.add(buildExpandFromTree(model, child));
+    }
+
+    // Combine inline columns and child expands
+    List<CqnSelectListItem> expandItems = new ArrayList<>(inlineColumns);
+    expandItems.addAll(childExpands);
+
+    return expandItems.isEmpty()
         ? CQL.to(node.getIdentifier().associationName()).expand()
-        : CQL.to(node.getIdentifier().associationName())
-            .expand(node.getChildren().stream().map(this::buildExpandFromTree).toList());
+        : CQL.to(node.getIdentifier().associationName()).expand(expandItems);
   }
 
   private static void logResultData(CdsEntity entity, List<Attachments> attachments) {

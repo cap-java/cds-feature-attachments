@@ -320,4 +320,37 @@ class AttachmentsReaderTest {
     assertThat(selectStr).contains("profilePicture_contentId");
     assertThat(selectStr).contains("profilePicture_status");
   }
+
+  @Test
+  void selectIncludesInlineColumnsForChildEntityWithInlineAttachments() {
+    // Use real model to test the new functionality of including inline columns in child expands
+    CdsModel realModel = RuntimeHelper.runtime.getCdsModel();
+    CdsEntity realRootEntity = realModel.findEntity(RootTable_.CDS_NAME).orElseThrow();
+
+    // Build a node tree where RootTable has items composition to Items
+    // Items entity has inline attachment "profilePicture"
+    var rootPath = new LinkedList<AssociationIdentifier>();
+    rootPath.add(new AssociationIdentifier("", RootTable_.CDS_NAME));
+    rootPath.add(new AssociationIdentifier("items", Items_.CDS_NAME));
+
+    var nodeTree = new NodeTree(new AssociationIdentifier("", RootTable_.CDS_NAME));
+    nodeTree.addPath(rootPath);
+
+    when(cascader.findEntityPath(realModel, realRootEntity)).thenReturn(nodeTree);
+    List<Attachments> data = List.of(Attachments.create());
+    when(result.listOf(Attachments.class)).thenReturn(data);
+
+    CqnDelete delete = Delete.from(RootTable_.CDS_NAME);
+    cut.readAttachments(realModel, realRootEntity, delete);
+
+    verify(persistenceService).run(selectArgumentCaptor.capture());
+    var selectStr = selectArgumentCaptor.getValue().toString();
+
+    // The items expand should include inline attachment columns from Items entity
+    // Items entity has profilePicture inline attachment
+    assertThat(selectStr).contains("items");
+    assertThat(selectStr).contains("profilePicture_content");
+    assertThat(selectStr).contains("profilePicture_contentId");
+    assertThat(selectStr).contains("profilePicture_status");
+  }
 }
