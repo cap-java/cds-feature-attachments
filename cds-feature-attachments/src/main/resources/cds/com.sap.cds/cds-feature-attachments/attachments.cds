@@ -16,7 +16,7 @@ type StatusCode : String(32) enum {
 
 aspect MediaData @(_is_media_data) {
     content   : LargeBinary; // stored only for db-based services
-    mimeType  : String;
+    mimeType  : String default 'application/octet-stream';
     fileName  : String(5000);
     contentId : String     @readonly; // id of attachment in external storage, if database storage is used, same as id
     status    : StatusCode default 'Unscanned' @readonly;

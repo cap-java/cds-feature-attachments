@@ -21,6 +21,7 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.changeset.ChangeSetContext;
 import com.sap.cds.services.changeset.ChangeSetListener;
+import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -48,6 +49,7 @@ class CreateAttachmentEventTest {
   private ArgumentCaptor<CreateAttachmentInput> contextArgumentCaptor;
   private EventContext eventContext;
   private ChangeSetContext changeSetContext;
+  private ParameterInfo parameterInfo;
 
   @BeforeEach
   void setup() {
@@ -61,7 +63,9 @@ class CreateAttachmentEventTest {
     entity = mock(CdsEntity.class);
     eventContext = mock(EventContext.class);
     changeSetContext = mock(ChangeSetContext.class);
+    parameterInfo = mock(ParameterInfo.class);
     when(eventContext.getChangeSetContext()).thenReturn(changeSetContext);
+    when(eventContext.getParameterInfo()).thenReturn(parameterInfo);
     when(target.entity()).thenReturn(entity);
     when(path.target()).thenReturn(target);
   }
@@ -178,5 +182,193 @@ class CreateAttachmentEventTest {
 
     cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
     return attachment;
+  }
+
+  @Test
+  void fileNameExtractedFromRfc5987ContentDispositionHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename*=UTF-8''my%20file%20name.pdf");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file name.pdf");
+    assertThat(attachment.getFileName()).isEqualTo("my file name.pdf");
+  }
+
+  @Test
+  void fileNameExtractedFromPlainContentDispositionHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename=\"report.pdf\"");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("report.pdf");
+  }
+
+  @Test
+  void fileNameExtractedFromPlainContentDispositionHeaderWithoutQuotes() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename=report.pdf");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("report.pdf");
+  }
+
+  @Test
+  void fileNameExtractedFromSlugHeaderAsFallback() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Disposition")).thenReturn(null);
+    when(parameterInfo.getHeader("slug")).thenReturn("document.docx");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("document.docx");
+  }
+
+  @Test
+  void fileNameFromPayloadTakesPrecedenceOverHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    attachment.setFileName("payload-name.pdf");
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename=\"header-name.pdf\"");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("payload-name.pdf");
+  }
+
+  @Test
+  void mimeTypeExtractedFromContentTypeHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("image/jpeg; charset=utf-8");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("image/jpeg");
+    assertThat(attachment.getMimeType()).isEqualTo("image/jpeg");
+  }
+
+  @Test
+  void mimeTypeOctetStreamOverriddenByContentTypeHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    attachment.setMimeType("application/octet-stream");
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("application/pdf");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("application/pdf");
+  }
+
+  @Test
+  void mimeTypeFromPayloadTakesPrecedenceOverHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    attachment.setMimeType("text/plain");
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("application/pdf");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("text/plain");
+  }
+
+  @Test
+  void mimeTypeOctetStreamFromHeaderNotUsed() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("application/octet-stream");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isNull();
+  }
+
+  @Test
+  void fileNameNotExtractedFromInvalidContentDispositionHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    // Header exists but has no valid filename pattern
+    when(parameterInfo.getHeader("Content-Disposition")).thenReturn("inline");
+    when(parameterInfo.getHeader("slug")).thenReturn(null);
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isNull();
+  }
+
+  @Test
+  void mimeTypeExtractedWhenEmpty() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("text/csv");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("text/csv");
   }
 }
