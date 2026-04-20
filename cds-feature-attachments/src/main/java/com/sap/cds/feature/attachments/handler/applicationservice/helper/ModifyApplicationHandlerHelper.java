@@ -103,7 +103,7 @@ public final class ModifyApplicationHandlerHelper {
     } else {
       contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
     }
-    
+
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
     String maxSizeStr = getValMaxValue(path.target().entity(), defaultMaxSize);
     eventContext.put(

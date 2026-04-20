@@ -120,7 +120,8 @@ class SingleAttachmentNonDraftTest {
     assertThat(response.getResponse().getContentAsString()).isEqualTo(content);
 
     // Verify Content-Type header matches the mimeType field (application/octet-stream by default)
-    assertThat(response.getResponse().getContentType()).isEqualTo("application/octet-stream");
+    // Note: OData adapter may append charset, so we use startsWith for robustness
+    assertThat(response.getResponse().getContentType()).startsWith("application/octet-stream");
   }
 
   @Test
@@ -136,7 +137,8 @@ class SingleAttachmentNonDraftTest {
     var url = buildRootUrl(rootAfterPut.getId()) + "/avatar_content";
     var response = requestHelper.executeGet(url);
 
-    // Verify Content-Disposition header is set (inline disposition type from @Core.ContentDisposition.Type)
+    // Verify Content-Disposition header is set (inline disposition type from
+    // @Core.ContentDisposition.Type)
     var contentDisposition = response.getResponse().getHeader("Content-Disposition");
     assertThat(contentDisposition).isNotNull();
     assertThat(contentDisposition).startsWith("inline");
@@ -150,6 +152,7 @@ class SingleAttachmentNonDraftTest {
 
     putInlineAttachmentContentOnRoot(selectedRoot.getId());
     serviceHandler.clearEventContext();
+    requestHelper.resetHelper(); // Reset after PUT to use JSON for PATCH
     var rootAfterPut = selectStoredRoot();
 
     // Set the fileName via PATCH
@@ -187,7 +190,8 @@ class SingleAttachmentNonDraftTest {
     var response = requestHelper.executeGet(readUrl);
 
     // The Content-Type should reflect the mimeType stored in the database
-    assertThat(response.getResponse().getContentType()).isEqualTo("image/png");
+    // Note: OData adapter may append charset, so we use startsWith for robustness
+    assertThat(response.getResponse().getContentType()).startsWith("image/png");
   }
 
   @Test
@@ -211,10 +215,12 @@ class SingleAttachmentNonDraftTest {
             + "TestService/Roots("
             + selectedRoot.getId()
             + ")?$select=avatar_content,avatar_mimeType";
-    var response = requestHelper.executeGetWithSingleODataResponseAndAssertStatus(selectUrl, HttpStatus.OK);
+    var response =
+        requestHelper.executeGetWithSingleODataResponseAndAssertStatus(selectUrl, HttpStatus.OK);
 
     // The response should include the @mediaContentType annotation with the correct MIME type
-    // This validates that the Core.MediaType annotation path is correctly resolved for inline attachments
+    // This validates that the Core.MediaType annotation path is correctly resolved for inline
+    // attachments
     assertThat(response).contains("avatar_content@mediaContentType");
     assertThat(response).contains("text/plain");
   }
@@ -415,7 +421,8 @@ class SingleAttachmentNonDraftTest {
 
   @Test
   @Disabled(
-      "Known issue: Deleting root with inline attachment on item does not trigger expected deletion event")
+      "Known issue: Deleting root with inline attachment on item does not trigger expected deletion"
+          + " event")
   void deleteRootDeletesInlineAttachmentOnItemContent() throws Exception {
     var root = buildRootWithItem();
     postServiceRoot(root);

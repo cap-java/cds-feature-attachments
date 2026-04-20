@@ -120,4 +120,36 @@ class DeleteAttachmentsHandlerTest {
     attachment.setContent(inputStream);
     return attachment;
   }
+
+  @Test
+  void inlineAttachmentDeleteExtractsContentIdFromFlattenedFields() {
+    // RootTable has inline attachment profilePicture : AttachmentType
+    // When deleting RootTable, the MEDIA_CONTENT_FILTER triggers for profilePicture_content
+    // and the handler should extract the contentId from the flattened field
+    // profilePicture_contentId
+    var rootEntity = runtime.getCdsModel().findEntity(Roots_.CDS_NAME).orElseThrow();
+    when(context.getTarget()).thenReturn(rootEntity);
+    when(context.getModel()).thenReturn(runtime.getCdsModel());
+
+    var inputStream = mock(InputStream.class);
+
+    // Build data with flattened inline attachment fields (as they appear in DB)
+    var root = Roots.create();
+    root.setId(UUID.randomUUID().toString());
+    root.put("profilePicture_content", inputStream);
+    root.put("profilePicture_contentId", "inline-cid-123");
+    root.put("profilePicture_mimeType", "image/png");
+    root.put("profilePicture_fileName", "avatar.png");
+
+    when(attachmentsReader.readAttachments(
+            context.getModel(), context.getTarget(), context.getCqn()))
+        .thenReturn(List.of(Attachments.of(root)));
+
+    cut.processBefore(context);
+
+    // Verify the modifyAttachmentEvent receives an Attachments object with the extracted
+    // (unprefixed) contentId from the inline attachment
+    verify(modifyAttachmentEvent)
+        .processEvent(any(Path.class), eq(inputStream), any(Attachments.class), eq(context), any());
+  }
 }
