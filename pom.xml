@@ -128,10 +128,20 @@
         <artifactId>cds-feature-attachments</artifactId>
         <version>${revision}</version>
       </dependency>
+      <dependency>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-feature-attachments-oss</artifactId>
+        <version>${revision}</version>
+      </dependency>
 
       <dependency>
         <groupId>com.sap.cds.integration-tests</groupId>
-        <artifactId>cds-feature-attachments-integration-tests-srv</artifactId>
+        <artifactId>cds-feature-attachments-integration-tests-generic</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sap.cds.integration-tests</groupId>
+        <artifactId>cds-feature-attachments-integration-tests-mtx-local</artifactId>
         <version>${revision}</version>
       </dependency>
     </dependencies>

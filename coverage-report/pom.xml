@@ -16,16 +16,26 @@
 
   <!-- Dependencies whose coverage data and classes are included in the aggregated report -->
   <dependencies>
-    <!-- Source module to measure coverage for -->
+    <!-- Source modules to measure coverage for -->
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-feature-attachments</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-feature-attachments-oss</artifactId>
+    </dependency>
 
-    <!-- Module that produces additional coverage data via @SpringBootTest -->
+    <!-- Test scope: only execution data is included, not classes -->
     <dependency>
       <groupId>com.sap.cds.integration-tests</groupId>
-      <artifactId>cds-feature-attachments-integration-tests-srv</artifactId>
+      <artifactId>cds-feature-attachments-integration-tests-generic</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sap.cds.integration-tests</groupId>
+      <artifactId>cds-feature-attachments-integration-tests-mtx-local</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -64,6 +74,11 @@
               <goal>report-aggregate</goal>
             </goals>
             <phase>verify</phase>
+            <configuration>
+              <excludes>
+                <exclude>com/sap/cds/feature/attachments/generated/**/*</exclude>
+              </excludes>
+            </configuration>
           </execution>
         </executions>
       </plugin>
