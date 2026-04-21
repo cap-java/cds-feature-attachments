@@ -6,6 +6,8 @@ package com.sap.cds.feature.attachments.oss.client;
 import com.sap.cds.feature.attachments.oss.handler.ObjectStoreServiceException;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -18,11 +20,19 @@ import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.Delete;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Error;
+import software.amazon.awssdk.services.s3.model.ServerSideEncryption;
 
 public class AWSClient implements OSClient {
   private final S3Client s3Client;
@@ -55,6 +65,14 @@ public class AWSClient implements OSClient {
     logger.info("Initialized AWS S3 client");
   }
 
+  AWSClient(
+      S3Client s3Client, S3AsyncClient s3AsyncClient, String bucketName, ExecutorService executor) {
+    this.s3Client = s3Client;
+    this.s3AsyncClient = s3AsyncClient;
+    this.bucketName = bucketName;
+    this.executor = executor;
+  }
+
   @Override
   public Future<Void> uploadContent(
       InputStream content, String completeFileName, String contentType) {
@@ -72,6 +90,9 @@ public class AWSClient implements OSClient {
             .bucket(this.bucketName)
             .key(completeFileName)
             .contentType(contentType)
+            // Azure and Google Cloud Storage encrypt at rest by default; S3 requires explicit
+            // opt-in
+            .serverSideEncryption(ServerSideEncryption.AES256)
             .build();
 
     CompletableFuture<PutObjectResponse> putFuture = this.s3AsyncClient.putObject(putRequest, body);
@@ -127,6 +148,57 @@ public class AWSClient implements OSClient {
             throw new ObjectStoreServiceException(
                 "Failed to read file from the AWS Object Store", e);
           }
+        });
+  }
+
+  @Override
+  public Future<Void> deleteContentByPrefix(String prefix) {
+    return executor.submit(
+        () -> {
+          try {
+            List<String> allFailedKeys = new ArrayList<>();
+            ListObjectsV2Request listReq =
+                ListObjectsV2Request.builder().bucket(this.bucketName).prefix(prefix).build();
+            ListObjectsV2Response listResp;
+            do {
+              listResp = s3Client.listObjectsV2(listReq);
+              if (!listResp.contents().isEmpty()) {
+                List<ObjectIdentifier> keys =
+                    listResp.contents().stream()
+                        .map(obj -> ObjectIdentifier.builder().key(obj.key()).build())
+                        .toList();
+                DeleteObjectsRequest deleteReq =
+                    DeleteObjectsRequest.builder()
+                        .bucket(this.bucketName)
+                        .delete(Delete.builder().objects(keys).build())
+                        .build();
+                DeleteObjectsResponse deleteResp = s3Client.deleteObjects(deleteReq);
+                if (deleteResp.hasErrors() && !deleteResp.errors().isEmpty()) {
+                  List<String> failedKeys = deleteResp.errors().stream().map(S3Error::key).toList();
+                  logger.warn(
+                      "Failed to delete {} objects during prefix cleanup: {}",
+                      failedKeys.size(),
+                      failedKeys);
+                  allFailedKeys.addAll(failedKeys);
+                }
+              }
+              listReq =
+                  listReq.toBuilder().continuationToken(listResp.nextContinuationToken()).build();
+            } while (listResp.isTruncated());
+            if (!allFailedKeys.isEmpty()) {
+              throw new ObjectStoreServiceException(
+                  "Partial failure during prefix cleanup: "
+                      + allFailedKeys.size()
+                      + " objects could not be deleted: "
+                      + allFailedKeys);
+            }
+          } catch (ObjectStoreServiceException e) {
+            throw e;
+          } catch (RuntimeException e) {
+            throw new ObjectStoreServiceException(
+                "Failed to delete objects by prefix from the AWS Object Store", e);
+          }
+          return null;
         });
   }
 }

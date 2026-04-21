@@ -30,5 +30,11 @@ hs_err*
 .idea
 .reloadtrigger
 
+Makefile_*.mta
+app/portal/
+resources/*.zip
+undeploy.json
+**/dist/
+
 # added by cds
 .cdsrc-private.json

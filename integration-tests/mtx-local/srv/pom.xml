@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.sap.cds.integration-tests</groupId>
+    <artifactId>cds-feature-attachments-integration-tests-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>cds-feature-attachments-integration-tests-mtx-local</artifactId>
+  <packaging>jar</packaging>
+
+  <name>Integration Tests - MTX Local</name>
+
+  <properties>
+    <generation-package>com.sap.cds.feature.attachments.generated</generation-package>
+    <sidecar.dir>${project.basedir}/../mtx/sidecar</sidecar.dir>
+    <spotbugs.skip>true</spotbugs.skip>
+    <pmd.skip>true</pmd.skip>
+    <cpd.skip>true</cpd.skip>
+  </properties>
+
+  <dependencies>
+    <!-- CDS SPRING BOOT STARTER -->
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-starter-spring-boot</artifactId>
+    </dependency>
+
+    <!-- ODATA PROTOCOL ADAPTER -->
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-adapter-odata-v4</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- MT SUBSCRIPTION ENDPOINTS (/mt/v1.0/subscriptions/*) -->
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-starter-cloudfoundry</artifactId>
+    </dependency>
+
+    <!-- PER-TENANT SQLITE DB -->
+    <dependency>
+      <groupId>org.xerial</groupId>
+      <artifactId>sqlite-jdbc</artifactId>
+    </dependency>
+
+    <!-- TEST -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-feature-attachments-oss</artifactId>
+      <version>${revision}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- CLEAN SQLITE FILES BETWEEN RUNS -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets combine.children="append">
+            <fileset>
+              <directory>${project.basedir}/..</directory>
+              <followSymlinks>false</followSymlinks>
+              <includes>
+                <include>*.db</include>
+                <include>*.sqlite*</include>
+              </includes>
+            </fileset>
+          </filesets>
+        </configuration>
+        <executions>
+          <execution>
+            <id>sidecar-dbs-clean</id>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+            <phase>initialize</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- CDS BUILD PIPELINE -->
+      <plugin>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>cds.clean</id>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+
+          <execution>
+            <id>cds.install-node</id>
+            <goals>
+              <goal>install-node</goal>
+            </goals>
+          </execution>
+
+          <execution>
+            <id>cds.resolve</id>
+            <goals>
+              <goal>resolve</goal>
+            </goals>
+            <configuration>
+              <workingDirectory>${project.basedir}/..</workingDirectory>
+              <to>${project.basedir}/..</to>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>install-dependencies</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <workingDirectory>${project.basedir}/..</workingDirectory>
+              <commands>
+                <command>install</command>
+              </commands>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>cds.build</id>
+            <goals>
+              <goal>cds</goal>
+            </goals>
+            <configuration>
+              <workingDirectory>${project.basedir}/..</workingDirectory>
+              <commands>
+                <command>build --for java</command>
+              </commands>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>cds.generate</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <workingDirectory>${project.basedir}/..</workingDirectory>
+              <basePackage>${generation-package}.mt.test.cds4j</basePackage>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- SKIP SUREFIRE (UNIT TESTS) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+
+      <!-- USE FAILSAFE (INTEGRATION TESTS) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>execute-local-integration-tests</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <includes>
+                <include>**/**/*Test.java</include>
+              </includes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>verify-local-integration-tests</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- COPY CDS MODELS INTO SIDECAR NODE_MODULES -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>copy-cds-models-to-sidecar</id>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <phase>pre-integration-test</phase>
+            <configuration>
+              <outputDirectory>${project.basedir}/../node_modules/com.sap.cds/cds-feature-attachments</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/../target/cds/com.sap.cds/cds-feature-attachments</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- START SIDECAR BEFORE INTEGRATION TESTS -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.6.3</version>
+        <configuration>
+          <environmentVariables>
+            <PATH>${cds.node.directory}${path.separator}${env.PATH}</PATH>
+          </environmentVariables>
+          <skip>${skipTests}</skip>
+        </configuration>
+        <executions>
+          <execution>
+            <id>start-sidecar</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>pre-integration-test</phase>
+            <configuration>
+              <executable>${cds.npm.executable}</executable>
+              <workingDirectory>${sidecar.dir}</workingDirectory>
+              <async>true</async>
+              <useMavenLogger>true</useMavenLogger>
+              <commandlineArgs>run start</commandlineArgs>
+            </configuration>
+          </execution>
+          <execution>
+            <id>stop-sidecar</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>post-integration-test</phase>
+            <configuration>
+              <executable>sh</executable>
+              <commandlineArgs>-c "lsof -ti :4005 | xargs kill 2&gt;/dev/null || true"</commandlineArgs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

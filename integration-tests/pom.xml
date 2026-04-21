@@ -17,7 +17,8 @@
 
   <modules>
     <module>db</module>
-    <module>srv</module>
+    <module>generic</module>
+    <module>mtx-local/srv</module>
   </modules>
 
   <dependencyManagement>

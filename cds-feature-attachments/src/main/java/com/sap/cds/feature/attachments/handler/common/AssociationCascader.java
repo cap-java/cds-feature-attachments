@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,20 +27,21 @@ public class AssociationCascader {
   public List<String> findMediaEntityNames(CdsModel model, CdsEntity entity) {
     NodeTree tree = findEntityPath(model, entity);
     List<String> result = new ArrayList<>();
-    collect(tree, result);
+    collect(model, tree, result);
     return result;
   }
 
-  private void collect(NodeTree node, List<String> result) {
-    String entityName = node.getIdentifier().fullEntityName();
-
+  private void collect(CdsModel model, NodeTree node, List<String> result) {
     if (!node.getChildren().isEmpty()) {
       for (NodeTree child : node.getChildren()) {
-        collect(child, result);
+        collect(model, child, result);
       }
     } else {
-      // leaf = media entity
-      result.add(entityName);
+      String entityName = node.getIdentifier().fullEntityName();
+      model
+          .findEntity(entityName)
+          .filter(ApplicationHandlerHelper::isMediaEntity)
+          .ifPresent(e -> result.add(entityName));
     }
   }
 
@@ -67,9 +67,8 @@ public class AssociationCascader {
       LinkedList<AssociationIdentifier> firstList,
       List<String> processedEntities) {
     var internalResultList = new ArrayList<LinkedList<AssociationIdentifier>>();
-    var currentList = new AtomicReference<LinkedList<AssociationIdentifier>>();
+    var currentList = new LinkedList<AssociationIdentifier>();
     var localProcessEntities = new ArrayList<String>();
-    currentList.set(new LinkedList<>());
 
     var isMediaEntity = ApplicationHandlerHelper.isMediaEntity(entity);
     if (isMediaEntity) {
@@ -102,12 +101,12 @@ public class AssociationCascader {
     for (var associatedElement : associations.entrySet()) {
       if (!processedEntities.contains(associatedElement.getValue().getQualifiedName())) {
         if (newListNeeded) {
-          currentList.set(new LinkedList<>());
-          currentList.get().addAll(firstList);
+          currentList = new LinkedList<>();
+          currentList.addAll(firstList);
           processedEntities = localProcessEntities;
         } else {
           firstList.add(new AssociationIdentifier(associationName, entity.getQualifiedName()));
-          currentList.get().addAll(firstList);
+          currentList.addAll(firstList);
           localProcessEntities = new ArrayList<>(processedEntities);
         }
         processedEntities.add(associatedElement.getValue().getQualifiedName());
@@ -117,7 +116,7 @@ public class AssociationCascader {
                 model,
                 associatedElement.getValue(),
                 associatedElement.getKey(),
-                currentList.get(),
+                currentList,
                 processedEntities);
         internalResultList.addAll(result);
       }

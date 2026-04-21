@@ -3,39 +3,52 @@
  */
 package com.sap.cds.feature.attachments.oss.handler;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
+import com.sap.cds.feature.attachments.oss.client.OSClientFactory;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentReadEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentRestoreEventContext;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
+import com.sap.cds.services.request.ModifiableUserInfo;
+import com.sap.cds.services.request.UserInfo;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class OSSAttachmentsServiceHandlerTest {
-  ExecutorService executor = Executors.newCachedThreadPool();
 
-  @Test
-  void testRestoreAttachmentCallsSetCompleted() {
-    // Setup a valid AWS binding for the test
+  private static final ExecutorService executor = Executors.newCachedThreadPool();
+
+  private OSClient mockOsClient;
+  private OSSAttachmentsServiceHandler handler;
+
+  private static ServiceBinding createAwsBinding() {
     ServiceBinding binding = mock(ServiceBinding.class);
     HashMap<String, Object> creds = new HashMap<>();
     creds.put("host", "aws.example.com");
@@ -44,337 +57,428 @@ class OSSAttachmentsServiceHandlerTest {
     creds.put("secret_access_key", "test-secret-key");
     creds.put("bucket", "test-bucket");
     when(binding.getCredentials()).thenReturn(creds);
-
-    OSSAttachmentsServiceHandler handler = new OSSAttachmentsServiceHandler(binding, executor);
-    AttachmentRestoreEventContext context = mock(AttachmentRestoreEventContext.class);
-    handler.restoreAttachment(context);
-    verify(context).setCompleted();
+    return binding;
   }
 
-  @Test
-  void testCreateAttachmentCallsOsClientUploadContent()
-      throws NoSuchFieldException, IllegalAccessException {
-    OSClient mockOsClient = mock(OSClient.class);
-    // Mock the handler, but call the real method readAttachment
-    OSSAttachmentsServiceHandler handler =
-        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
-    AttachmentCreateEventContext context = mock(AttachmentCreateEventContext.class);
-
-    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
-    field.setAccessible(true);
-    field.set(handler, mockOsClient);
-
-    String contentId = "doc123";
-    String mimeType = "text/plain";
-    String fileName = "file.txt";
-
-    MediaData mockMediaData = mock(MediaData.class);
-    var mockEntity = mock(com.sap.cds.reflect.CdsEntity.class);
-    when(mockEntity.getQualifiedName()).thenReturn(fileName);
-
-    InputStream contentStream = new ByteArrayInputStream("test".getBytes());
-
-    when(context.getAttachmentEntity()).thenReturn(mockEntity);
-    when(context.getAttachmentIds()).thenReturn(java.util.Map.of("ID", contentId));
-    when(context.getData()).thenReturn(mockMediaData);
-    when(mockMediaData.getContent()).thenReturn(contentStream);
-    when(mockMediaData.getMimeType()).thenReturn(mimeType);
-    when(mockOsClient.uploadContent(any(), anyString(), anyString()))
-        .thenReturn(CompletableFuture.completedFuture(null));
-
-    when(context.getContentId()).thenReturn(contentId);
-
-    handler.createAttachment(context);
-
-    verify(mockOsClient).uploadContent(contentStream, contentId, mimeType);
-    verify(context).setIsInternalStored(false);
-    verify(context).setContentId(contentId);
-    verify(context).setCompleted();
+  private static CdsEntity stubEntity(String name) {
+    CdsEntity entity = mock(CdsEntity.class);
+    when(entity.getQualifiedName()).thenReturn(name);
+    return entity;
   }
 
-  @Test
-  void testReadAttachmentCallsOsClientReadContent()
-      throws NoSuchFieldException, IllegalAccessException {
-    OSClient mockOsClient = mock(OSClient.class);
-    // Mock the handler, but call the real method readAttachment
-    OSSAttachmentsServiceHandler handler =
-        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
-    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
-
-    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
-    field.setAccessible(true);
-    field.set(handler, mockOsClient);
-
-    String contentId = "doc123";
-    MediaData mockMediaData = mock(MediaData.class);
-
-    when(context.getContentId()).thenReturn(contentId);
-    when(context.getData()).thenReturn(mockMediaData);
-    when(mockOsClient.readContent(contentId))
-        .thenReturn(CompletableFuture.completedFuture(new ByteArrayInputStream("test".getBytes())));
-
-    handler.readAttachment(context);
-
-    verify(mockOsClient).readContent(contentId);
-    verify(mockMediaData).setContent(any(InputStream.class));
-    verify(context).setCompleted();
+  /**
+   * Creates a real {@link AttachmentCreateEventContext} populated with the given values. The only
+   * mock used is CdsEntity (a model-level concept not creatable without a full model).
+   */
+  private static AttachmentCreateEventContext createContext(
+      String contentId, String mimeType, String fileName, byte[] content) {
+    var ctx = AttachmentCreateEventContext.create();
+    ctx.setData(MediaData.create());
+    ctx.getData().setContent(new ByteArrayInputStream(content));
+    ctx.getData().setMimeType(mimeType);
+    ctx.getData().setFileName(fileName);
+    ctx.setAttachmentIds(Map.of(Attachments.ID, contentId));
+    ctx.setAttachmentEntity(stubEntity("TestEntity"));
+    return ctx;
   }
 
-  @Test
-  void testReadAttachmentCallsOsClientReadNullContent()
-      throws NoSuchFieldException, IllegalAccessException {
-    OSClient mockOsClient = mock(OSClient.class);
-    // Mock the handler, but call the real method readAttachment
-    OSSAttachmentsServiceHandler handler =
-        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
-    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
-
-    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
-    field.setAccessible(true);
-    field.set(handler, mockOsClient);
-
-    String contentId = "doc123";
-    MediaData mockMediaData = mock(MediaData.class);
-
-    when(context.getContentId()).thenReturn(contentId);
-    when(context.getData()).thenReturn(mockMediaData);
-    when(mockOsClient.readContent(contentId)).thenReturn(CompletableFuture.completedFuture(null));
-
-    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
-
-    verify(mockOsClient).readContent(contentId);
-    verify(context).setCompleted();
+  private static UserInfo userInfoWithTenant(String tenant) {
+    ModifiableUserInfo userInfo = UserInfo.create();
+    userInfo.setTenant(tenant);
+    return userInfo;
   }
 
-  @Test
-  void testMarkAttachmentAsDeletedCallsOsClientDeleteContent()
-      throws NoSuchFieldException, IllegalAccessException {
-    OSClient mockOsClient = mock(OSClient.class);
-    // Mock the handler, but call the real method readAttachment
-    OSSAttachmentsServiceHandler handler =
-        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
-    AttachmentMarkAsDeletedEventContext context = mock(AttachmentMarkAsDeletedEventContext.class);
+  @Nested
+  class FactoryTests {
 
-    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
-    field.setAccessible(true);
-    field.set(handler, mockOsClient);
+    @Test
+    void testFactoryHandlesInvalidBase64EncodedPrivateKeyData() {
+      ServiceBinding binding = mock(ServiceBinding.class);
+      HashMap<String, Object> creds = new HashMap<>();
+      creds.put("base64EncodedPrivateKeyData", "not-a-valid-base64-string");
+      when(binding.getCredentials()).thenReturn(creds);
 
-    String contentId = "doc123";
-    when(context.getContentId()).thenReturn(contentId);
-    when(mockOsClient.deleteContent(contentId)).thenReturn(CompletableFuture.completedFuture(null));
+      assertThrows(
+          ObjectStoreServiceException.class, () -> OSClientFactory.create(binding, executor));
+    }
 
-    handler.markAttachmentAsDeleted(context);
+    @Test
+    void testFactoryHandlesValidBase64ButNoGoogleOrGcp() {
+      String plain = "this is just a dummy string without keywords";
+      String base64 = Base64.getEncoder().encodeToString(plain.getBytes(StandardCharsets.UTF_8));
 
-    verify(mockOsClient).deleteContent(contentId);
-    verify(context).setCompleted();
+      ServiceBinding binding = mock(ServiceBinding.class);
+      HashMap<String, Object> creds = new HashMap<>();
+      creds.put("base64EncodedPrivateKeyData", base64);
+      when(binding.getCredentials()).thenReturn(creds);
+
+      assertThrows(
+          ObjectStoreServiceException.class, () -> OSClientFactory.create(binding, executor));
+    }
+
+    @Test
+    void testFactoryHandlesInValidBase64() {
+      ServiceBinding binding = mock(ServiceBinding.class);
+      HashMap<String, Object> creds = new HashMap<>();
+      creds.put("base64EncodedPrivateKeyData", "this is just a dummy string without keywords");
+      when(binding.getCredentials()).thenReturn(creds);
+
+      assertThrows(
+          ObjectStoreServiceException.class, () -> OSClientFactory.create(binding, executor));
+    }
+
+    @Test
+    void testFactoryHandlesNoValidObjectStoreService() {
+      ServiceBinding binding = mock(ServiceBinding.class);
+      HashMap<String, Object> creds = new HashMap<>();
+      creds.put("someOtherField", "someValue");
+      when(binding.getCredentials()).thenReturn(creds);
+
+      assertThrows(
+          ObjectStoreServiceException.class, () -> OSClientFactory.create(binding, executor));
+    }
   }
 
-  @Test
-  void testConstructorHandlesInvalidBase64EncodedPrivateKeyData() {
-    // Arrange: ServiceBinding with invalid base64EncodedPrivateKeyData (not valid base64)
-    ServiceBinding binding = mock(ServiceBinding.class);
-    HashMap<String, Object> creds = new HashMap<>();
-    creds.put("base64EncodedPrivateKeyData", "not-a-valid-base64-string");
-    when(binding.getCredentials()).thenReturn(creds);
+  @Nested
+  class SingleTenantOperations {
 
-    assertThrows(
-        ObjectStoreServiceException.class,
-        () -> new OSSAttachmentsServiceHandler(binding, executor));
+    @BeforeEach
+    void setup() {
+      mockOsClient = mock(OSClient.class);
+      handler = new OSSAttachmentsServiceHandler(mockOsClient, false, null);
+    }
+
+    @Test
+    void testRestoreAttachmentCallsSetCompleted() {
+      var context = AttachmentRestoreEventContext.create();
+      context.setRestoreTimestamp(Instant.now());
+
+      handler.restoreAttachment(context);
+
+      assertThat(context.isCompleted()).isTrue();
+    }
+
+    @Test
+    void testCreateAttachmentUploadsContent() {
+      when(mockOsClient.uploadContent(any(), anyString(), anyString()))
+          .thenReturn(CompletableFuture.completedFuture(null));
+
+      var context = createContext("doc123", "text/plain", "file.txt", "test".getBytes());
+
+      handler.createAttachment(context);
+
+      verify(mockOsClient).uploadContent(any(InputStream.class), eq("doc123"), eq("text/plain"));
+      assertThat(context.getIsInternalStored()).isFalse();
+      assertThat(context.getContentId()).isEqualTo("doc123");
+      assertThat(context.getData().getStatus()).isEqualTo(StatusCode.SCANNING);
+      assertThat(context.isCompleted()).isTrue();
+    }
+
+    @Test
+    void testReadAttachmentReadsContent() {
+      when(mockOsClient.readContent("doc123"))
+          .thenReturn(
+              CompletableFuture.completedFuture(new ByteArrayInputStream("test".getBytes())));
+
+      var context = AttachmentReadEventContext.create();
+      context.setContentId("doc123");
+      context.setData(MediaData.create());
+
+      handler.readAttachment(context);
+
+      verify(mockOsClient).readContent("doc123");
+      assertThat(context.getData().getContent()).isNotNull();
+      assertThat(context.isCompleted()).isTrue();
+    }
+
+    @Test
+    void testReadAttachmentWithNullContentThrows() {
+      when(mockOsClient.readContent("doc123")).thenReturn(CompletableFuture.completedFuture(null));
+
+      var context = AttachmentReadEventContext.create();
+      context.setContentId("doc123");
+      context.setData(MediaData.create());
+
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+      assertThat(context.isCompleted()).isTrue();
+    }
+
+    @Test
+    void testMarkAttachmentAsDeletedDeletesContent() {
+      when(mockOsClient.deleteContent("doc123"))
+          .thenReturn(CompletableFuture.completedFuture(null));
+
+      var context = AttachmentMarkAsDeletedEventContext.create();
+      context.setContentId("doc123");
+
+      handler.markAttachmentAsDeleted(context);
+
+      verify(mockOsClient).deleteContent("doc123");
+      assertThat(context.isCompleted()).isTrue();
+    }
   }
 
-  @Test
-  void testConstructorHandlesValidBase64ButNoGoogleOrGcp() {
-    String plain = "this is just a dummy string without keywords";
-    String base64 =
-        Base64.getEncoder().encodeToString(plain.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+  @Nested
+  class ExceptionHandling {
 
-    ServiceBinding binding = mock(ServiceBinding.class);
-    HashMap<String, Object> creds = new HashMap<>();
-    creds.put("base64EncodedPrivateKeyData", base64);
-    when(binding.getCredentials()).thenReturn(creds);
+    @BeforeEach
+    void setup() {
+      mockOsClient = mock(OSClient.class);
+      handler = new OSSAttachmentsServiceHandler(mockOsClient, false, null);
+    }
 
-    assertThrows(
-        ObjectStoreServiceException.class,
-        () -> new OSSAttachmentsServiceHandler(binding, executor));
+    @Test
+    void testCreateAttachmentHandlesInterruptedException() throws Exception {
+      var context = createContextForUploadException(new InterruptedException("Thread interrupted"));
+      assertThrows(ServiceException.class, () -> handler.createAttachment(context));
+      assertThat(context.isCompleted()).isTrue();
+    }
+
+    @Test
+    void testCreateAttachmentHandlesObjectStoreServiceException() throws Exception {
+      var context =
+          createContextForUploadException(new ObjectStoreServiceException("Upload failed"));
+      assertThrows(ServiceException.class, () -> handler.createAttachment(context));
+      assertThat(context.isCompleted()).isTrue();
+    }
+
+    @Test
+    void testCreateAttachmentHandlesExecutionException() throws Exception {
+      var context =
+          createContextForUploadException(
+              new ExecutionException("Upload failed", new RuntimeException()));
+      assertThrows(ServiceException.class, () -> handler.createAttachment(context));
+      assertThat(context.isCompleted()).isTrue();
+    }
+
+    @Test
+    void testMarkAsDeletedHandlesInterruptedException() throws Exception {
+      var context = createContextForDeleteException(new InterruptedException("Thread interrupted"));
+      assertThrows(ServiceException.class, () -> handler.markAttachmentAsDeleted(context));
+      assertThat(context.isCompleted()).isTrue();
+    }
+
+    @Test
+    void testMarkAsDeletedHandlesObjectStoreServiceException() throws Exception {
+      var context =
+          createContextForDeleteException(new ObjectStoreServiceException("Delete failed"));
+      assertThrows(ServiceException.class, () -> handler.markAttachmentAsDeleted(context));
+      assertThat(context.isCompleted()).isTrue();
+    }
+
+    @Test
+    void testMarkAsDeletedHandlesExecutionException() throws Exception {
+      var context =
+          createContextForDeleteException(
+              new ExecutionException("Delete failed", new RuntimeException()));
+      assertThrows(ServiceException.class, () -> handler.markAttachmentAsDeleted(context));
+      assertThat(context.isCompleted()).isTrue();
+    }
+
+    @Test
+    void testReadAttachmentHandlesInterruptedException() throws Exception {
+      var context = createContextForReadException(new InterruptedException("Thread interrupted"));
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+      assertThat(context.isCompleted()).isTrue();
+    }
+
+    @Test
+    void testReadAttachmentHandlesExecutionException() throws Exception {
+      var context =
+          createContextForReadException(new ExecutionException("failed", new RuntimeException()));
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+      assertThat(context.isCompleted()).isTrue();
+    }
+
+    private AttachmentCreateEventContext createContextForUploadException(Exception exception)
+        throws Exception {
+      @SuppressWarnings("unchecked")
+      CompletableFuture<Void> future = mock(CompletableFuture.class);
+      when(mockOsClient.uploadContent(any(InputStream.class), anyString(), anyString()))
+          .thenReturn(future);
+      when(future.get()).thenThrow(exception);
+
+      return createContext("test-id", "text/plain", "test.txt", "test".getBytes());
+    }
+
+    private AttachmentMarkAsDeletedEventContext createContextForDeleteException(Exception exception)
+        throws Exception {
+      @SuppressWarnings("unchecked")
+      CompletableFuture<Void> future = mock(CompletableFuture.class);
+      when(mockOsClient.deleteContent("test-content-id")).thenReturn(future);
+      when(future.get()).thenThrow(exception);
+
+      var context = AttachmentMarkAsDeletedEventContext.create();
+      context.setContentId("test-content-id");
+      return context;
+    }
+
+    private AttachmentReadEventContext createContextForReadException(Exception exception)
+        throws Exception {
+      @SuppressWarnings("unchecked")
+      CompletableFuture<InputStream> future = mock(CompletableFuture.class);
+      when(mockOsClient.readContent("doc123")).thenReturn(future);
+      when(future.get()).thenThrow(exception);
+
+      var context = AttachmentReadEventContext.create();
+      context.setContentId("doc123");
+      context.setData(MediaData.create());
+      return context;
+    }
   }
 
-  @Test
-  void testConstructorHandlesInValidBase64() {
-    ServiceBinding binding = mock(ServiceBinding.class);
-    HashMap<String, Object> creds = new HashMap<>();
-    creds.put("base64EncodedPrivateKeyData", "this is just a dummy string without keywords");
-    when(binding.getCredentials()).thenReturn(creds);
+  @Nested
+  class MultitenancyTests {
 
-    assertThrows(
-        ObjectStoreServiceException.class,
-        () -> new OSSAttachmentsServiceHandler(binding, executor));
-  }
+    @BeforeEach
+    void setup() {
+      mockOsClient = mock(OSClient.class);
+      handler = new OSSAttachmentsServiceHandler(mockOsClient, true, "shared");
+    }
 
-  @Test
-  void testConstructorHandlesNoValidObjectStoreService() {
-    // Arrange: ServiceBinding with no valid object store credentials
-    ServiceBinding binding = mock(ServiceBinding.class);
-    HashMap<String, Object> creds = new HashMap<>();
-    // No host, container_uri, or base64EncodedPrivateKeyData
-    creds.put("someOtherField", "someValue");
-    when(binding.getCredentials()).thenReturn(creds);
+    @Test
+    void testCreateAttachmentWithMultitenancyBuildsObjectKey() {
+      when(mockOsClient.uploadContent(any(), anyString(), anyString()))
+          .thenReturn(CompletableFuture.completedFuture(null));
 
-    assertThrows(
-        ObjectStoreServiceException.class,
-        () -> new OSSAttachmentsServiceHandler(binding, executor));
-  }
+      // For multitenancy, getUserInfo() requires a RequestContext, so we mock
+      // the event context to provide tenant info
+      CdsEntity entity = stubEntity("TestEntity");
+      UserInfo userInfo = userInfoWithTenant("myTenant");
+      MediaData data = MediaData.create();
+      data.setContent(new ByteArrayInputStream("test".getBytes()));
+      data.setMimeType("text/plain");
+      data.setFileName("file.txt");
 
-  // Helper method to setup common mocks for createAttachment exception tests
-  private AttachmentCreateEventContext setupCreateAttachmentContext(
-      OSClient mockOsClient, OSSAttachmentsServiceHandler handler, Exception exceptionToThrow)
-      throws NoSuchFieldException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
+      AttachmentCreateEventContext context = mock(AttachmentCreateEventContext.class);
+      when(context.getAttachmentEntity()).thenReturn(entity);
+      when(context.getAttachmentIds()).thenReturn(Map.of(Attachments.ID, "content123"));
+      when(context.getData()).thenReturn(data);
+      when(context.getUserInfo()).thenReturn(userInfo);
 
-    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
-    field.setAccessible(true);
-    field.set(handler, mockOsClient);
+      handler.createAttachment(context);
 
-    AttachmentCreateEventContext context = mock(AttachmentCreateEventContext.class);
-    MediaData mockMediaData = mock(MediaData.class);
-    CdsEntity mockEntity = mock(CdsEntity.class);
-    HashMap<String, Object> attachmentIds = new HashMap<>();
-    attachmentIds.put("ID", "test-id");
+      verify(mockOsClient).uploadContent(any(), eq("myTenant/content123"), anyString());
+    }
 
-    when(context.getAttachmentIds()).thenReturn(attachmentIds);
-    when(context.getData()).thenReturn(mockMediaData);
-    when(context.getAttachmentEntity()).thenReturn(mockEntity);
-    when(mockEntity.getQualifiedName()).thenReturn("TestEntity");
-    when(mockMediaData.getFileName()).thenReturn("test.txt");
-    when(mockMediaData.getContent()).thenReturn(new ByteArrayInputStream("test".getBytes()));
-    when(mockMediaData.getMimeType()).thenReturn("text/plain");
+    @Test
+    void testReadAttachmentWithMultitenancyBuildsObjectKey() {
+      when(mockOsClient.readContent("myTenant/content123"))
+          .thenReturn(
+              CompletableFuture.completedFuture(new ByteArrayInputStream("test".getBytes())));
 
-    @SuppressWarnings("unchecked")
-    CompletableFuture<Void> future = mock(CompletableFuture.class);
-    when(mockOsClient.uploadContent(any(InputStream.class), anyString(), anyString()))
-        .thenReturn(future);
-    when(future.get()).thenThrow(exceptionToThrow);
+      AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+      when(context.getContentId()).thenReturn("content123");
+      when(context.getData()).thenReturn(MediaData.create());
+      when(context.getUserInfo()).thenReturn(userInfoWithTenant("myTenant"));
 
-    return context;
-  }
+      handler.readAttachment(context);
 
-  @Test
-  void testCreateAttachmentExceptionHandling()
-      throws NoSuchFieldException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
-    OSClient mockOsClient = mock(OSClient.class);
-    OSSAttachmentsServiceHandler handler =
-        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+      verify(mockOsClient).readContent("myTenant/content123");
+    }
 
-    // Test InterruptedException
-    AttachmentCreateEventContext context1 =
-        setupCreateAttachmentContext(
-            mockOsClient, handler, new InterruptedException("Thread interrupted"));
-    assertThrows(ServiceException.class, () -> handler.createAttachment(context1));
-    verify(context1).setCompleted();
+    @Test
+    void testMarkAsDeletedWithMultitenancyBuildsObjectKey() {
+      when(mockOsClient.deleteContent("myTenant/content123"))
+          .thenReturn(CompletableFuture.completedFuture(null));
 
-    // Test ObjectStoreServiceException
-    AttachmentCreateEventContext context2 =
-        setupCreateAttachmentContext(
-            mockOsClient, handler, new ObjectStoreServiceException("Upload failed"));
-    assertThrows(ServiceException.class, () -> handler.createAttachment(context2));
-    verify(context2).setCompleted();
+      AttachmentMarkAsDeletedEventContext context = mock(AttachmentMarkAsDeletedEventContext.class);
+      when(context.getContentId()).thenReturn("content123");
+      when(context.getUserInfo()).thenReturn(userInfoWithTenant("myTenant"));
 
-    // Test ExecutionException
-    AttachmentCreateEventContext context3 =
-        setupCreateAttachmentContext(
-            mockOsClient, handler, new ExecutionException("Upload failed", new RuntimeException()));
-    assertThrows(ServiceException.class, () -> handler.createAttachment(context3));
-    verify(context3).setCompleted();
-  }
+      handler.markAttachmentAsDeleted(context);
 
-  // Helper method to setup common mocks for markAttachmentAsDeleted exception tests
-  private AttachmentMarkAsDeletedEventContext setupMarkAsDeletedContext(
-      OSClient mockOsClient, OSSAttachmentsServiceHandler handler, Exception exceptionToThrow)
-      throws NoSuchFieldException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
+      verify(mockOsClient).deleteContent("myTenant/content123");
+    }
 
-    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
-    field.setAccessible(true);
-    field.set(handler, mockOsClient);
+    @Test
+    void testMultitenancyWithNullTenantThrows() {
+      AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+      when(context.getContentId()).thenReturn("content123");
+      when(context.getUserInfo()).thenReturn(userInfoWithTenant(null));
 
-    AttachmentMarkAsDeletedEventContext context = mock(AttachmentMarkAsDeletedEventContext.class);
-    String contentId = "test-content-id";
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+    }
 
-    when(context.getContentId()).thenReturn(contentId);
+    @Test
+    void testValidateTenantIdWithSlashThrows() {
+      AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+      when(context.getContentId()).thenReturn("content123");
+      when(context.getUserInfo()).thenReturn(userInfoWithTenant("tenant/evil"));
 
-    @SuppressWarnings("unchecked")
-    CompletableFuture<Void> future = mock(CompletableFuture.class);
-    when(mockOsClient.deleteContent(contentId)).thenReturn(future);
-    when(future.get()).thenThrow(exceptionToThrow);
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+    }
 
-    return context;
-  }
+    @Test
+    void testValidateTenantIdWithBackslashThrows() {
+      AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+      when(context.getContentId()).thenReturn("content123");
+      when(context.getUserInfo()).thenReturn(userInfoWithTenant("tenant\\evil"));
 
-  @Test
-  void testMarkAttachmentAsDeletedExceptionHandling()
-      throws NoSuchFieldException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
-    OSClient mockOsClient = mock(OSClient.class);
-    OSSAttachmentsServiceHandler handler =
-        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+    }
 
-    // Test InterruptedException
-    AttachmentMarkAsDeletedEventContext context1 =
-        setupMarkAsDeletedContext(
-            mockOsClient, handler, new InterruptedException("Thread interrupted"));
-    assertThrows(ServiceException.class, () -> handler.markAttachmentAsDeleted(context1));
-    verify(context1).setCompleted();
+    @Test
+    void testValidateTenantIdWithDotsThrows() {
+      AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+      when(context.getContentId()).thenReturn("content123");
+      when(context.getUserInfo()).thenReturn(userInfoWithTenant("..evil"));
 
-    // Test ObjectStoreServiceException
-    AttachmentMarkAsDeletedEventContext context2 =
-        setupMarkAsDeletedContext(
-            mockOsClient, handler, new ObjectStoreServiceException("Delete failed"));
-    assertThrows(ServiceException.class, () -> handler.markAttachmentAsDeleted(context2));
-    verify(context2).setCompleted();
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+    }
 
-    // Test ExecutionException
-    AttachmentMarkAsDeletedEventContext context3 =
-        setupMarkAsDeletedContext(
-            mockOsClient, handler, new ExecutionException("Delete failed", new RuntimeException()));
-    assertThrows(ServiceException.class, () -> handler.markAttachmentAsDeleted(context3));
-    verify(context3).setCompleted();
-  }
+    @Test
+    void testValidateEmptyTenantIdThrows() {
+      AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+      when(context.getContentId()).thenReturn("content123");
+      when(context.getUserInfo()).thenReturn(userInfoWithTenant(""));
 
-  @Test
-  void testReadAttachmentHandlesInterruptedException()
-      throws NoSuchFieldException,
-          IllegalAccessException,
-          InterruptedException,
-          ExecutionException {
-    OSClient mockOsClient = mock(OSClient.class);
-    OSSAttachmentsServiceHandler handler =
-        mock(OSSAttachmentsServiceHandler.class, CALLS_REAL_METHODS);
-    AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+    }
 
-    var field = OSSAttachmentsServiceHandler.class.getDeclaredField("osClient");
-    field.setAccessible(true);
-    field.set(handler, mockOsClient);
+    @Test
+    void testValidateContentIdWithSlashThrows() {
+      AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+      when(context.getContentId()).thenReturn("content/evil");
+      when(context.getUserInfo()).thenReturn(userInfoWithTenant("validTenant"));
 
-    String contentId = "doc123";
-    MediaData mockMediaData = mock(MediaData.class);
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+    }
 
-    when(context.getContentId()).thenReturn(contentId);
-    when(context.getData()).thenReturn(mockMediaData);
+    @Test
+    void testValidateContentIdWithNullThrows() {
+      AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+      when(context.getContentId()).thenReturn(null);
+      when(context.getUserInfo()).thenReturn(userInfoWithTenant("validTenant"));
 
-    @SuppressWarnings("unchecked")
-    CompletableFuture<InputStream> future = mock(CompletableFuture.class);
-    when(mockOsClient.readContent(contentId)).thenReturn(future);
-    when(future.get()).thenThrow(new InterruptedException("Thread interrupted"));
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+    }
 
-    assertThrows(ServiceException.class, () -> handler.readAttachment(context));
-    verify(context).setCompleted();
+    @Test
+    void testValidateContentIdWithBackslashThrows() {
+      AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+      when(context.getContentId()).thenReturn("content\\evil");
+      when(context.getUserInfo()).thenReturn(userInfoWithTenant("validTenant"));
+
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+    }
+
+    @Test
+    void testValidateContentIdWithDotsThrows() {
+      AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+      when(context.getContentId()).thenReturn("..evil");
+      when(context.getUserInfo()).thenReturn(userInfoWithTenant("validTenant"));
+
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+    }
+
+    @Test
+    void testValidateEmptyContentIdThrows() {
+      AttachmentReadEventContext context = mock(AttachmentReadEventContext.class);
+      when(context.getContentId()).thenReturn("");
+      when(context.getUserInfo()).thenReturn(userInfoWithTenant("validTenant"));
+
+      assertThrows(ServiceException.class, () -> handler.readAttachment(context));
+    }
   }
 }
