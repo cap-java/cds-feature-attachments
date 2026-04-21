@@ -35,7 +35,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
   private static final Logger logger = LoggerFactory.getLogger(CreateAttachmentEvent.class);
   private static final Pattern RFC5987_FILENAME_PATTERN =
-      Pattern.compile("filename\\*=UTF-8''(.+)", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("filename\\*=UTF-8''([^;]+)", Pattern.CASE_INSENSITIVE);
   private static final Pattern PLAIN_FILENAME_PATTERN =
       Pattern.compile("filename=\"?([^\";]+)\"?", Pattern.CASE_INSENSITIVE);
 
@@ -66,7 +66,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
       fileNameOptional.ifPresent(fn -> values.put(MediaData.FILE_NAME, fn));
     }
     if (mimeTypeOptional.isEmpty()
-        || "application/octet-stream".equals(mimeTypeOptional.orElse(null))) {
+        || "application/octet-stream".equalsIgnoreCase(mimeTypeOptional.get())) {
       Optional<String> headerMimeType = extractMimeTypeFromHeader(eventContext);
       if (headerMimeType.isPresent()) {
         mimeTypeOptional = headerMimeType;

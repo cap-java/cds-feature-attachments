@@ -203,6 +203,25 @@ class CreateAttachmentEventTest {
   }
 
   @Test
+  void fileNameExtractedFromRfc5987HeaderWithTrailingParameters() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    // Header with trailing parameters after the filename - should stop at semicolon
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename*=UTF-8''my%20file.pdf; size=1234");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file.pdf");
+    assertThat(attachment.getFileName()).isEqualTo("my file.pdf");
+  }
+
+  @Test
   void fileNameExtractedFromPlainContentDispositionHeader() {
     var attachment = Attachments.create();
     attachment.setId(UUID.randomUUID().toString());
@@ -293,6 +312,24 @@ class CreateAttachmentEventTest {
     var attachment = Attachments.create();
     attachment.setId(UUID.randomUUID().toString());
     attachment.setMimeType("application/octet-stream");
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("application/pdf");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("application/pdf");
+  }
+
+  @Test
+  void mimeTypeOctetStreamMixedCaseOverriddenByContentTypeHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    // Client sends MIME type in mixed case - should still be treated as octet-stream
+    attachment.setMimeType("Application/Octet-Stream");
     when(target.values()).thenReturn(attachment);
     when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
     when(attachmentService.createAttachment(any()))
