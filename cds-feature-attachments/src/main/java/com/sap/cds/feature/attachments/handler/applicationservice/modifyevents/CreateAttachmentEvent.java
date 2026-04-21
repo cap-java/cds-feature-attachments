@@ -37,7 +37,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
   private static final Pattern RFC5987_FILENAME_PATTERN =
       Pattern.compile("filename\\*=UTF-8''([^;]+)", Pattern.CASE_INSENSITIVE);
   private static final Pattern PLAIN_FILENAME_PATTERN =
-      Pattern.compile("filename=\"?([^\";]+)\"?", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("(?<!\\*)filename=\"?([^\";]+)\"?", Pattern.CASE_INSENSITIVE);
 
   private final AttachmentService attachmentService;
   private final ListenerProvider listenerProvider;
@@ -61,16 +61,14 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     Optional<String> fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, attachment);
 
     // Fall back to HTTP headers when values are not set in payload
-    if (fileNameOptional.isEmpty()) {
-      fileNameOptional = extractFileNameFromHeader(eventContext);
-      fileNameOptional.ifPresent(fn -> values.put(MediaData.FILE_NAME, fn));
-    }
-    if (mimeTypeOptional.isEmpty()
-        || "application/octet-stream".equalsIgnoreCase(mimeTypeOptional.get())) {
-      Optional<String> headerMimeType = extractMimeTypeFromHeader(eventContext);
-      if (headerMimeType.isPresent()) {
-        mimeTypeOptional = headerMimeType;
-        values.put(MediaData.MIME_TYPE, mimeTypeOptional.get());
+    if (eventContext.getParameterInfo() != null) {
+      if (fileNameOptional.isEmpty()) {
+        fileNameOptional = extractFileNameFromHeader(eventContext);
+        fileNameOptional.ifPresent(fn -> values.put(MediaData.FILE_NAME, fn));
+      }
+      if (mimeTypeOptional.isEmpty()) {
+        mimeTypeOptional = extractMimeTypeFromHeader(eventContext);
+        mimeTypeOptional.ifPresent(mt -> values.put(MediaData.MIME_TYPE, mt));
       }
     }
 
@@ -121,12 +119,15 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     }
     // Fiori Elements may use the slug header instead
     String slug = eventContext.getParameterInfo().getHeader("slug");
-    return Optional.ofNullable(slug);
+    if (slug != null) {
+      return Optional.of(URLDecoder.decode(slug, StandardCharsets.UTF_8));
+    }
+    return Optional.empty();
   }
 
   /**
    * Extracts the MIME type from the Content-Type header, stripping charset and other parameters.
-   * Returns empty if the Content-Type is null, empty, or application/octet-stream.
+   * Returns empty if the Content-Type is null or empty.
    */
   private static Optional<String> extractMimeTypeFromHeader(EventContext eventContext) {
     String contentType = eventContext.getParameterInfo().getHeader("Content-Type");
@@ -134,7 +135,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
       return Optional.empty();
     }
     String mimeType = contentType.split(";")[0].trim();
-    if (mimeType.isEmpty() || "application/octet-stream".equalsIgnoreCase(mimeType)) {
+    if (mimeType.isEmpty()) {
       return Optional.empty();
     }
     return Optional.of(mimeType);
