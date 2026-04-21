@@ -5,10 +5,8 @@ using {
 
 annotate sap.attachments.MediaData with @UI.MediaResource: {Stream: content} {
     content   @(
-        title                           : '{i18n>attachment_content}',
-        Core.ContentDisposition.Type    : 'inline',
-        Core.MediaType                  : (mimeType),
-        Core.ContentDisposition.Filename: (fileName),
+        title         : '{i18n>attachment_content}',
+        Core.MediaType: mimeType,
     );
     mimeType  @(
         title: '{i18n>attachment_mimeType}',
@@ -36,6 +34,23 @@ annotate sap.attachments.MediaData with @UI.MediaResource: {Stream: content} {
     );
 }
 
+annotate sap.attachments.Attachments {
+    content    @(
+        Core.ContentDisposition: {
+            Filename: fileName,
+            Type    : 'inline',
+        },
+        Core.MediaType         : mimeType
+    );
+    mimeType   @Core.IsMediaType;
+    status     @(
+        Common.Text           : statusNav.name,
+        Common.TextArrangement: #TextOnly
+    );
+    modifiedAt @(odata.etag);
+}
+
+// Fiori Annotations
 annotate sap.attachments.Attachments with
 @Capabilities: {
     UpdateRestrictions.NonUpdateableProperties: [content],
@@ -77,15 +92,4 @@ annotate sap.attachments.Attachments with
 @Common      : {SideEffects #ContentChanged: {
     SourceProperties: [content],
     TargetProperties: ['status']
-}} {
-    content    @(
-        Core.ContentDisposition.Filename: fileName,
-        Core.MediaType                  : mimeType
-    );
-    mimeType   @Core.IsMediaType;
-    status     @(
-        Common.Text           : statusNav.name,
-        Common.TextArrangement: #TextOnly
-    );
-    modifiedAt @(odata.etag);
-}
+}}
