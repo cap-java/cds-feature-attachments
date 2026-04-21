@@ -1,5 +1,5 @@
 using {sap.capire.bookshop as my} from '../db/schema';
-using {Attachments} from 'com.sap.cds/cds-feature-attachments';
+using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
 
 // Extend Books entity to support file attachments (images, PDFs, documents)
 // Each book can have multiple attachments via composition relationship
