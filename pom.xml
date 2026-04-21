@@ -133,6 +133,11 @@
         <artifactId>cds-feature-attachments-oss</artifactId>
         <version>${revision}</version>
       </dependency>
+      <dependency>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-feature-attachments-fs</artifactId>
+        <version>${revision}</version>
+      </dependency>
 
       <dependency>
         <groupId>com.sap.cds.integration-tests</groupId>

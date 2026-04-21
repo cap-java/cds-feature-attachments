@@ -25,6 +25,10 @@
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-feature-attachments-oss</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.sap.cds</groupId>
+      <artifactId>cds-feature-attachments-fs</artifactId>
+    </dependency>
 
     <!-- Test scope: only execution data is included, not classes -->
     <dependency>
@@ -64,10 +68,68 @@
         </configuration>
       </plugin>
 
+      <!--
+        Copy compiled classes from all source modules into this module's target/classes.
+        This is needed by jacoco:check which requires classes on the classpath.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>copy-core-classes</id>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <outputDirectory>${project.build.directory}/classes</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/../cds-feature-attachments/target/classes</directory>
+                </resource>
+                <resource>
+                  <directory>${project.basedir}/../storage-targets/cds-feature-attachments-oss/target/classes</directory>
+                </resource>
+                <resource>
+                  <directory>${project.basedir}/../storage-targets/cds-feature-attachments-fs/target/classes</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <executions>
+          <!-- Merge all .exec files into a single merged file -->
+          <execution>
+            <id>jacoco-merge</id>
+            <goals>
+              <goal>merge</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <fileSets>
+                <fileSet>
+                  <directory>${project.basedir}/..</directory>
+                  <includes>
+                    <include>cds-feature-attachments/target/jacoco.exec</include>
+                    <include>storage-targets/cds-feature-attachments-oss/target/jacoco.exec</include>
+                    <include>storage-targets/cds-feature-attachments-fs/target/jacoco.exec</include>
+                    <include>integration-tests/generic/target/jacoco.exec</include>
+                    <include>integration-tests/mtx-local/srv/target/jacoco.exec</include>
+                  </includes>
+                </fileSet>
+              </fileSets>
+              <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+            </configuration>
+          </execution>
+
+          <!-- Aggregated HTML/XML/CSV report -->
           <execution>
             <id>jacoco-aggregate-report</id>
             <goals>
@@ -78,6 +140,137 @@
               <excludes>
                 <exclude>com/sap/cds/feature/attachments/generated/**/*</exclude>
               </excludes>
+            </configuration>
+          </execution>
+
+          <!-- Coverage check: cds-feature-attachments (95% instruction, branch, complexity; 0 missed classes) -->
+          <execution>
+            <id>check-core</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
+            <configuration>
+              <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+              <includes>
+                <include>com/sap/cds/feature/attachments/**/*</include>
+              </includes>
+              <excludes>
+                <exclude>com/sap/cds/feature/attachments/oss/**/*</exclude>
+                <exclude>com/sap/cds/feature/attachments/fs/**/*</exclude>
+                <exclude>com/sap/cds/feature/attachments/generated/**/*</exclude>
+              </excludes>
+              <rules>
+                <rule implementation="org.jacoco.maven.RuleConfiguration">
+                  <element>BUNDLE</element>
+                  <limits>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>INSTRUCTION</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.95</minimum>
+                    </limit>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>BRANCH</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.95</minimum>
+                    </limit>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>COMPLEXITY</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.95</minimum>
+                    </limit>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>CLASS</counter>
+                      <value>MISSEDCOUNT</value>
+                      <maximum>0</maximum>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
+            </configuration>
+          </execution>
+
+          <!-- Coverage check: cds-feature-attachments-oss (80%) -->
+          <execution>
+            <id>check-oss</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
+            <configuration>
+              <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+              <includes>
+                <include>com/sap/cds/feature/attachments/oss/**/*</include>
+              </includes>
+              <rules>
+                <rule implementation="org.jacoco.maven.RuleConfiguration">
+                  <element>BUNDLE</element>
+                  <limits>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>INSTRUCTION</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.80</minimum>
+                    </limit>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>BRANCH</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.80</minimum>
+                    </limit>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>COMPLEXITY</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.80</minimum>
+                    </limit>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>CLASS</counter>
+                      <value>MISSEDCOUNT</value>
+                      <maximum>0</maximum>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
+            </configuration>
+          </execution>
+
+          <!-- Coverage check: cds-feature-attachments-fs (0% — placeholder for future thresholds) -->
+          <execution>
+            <id>check-fs</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
+            <configuration>
+              <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+              <includes>
+                <include>com/sap/cds/feature/attachments/fs/**/*</include>
+              </includes>
+              <rules>
+                <rule implementation="org.jacoco.maven.RuleConfiguration">
+                  <element>BUNDLE</element>
+                  <limits>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>INSTRUCTION</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.00</minimum>
+                    </limit>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>BRANCH</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.00</minimum>
+                    </limit>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>COMPLEXITY</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.00</minimum>
+                    </limit>
+                    <limit implementation="org.jacoco.report.check.Limit">
+                      <counter>CLASS</counter>
+                      <value>MISSEDCOUNT</value>
+                      <maximum>4</maximum>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
             </configuration>
           </execution>
         </executions>
