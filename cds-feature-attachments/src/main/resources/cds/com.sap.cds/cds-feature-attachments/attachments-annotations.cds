@@ -3,12 +3,12 @@ using {
     sap.attachments.Attachments
 } from './attachments';
 
-annotate MediaData with @UI.MediaResource: {Stream: content} {
+annotate sap.attachments.MediaData with @UI.MediaResource: {Stream: content} {
     content   @(
         title                           : '{i18n>attachment_content}',
-        Core.MediaType                  : mimeType,
-        Core.ContentDisposition.Filename: fileName,
-        Core.ContentDisposition.Type    : 'inline'
+        Core.ContentDisposition.Type    : 'inline',
+        Core.MediaType                  : (mimeType),
+        Core.ContentDisposition.Filename: (fileName),
     );
     mimeType  @(
         title: '{i18n>attachment_mimeType}',
@@ -19,15 +19,29 @@ annotate MediaData with @UI.MediaResource: {Stream: content} {
         UI.MultiLineText
     );
     status    @(
-        title                 : '{i18n>attachment_status}',
-        Common.Text           : statusNav.name,
-        Common.TextArrangement: #TextOnly
+        title: '{i18n>attachment_status}',
+        readonly
     );
-    contentId @(UI.Hidden: true);
-    scannedAt @(UI.Hidden: true);
+    note      @(
+        title: '{i18n>attachment_note}',
+        UI.MultiLineText
+    );
+    contentId @(
+        UI.Hidden: true,
+        readonly
+    );
+    scannedAt @(
+        UI.Hidden: true,
+        readonly
+    );
 }
 
-annotate Attachments with @UI: {
+annotate sap.attachments.Attachments with
+@Capabilities: {
+    UpdateRestrictions.NonUpdateableProperties: [content],
+    SortRestrictions                          : {NonSortableProperties: [content]}
+}
+@UI          : {
     HeaderInfo: {
         TypeName      : '{i18n>attachment}',
         TypeNamePlural: '{i18n>attachments}',
@@ -59,15 +73,19 @@ annotate Attachments with @UI: {
             @UI.Hidden
         }
     ]
-} {
-    note       @(
-        title: '{i18n>attachment_note}',
-        UI.MultiLineText
+}
+@Common      : {SideEffects #ContentChanged: {
+    SourceProperties: [content],
+    TargetProperties: ['status']
+}} {
+    content    @(
+        Core.ContentDisposition.Filename: fileName,
+        Core.MediaType                  : mimeType
+    );
+    mimeType   @Core.IsMediaType;
+    status     @(
+        Common.Text           : statusNav.name,
+        Common.TextArrangement: #TextOnly
     );
     modifiedAt @(odata.etag);
 }
-
-annotate Attachments with @Common: {SideEffects #ContentChanged: {
-    SourceProperties: [content],
-    TargetProperties: ['status']
-}} {};
