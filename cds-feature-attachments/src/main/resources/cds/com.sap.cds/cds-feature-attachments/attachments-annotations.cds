@@ -84,7 +84,7 @@ annotate sap.attachments.Attachments with
             @HTML5.CssDefaults: {width: '25%'}
         },
         {
-            Value: up_,
+            Value: up__ID,
             @UI.Hidden
         }
     ]
