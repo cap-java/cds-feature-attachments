@@ -24,7 +24,9 @@ import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmen
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.AttachmentsServiceImpl;
+import com.sap.cds.feature.attachments.service.MalwareScannerServiceImpl;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
+import com.sap.cds.feature.attachments.service.handler.DefaultMalwareScannerServiceHandler;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanRunner;
 import com.sap.cds.feature.attachments.service.malware.AttachmentMalwareScanner;
@@ -88,6 +90,7 @@ public class Registration implements CdsRuntimeConfiguration {
   @Override
   public void services(CdsRuntimeConfigurer configurer) {
     configurer.service(new AttachmentsServiceImpl());
+    configurer.service(new MalwareScannerServiceImpl());
   }
 
   @Override
@@ -137,6 +140,9 @@ public class Registration implements CdsRuntimeConfiguration {
     configurer.eventHandler(
         new DefaultAttachmentsServiceHandler(malwareScanEndTransactionListener));
 
+    // register event handler for malware scanner service
+    configurer.eventHandler(new DefaultMalwareScannerServiceHandler(scanClient));
+
     MarkAsDeletedAttachmentEvent deleteEvent =
         new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
     ModifyAttachmentEventFactory eventFactory =
@@ -160,7 +166,11 @@ public class Registration implements CdsRuntimeConfiguration {
           new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
       configurer.eventHandler(
           new ReadAttachmentsHandler(
-              attachmentService, new AttachmentStatusValidator(), scanRunner, persistenceService));
+              attachmentService,
+              new AttachmentStatusValidator(),
+              scanRunner,
+              persistenceService,
+              scanClient != null));
     } else {
       logger.debug(
           "No application service is available. Application service event handlers will not be registered.");

@@ -1,13 +1,5 @@
 {
   "cds": {
-    "requires": {
-      "outbox": {
-        "kind": "persistent-outbox"
-      }
-    },
-    "fiori": {
-      "draft_messages": false
-    },
     "build": {
       "tasks": [
         { "for": "java", "src": "generic" }

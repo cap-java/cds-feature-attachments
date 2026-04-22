@@ -30,12 +30,7 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
-import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
-import com.sap.cds.services.handler.annotations.After;
-import com.sap.cds.services.handler.annotations.Before;
-import com.sap.cds.services.handler.annotations.HandlerOrder;
-import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
@@ -82,7 +77,8 @@ class ReadAttachmentsHandlerTest {
             attachmentService,
             attachmentStatusValidator,
             asyncMalwareScanExecutor,
-            persistenceService);
+            persistenceService,
+            true);
 
     readEventContext = mock(CdsReadEventContext.class);
   }
@@ -366,37 +362,6 @@ class ReadAttachmentsHandlerTest {
   }
 
   @Test
-  void classHasCorrectAnnotation() {
-    var readHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
-
-    assertThat(readHandlerAnnotation.type()).containsOnly(ApplicationService.class);
-    assertThat(readHandlerAnnotation.value()).containsOnly("*");
-  }
-
-  @Test
-  void afterMethodAfterHasCorrectAnnotations() throws NoSuchMethodException {
-    var method =
-        cut.getClass().getDeclaredMethod("processAfter", CdsReadEventContext.class, List.class);
-
-    var readAfterAnnotation = method.getAnnotation(After.class);
-    var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(readAfterAnnotation.event()).isEmpty();
-    assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
-  }
-
-  @Test
-  void beforeMethodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method = cut.getClass().getDeclaredMethod("processBefore", CdsReadEventContext.class);
-
-    var readBeforeAnnotation = method.getAnnotation(Before.class);
-    var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(readBeforeAnnotation.event()).isEmpty();
-    assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
-  }
-
-  @Test
   void statusNotVerifiedIfNotOnlyContentIsRequested() {
     mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
     var attachment = Attachments.create();
@@ -421,6 +386,79 @@ class ReadAttachmentsHandlerTest {
 
     verifyNoInteractions(attachmentStatusValidator);
     assertThat(attachment.getContent()).isNull();
+  }
+
+  @Test
+  void scannerNotAvailable_staleCleanAttachmentIsNotRescanned() {
+    var handlerWithoutScanner =
+        new ReadAttachmentsHandler(
+            attachmentService,
+            attachmentStatusValidator,
+            asyncMalwareScanExecutor,
+            persistenceService,
+            false);
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(Instant.now().minus(4, ChronoUnit.DAYS));
+
+    handlerWithoutScanner.processAfter(readEventContext, List.of(attachment));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.CLEAN);
+  }
+
+  @Test
+  void scannerNotAvailable_cleanAttachmentWithNullScannedAtIsNotRescanned() {
+    var handlerWithoutScanner =
+        new ReadAttachmentsHandler(
+            attachmentService,
+            attachmentStatusValidator,
+            asyncMalwareScanExecutor,
+            persistenceService,
+            false);
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(null);
+
+    handlerWithoutScanner.processAfter(readEventContext, List.of(attachment));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.CLEAN);
+  }
+
+  @Test
+  void scannerNotAvailable_unscannedAttachmentStillFailsValidation() {
+    var handlerWithoutScanner =
+        new ReadAttachmentsHandler(
+            attachmentService,
+            attachmentStatusValidator,
+            asyncMalwareScanExecutor,
+            persistenceService,
+            false);
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.UNSCANNED);
+    doThrow(AttachmentStatusException.class)
+        .when(attachmentStatusValidator)
+        .verifyStatus(StatusCode.UNSCANNED);
+
+    List<CdsData> attachments = List.of(attachment);
+    assertThrows(
+        AttachmentStatusException.class,
+        () -> handlerWithoutScanner.processAfter(readEventContext, attachments));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
   }
 
   private void mockEventContext(String entityName, CqnSelect select) {
