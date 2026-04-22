@@ -61,6 +61,7 @@ runs:
           echo "Found: coverage-report/target/site/jacoco-aggregate/jacoco.xml"
         else
           echo "Missing: coverage-report/target/site/jacoco-aggregate/jacoco.xml"
+          exit 1
         fi
       shell: bash
 
@@ -73,4 +74,4 @@ runs:
           --githubToken=${{ inputs.github-token }}
           --version=${{ steps.get-revision.outputs.REVISION }}
           --inferJavaBinaries=true
-          --options=-Dsonar.exclusions=**/samples/**,-Dsonar.coverage.jacoco.xmlReportPaths=cds-feature-attachments/target/site/jacoco/jacoco.xml,storage-targets/cds-feature-attachments-fs/target/site/jacoco/jacoco.xml,storage-targets/cds-feature-attachments-oss/target/site/jacoco/jacoco.xml,coverage-report/target/site/jacoco-aggregate/jacoco.xml
+          --options=-Dsonar.exclusions=**/samples/**,-Dsonar.coverage.jacoco.xmlReportPaths=coverage-report/target/site/jacoco-aggregate/jacoco.xml
