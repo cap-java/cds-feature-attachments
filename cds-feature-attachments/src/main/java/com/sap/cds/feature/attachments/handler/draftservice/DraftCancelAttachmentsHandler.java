@@ -12,7 +12,6 @@ import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
@@ -46,15 +45,11 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
           ApplicationHandlerHelper.isMediaEntity(path.target().type())
               && element.getName().equals(Attachments.CONTENT_ID);
 
-  private final AssociationCascader cascader;
   private final AttachmentsReader attachmentsReader;
   private final MarkAsDeletedAttachmentEvent deleteEvent;
 
   public DraftCancelAttachmentsHandler(
-      AssociationCascader cascader,
-      AttachmentsReader attachmentsReader,
-      MarkAsDeletedAttachmentEvent deleteEvent) {
-    this.cascader = requireNonNull(cascader, "cascader must not be null");
+      AttachmentsReader attachmentsReader, MarkAsDeletedAttachmentEvent deleteEvent) {
     this.attachmentsReader =
         requireNonNull(attachmentsReader, "attachmentsReader must not be null");
     this.deleteEvent = requireNonNull(deleteEvent, "deleteEvent must not be null");
@@ -65,27 +60,29 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   void processBeforeDraftCancel(DraftCancelEventContext context) {
     CdsEntity entity = context.getTarget();
 
-    if (!cascader.findMediaEntityNames(context.getModel(), entity).isEmpty()) {
-      logger.debug(
-          "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
+    CdsEntity activeEntity = DraftUtils.getActiveEntity(entity);
+    CdsEntity draftEntity = DraftUtils.getDraftEntity(entity);
 
-      CdsEntity activeEntity = DraftUtils.getActiveEntity(context.getTarget());
-      CdsEntity draftEntity = DraftUtils.getDraftEntity(context.getTarget());
+    List<Attachments> draftAttachments = readAttachments(context, draftEntity, false);
 
-      List<Attachments> draftAttachments = readAttachments(context, draftEntity, false);
-      List<Attachments> activeCondensedAttachments =
-          getCondensedActiveAttachments(context, activeEntity);
-
-      Validator validator = buildDeleteContentValidator(context, activeCondensedAttachments);
-      CdsDataProcessor.create()
-          .addValidator(contentIdFilter, validator)
-          .process(draftAttachments, context.getTarget());
-    } else {
+    if (draftAttachments.isEmpty()) {
       logger.debug(
           "Skipping processing before {} event for entity {}",
           context.getEvent(),
           context.getTarget());
+      return;
     }
+
+    logger.debug(
+        "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
+
+    List<Attachments> activeCondensedAttachments =
+        getCondensedActiveAttachments(context, activeEntity);
+
+    Validator validator = buildDeleteContentValidator(context, activeCondensedAttachments);
+    CdsDataProcessor.create()
+        .addValidator(contentIdFilter, validator)
+        .process(draftAttachments, context.getTarget());
   }
 
   private Validator buildDeleteContentValidator(

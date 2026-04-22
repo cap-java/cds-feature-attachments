@@ -13,7 +13,6 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.Delete;
@@ -49,10 +48,10 @@ class DraftCancelAttachmentsHandlerTest {
   @BeforeEach
   void setup() {
     attachmentsReader = mock(AttachmentsReader.class);
+    when(attachmentsReader.readAttachments(any(), any(), any()))
+        .thenReturn(List.of(Attachments.create()));
     deleteContentAttachmentEvent = mock(MarkAsDeletedAttachmentEvent.class);
-    cut =
-        new DraftCancelAttachmentsHandler(
-            new AssociationCascader(), attachmentsReader, deleteContentAttachmentEvent);
+    cut = new DraftCancelAttachmentsHandler(attachmentsReader, deleteContentAttachmentEvent);
 
     eventContext = mock(DraftCancelEventContext.class);
     deleteArgumentCaptor = ArgumentCaptor.forClass(CqnDelete.class);
@@ -61,47 +60,37 @@ class DraftCancelAttachmentsHandlerTest {
 
   @Test
   void entityHasNoAttachmentsAndIsNotAttachmentEntityNothingHappens() {
-    // Test the case where isAttachmentEntity and hasAttachmentAssociations both
-    // return false
     CdsEntity mockEntity = mock(CdsEntity.class);
-    // Entity has no elements with name "attachment"
-    when(mockEntity.getQualifiedName())
-        .thenReturn("TestService.RegularEntity"); // No "Attachment" in name
-    when(mockEntity.getAnnotationValue("_is_media_data", false)).thenReturn(false);
-    when(mockEntity.elements()).thenReturn(java.util.stream.Stream.empty());
-
-    com.sap.cds.reflect.CdsModel mockModel = mock(com.sap.cds.reflect.CdsModel.class);
-    when(mockModel.findEntity("TestService.RegularEntity")).thenReturn(Optional.of(mockEntity));
+    when(mockEntity.getQualifiedName()).thenReturn("TestService.RegularEntity");
+    CdsEntity siblingEntity = mock(CdsEntity.class);
+    when(mockEntity.getTargetOf(Drafts.SIBLING_ENTITY)).thenReturn(siblingEntity);
 
     when(eventContext.getTarget()).thenReturn(mockEntity);
-    when(eventContext.getModel()).thenReturn(mockModel);
-
-    CqnDelete mockDelete = mock(CqnDelete.class);
-    when(mockDelete.where()).thenReturn(Optional.empty());
-    when(eventContext.getCqn()).thenReturn(mockDelete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getCqn()).thenReturn(Delete.from("RegularEntity"));
     when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+    when(attachmentsReader.readAttachments(any(), any(), any())).thenReturn(List.of());
 
     cut.processBeforeDraftCancel(eventContext);
 
-    verifyNoInteractions(attachmentsReader);
+    verifyNoInteractions(deleteContentAttachmentEvent);
   }
 
   @Test
   void entityWithoutAttachmentsIsSkipped() {
-    // Test that entities without attachments are properly skipped
     CdsEntity mockEntity = mock(CdsEntity.class);
     when(mockEntity.getQualifiedName()).thenReturn("TestService.RegularEntity");
-    when(mockEntity.getAnnotationValue("_is_media_data", false)).thenReturn(false);
-    when(mockEntity.compositions()).thenReturn(java.util.stream.Stream.empty());
-    when(mockEntity.elements()).thenReturn(java.util.stream.Stream.empty());
+    CdsEntity siblingEntity = mock(CdsEntity.class);
+    when(mockEntity.getTargetOf(Drafts.SIBLING_ENTITY)).thenReturn(siblingEntity);
 
     when(eventContext.getTarget()).thenReturn(mockEntity);
     when(eventContext.getCqn()).thenReturn(Delete.from("RegularEntity"));
     when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(attachmentsReader.readAttachments(any(), any(), any())).thenReturn(List.of());
 
     cut.processBeforeDraftCancel(eventContext);
 
-    verifyNoInteractions(attachmentsReader, deleteContentAttachmentEvent);
+    verifyNoInteractions(deleteContentAttachmentEvent);
   }
 
   @Test
@@ -254,18 +243,14 @@ class DraftCancelAttachmentsHandlerTest {
 
   @Test
   void circularReferenceInCompositionsHandled() {
-    // Test that circular references in entity compositions are handled correctly
     getEntityAndMockContext(RootTable_.CDS_NAME);
     CqnDelete delete = Delete.from(RootTable_.class);
     when(eventContext.getCqn()).thenReturn(delete);
     when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
     when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
 
-    // The deepSearchForAttachmentsRecursive should handle circular references via
-    // the visited set
     cut.processBeforeDraftCancel(eventContext);
 
-    // Should complete without stack overflow or infinite loop
     verify(attachmentsReader, atLeastOnce()).readAttachments(any(), any(), any());
   }
 
