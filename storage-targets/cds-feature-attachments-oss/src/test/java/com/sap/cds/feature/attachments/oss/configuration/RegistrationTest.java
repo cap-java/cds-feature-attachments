@@ -11,8 +11,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
-import com.sap.cds.feature.attachments.oss.multitenancy.ObjectStoreSubscribeHandler;
-import com.sap.cds.feature.attachments.oss.multitenancy.ObjectStoreUnsubscribeHandler;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.runtime.CdsRuntime;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
@@ -147,7 +145,7 @@ class RegistrationTest {
   class SeparateMode {
 
     @Test
-    void testSeparateModeRegistersHandlerAndLifecycleHandlers() {
+    void testSeparateModeRegistersOnlyOSSHandler() {
       ServiceBinding smBinding = createServiceManagerBinding();
       when(environment.getServiceBindings()).thenReturn(Stream.of(smBinding));
       when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
@@ -160,11 +158,9 @@ class RegistrationTest {
 
       registration.eventHandlers(configurer);
 
-      // Should register: OSSAttachmentsServiceHandler + SubscribeHandler + UnsubscribeHandler = 3
+      // Only OSSAttachmentsServiceHandler — lifecycle handlers are managed by cap-js sidecar
       verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
-      verify(configurer, times(1)).eventHandler(any(ObjectStoreSubscribeHandler.class));
-      verify(configurer, times(1)).eventHandler(any(ObjectStoreUnsubscribeHandler.class));
-      verify(configurer, times(3)).eventHandler(any());
+      verify(configurer, times(1)).eventHandler(any());
     }
 
     @Test

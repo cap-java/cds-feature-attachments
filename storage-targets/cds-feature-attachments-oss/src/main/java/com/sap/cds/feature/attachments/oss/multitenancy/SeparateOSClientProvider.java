@@ -55,18 +55,6 @@ public class SeparateOSClientProvider implements OSClientProvider {
     return entry.client();
   }
 
-  /** Removes the cached client for a tenant. */
-  public void evict(String tenantId) {
-    cache.remove(tenantId);
-    logger.debug("Evicted cached OSClient for tenant {}", tenantId);
-  }
-
-  /** Warms the cache with a pre-created client for a tenant. */
-  public void put(String tenantId, OSClient client) {
-    cache.put(tenantId, new CachedOSClient(client, Instant.now()));
-    logger.debug("Warmed cache for tenant {}", tenantId);
-  }
-
   private CachedOSClient createClient(String tenantId) {
     ServiceManagerBindingResult binding =
         smClient

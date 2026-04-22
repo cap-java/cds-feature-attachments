@@ -8,9 +8,6 @@ import com.sap.cds.feature.attachments.oss.client.OSClientFactory;
 import com.sap.cds.feature.attachments.oss.client.SharedOSClientProvider;
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.oss.handler.TenantCleanupHandler;
-import com.sap.cds.feature.attachments.oss.multitenancy.ObjectStoreLifecycleHandler;
-import com.sap.cds.feature.attachments.oss.multitenancy.ObjectStoreSubscribeHandler;
-import com.sap.cds.feature.attachments.oss.multitenancy.ObjectStoreUnsubscribeHandler;
 import com.sap.cds.feature.attachments.oss.multitenancy.SeparateOSClientProvider;
 import com.sap.cds.feature.attachments.oss.multitenancy.sm.ServiceManagerClient;
 import com.sap.cds.feature.attachments.oss.multitenancy.sm.ServiceManagerCredentials;
@@ -72,13 +69,9 @@ public class Registration implements CdsRuntimeConfiguration {
         new OSSAttachmentsServiceHandler(clientProvider, true, "separate");
     configurer.eventHandler(handler);
 
-    ObjectStoreLifecycleHandler lifecycleHandler =
-        new ObjectStoreLifecycleHandler(smClient, clientProvider, executor);
-    configurer.eventHandler(new ObjectStoreSubscribeHandler(lifecycleHandler));
-    configurer.eventHandler(new ObjectStoreUnsubscribeHandler(lifecycleHandler));
-
     logger.info(
-        "Registered OSS Attachments Service Handler with separate-bucket multitenancy mode.");
+        "Registered OSS Attachments Service Handler with separate-bucket multitenancy mode."
+            + " Tenant lifecycle (onboarding/offboarding) is managed by the cap-js MTX sidecar.");
   }
 
   private void registerSharedOrSingleTenantMode(
