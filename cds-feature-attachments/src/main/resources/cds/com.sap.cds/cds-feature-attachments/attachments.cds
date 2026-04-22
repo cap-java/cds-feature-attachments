@@ -26,7 +26,7 @@ context sap.attachments {
 
     aspect MediaData @(_is_media_data) : managed {
         content   : LargeBinary; // stored only for db-based services
-        mimeType  : String default 'application/octet-stream';
+        mimeType  : String;
         fileName  : String(5000);
         contentId : String                         @readonly; // id of attachment in external storage, if database storage is used, same as id
         status    : StatusCode default 'Unscanned' @readonly;
