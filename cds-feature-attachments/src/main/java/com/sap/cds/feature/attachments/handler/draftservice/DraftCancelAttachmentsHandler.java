@@ -60,7 +60,6 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   void processBeforeDraftCancel(DraftCancelEventContext context) {
     CdsEntity entity = context.getTarget();
 
-    CdsEntity activeEntity = DraftUtils.getActiveEntity(entity);
     CdsEntity draftEntity = DraftUtils.getDraftEntity(entity);
 
     List<Attachments> draftAttachments = readAttachments(context, draftEntity, false);
@@ -76,6 +75,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     logger.debug(
         "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
 
+    CdsEntity activeEntity = DraftUtils.getActiveEntity(entity);
     List<Attachments> activeCondensedAttachments =
         getCondensedActiveAttachments(context, activeEntity);
 
