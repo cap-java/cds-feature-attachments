@@ -147,8 +147,8 @@ public class Registration implements CdsRuntimeConfiguration {
         new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
     ModifyAttachmentEventFactory eventFactory =
         buildAttachmentEventFactory(attachmentService, deleteEvent, outboxedAttachmentService);
-    AttachmentsReader attachmentsReader =
-        new AttachmentsReader(new AssociationCascader(), persistenceService);
+    AssociationCascader cascader = new AssociationCascader();
+    AttachmentsReader attachmentsReader = new AttachmentsReader(cascader, persistenceService);
     ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
     // register event handlers for application service, if at least one application service is
@@ -182,7 +182,8 @@ public class Registration implements CdsRuntimeConfiguration {
     if (hasDraftServices) {
       configurer.eventHandler(
           new DraftPatchAttachmentsHandler(persistenceService, eventFactory, defaultMaxSize));
-      configurer.eventHandler(new DraftCancelAttachmentsHandler(attachmentsReader, deleteEvent));
+      configurer.eventHandler(
+          new DraftCancelAttachmentsHandler(cascader, attachmentsReader, deleteEvent));
       configurer.eventHandler(new DraftActiveAttachmentsHandler(storage));
     } else {
       logger.debug("No draft service is available. Draft event handlers will not be registered.");

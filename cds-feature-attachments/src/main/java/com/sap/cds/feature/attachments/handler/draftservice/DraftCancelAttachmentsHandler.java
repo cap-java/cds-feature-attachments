@@ -12,10 +12,10 @@ import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
-import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.DraftCancelEventContext;
@@ -25,7 +25,6 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,11 +46,15 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
           ApplicationHandlerHelper.isMediaEntity(path.target().type())
               && element.getName().equals(Attachments.CONTENT_ID);
 
+  private final AssociationCascader cascader;
   private final AttachmentsReader attachmentsReader;
   private final MarkAsDeletedAttachmentEvent deleteEvent;
 
   public DraftCancelAttachmentsHandler(
-      AttachmentsReader attachmentsReader, MarkAsDeletedAttachmentEvent deleteEvent) {
+      AssociationCascader cascader,
+      AttachmentsReader attachmentsReader,
+      MarkAsDeletedAttachmentEvent deleteEvent) {
+    this.cascader = requireNonNull(cascader, "cascader must not be null");
     this.attachmentsReader =
         requireNonNull(attachmentsReader, "attachmentsReader must not be null");
     this.deleteEvent = requireNonNull(deleteEvent, "deleteEvent must not be null");
@@ -62,7 +65,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   void processBeforeDraftCancel(DraftCancelEventContext context) {
     CdsEntity entity = context.getTarget();
 
-    if (deepSearchForAttachments(entity)) {
+    if (!cascader.findMediaEntityNames(context.getModel(), entity).isEmpty()) {
       logger.debug(
           "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
 
@@ -105,28 +108,6 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
             }
           });
     };
-  }
-
-  private boolean deepSearchForAttachments(CdsEntity entity) {
-    return deepSearchForAttachmentsRecursive(entity, new HashSet<>());
-  }
-
-  private boolean deepSearchForAttachmentsRecursive(CdsEntity entity, HashSet<String> visited) {
-
-    if (visited.contains(entity.getQualifiedName())) {
-      return false;
-    }
-    visited.add(entity.getQualifiedName());
-
-    if (ApplicationHandlerHelper.isMediaEntity(entity)) {
-      return true;
-    }
-
-    return entity
-        .compositions()
-        .map(element -> element.getType().as(CdsAssociationType.class))
-        .anyMatch(
-            association -> deepSearchForAttachmentsRecursive(association.getTarget(), visited));
   }
 
   private List<Attachments> readAttachments(
