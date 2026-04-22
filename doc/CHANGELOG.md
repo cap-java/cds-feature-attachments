@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- Added top-level `Attachments` aspect to allow usage without `sap.attachments` namespace (#806)
+- Added top-level `Attachments` aspect to allow usage without `sap.attachments` namespace (#806), i.e., `using {Attachments} from 'com.sap.cds/cds-feature-attachments'`.
 - Extract `fileName` and `mimeType` from HTTP headers (`Content-Disposition`, `Content-Type`, `slug`) when not provided in the request payload (#804)
 
 ## Version 1.5.0 - 2026-04-10
