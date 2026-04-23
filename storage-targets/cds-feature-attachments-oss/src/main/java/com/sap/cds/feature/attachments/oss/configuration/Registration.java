@@ -7,7 +7,9 @@ import com.sap.cds.feature.attachments.oss.client.OSClient;
 import com.sap.cds.feature.attachments.oss.client.OSClientFactory;
 import com.sap.cds.feature.attachments.oss.client.TenantOSClientProvider;
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
+import com.sap.cds.feature.attachments.oss.handler.ObjectStoreInstanceLifecycleHandler;
 import com.sap.cds.feature.attachments.oss.handler.TenantCleanupHandler;
+import com.sap.cds.feature.attachments.oss.servicemanager.ServiceManagerClient;
 import com.sap.cds.feature.attachments.oss.servicemanager.ServiceManagerCredentialResolver;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
@@ -53,8 +55,9 @@ public class Registration implements CdsRuntimeConfiguration {
     TenantOSClientProvider tenantProvider =
         new TenantOSClientProvider(credentialResolver, executor);
 
+    ServiceManagerClient smClient = new ServiceManagerClient(credentialResolver);
     configurer.eventHandler(new OSSAttachmentsServiceHandler(tenantProvider, objectStoreKind));
-    configurer.eventHandler(new TenantCleanupHandler(tenantProvider));
+    configurer.eventHandler(new ObjectStoreInstanceLifecycleHandler(smClient, tenantProvider));
     logger.info(
         "Registered OSS Attachments Service Handler with separate-bucket multitenancy mode.");
   }
