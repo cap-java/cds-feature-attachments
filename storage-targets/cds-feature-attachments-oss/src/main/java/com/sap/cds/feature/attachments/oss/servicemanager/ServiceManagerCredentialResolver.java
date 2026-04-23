@@ -41,11 +41,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Resolves per-tenant object store credentials from the SAP Service Manager. Used in
- * separate-bucket multitenancy mode where each tenant has a dedicated object store instance
- * provisioned by the MTX sidecar (cap-js/attachments plugin).
+ * separate-bucket multitenancy mode where each tenant has a dedicated object store instance.
  *
- * <p>This client only reads tenant bindings; instance lifecycle (subscribe/unsubscribe) is handled
- * by the cap-js sidecar.
+ * <p>Provides token management and HTTP client infrastructure that {@link ServiceManagerClient}
+ * reuses for instance lifecycle operations.
  */
 public class ServiceManagerCredentialResolver {
 
@@ -156,7 +155,7 @@ public class ServiceManagerCredentialResolver {
     }
   }
 
-  private synchronized String getAccessToken() {
+  synchronized String getAccessToken() {
     if (cachedToken != null && Instant.now().isBefore(tokenExpiry)) {
       return cachedToken;
     }
@@ -224,6 +223,14 @@ public class ServiceManagerCredentialResolver {
     } catch (Exception e) {
       throw new ServiceManagerException("Failed to fetch Service Manager access token", e);
     }
+  }
+
+  String getSmUrl() {
+    return smUrl;
+  }
+
+  CloseableHttpClient getHttpClient() {
+    return httpClient;
   }
 
   private CloseableHttpClient buildHttpClient() {
