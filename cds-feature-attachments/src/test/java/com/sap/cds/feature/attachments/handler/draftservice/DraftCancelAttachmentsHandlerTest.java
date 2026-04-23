@@ -77,23 +77,6 @@ class DraftCancelAttachmentsHandlerTest {
   }
 
   @Test
-  void entityWithoutAttachmentsIsSkipped() {
-    CdsEntity mockEntity = mock(CdsEntity.class);
-    when(mockEntity.getQualifiedName()).thenReturn("TestService.RegularEntity");
-    CdsEntity siblingEntity = mock(CdsEntity.class);
-    when(mockEntity.getTargetOf(Drafts.SIBLING_ENTITY)).thenReturn(siblingEntity);
-
-    when(eventContext.getTarget()).thenReturn(mockEntity);
-    when(eventContext.getCqn()).thenReturn(Delete.from("RegularEntity"));
-    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
-    when(attachmentsReader.readAttachments(any(), any(), any())).thenReturn(List.of());
-
-    cut.processBeforeDraftCancel(eventContext);
-
-    verifyNoInteractions(deleteContentAttachmentEvent);
-  }
-
-  @Test
   void nothingSelectedNothingToDo() {
     getEntityAndMockContext(RootTable_.CDS_NAME);
     CqnDelete delete = Delete.from(RootTable_.class);

@@ -170,6 +170,7 @@ public class Registration implements CdsRuntimeConfiguration {
               new AttachmentStatusValidator(),
               scanRunner,
               persistenceService,
+              cascader,
               scanClient != null));
     } else {
       logger.debug(
