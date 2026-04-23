@@ -5,8 +5,10 @@ package com.sap.cds.feature.attachments.oss.configuration;
 
 import com.sap.cds.feature.attachments.oss.client.OSClient;
 import com.sap.cds.feature.attachments.oss.client.OSClientFactory;
+import com.sap.cds.feature.attachments.oss.client.TenantOSClientProvider;
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.oss.handler.TenantCleanupHandler;
+import com.sap.cds.feature.attachments.oss.servicemanager.ServiceManagerCredentialResolver;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
@@ -25,37 +27,46 @@ public class Registration implements CdsRuntimeConfiguration {
   @Override
   public void eventHandlers(CdsRuntimeConfigurer configurer) {
     CdsEnvironment env = configurer.getCdsRuntime().getEnvironment();
+    boolean multitenancyEnabled = isMultitenancyEnabled(env);
+    String objectStoreKind = getObjectStoreKind(env);
+
+    if (multitenancyEnabled && "separate".equals(objectStoreKind)) {
+      registerSeparateMode(configurer, env, objectStoreKind);
+    } else {
+      registerSharedOrSingleTenantMode(configurer, env, multitenancyEnabled, objectStoreKind);
+    }
+  }
+
+  private void registerSeparateMode(
+      CdsRuntimeConfigurer configurer, CdsEnvironment env, String objectStoreKind) {
+    Optional<ServiceBinding> smBindingOpt = getSMBinding(env);
+    if (smBindingOpt.isEmpty()) {
+      logger.warn(
+          "No service binding to Service Manager found. Separate-bucket multitenancy for"
+              + " attachments requires a 'service-manager' service binding.");
+      return;
+    }
+
+    ExecutorService executor = createExecutor(env);
+    ServiceManagerCredentialResolver credentialResolver =
+        new ServiceManagerCredentialResolver(smBindingOpt.get());
+    TenantOSClientProvider tenantProvider =
+        new TenantOSClientProvider(credentialResolver, executor);
+
+    configurer.eventHandler(new OSSAttachmentsServiceHandler(tenantProvider, objectStoreKind));
+    configurer.eventHandler(new TenantCleanupHandler(tenantProvider));
+    logger.info(
+        "Registered OSS Attachments Service Handler with separate-bucket multitenancy mode.");
+  }
+
+  private void registerSharedOrSingleTenantMode(
+      CdsRuntimeConfigurer configurer,
+      CdsEnvironment env,
+      boolean multitenancyEnabled,
+      String objectStoreKind) {
     Optional<ServiceBinding> bindingOpt = getOSBinding(env);
     if (bindingOpt.isPresent()) {
-      boolean multitenancyEnabled = isMultitenancyEnabled(env);
-      String objectStoreKind = getObjectStoreKind(env);
-
-      // Fixed thread pool for background I/O operations (upload, download, delete).
-      // Default 16 is tuned for I/O-bound cloud storage calls, not CPU-bound work.
-      int threadPoolSize =
-          env.getProperty("cds.attachments.objectStore.threadPoolSize", Integer.class, 16);
-      ExecutorService executor =
-          Executors.newFixedThreadPool(
-              threadPoolSize,
-              r -> {
-                Thread t = new Thread(r, "attachment-oss-tasks");
-                t.setDaemon(true);
-                return t;
-              });
-      Runtime.getRuntime()
-          .addShutdownHook(
-              new Thread(
-                  () -> {
-                    executor.shutdown();
-                    try {
-                      if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
-                        executor.shutdownNow();
-                      }
-                    } catch (InterruptedException e) {
-                      executor.shutdownNow();
-                      Thread.currentThread().interrupt();
-                    }
-                  }));
+      ExecutorService executor = createExecutor(env);
       OSClient osClient = OSClientFactory.create(bindingOpt.get(), executor);
       OSSAttachmentsServiceHandler handler =
           new OSSAttachmentsServiceHandler(osClient, multitenancyEnabled, objectStoreKind);
@@ -64,14 +75,44 @@ public class Registration implements CdsRuntimeConfiguration {
       if (multitenancyEnabled && "shared".equals(objectStoreKind)) {
         configurer.eventHandler(new TenantCleanupHandler(osClient));
         logger.info(
-            "Registered OSS Attachments Service Handler with shared multitenancy mode and tenant cleanup.");
+            "Registered OSS Attachments Service Handler with shared multitenancy mode and tenant"
+                + " cleanup.");
       } else {
         logger.info("Registered OSS Attachments Service Handler.");
       }
     } else {
       logger.warn(
-          "No service binding to Object Store Service found, hence the OSS Attachments Service Handler is not connected!");
+          "No service binding to Object Store Service found, hence the OSS Attachments Service"
+              + " Handler is not connected!");
     }
+  }
+
+  private ExecutorService createExecutor(CdsEnvironment env) {
+    int threadPoolSize =
+        env.getProperty("cds.attachments.objectStore.threadPoolSize", Integer.class, 16);
+    ExecutorService executor =
+        Executors.newFixedThreadPool(
+            threadPoolSize,
+            r -> {
+              Thread t = new Thread(r, "attachment-oss-tasks");
+              t.setDaemon(true);
+              return t;
+            });
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  executor.shutdown();
+                  try {
+                    if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                      executor.shutdownNow();
+                    }
+                  } catch (InterruptedException e) {
+                    executor.shutdownNow();
+                    Thread.currentThread().interrupt();
+                  }
+                }));
+    return executor;
   }
 
   /**
@@ -86,6 +127,13 @@ public class Registration implements CdsRuntimeConfiguration {
     return environment
         .getServiceBindings()
         .filter(b -> b.getServiceName().map(name -> name.equals("objectstore")).orElse(false))
+        .findFirst();
+  }
+
+  private static Optional<ServiceBinding> getSMBinding(CdsEnvironment environment) {
+    return environment
+        .getServiceBindings()
+        .filter(b -> b.getServiceName().map(name -> name.equals("service-manager")).orElse(false))
         .findFirst();
   }
 
