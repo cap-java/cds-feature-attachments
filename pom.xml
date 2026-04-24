@@ -36,6 +36,7 @@
     <module>storage-targets/cds-feature-attachments-fs</module>
     <module>storage-targets/cds-feature-attachments-oss</module>
     <module>integration-tests</module>
+    <module>coverage-report</module>
   </modules>
 
   <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
@@ -125,6 +126,27 @@
       <dependency>
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-feature-attachments</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-feature-attachments-oss</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-feature-attachments-fs</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.sap.cds.integration-tests</groupId>
+        <artifactId>cds-feature-attachments-integration-tests-generic</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sap.cds.integration-tests</groupId>
+        <artifactId>cds-feature-attachments-integration-tests-mtx-local</artifactId>
         <version>${revision}</version>
       </dependency>
     </dependencies>
@@ -407,6 +429,7 @@
                 <excludeArtifact>cds-feature-attachments-integration-tests-db</excludeArtifact>
                 <excludeArtifact>cds-feature-attachments-integration-tests-generic</excludeArtifact>
                 <excludeArtifact>cds-feature-attachments-integration-tests-mtx-local</excludeArtifact>
+                <excludeArtifact>cds-feature-attachments-coverage-report</excludeArtifact>
               </excludeArtifacts>
             </configuration>
           </plugin>
@@ -419,7 +442,7 @@
         <module>cds-feature-attachments</module>
         <module>storage-targets/cds-feature-attachments-fs</module>
         <module>storage-targets/cds-feature-attachments-oss</module>
-        <!-- Exclude integration-tests modules -->
+        <!-- Exclude integration-tests and coverage-report modules -->
       </modules>
     </profile>
   </profiles>
