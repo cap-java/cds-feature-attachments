@@ -614,7 +614,7 @@ class CreateAttachmentEventTest {
   }
 
   @Test
-  void inlineMimeTypeOctetStreamOverriddenByHeader() {
+  void inlineMimeTypeOctetStreamKeptWhenExplicitlySet() {
     Map<String, Object> values = prepareInlineValuesWithoutMetadata();
     values.put("profilePicture_mimeType", "application/octet-stream");
     when(parameterInfo.getHeader("Content-Type")).thenReturn("image/png");
@@ -626,9 +626,9 @@ class CreateAttachmentEventTest {
         eventContext,
         Optional.of("profilePicture"));
 
-    assertThat(values).containsEntry("profilePicture_mimeType", "image/png");
+    assertThat(values).containsEntry("profilePicture_mimeType", "application/octet-stream");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
-    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("image/png");
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("application/octet-stream");
   }
 
   @Test
@@ -649,7 +649,7 @@ class CreateAttachmentEventTest {
   }
 
   @Test
-  void inlineMimeTypeOctetStreamContentTypeNotUsed() {
+  void inlineMimeTypeOctetStreamFromContentTypeHeaderIsUsed() {
     Map<String, Object> values = prepareInlineValuesWithoutMetadata();
     when(parameterInfo.getHeader("Content-Type")).thenReturn("application/octet-stream");
 
@@ -660,9 +660,9 @@ class CreateAttachmentEventTest {
         eventContext,
         Optional.of("profilePicture"));
 
-    assertThat(values).doesNotContainKey("profilePicture_mimeType");
+    assertThat(values).containsEntry("profilePicture_mimeType", "application/octet-stream");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
-    assertThat(contextArgumentCaptor.getValue().mimeType()).isNull();
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("application/octet-stream");
   }
 
   @Test

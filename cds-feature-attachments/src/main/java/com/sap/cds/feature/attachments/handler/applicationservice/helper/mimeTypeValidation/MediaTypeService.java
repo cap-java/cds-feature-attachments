@@ -13,13 +13,12 @@ import org.slf4j.LoggerFactory;
 
 public final class MediaTypeService {
   private static final Logger logger = LoggerFactory.getLogger(MediaTypeService.class);
-  public static final String DEFAULT_MEDIA_TYPE = "application/octet-stream";
 
   /**
    * Resolves the MIME type of a file based on its filename (specifically its extension).
    *
    * @param fileName the name of the file (including extension)
-   * @return the resolved MIME type, or a default MIME type if it cannot be determined
+   * @return the resolved MIME type, or {@code null} if it cannot be determined
    * @throws ServiceException if the filename is null or blank
    */
   public static String resolveMimeType(String fileName) {
@@ -29,14 +28,14 @@ public final class MediaTypeService {
 
     int lastDotIndex = fileName.lastIndexOf('.');
     if (lastDotIndex == -1 || lastDotIndex == fileName.length() - 1) {
-      return fallbackToDefaultMimeType(fileName);
+      return logUnresolvableMimeType(fileName);
     }
 
     FileNameMap fileNameMap = URLConnection.getFileNameMap();
     String actualMimeType = fileNameMap.getContentTypeFor(fileName);
 
     if (actualMimeType == null) {
-      return fallbackToDefaultMimeType(fileName);
+      return logUnresolvableMimeType(fileName);
     }
     return actualMimeType;
   }
@@ -74,12 +73,9 @@ public final class MediaTypeService {
                     : baseMimeType.equals(type));
   }
 
-  private static String fallbackToDefaultMimeType(String fileName) {
-    logger.warn(
-        "Could not determine mime type for file: {}. Setting mime type to default: {}",
-        fileName,
-        DEFAULT_MEDIA_TYPE);
-    return DEFAULT_MEDIA_TYPE;
+  private static String logUnresolvableMimeType(String fileName) {
+    logger.warn("Could not determine mime type for file: {}", fileName);
+    return null;
   }
 
   private MediaTypeService() {

@@ -77,8 +77,8 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     }
 
     // Extract mimeType from Content-Type header for ALL attachment types (inline and composition)
-    // when mimeType is not already set or is the default 'application/octet-stream'
-    if (mimeTypeOptional.isEmpty() || "application/octet-stream".equals(mimeTypeOptional.get())) {
+    // when mimeType is not already set
+    if (mimeTypeOptional.isEmpty() && eventContext.getParameterInfo() != null) {
       Optional<String> headerMimeType = extractMimeTypeFromHeader(eventContext);
       if (headerMimeType.isPresent()) {
         mimeTypeOptional = headerMimeType;

@@ -389,5 +389,4 @@ class DraftPatchAttachmentsHandlerTest {
     assertThat(update.entries().get(0)).containsEntry("profilePicture_fileName", "document.pdf");
     assertThat(update.entries().get(0)).doesNotContainKey("profilePicture_mimeType");
   }
-
 }
