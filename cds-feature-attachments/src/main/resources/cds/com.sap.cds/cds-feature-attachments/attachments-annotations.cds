@@ -95,7 +95,7 @@ annotate sap.attachments.Attachments with
 @Common      : {SideEffects #ContentChanged: {
     SourceProperties: [content],
     TargetProperties: ['status']
-}}
+}};
 
 annotate sap.attachments.Attachment with {
     content @Core.ContentDisposition.Filename: (fileName);
