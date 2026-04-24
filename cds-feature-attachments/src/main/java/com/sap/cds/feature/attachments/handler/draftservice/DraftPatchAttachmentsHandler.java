@@ -104,14 +104,6 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
                   defaultMaxSize,
                   inlinePrefix);
 
-          // Persist mimeType/fileName for composition-based attachments directly
-          // (framework drops non-readonly fields from @Before handler data)
-          if (inlinePrefix.isEmpty()
-              && ApplicationHandlerHelper.isDirectMediaEntity(path.target().entity())) {
-            persistCompositionAttachmentMetadata(
-                path.target().values(), path.target().keys(), draftEntity);
-          }
-
           return processedContent;
         };
 
@@ -123,35 +115,6 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
     // @Before handlers, so mimeType and fileName (non-readonly) set by CreateAttachmentEvent
     // are dropped. Persist them directly via the PersistenceService.
     persistInlineAttachmentMetadata(context.getTarget(), data);
-  }
-
-  private void persistCompositionAttachmentMetadata(
-      Map<String, Object> values, Map<String, Object> keys, CdsEntity draftEntity) {
-    Object contentId = values.get(Attachments.CONTENT_ID);
-    if (contentId == null) {
-      return;
-    }
-
-    Map<String, Object> updateData = new HashMap<>();
-    Object mimeType = values.get(MediaData.MIME_TYPE);
-    Object fileName = values.get(MediaData.FILE_NAME);
-    if (mimeType != null) {
-      updateData.put(MediaData.MIME_TYPE, mimeType);
-    }
-    if (fileName != null) {
-      updateData.put(MediaData.FILE_NAME, fileName);
-    }
-    if (updateData.isEmpty()) {
-      return;
-    }
-
-    // Use entity keys directly to identify the record (including IsActiveEntity for draft)
-    if (keys.isEmpty()) {
-      return;
-    }
-
-    CqnUpdate update = Update.entity(draftEntity).data(updateData).matching(keys);
-    persistence.run(update);
   }
 
   private void persistInlineAttachmentMetadata(CdsEntity target, List<? extends CdsData> data) {
