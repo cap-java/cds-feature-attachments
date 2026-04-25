@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +76,6 @@ class SingleAttachmentDraftTest {
     verifySingleCreateEvent(activeRoot.getAvatarContentId(), content);
   }
 
-  @Disabled("Flaky due to CAP runtime outbox race condition - DELETE event not processed in time")
   @Test
   void createInlineAttachmentInDraftAndCancel() throws Exception {
     var draft = createNewDraft();
@@ -241,7 +239,6 @@ class SingleAttachmentDraftTest {
     assertThat(response.getResponse().getContentAsString()).isEqualTo(content);
   }
 
-  @Disabled("Flaky due to outbox timing")
   @Test
   void errorInTransactionAfterCreateCallsDelete() throws Exception {
     var draft = createNewDraft();

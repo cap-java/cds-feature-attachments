@@ -15,6 +15,7 @@ import com.sap.cds.ql.cqn.CqnFilterableStatement;
 import com.sap.cds.ql.cqn.CqnSelectListItem;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
+import com.sap.cds.services.draft.Drafts;
 import com.sap.cds.services.persistence.PersistenceService;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +81,9 @@ public class AttachmentsReader {
       columns.add(CQL.get(fieldName + "_content"));
       columns.add(CQL.get(fieldName + "_" + Attachments.CONTENT_ID));
       columns.add(CQL.get(fieldName + "_" + Attachments.STATUS));
+    }
+    if (!columns.isEmpty()) {
+      columns.add(CQL.get(Drafts.HAS_ACTIVE_ENTITY));
     }
     return columns;
   }
