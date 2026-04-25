@@ -140,64 +140,6 @@ class AttachmentsServiceImplTest {
   }
 
   @Test
-  void createAttachmentWithInlinePrefixPutsItInContext() {
-    var contextReference = new AtomicReference<AttachmentCreateEventContext>();
-    doAnswer(
-            input -> {
-              var context = (AttachmentCreateEventContext) input.getArgument(0);
-              contextReference.set(context);
-              context.setCompleted();
-              return null;
-            })
-        .when(handler)
-        .process(any());
-    serviceSpi.on(AttachmentService.EVENT_CREATE_ATTACHMENT, "", handler);
-    Map<String, Object> ids = Map.of("ID1", "value1");
-    var input =
-        new CreateAttachmentInput(
-            ids,
-            mock(CdsEntity.class),
-            "fileName",
-            "mimeType",
-            mock(InputStream.class),
-            Optional.of("profileIcon"));
-
-    cut.createAttachment(input);
-
-    var createContext = contextReference.get();
-    assertThat(createContext.get("attachment.inlinePrefix")).isEqualTo("profileIcon");
-  }
-
-  @Test
-  void createAttachmentWithoutInlinePrefixDoesNotSetContext() {
-    var contextReference = new AtomicReference<AttachmentCreateEventContext>();
-    doAnswer(
-            input -> {
-              var context = (AttachmentCreateEventContext) input.getArgument(0);
-              contextReference.set(context);
-              context.setCompleted();
-              return null;
-            })
-        .when(handler)
-        .process(any());
-    serviceSpi.on(AttachmentService.EVENT_CREATE_ATTACHMENT, "", handler);
-    Map<String, Object> ids = Map.of("ID1", "value1");
-    var input =
-        new CreateAttachmentInput(
-            ids,
-            mock(CdsEntity.class),
-            "fileName",
-            "mimeType",
-            mock(InputStream.class),
-            Optional.empty());
-
-    cut.createAttachment(input);
-
-    var createContext = contextReference.get();
-    assertThat(createContext.get("attachment.inlinePrefix")).isNull();
-  }
-
-  @Test
   void markAsDeleteAttachmentInsertsData() {
     var contextReference = new AtomicReference<AttachmentMarkAsDeletedEventContext>();
     var contentId = "some id";

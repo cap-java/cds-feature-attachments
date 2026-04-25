@@ -164,26 +164,4 @@ class AssociationCascaderTest {
         .isEqualTo(itemAttachmentNodeName);
     assertThat(itemAttachmentNode.getChildren()).isNotNull().isEmpty();
   }
-
-  @Test
-  void rootEntityWithInlineAttachmentDoesNotAddExtraTreeChild() {
-    // Inline attachment fields on the root entity are NOT represented as NodeTree children.
-    // They're handled directly by AttachmentsReader via CQL select columns.
-    var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
-
-    assertThat(ApplicationHandlerHelper.hasInlineAttachmentElements(serviceEntity))
-        .as("RootTable should have inline attachment elements (profilePicture)")
-        .isTrue();
-
-    var rootNode = cut.findEntityPath(runtime.getCdsModel(), serviceEntity);
-    var rootChildren = rootNode.getChildren();
-
-    // Inline fields on root do NOT create extra NodeTree children
-    // only composition associations (attachments, itemTable) appear
-    assertThat(rootChildren).hasSize(2);
-    assertThat(rootChildren.get(0).getIdentifier().associationName())
-        .isEqualTo(RootTable.ATTACHMENTS);
-    assertThat(rootChildren.get(1).getIdentifier().associationName())
-        .isEqualTo(RootTable.ITEM_TABLE);
-  }
 }

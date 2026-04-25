@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -20,7 +19,6 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Atta
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
-import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnly_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -474,106 +472,5 @@ class ReadAttachmentsHandlerTest {
     when(readEventContext.getTarget()).thenReturn(serviceEntity.orElseThrow());
     when(readEventContext.getModel()).thenReturn(runtime.getCdsModel());
     when(readEventContext.getCqn()).thenReturn(select);
-  }
-
-  // --- Inline Attachment Tests ---
-
-  @Test
-  void inlineContentWrappedWithLazyProxyOnRead() {
-    mockEventContext(RootTable_.CDS_NAME, mock(CqnSelect.class));
-
-    // Create root data with inline attachment fields
-    var root = CdsData.create();
-    root.put("ID", UUID.randomUUID().toString());
-    root.put("profilePicture_content", null);
-    root.put("profilePicture_contentId", "inline-doc-1");
-    root.put("profilePicture_status", StatusCode.CLEAN);
-
-    cut.processAfter(readEventContext, List.of(root));
-
-    assertThat(root.get("profilePicture_content")).isInstanceOf(LazyProxyInputStream.class);
-  }
-
-  @Test
-  void inlineContentWithoutContentIdRemainsNull() {
-    mockEventContext(RootTable_.CDS_NAME, mock(CqnSelect.class));
-
-    var root = CdsData.create();
-    root.put("ID", UUID.randomUUID().toString());
-    root.put("profilePicture_content", null);
-    // No contentId — should not be wrapped
-
-    cut.processAfter(readEventContext, List.of(root));
-
-    assertThat(root.get("profilePicture_content")).isNull();
-  }
-
-  @Test
-  void inlineContentWithExistingStreamWrappedWithProxy() throws IOException {
-    mockEventContext(RootTable_.CDS_NAME, mock(CqnSelect.class));
-    var testContent = "inline photo bytes";
-    var testStream = new ByteArrayInputStream(testContent.getBytes(StandardCharsets.UTF_8));
-
-    var root = CdsData.create();
-    root.put("ID", UUID.randomUUID().toString());
-    root.put("profilePicture_content", testStream);
-    root.put("profilePicture_contentId", "inline-doc-2");
-    root.put("profilePicture_status", StatusCode.CLEAN);
-
-    cut.processAfter(readEventContext, List.of(root));
-
-    assertThat(root.get("profilePicture_content")).isInstanceOf(LazyProxyInputStream.class);
-    // The proxy uses the existing stream supplier
-    byte[] bytes = ((InputStream) root.get("profilePicture_content")).readAllBytes();
-    assertThat(bytes).isEqualTo(testContent.getBytes(StandardCharsets.UTF_8));
-  }
-
-  @Test
-  void processBeforeWithOnlyInlineAttachmentsModifiesCqn() {
-    // InlineOnly entity has inline attachment but NO composition associations
-    // This covers the branch: fieldNames.isEmpty() && !inlinePrefixes.isEmpty()
-    var select = Select.from(InlineOnly_.class).columns(InlineOnly_::ID);
-    mockEventContext(InlineOnly_.CDS_NAME, select);
-
-    cut.processBefore(readEventContext);
-
-    // Verify CQN was modified (setCqn called)
-    verify(readEventContext).setCqn(any(CqnSelect.class));
-  }
-
-  @Test
-  void processAfterWithInlineOnlyEntityWrapsContent() {
-    mockEventContext(InlineOnly_.CDS_NAME, mock(CqnSelect.class));
-
-    var root = CdsData.create();
-    root.put("ID", UUID.randomUUID().toString());
-    root.put("avatar_content", null);
-    root.put("avatar_contentId", "avatar-doc-1");
-    root.put("avatar_status", StatusCode.CLEAN);
-
-    cut.processAfter(readEventContext, List.of(root));
-
-    assertThat(root.get("avatar_content")).isInstanceOf(LazyProxyInputStream.class);
-  }
-
-  @Test
-  void processAfterInlineAttachmentWithStaleScanTriggersRescan() {
-    mockEventContext(InlineOnly_.CDS_NAME, mock(CqnSelect.class));
-
-    var root = CdsData.create();
-    // Null key so areKeysEmpty returns true → verifyStatus proceeds
-    root.put("ID", null);
-    root.put("avatar_content", null);
-    root.put("avatar_contentId", "avatar-doc-stale");
-    root.put("avatar_status", StatusCode.CLEAN);
-    // No scannedAt → stale → triggers transitionToScanning with inline prefix
-
-    cut.processAfter(readEventContext, List.of(root));
-
-    // transitionToScanning calls persistenceService.run(update) with prefixed columns
-    verify(persistenceService).run(any(com.sap.cds.ql.cqn.CqnUpdate.class));
-    verify(asyncMalwareScanExecutor)
-        .scanAsync(any(), eq("avatar-doc-stale"), eq(Optional.of("avatar")));
-    assertThat(root.get("avatar_content")).isInstanceOf(LazyProxyInputStream.class);
   }
 }

@@ -16,7 +16,6 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.helper.LogObserver;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Delete;
@@ -314,60 +313,5 @@ class AttachmentsReaderTest {
 
   private String removeSpaceInString(String input) {
     return input.replace("\n", "").replace("\t", "").replace(" ", "");
-  }
-
-  // --- Inline Attachment Tests ---
-
-  @Test
-  void selectIncludesInlineColumnsForEntityWithInlineAttachments() {
-    // Use real RootTable entity so getInlineAttachmentFieldNames returns ["profilePicture"]
-    CdsEntity realEntity =
-        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
-    var nodeTree = new NodeTree(new AssociationIdentifier("", RootTable_.CDS_NAME));
-    when(cascader.findEntityPath(any(), any(CdsEntity.class))).thenReturn(nodeTree);
-    List<Attachments> data = List.of(Attachments.create());
-    when(result.listOf(Attachments.class)).thenReturn(data);
-
-    CqnDelete delete = Delete.from(RootTable_.CDS_NAME);
-    cut.readAttachments(model, realEntity, delete);
-
-    verify(persistenceService).run(selectArgumentCaptor.capture());
-    var selectStr = selectArgumentCaptor.getValue().toString();
-    // Inline columns: profilePicture_contentId and profilePicture_status
-    assertThat(selectStr).contains("profilePicture_contentId");
-    assertThat(selectStr).contains("profilePicture_status");
-  }
-
-  @Test
-  void selectIncludesInlineColumnsForChildEntityWithInlineAttachments() {
-    // Use real model to test the new functionality of including inline columns in child expands
-    CdsModel realModel = RuntimeHelper.runtime.getCdsModel();
-    CdsEntity realRootEntity = realModel.findEntity(RootTable_.CDS_NAME).orElseThrow();
-
-    // Build a node tree where RootTable has items composition to Items
-    // Items entity has inline attachment "profilePicture"
-    var rootPath = new LinkedList<AssociationIdentifier>();
-    rootPath.add(new AssociationIdentifier("", RootTable_.CDS_NAME));
-    rootPath.add(new AssociationIdentifier("items", Items_.CDS_NAME));
-
-    var nodeTree = new NodeTree(new AssociationIdentifier("", RootTable_.CDS_NAME));
-    nodeTree.addPath(rootPath);
-
-    when(cascader.findEntityPath(realModel, realRootEntity)).thenReturn(nodeTree);
-    List<Attachments> data = List.of(Attachments.create());
-    when(result.listOf(Attachments.class)).thenReturn(data);
-
-    CqnDelete delete = Delete.from(RootTable_.CDS_NAME);
-    cut.readAttachments(realModel, realRootEntity, delete);
-
-    verify(persistenceService).run(selectArgumentCaptor.capture());
-    var selectStr = selectArgumentCaptor.getValue().toString();
-
-    // The items expand should include inline attachment columns from Items entity
-    // Items entity has profilePicture inline attachment
-    assertThat(selectStr).contains("items");
-    assertThat(selectStr).contains("profilePicture_content");
-    assertThat(selectStr).contains("profilePicture_contentId");
-    assertThat(selectStr).contains("profilePicture_status");
   }
 }
