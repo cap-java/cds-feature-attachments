@@ -46,6 +46,11 @@ public class AttachmentsReader {
     NodeTree nodePath = cascader.findEntityPath(model, entity);
     List<Expand<?>> expandList = buildExpandList(nodePath);
 
+    if (expandList.isEmpty() && !ApplicationHandlerHelper.isMediaEntity(entity)) {
+      logResultData(entity, List.of());
+      return List.of();
+    }
+
     Select<?> select =
         !expandList.isEmpty()
             ? Select.from(statement.ref()).columns(expandList)

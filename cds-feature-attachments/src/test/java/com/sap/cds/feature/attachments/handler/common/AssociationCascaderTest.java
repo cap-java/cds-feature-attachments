@@ -128,6 +128,30 @@ class AssociationCascaderTest {
         "unit.test.Items.itemAttachments");
   }
 
+  @Test
+  void findMediaAssociationNames_returnsAssociationNames_forRoot() {
+    var entity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+
+    var result = cut.findMediaAssociationNames(runtime.getCdsModel(), entity);
+
+    assertThat(result)
+        .containsExactlyInAnyOrder(
+            RootTable.ATTACHMENTS,
+            Items.ATTACHMENTS,
+            "itemAttachments",
+            "sizeLimitedAttachments",
+            "defaultSizeLimitedAttachments");
+  }
+
+  @Test
+  void findMediaAssociationNames_returnsEmptyString_whenEntityIsMediaEntity() {
+    var entity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
+
+    var result = cut.findMediaAssociationNames(runtime.getCdsModel(), entity);
+
+    assertThat(result).containsExactly("");
+  }
+
   private void verifyItemAttachments(
       NodeTree itemNode, String attachmentNodeName, String itemAttachmentNodeName) {
     var attachmentNode = itemNode.getChildren().get(0);

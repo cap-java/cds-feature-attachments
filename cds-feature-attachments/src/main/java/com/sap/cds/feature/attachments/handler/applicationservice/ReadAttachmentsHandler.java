@@ -15,6 +15,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Att
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.BeforeReadItemsModifier;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.CQL;
@@ -22,13 +23,10 @@ import com.sap.cds.ql.Update;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.ql.cqn.Path;
-import com.sap.cds.reflect.CdsAssociationType;
-import com.sap.cds.reflect.CdsElementDefinition;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
-import com.sap.cds.services.draft.Drafts;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.Before;
@@ -38,13 +36,10 @@ import com.sap.cds.services.persistence.PersistenceService;
 import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,6 +72,7 @@ public class ReadAttachmentsHandler implements EventHandler {
   private final AttachmentStatusValidator statusValidator;
   private final AsyncMalwareScanExecutor scanExecutor;
   private final PersistenceService persistenceService;
+  private final AssociationCascader cascader;
   private final boolean scannerAvailable;
 
   public ReadAttachmentsHandler(
@@ -84,6 +80,7 @@ public class ReadAttachmentsHandler implements EventHandler {
       AttachmentStatusValidator statusValidator,
       AsyncMalwareScanExecutor scanExecutor,
       PersistenceService persistenceService,
+      AssociationCascader cascader,
       boolean scannerAvailable) {
     this.attachmentService =
         requireNonNull(attachmentService, "attachmentService must not be null");
@@ -91,6 +88,7 @@ public class ReadAttachmentsHandler implements EventHandler {
     this.scanExecutor = requireNonNull(scanExecutor, "scanExecutor must not be null");
     this.persistenceService =
         requireNonNull(persistenceService, "persistenceService must not be null");
+    this.cascader = requireNonNull(cascader, "cascader must not be null");
     this.scannerAvailable = scannerAvailable;
   }
 
@@ -100,8 +98,7 @@ public class ReadAttachmentsHandler implements EventHandler {
     logger.debug("Processing before {} for entity {}.", context.getEvent(), context.getTarget());
 
     CdsModel cdsModel = context.getModel();
-    List<String> fieldNames =
-        getAttachmentAssociations(cdsModel, context.getTarget(), "", new ArrayList<>());
+    List<String> fieldNames = cascader.findMediaAssociationNames(cdsModel, context.getTarget());
     if (!fieldNames.isEmpty()) {
       CqnSelect resultCqn = CQL.copy(context.getCqn(), new BeforeReadItemsModifier(fieldNames));
       context.setCqn(resultCqn);
@@ -135,39 +132,6 @@ public class ReadAttachmentsHandler implements EventHandler {
           .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
           .process(data, context.getTarget());
     }
-  }
-
-  private List<String> getAttachmentAssociations(
-      CdsModel model, CdsEntity entity, String associationName, List<String> processedEntities) {
-    List<String> associationNames = new ArrayList<>();
-    if (ApplicationHandlerHelper.isMediaEntity(entity)) {
-      associationNames.add(associationName);
-    }
-
-    Map<String, CdsEntity> annotatedEntities =
-        entity
-            .associations()
-            .collect(
-                Collectors.toMap(
-                    CdsElementDefinition::getName,
-                    element -> element.getType().as(CdsAssociationType.class).getTarget()));
-
-    if (annotatedEntities.isEmpty()) {
-      return associationNames;
-    }
-
-    for (Entry<String, CdsEntity> associatedElement : annotatedEntities.entrySet()) {
-      if (!associationNames.contains(associatedElement.getKey())
-          && !processedEntities.contains(associatedElement.getKey())
-          && !Drafts.SIBLING_ENTITY.equals(associatedElement.getKey())) {
-        processedEntities.add(associatedElement.getKey());
-        List<String> result =
-            getAttachmentAssociations(
-                model, associatedElement.getValue(), associatedElement.getKey(), processedEntities);
-        associationNames.addAll(result);
-      }
-    }
-    return associationNames;
   }
 
   private void verifyStatus(Path path, Attachments attachment) {
