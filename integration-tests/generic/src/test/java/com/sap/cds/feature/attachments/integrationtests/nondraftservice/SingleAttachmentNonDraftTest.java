@@ -12,6 +12,8 @@ import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testserv
 import com.sap.cds.feature.attachments.integrationtests.common.MockHttpRequestHelper;
 import com.sap.cds.feature.attachments.integrationtests.common.TableDataDeleter;
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
+import com.sap.cds.feature.attachments.integrationtests.testhandler.EventContextHolder;
+import com.sap.cds.feature.attachments.integrationtests.testhandler.TestPersistenceHandler;
 import com.sap.cds.feature.attachments.integrationtests.testhandler.TestPluginAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -26,19 +28,18 @@ import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-/**
- * Integration tests for single (inline) attachments functionality.
- *
- * <p>Tests the Attachment type which flattens attachment fields directly onto an entity, as opposed
- * to the composition-based Attachments aspect.
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles(Profiles.TEST_HANDLER_ENABLED)
@@ -48,6 +49,8 @@ class SingleAttachmentNonDraftTest {
   @Autowired private MockHttpRequestHelper requestHelper;
   @Autowired private PersistenceService persistenceService;
   @Autowired private TableDataDeleter dataDeleter;
+  @Autowired private TestPersistenceHandler testPersistenceHandler;
+  @Autowired private MockMvc mvc;
 
   @AfterEach
   void teardown() {
@@ -55,6 +58,7 @@ class SingleAttachmentNonDraftTest {
     serviceHandler.clearEventContext();
     serviceHandler.clearDocuments();
     requestHelper.resetHelper();
+    testPersistenceHandler.reset();
   }
 
   @Test
@@ -115,11 +119,7 @@ class SingleAttachmentNonDraftTest {
     var url = buildRootUrl(rootAfterPut.getId()) + "/avatar_content";
     var response = requestHelper.executeGet(url);
 
-    // Verify content is returned correctly
     assertThat(response.getResponse().getContentAsString()).isEqualTo(content);
-
-    // Verify Content-Type header matches the mimeType field (application/octet-stream by default)
-    // Note: OData adapter may append charset, so we use startsWith for robustness
     assertThat(response.getResponse().getContentType()).startsWith("application/octet-stream");
   }
 
@@ -136,8 +136,6 @@ class SingleAttachmentNonDraftTest {
     var url = buildRootUrl(rootAfterPut.getId()) + "/avatar_content";
     var response = requestHelper.executeGet(url);
 
-    // Verify Content-Disposition header is set (inline disposition type from
-    // @Core.ContentDisposition.Type)
     var contentDisposition = response.getResponse().getHeader("Content-Disposition");
     assertThat(contentDisposition).isNotNull();
     assertThat(contentDisposition).startsWith("inline");
@@ -154,7 +152,6 @@ class SingleAttachmentNonDraftTest {
     requestHelper.resetHelper(); // Reset after PUT to use JSON for PATCH
     var rootAfterPut = selectStoredRoot();
 
-    // Set the fileName via PATCH
     var patchUrl = buildRootUrl(rootAfterPut.getId());
     requestHelper.executePatchWithODataResponseAndAssertStatusOk(
         patchUrl, "{\"avatar_fileName\": \"test-file.bin\"}");
@@ -162,7 +159,6 @@ class SingleAttachmentNonDraftTest {
     var url = buildRootUrl(rootAfterPut.getId()) + "/avatar_content";
     var response = requestHelper.executeGet(url);
 
-    // Verify Content-Disposition header includes the filename
     var contentDisposition = response.getResponse().getHeader("Content-Disposition");
     assertThat(contentDisposition).isNotNull();
     assertThat(contentDisposition).contains("filename=\"test-file.bin\"");
@@ -174,7 +170,6 @@ class SingleAttachmentNonDraftTest {
     postServiceRoot(root);
     var selectedRoot = selectStoredRoot();
 
-    // Upload content with a specific content type
     var url = buildRootUrl(selectedRoot.getId()) + "/avatar_content";
     requestHelper.setContentType(MediaType.IMAGE_PNG);
     requestHelper.executePutWithMatcher(
@@ -184,12 +179,9 @@ class SingleAttachmentNonDraftTest {
     serviceHandler.clearEventContext();
     var rootAfterPut = selectStoredRoot();
 
-    // Now read the content and verify Content-Type matches what was uploaded
     var readUrl = buildRootUrl(rootAfterPut.getId()) + "/avatar_content";
     var response = requestHelper.executeGet(readUrl);
 
-    // The Content-Type should reflect the mimeType stored in the database
-    // Note: OData adapter may append charset, so we use startsWith for robustness
     assertThat(response.getResponse().getContentType()).startsWith("image/png");
   }
 
@@ -199,7 +191,6 @@ class SingleAttachmentNonDraftTest {
     postServiceRoot(root);
     var selectedRoot = selectStoredRoot();
 
-    // Upload content with a specific content type
     var url = buildRootUrl(selectedRoot.getId()) + "/avatar_content";
     requestHelper.setContentType(MediaType.TEXT_PLAIN);
     requestHelper.executePutWithMatcher(
@@ -208,7 +199,6 @@ class SingleAttachmentNonDraftTest {
 
     serviceHandler.clearEventContext();
 
-    // Query the entity with $select including the content field
     var selectUrl =
         MockHttpRequestHelper.ODATA_BASE_URL
             + "TestService/Roots("
@@ -217,9 +207,6 @@ class SingleAttachmentNonDraftTest {
     var response =
         requestHelper.executeGetWithSingleODataResponseAndAssertStatus(selectUrl, HttpStatus.OK);
 
-    // The response should include the @mediaContentType annotation with the correct MIME type
-    // This validates that the Core.MediaType annotation path is correctly resolved for inline
-    // attachments
     assertThat(response).contains("avatar_content@mediaContentType");
     assertThat(response).contains("text/plain");
   }
@@ -278,7 +265,6 @@ class SingleAttachmentNonDraftTest {
     var url = buildRootUrl(rootAfterPut.getId());
     requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
 
-    waitTillExpectedHandlerMessageSize(1);
     verifySingleDeletionEvent(contentId);
   }
 
@@ -295,12 +281,9 @@ class SingleAttachmentNonDraftTest {
         requestHelper.executeGetWithSingleODataResponseAndAssertStatus(
             url, Roots.class, HttpStatus.OK);
 
-    // In expand/collection reads, the content should not be filled
     assertThat(response.getAvatarContent()).isNull();
     verifyNoAttachmentEventsCalled();
   }
-
-  // Tests for inline attachment on composition child (Items.icon)
 
   @Test
   void createRootWithItemWithoutInlineAttachmentWorks() throws Exception {
@@ -414,7 +397,6 @@ class SingleAttachmentNonDraftTest {
     var url = buildItemUrl(selectedRoot.getId(), item.getId());
     requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
 
-    waitTillExpectedHandlerMessageSize(1);
     verifySingleDeletionEvent(contentId);
   }
 
@@ -434,7 +416,6 @@ class SingleAttachmentNonDraftTest {
     var url = buildRootUrl(rootAfterPut.getId());
     requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
 
-    waitTillExpectedHandlerMessageSize(1);
     verifySingleDeletionEvent(contentId);
   }
 
@@ -456,11 +437,8 @@ class SingleAttachmentNonDraftTest {
     var url = buildRootUrl(rootAfterPut.getId());
     requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
 
-    waitTillExpectedHandlerMessageSize(2);
     verifyTwoDeletionEvents(rootContentId, itemContentId);
   }
-
-  // Tests for multiple inline attachments on the same entity (no data collision)
 
   @Test
   void twoInlineAttachmentsOnSameEntityDoNotCollide() throws Exception {
@@ -474,13 +452,11 @@ class SingleAttachmentNonDraftTest {
 
     var rootAfterPut = selectStoredRoot();
 
-    // Both attachments should have different content IDs
     assertThat(rootAfterPut.getAvatarContentId()).isNotEmpty();
     assertThat(rootAfterPut.getCoverImageContentId()).isNotEmpty();
     assertThat(rootAfterPut.getAvatarContentId())
         .isNotEqualTo(rootAfterPut.getCoverImageContentId());
 
-    // Verify coverImage create event was triggered
     verifySingleCreateEvent(rootAfterPut.getCoverImageContentId(), coverImageContent);
   }
 
@@ -496,14 +472,13 @@ class SingleAttachmentNonDraftTest {
 
     var rootAfterPut = selectStoredRoot();
 
-    // Read avatar content
     var avatarUrl = buildRootUrl(rootAfterPut.getId()) + "/avatar_content";
     var avatarResponse = requestHelper.executeGet(avatarUrl);
     assertThat(avatarResponse.getResponse().getContentAsString()).isEqualTo(avatarContent);
 
+    verifySingleReadEvent(rootAfterPut.getAvatarContentId());
     serviceHandler.clearEventContext();
 
-    // Read coverImage content - should be independent
     var coverImageUrl = buildRootUrl(rootAfterPut.getId()) + "/coverImage_content";
     var coverImageResponse = requestHelper.executeGet(coverImageUrl);
     assertThat(coverImageResponse.getResponse().getContentAsString()).isEqualTo(coverImageContent);
@@ -525,17 +500,14 @@ class SingleAttachmentNonDraftTest {
     var avatarContentId = rootAfterPut.getAvatarContentId();
     var coverImageContentId = rootAfterPut.getCoverImageContentId();
 
-    // Delete only avatar content
     var avatarUrl = buildRootUrl(rootAfterPut.getId()) + "/avatar_content";
     requestHelper.executeDelete(avatarUrl);
 
     var rootAfterDelete = selectStoredRoot();
 
-    // Avatar should be cleared
     assertThat(rootAfterDelete.getAvatarContentId()).isNull();
     assertThat(rootAfterDelete.getAvatarContent()).isNull();
 
-    // CoverImage should still exist
     assertThat(rootAfterDelete.getCoverImageContentId()).isEqualTo(coverImageContentId);
 
     verifySingleDeletionEvent(avatarContentId);
@@ -555,17 +527,14 @@ class SingleAttachmentNonDraftTest {
     var originalAvatarContentId = rootAfterFirstPut.getAvatarContentId();
     var originalCoverImageContentId = rootAfterFirstPut.getCoverImageContentId();
 
-    // Update only avatar
     var newAvatarContent =
         putInlineAttachmentContentOnRoot(rootAfterFirstPut.getId(), "newAvatarData");
 
     var rootAfterUpdate = selectStoredRoot();
 
-    // Avatar should have new content ID
     assertThat(rootAfterUpdate.getAvatarContentId()).isNotEmpty();
     assertThat(rootAfterUpdate.getAvatarContentId()).isNotEqualTo(originalAvatarContentId);
 
-    // CoverImage should be unchanged
     assertThat(rootAfterUpdate.getCoverImageContentId()).isEqualTo(originalCoverImageContentId);
 
     verifySingleCreateAndDeleteEvent(
@@ -589,43 +558,133 @@ class SingleAttachmentNonDraftTest {
     var url = buildRootUrl(rootAfterPut.getId());
     requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
 
-    waitTillExpectedHandlerMessageSize(2);
     verifyTwoDeletionEvents(avatarContentId, coverImageContentId);
   }
 
   @Test
-  void bothInlineAttachmentsCanBeCreatedAndReadIndependently() throws Exception {
+  void doubleDeleteInlineAttachmentContentHandledCorrectly() throws Exception {
     var root = buildRootWithoutContent();
     postServiceRoot(root);
     var selectedRoot = selectStoredRoot();
 
-    // Create both attachments
-    var avatarContent = putInlineAttachmentContentOnRoot(selectedRoot.getId(), "avatarData123");
-    var coverImageContent = putCoverImageContentOnRoot(selectedRoot.getId(), "coverImageData456");
+    putInlineAttachmentContentOnRoot(selectedRoot.getId());
     serviceHandler.clearEventContext();
-
     var rootAfterPut = selectStoredRoot();
+    var contentId = rootAfterPut.getAvatarContentId();
 
-    // Verify both exist with different content IDs
-    assertThat(rootAfterPut.getAvatarContentId()).isNotEmpty();
-    assertThat(rootAfterPut.getCoverImageContentId()).isNotEmpty();
-    assertThat(rootAfterPut.getAvatarContentId())
-        .isNotEqualTo(rootAfterPut.getCoverImageContentId());
-
-    // Read and verify avatar content
-    var avatarUrl = buildRootUrl(rootAfterPut.getId()) + "/avatar_content";
-    var avatarResponse = requestHelper.executeGet(avatarUrl);
-    assertThat(avatarResponse.getResponse().getContentAsString()).isEqualTo(avatarContent);
-
+    var url = buildRootUrl(rootAfterPut.getId()) + "/avatar_content";
+    requestHelper.executeDelete(url);
+    verifySingleDeletionEvent(contentId);
     serviceHandler.clearEventContext();
 
-    // Read and verify coverImage content
-    var coverImageUrl = buildRootUrl(rootAfterPut.getId()) + "/coverImage_content";
-    var coverImageResponse = requestHelper.executeGet(coverImageUrl);
-    assertThat(coverImageResponse.getResponse().getContentAsString()).isEqualTo(coverImageContent);
+    var secondDeleteResult = requestHelper.executeDelete(url);
+    assertThat(secondDeleteResult.getResponse().getStatus())
+        .isIn(HttpStatus.NO_CONTENT.value(), HttpStatus.OK.value());
+    verifyNoAttachmentEventsCalled();
   }
 
-  // Helper methods
+  @ParameterizedTest
+  @CsvSource({"avatar_status,INFECTED", "avatar_contentId,TEST"})
+  void readOnlyFieldsCannotBeUpdatedViaPatchOnRoot(String field, String value) throws Exception {
+    var root = buildRootWithoutContent();
+    postServiceRoot(root);
+    var selectedRoot = selectStoredRoot();
+
+    putInlineAttachmentContentOnRoot(selectedRoot.getId());
+    serviceHandler.clearEventContext();
+    requestHelper.resetHelper();
+
+    var url = buildRootUrl(selectedRoot.getId());
+    requestHelper.executePatchWithODataResponseAndAssertStatus(
+        url, "{\"" + field + "\":\"" + value + "\"}", HttpStatus.OK);
+
+    var rootAfterPatch = selectStoredRoot();
+    assertThat(rootAfterPatch.get(field)).isNotNull().isNotEqualTo(value);
+  }
+
+  @Test
+  void errorInTransactionAfterCreateRollsBackContent() throws Exception {
+    var root = buildRootWithoutContent();
+    postServiceRoot(root);
+    var selectedRoot = selectStoredRoot();
+
+    testPersistenceHandler.setThrowExceptionOnUpdate(true);
+    putInlineAttachmentContentOnRoot(
+        selectedRoot.getId(), "failContent", status().is5xxServerError());
+
+    var rootAfterError = selectStoredRoot();
+    assertThat(rootAfterError.getAvatarContentId()).isNull();
+    assertThat(rootAfterError.getAvatarContent()).isNull();
+  }
+
+  @Test
+  void uploadWithContentDispositionHeaderExtractsFileName() throws Exception {
+    var root = buildRootWithoutContent();
+    postServiceRoot(root);
+    var selectedRoot = selectStoredRoot();
+
+    var url = buildRootUrl(selectedRoot.getId()) + "/avatar_content";
+    mvc.perform(
+            MockMvcRequestBuilders.put(url)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header("If-Match", "*")
+                .header("Content-Disposition", "attachment; filename=\"uploaded-avatar.png\"")
+                .content("avatar-data".getBytes(StandardCharsets.UTF_8)))
+        .andExpect(status().isNoContent());
+
+    var rootAfterPut = selectStoredRoot();
+    assertThat(rootAfterPut.getAvatarFileName()).isEqualTo("uploaded-avatar.png");
+    assertThat(rootAfterPut.getAvatarContentId()).isNotEmpty();
+  }
+
+  @Test
+  void uploadWithSlugHeaderExtractsFileName() throws Exception {
+    var root = buildRootWithoutContent();
+    postServiceRoot(root);
+    var selectedRoot = selectStoredRoot();
+
+    var url = buildRootUrl(selectedRoot.getId()) + "/avatar_content";
+    mvc.perform(
+            MockMvcRequestBuilders.put(url)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header("If-Match", "*")
+                .header("slug", "uploaded-slug-file.txt")
+                .content("slug-data".getBytes(StandardCharsets.UTF_8)))
+        .andExpect(status().isNoContent());
+
+    var rootAfterPut = selectStoredRoot();
+    assertThat(rootAfterPut.getAvatarFileName()).isEqualTo("uploaded-slug-file.txt");
+    assertThat(rootAfterPut.getAvatarContentId()).isNotEmpty();
+  }
+
+  @Test
+  void uploadWithSpecificContentTypeStoresMimeType() throws Exception {
+    var root = buildRootWithoutContent();
+    postServiceRoot(root);
+    var selectedRoot = selectStoredRoot();
+
+    var url = buildRootUrl(selectedRoot.getId()) + "/avatar_content";
+    requestHelper.setContentType(MediaType.IMAGE_JPEG);
+    requestHelper.executePutWithMatcher(
+        url, "jpeg-data".getBytes(StandardCharsets.UTF_8), status().isNoContent());
+
+    var rootAfterPut = selectStoredRoot();
+    assertThat(rootAfterPut.getAvatarMimeType()).startsWith("image/jpeg");
+    assertThat(rootAfterPut.getAvatarContentId()).isNotEmpty();
+  }
+
+  @Test
+  void malwareScanStatusIsCleanAfterUpload() throws Exception {
+    var root = buildRootWithoutContent();
+    postServiceRoot(root);
+    var selectedRoot = selectStoredRoot();
+
+    putInlineAttachmentContentOnRoot(selectedRoot.getId());
+
+    var rootAfterPut = selectStoredRoot();
+    assertThat(rootAfterPut.getAvatarStatus()).isEqualTo("Clean");
+    assertThat(rootAfterPut.getAvatarScannedAt()).isNotNull();
+  }
 
   private Roots buildRootWithoutContent() {
     var root = Roots.create();
@@ -679,10 +738,14 @@ class SingleAttachmentNonDraftTest {
   }
 
   private String putInlineAttachmentContentOnRoot(String rootId, String content) throws Exception {
+    return putInlineAttachmentContentOnRoot(rootId, content, status().isNoContent());
+  }
+
+  private String putInlineAttachmentContentOnRoot(
+      String rootId, String content, ResultMatcher matcher) throws Exception {
     var url = buildRootUrl(rootId) + "/avatar_content";
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(
-        url, content.getBytes(StandardCharsets.UTF_8), status().isNoContent());
+    requestHelper.executePutWithMatcher(url, content.getBytes(StandardCharsets.UTF_8), matcher);
     return content;
   }
 
@@ -756,6 +819,8 @@ class SingleAttachmentNonDraftTest {
               assertThat(event.context()).isInstanceOf(AttachmentMarkAsDeletedEventContext.class);
               var deleteContext = (AttachmentMarkAsDeletedEventContext) event.context();
               assertThat(deleteContext.getContentId()).isEqualTo(contentId);
+              assertThat(deleteContext.getDeletionUserInfo().getName()).isEqualTo("anonymous");
+              assertThat(deleteContext.getDeletionUserInfo().getIsSystemUser()).isFalse();
             });
   }
 
@@ -789,6 +854,7 @@ class SingleAttachmentNonDraftTest {
   }
 
   private void verifyTwoDeletionEvents(String contentId1, String contentId2) {
+    waitTillExpectedHandlerMessageSize(2);
     verifyEventContextEmptyForEvent(
         AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
     var deleteEvents =
@@ -796,20 +862,20 @@ class SingleAttachmentNonDraftTest {
     assertThat(deleteEvents).hasSize(2);
     assertThat(
             deleteEvents.stream()
-                .anyMatch(
-                    event ->
-                        ((AttachmentMarkAsDeletedEventContext) event.context())
-                            .getContentId()
-                            .equals(contentId1)))
+                .anyMatch(event -> verifyDeleteEventContentIdAndUserInfo(event, contentId1)))
         .isTrue();
     assertThat(
             deleteEvents.stream()
-                .anyMatch(
-                    event ->
-                        ((AttachmentMarkAsDeletedEventContext) event.context())
-                            .getContentId()
-                            .equals(contentId2)))
+                .anyMatch(event -> verifyDeleteEventContentIdAndUserInfo(event, contentId2)))
         .isTrue();
+  }
+
+  private boolean verifyDeleteEventContentIdAndUserInfo(
+      EventContextHolder event, String contentId) {
+    var ctx = (AttachmentMarkAsDeletedEventContext) event.context();
+    return ctx.getContentId().equals(contentId)
+        && "anonymous".equals(ctx.getDeletionUserInfo().getName())
+        && Boolean.FALSE.equals(ctx.getDeletionUserInfo().getIsSystemUser());
   }
 
   private void verifyNoAttachmentEventsCalled() {
