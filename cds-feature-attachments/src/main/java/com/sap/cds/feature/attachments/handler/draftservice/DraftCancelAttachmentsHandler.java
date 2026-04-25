@@ -103,7 +103,20 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
       Optional<String> inlinePrefix =
           ApplicationHandlerHelper.getInlineAttachmentPrefix(
               path.target().entity(), element.getName());
-      Attachments attachment = Attachments.of(path.target().values());
+
+      Attachments attachment;
+      if (inlinePrefix.isPresent()) {
+        attachment =
+            ApplicationHandlerHelper.extractInlineAttachment(
+                path.target().values(), inlinePrefix.get());
+        Object hasActiveEntity = path.target().values().get(Drafts.HAS_ACTIVE_ENTITY);
+        if (hasActiveEntity != null) {
+          attachment.put(Drafts.HAS_ACTIVE_ENTITY, hasActiveEntity);
+        }
+      } else {
+        attachment = Attachments.of(path.target().values());
+      }
+
       if (Boolean.FALSE.equals(attachment.get(Drafts.HAS_ACTIVE_ENTITY))) {
         deleteEvent.processEvent(path, null, attachment, context, inlinePrefix);
         return;
@@ -115,13 +128,12 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
               .findAny();
       existingEntry.ifPresent(
           entry -> {
-            if (!entry.get(Attachments.CONTENT_ID).equals(value)) {
+            if (!entry.get(Attachments.CONTENT_ID).equals(attachment.getContentId())) {
               deleteEvent.processEvent(null, null, attachment, context, inlinePrefix);
             }
           });
     };
   }
-
 
   private List<Attachments> readAttachments(
       DraftCancelEventContext context, CdsStructuredType entity, boolean isActiveEntity) {
