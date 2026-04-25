@@ -27,6 +27,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusException;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
+import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
@@ -81,6 +82,7 @@ class ReadAttachmentsHandlerTest {
             attachmentStatusValidator,
             asyncMalwareScanExecutor,
             persistenceService,
+            new AssociationCascader(),
             true);
 
     readEventContext = mock(CdsReadEventContext.class);
@@ -399,6 +401,7 @@ class ReadAttachmentsHandlerTest {
             attachmentStatusValidator,
             asyncMalwareScanExecutor,
             persistenceService,
+            new AssociationCascader(),
             false);
     mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
     var attachment = Attachments.create();
@@ -422,6 +425,7 @@ class ReadAttachmentsHandlerTest {
             attachmentStatusValidator,
             asyncMalwareScanExecutor,
             persistenceService,
+            new AssociationCascader(),
             false);
     mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
     var attachment = Attachments.create();
@@ -445,6 +449,7 @@ class ReadAttachmentsHandlerTest {
             attachmentStatusValidator,
             asyncMalwareScanExecutor,
             persistenceService,
+            new AssociationCascader(),
             false);
     mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
     var attachment = Attachments.create();
