@@ -82,7 +82,7 @@ public class AttachmentsReader {
       columns.add(CQL.get(fieldName + "_" + Attachments.CONTENT_ID));
       columns.add(CQL.get(fieldName + "_" + Attachments.STATUS));
     }
-    if (!columns.isEmpty()) {
+    if (!columns.isEmpty() && entity.findElement(Drafts.HAS_ACTIVE_ENTITY).isPresent()) {
       columns.add(CQL.get(Drafts.HAS_ACTIVE_ENTITY));
     }
     return columns;
