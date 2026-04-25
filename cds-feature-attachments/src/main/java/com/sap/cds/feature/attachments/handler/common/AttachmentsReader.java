@@ -47,8 +47,14 @@ public class AttachmentsReader {
     NodeTree nodePath = cascader.findEntityPath(model, entity);
     List<Expand<?>> expandList = buildExpandList(model, nodePath);
 
-    // Also include inline attachment fields directly in the select
     List<CqnSelectListItem> inlineColumns = buildInlineAttachmentColumns(entity);
+
+    if (expandList.isEmpty()
+        && inlineColumns.isEmpty()
+        && !ApplicationHandlerHelper.isMediaEntity(entity)) {
+      logResultData(entity, List.of());
+      return List.of();
+    }
 
     Select<?> select;
     if (!expandList.isEmpty() || !inlineColumns.isEmpty()) {

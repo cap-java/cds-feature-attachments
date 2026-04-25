@@ -36,6 +36,7 @@
     <module>storage-targets/cds-feature-attachments-fs</module>
     <module>storage-targets/cds-feature-attachments-oss</module>
     <module>integration-tests</module>
+    <module>coverage-report</module>
   </modules>
 
   <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
@@ -70,9 +71,9 @@
 
     <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
     <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
-    <cds.services.version>4.8.1</cds.services.version>
+    <cds.services.version>4.9.0</cds.services.version>
     <!-- https://www.npmjs.com/package/@sap/cds-dk?activeTab=versions -->
-    <cds.cdsdk-version>9.6.1</cds.cdsdk-version>
+    <cds.cdsdk-version>9.9.0</cds.cdsdk-version>
 
     <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
     <cds.services.latest-test-version>4.8.0</cds.services.latest-test-version>
@@ -125,6 +126,27 @@
       <dependency>
         <groupId>com.sap.cds</groupId>
         <artifactId>cds-feature-attachments</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-feature-attachments-oss</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sap.cds</groupId>
+        <artifactId>cds-feature-attachments-fs</artifactId>
+        <version>${revision}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.sap.cds.integration-tests</groupId>
+        <artifactId>cds-feature-attachments-integration-tests-generic</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.sap.cds.integration-tests</groupId>
+        <artifactId>cds-feature-attachments-integration-tests-mtx-local</artifactId>
         <version>${revision}</version>
       </dependency>
     </dependencies>
@@ -407,6 +429,7 @@
                 <excludeArtifact>cds-feature-attachments-integration-tests-db</excludeArtifact>
                 <excludeArtifact>cds-feature-attachments-integration-tests-generic</excludeArtifact>
                 <excludeArtifact>cds-feature-attachments-integration-tests-mtx-local</excludeArtifact>
+                <excludeArtifact>cds-feature-attachments-coverage-report</excludeArtifact>
               </excludeArtifacts>
             </configuration>
           </plugin>
@@ -419,7 +442,7 @@
         <module>cds-feature-attachments</module>
         <module>storage-targets/cds-feature-attachments-fs</module>
         <module>storage-targets/cds-feature-attachments-oss</module>
-        <!-- Exclude integration-tests modules -->
+        <!-- Exclude integration-tests and coverage-report modules -->
       </modules>
     </profile>
   </profiles>

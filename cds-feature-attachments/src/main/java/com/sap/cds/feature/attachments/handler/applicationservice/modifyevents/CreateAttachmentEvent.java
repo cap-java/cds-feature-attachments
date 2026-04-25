@@ -17,8 +17,12 @@ import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.changeset.ChangeSetListener;
 import java.io.InputStream;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +34,10 @@ import org.slf4j.LoggerFactory;
 public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
   private static final Logger logger = LoggerFactory.getLogger(CreateAttachmentEvent.class);
+  private static final Pattern RFC5987_FILENAME_PATTERN =
+      Pattern.compile("filename\\*=UTF-8''([^;]+)", Pattern.CASE_INSENSITIVE);
+  private static final Pattern PLAIN_FILENAME_PATTERN =
+      Pattern.compile("(?<!\\*)filename=\"?([^\";]+)\"?", Pattern.CASE_INSENSITIVE);
 
   private final AttachmentService attachmentService;
   private final ListenerProvider listenerProvider;
@@ -69,14 +77,26 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     }
 
     // Extract mimeType from Content-Type header for ALL attachment types (inline and composition)
-    // when mimeType is not already set or is the default 'application/octet-stream'
-    if (mimeTypeOptional.isEmpty() || "application/octet-stream".equals(mimeTypeOptional.get())) {
+    // when mimeType is not already set
+    if (mimeTypeOptional.isEmpty() && eventContext.getParameterInfo() != null) {
       Optional<String> headerMimeType = extractMimeTypeFromHeader(eventContext);
       if (headerMimeType.isPresent()) {
         mimeTypeOptional = headerMimeType;
         String mimeTypeField =
             inlinePrefix.map(p -> p + "_" + MediaData.MIME_TYPE).orElse(MediaData.MIME_TYPE);
         values.put(mimeTypeField, mimeTypeOptional.get());
+      }
+    }
+
+    // Fall back to HTTP headers when values are not set in payload
+    if (eventContext.getParameterInfo() != null) {
+      if (fileNameOptional.isEmpty()) {
+        fileNameOptional = extractFileNameFromHeader(eventContext);
+        fileNameOptional.ifPresent(fn -> values.put(MediaData.FILE_NAME, fn));
+      }
+      if (mimeTypeOptional.isEmpty()) {
+        mimeTypeOptional = extractMimeTypeFromHeader(eventContext);
+        mimeTypeOptional.ifPresent(mt -> values.put(MediaData.MIME_TYPE, mt));
       }
     }
 
@@ -124,42 +144,43 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     return Optional.ofNullable((String) value);
   }
 
+  /**
+   * Extracts the filename from the Content-Disposition header or falls back to the slug header.
+   * Supports RFC 5987 encoded filenames (filename*=UTF-8''...) and plain filenames.
+   */
   private static Optional<String> extractFileNameFromHeader(EventContext eventContext) {
     String header = eventContext.getParameterInfo().getHeader("Content-Disposition");
     if (header != null) {
       // Try RFC 5987 encoded filename first (filename*=UTF-8''...)
-      java.util.regex.Matcher utf8 =
-          java.util.regex.Pattern.compile(
-                  "filename\\*=UTF-8''(.+)", java.util.regex.Pattern.CASE_INSENSITIVE)
-              .matcher(header);
-      if (utf8.find()) {
-        try {
-          return Optional.of(java.net.URLDecoder.decode(utf8.group(1), "UTF-8"));
-        } catch (java.io.UnsupportedEncodingException e) {
-          logger.debug("Failed to decode RFC 5987 filename", e);
-        }
+      Matcher utf8Matcher = RFC5987_FILENAME_PATTERN.matcher(header);
+      if (utf8Matcher.find()) {
+        return Optional.of(URLDecoder.decode(utf8Matcher.group(1), StandardCharsets.UTF_8));
       }
       // Fall back to plain filename=
-      java.util.regex.Matcher plain =
-          java.util.regex.Pattern.compile(
-                  "filename=\"?([^\";]+)\"?", java.util.regex.Pattern.CASE_INSENSITIVE)
-              .matcher(header);
-      if (plain.find()) {
-        return Optional.of(plain.group(1).trim());
+      Matcher plainMatcher = PLAIN_FILENAME_PATTERN.matcher(header);
+      if (plainMatcher.find()) {
+        return Optional.of(plainMatcher.group(1).trim());
       }
     }
     // Fiori Elements may use the slug header instead
     String slug = eventContext.getParameterInfo().getHeader("slug");
-    return Optional.ofNullable(slug);
+    if (slug != null) {
+      return Optional.of(URLDecoder.decode(slug, StandardCharsets.UTF_8));
+    }
+    return Optional.empty();
   }
 
+  /**
+   * Extracts the MIME type from the Content-Type header, stripping charset and other parameters.
+   * Returns empty if the Content-Type is null or empty.
+   */
   private static Optional<String> extractMimeTypeFromHeader(EventContext eventContext) {
     String contentType = eventContext.getParameterInfo().getHeader("Content-Type");
     if (contentType == null) {
       return Optional.empty();
     }
     String mimeType = contentType.split(";")[0].trim();
-    if (mimeType.isEmpty() || "application/octet-stream".equalsIgnoreCase(mimeType)) {
+    if (mimeType.isEmpty()) {
       return Optional.empty();
     }
     return Optional.of(mimeType);

@@ -3,56 +3,57 @@
 ## Table of Contents
 
 <!-- TOC -->
-* [Links for Design, Processes and Readme](#links-for-design-processes-and-readme)
-* [Folder Structure](#folder-structure)
-* [GitHub Actions](#github-actions)
-  * [Build Action](#build-action)
-  * [Pull Requests Build](#pull-requests-build)
-    * [Trigger](#trigger)
-  * [Main Build](#main-build)
-    * [Trigger](#trigger-1)
-  * [Build and Deploy](#build-and-deploy)
-    * [Trigger](#trigger-2)
-    * [Repository for Deploy](#repository-for-deploy)
-    * [Update Version](#update-version)
-      * [Token for Version Update](#token-for-version-update)
-  * [BlackDuck](#blackduck)
-    * [Pull Requests](#pull-requests)
-    * [BlackDuck Links](#blackduck-links)
-  * [Secrets](#secrets)
-* [Feature](#feature)
-  * [CDS Model](#cds-model)
-    * [ETag](#etag)
-    * [Usage of the CDS Model](#usage-of-the-cds-model)
-  * [Configuration](#configuration)
-  * [Handler](#handler)
-    * [Events](#events)
-    * [Draft Activate and Deep Updates](#draft-activate-and-deep-updates)
-    * [Content for new Draft](#content-for-new-draft)
-    * [Delete](#delete)
-    * [Draft Keys](#draft-keys)
-    * [Sibling Entity (Draft or Active)](#sibling-entity-draft-or-active)
-    * [Readonly Fields](#readonly-fields)
-    * [Optimistic Concurrency Control](#optimistic-concurrency-control)
-  * [Service](#service)
-    * [Service Interface](#service-interface)
-    * [Multi-Tenancy](#multi-tenancy)
-    * [Default Implementation](#default-implementation)
-      * [Internal Stored](#internal-stored)
-      * [Content ID](#content-id)
-    * [Malware Scan](#malware-scan)
-      * [Implementation](#implementation)
-        * [Read Data](#read-data)
-        * [Scan Content](#scan-content)
-        * [Store Scan Result](#store-scan-result)
-        * [Read Attachment calls Malware Scan](#read-attachment-calls-malware-scan)
-      * [Status](#status)
-  * [Texts](#texts)
-* [Tests](#tests)
-  * [Unit Tests](#unit-tests)
-    * [Mutation Tests](#mutation-tests)
-  * [Integration Tests](#integration-tests)
-* [Quality Tools](#quality-tools)
+
+- [Links for Design, Processes and Readme](#links-for-design-processes-and-readme)
+- [Folder Structure](#folder-structure)
+- [GitHub Actions](#github-actions)
+  - [Build Action](#build-action)
+  - [Pull Requests Build](#pull-requests-build)
+    - [Trigger](#trigger)
+  - [Main Build](#main-build)
+    - [Trigger](#trigger-1)
+  - [Build and Deploy](#build-and-deploy)
+    - [Trigger](#trigger-2)
+    - [Repository for Deploy](#repository-for-deploy)
+    - [Update Version](#update-version)
+      - [Token for Version Update](#token-for-version-update)
+  - [BlackDuck](#blackduck)
+    - [Pull Requests](#pull-requests)
+    - [BlackDuck Links](#blackduck-links)
+  - [Secrets](#secrets)
+- [Feature](#feature)
+  - [CDS Model](#cds-model)
+    - [ETag](#etag)
+    - [Usage of the CDS Model](#usage-of-the-cds-model)
+  - [Configuration](#configuration)
+  - [Handler](#handler)
+    - [Events](#events)
+    - [Draft Activate and Deep Updates](#draft-activate-and-deep-updates)
+    - [Content for new Draft](#content-for-new-draft)
+    - [Delete](#delete)
+    - [Draft Keys](#draft-keys)
+    - [Sibling Entity (Draft or Active)](#sibling-entity-draft-or-active)
+    - [Readonly Fields](#readonly-fields)
+    - [Optimistic Concurrency Control](#optimistic-concurrency-control)
+  - [Service](#service)
+    - [Service Interface](#service-interface)
+    - [Multi-Tenancy](#multi-tenancy)
+    - [Default Implementation](#default-implementation)
+      - [Internal Stored](#internal-stored)
+      - [Content ID](#content-id)
+    - [Malware Scan](#malware-scan)
+      - [Implementation](#implementation)
+        - [Read Data](#read-data)
+        - [Scan Content](#scan-content)
+        - [Store Scan Result](#store-scan-result)
+        - [Read Attachment calls Malware Scan](#read-attachment-calls-malware-scan)
+      - [Status](#status)
+  - [Texts](#texts)
+- [Tests](#tests)
+  - [Unit Tests](#unit-tests)
+    - [Mutation Tests](#mutation-tests)
+  - [Integration Tests](#integration-tests)
+- [Quality Tools](#quality-tools)
 <!-- TOC -->
 
 ## Links for Design, Processes and Readme
@@ -73,28 +74,28 @@
 
 The following tables shows the folder structure of the project.
 
-| Folder                                         | Description                                                                                                                  |
-|------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| .github                                        | GitHub Actions definitions and the configuration of the dependabot                                                           |
-| .pipeline                                      | Project Piper configuration, which is used in the GitHub Actions. Piper per default searches in this folder for `config.yml` |
-| cds-feature-attachments                        | Core implementation of the attachments feature                                                                               |
-| doc                                            | Design documents and process descriptions                                                                                    |
-| integration-tests                              | Spring Boot integration tests for the feature                                                                                |
-| LICENSES                                       | License descriptions                                                                                                         |
-| samples/bookshop                               | Sample CAP Java application demonstrating attachments usage                                                                  |
-| storage-targets/cds-feature-attachments-fs     | File system storage target (for testing scenarios only)                                                                      |
-| storage-targets/cds-feature-attachments-oss    | Object Store storage target (AWS S3, Azure Blob, Google Cloud Storage)                                                       |
+| Folder                                      | Description                                                                                                                  |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| .github                                     | GitHub Actions definitions and the configuration of the dependabot                                                           |
+| .pipeline                                   | Project Piper configuration, which is used in the GitHub Actions. Piper per default searches in this folder for `config.yml` |
+| cds-feature-attachments                     | Core implementation of the attachments feature                                                                               |
+| doc                                         | Design documents and process descriptions                                                                                    |
+| integration-tests                           | Spring Boot integration tests for the feature                                                                                |
+| LICENSES                                    | License descriptions                                                                                                         |
+| samples/bookshop                            | Sample CAP Java application demonstrating attachments usage                                                                  |
+| storage-targets/cds-feature-attachments-fs  | File system storage target (for testing scenarios only)                                                                      |
+| storage-targets/cds-feature-attachments-oss | Object Store storage target (AWS S3, Azure Blob, Google Cloud Storage)                                                       |
 
 ## GitHub Actions
 
 In folder `.github/workflows` are the GitHub Actions defined. The following table shows the actions and their purpose.
 
-| File Name      | Description                                                                                                                                                                                                           |
-|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `pr.yml`       | Builds and tests pull requests for Java 17 and 21. Requires approval for external forks. Each pull request needs green runs from this workflow to be merged.                                                          |
-| `main.yml`     | Builds, tests, and deploys snapshots when commits are merged to main. Runs unit tests, integration tests, and mutation tests for Java 17 and 21.                                                                       |
-| `release.yml`  | Triggered on GitHub releases. Updates version, runs BlackDuck scan, builds, tests, and deploys to Maven Central. See also [Build and Deploy](#build-and-deploy).                                                      |
-| `pipeline.yml` | Reusable workflow containing shared build, test, integration test, SonarQube scan, CodeQL analysis, and snapshot deployment logic. Called by `pr.yml` and `main.yml`.                                                  |
+| File Name      | Description                                                                                                                                                           |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pr.yml`       | Builds and tests pull requests for Java 17 and 21. Requires approval for external forks. Each pull request needs green runs from this workflow to be merged.          |
+| `main.yml`     | Builds, tests, and deploys snapshots when commits are merged to main. Runs unit tests, integration tests, and mutation tests for Java 17 and 21.                      |
+| `release.yml`  | Triggered on GitHub releases. Updates version, runs BlackDuck scan, builds, tests, and deploys to Maven Central. See also [Build and Deploy](#build-and-deploy).      |
+| `pipeline.yml` | Reusable workflow containing shared build, test, integration test, SonarQube scan, CodeQL analysis, and snapshot deployment logic. Called by `pr.yml` and `main.yml`. |
 
 ### Build Action
 
@@ -104,14 +105,14 @@ the mentioned workflows.
 
 Additional reusable actions are defined in `.github/actions/`:
 
-| Action                  | Description                                                    |
-|-------------------------|----------------------------------------------------------------|
-| `build`                 | Builds the project and runs unit/mutation tests                |
-| `integration-tests`     | Runs integration tests (build-version, latest-version, oss)    |
-| `deploy-release`        | Deploys release artifacts to Maven Central                     |
-| `newrelease`            | Updates version in pom.xml for new releases                    |
-| `scan-with-blackduck`   | Runs BlackDuck vulnerability scans                             |
-| `scan-with-sonar`       | Runs SonarQube code analysis                                   |
+| Action                | Description                                                 |
+| --------------------- | ----------------------------------------------------------- |
+| `build`               | Builds the project and runs unit/mutation tests             |
+| `integration-tests`   | Runs integration tests (build-version, latest-version, oss) |
+| `deploy-release`      | Deploys release artifacts to Maven Central                  |
+| `newrelease`          | Updates version in pom.xml for new releases                 |
+| `scan-with-blackduck` | Runs BlackDuck vulnerability scans                          |
+| `scan-with-sonar`     | Runs SonarQube code analysis                                |
 
 ### Pull Requests Build
 
@@ -222,21 +223,21 @@ not available in the pull request builds from fork projects or dependabot pull r
 
 The following secrets are stored in GitHub and used in the GitHub-actions:
 
-| Secret Name                | Description                                                                                                                                                               |
-|----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| BLACK_DUCK_TOKEN           | Token for calling BlackDuck to execute BlackDuck scans.                                                                                                                   |
-| DEPLOYMENT_USER            | User for snapshot deployment to [Artifactory](https://common.repositories.cloud.sap/ui/repos/tree/General/cap-java).                                                      |
-| DEPLOYMENT_PASS            | Password for snapshot deployment to [Artifactory](https://common.repositories.cloud.sap/ui/repos/tree/General/cap-java).                                                  |
-| GH_TOKEN                   | Token to update the version in the `pom.xml` files. Used because the default GitHub token has insufficient rights to update the main branch without a pull request.       |
-| CENTRAL_REPOSITORY_USER    | User for release deployment to Maven Central.                                                                                                                             |
-| CENTRAL_REPOSITORY_PASS    | Password for release deployment to Maven Central.                                                                                                                         |
-| PGP_PUBKEY_ID              | GPG public key ID for signing release artifacts.                                                                                                                          |
-| PGP_PRIVATE_KEY            | GPG private key for signing release artifacts.                                                                                                                            |
-| PGP_PASSPHRASE             | GPG passphrase for signing release artifacts.                                                                                                                             |
-| SONARQ_TOKEN               | Token for SonarQube code analysis.                                                                                                                                        |
-| AWS_S3_*                   | AWS S3 credentials (HOST, BUCKET, REGION, ACCESS_KEY_ID, SECRET_ACCESS_KEY) for OSS integration tests.                                                                    |
-| AZURE_*                    | Azure Blob credentials (CONTAINER_URI, SAS_TOKEN) for OSS integration tests.                                                                                              |
-| GS_*                       | Google Cloud Storage credentials (BUCKET, PROJECT_ID, BASE_64_ENCODED_PRIVATE_KEY_DATA) for OSS integration tests.                                                        |
+| Secret Name             | Description                                                                                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BLACK_DUCK_TOKEN        | Token for calling BlackDuck to execute BlackDuck scans.                                                                                                             |
+| DEPLOYMENT_USER         | User for snapshot deployment to [Artifactory](https://common.repositories.cloud.sap/ui/repos/tree/General/cap-java).                                                |
+| DEPLOYMENT_PASS         | Password for snapshot deployment to [Artifactory](https://common.repositories.cloud.sap/ui/repos/tree/General/cap-java).                                            |
+| GH_TOKEN                | Token to update the version in the `pom.xml` files. Used because the default GitHub token has insufficient rights to update the main branch without a pull request. |
+| CENTRAL_REPOSITORY_USER | User for release deployment to Maven Central.                                                                                                                       |
+| CENTRAL_REPOSITORY_PASS | Password for release deployment to Maven Central.                                                                                                                   |
+| PGP_PUBKEY_ID           | GPG public key ID for signing release artifacts.                                                                                                                    |
+| PGP_PRIVATE_KEY         | GPG private key for signing release artifacts.                                                                                                                      |
+| PGP_PASSPHRASE          | GPG passphrase for signing release artifacts.                                                                                                                       |
+| SONARQ_TOKEN            | Token for SonarQube code analysis.                                                                                                                                  |
+| AWS*S3*\*               | AWS S3 credentials (HOST, BUCKET, REGION, ACCESS_KEY_ID, SECRET_ACCESS_KEY) for OSS integration tests.                                                              |
+| AZURE\_\*               | Azure Blob credentials (CONTAINER_URI, SAS_TOKEN) for OSS integration tests.                                                                                        |
+| GS\_\*                  | Google Cloud Storage credentials (BUCKET, PROJECT_ID, BASE_64_ENCODED_PRIVATE_KEY_DATA) for OSS integration tests.                                                  |
 
 ## Feature
 
@@ -244,7 +245,7 @@ In the project folder `cds-feature-attachments` the feature for attachments is i
 The feature is implemented with the following Java packages:
 
 | Package Name    | Description                                                                                                                                                                                                                     |
-|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `configuration` | This package includes the class which instantiates all project classes and register handler and services in the CAP Java runtime.                                                                                               |
 | `handler`       | This package includes the handler for the `DraftService` and `ApplicationService`. The handler are registered for create, update, delete and read and forward calls to the `AttachmentService`.                                 |
 | `service`       | This package includes the definition of the `AttachmentService`. The service is used to store and retrieve attachments. It also includes the default implementation of the `AttachmentService` handler and the malware scanner. |
@@ -325,7 +326,7 @@ The factory returns an implementation of the `ModifyAttachmentEvent` interface.
 The `ModifyAttachmentEvent` interface has the following implementations:
 
 | Implementation                 | Description                                                                                                                                                                                                      |
-|--------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CreateAttachmentEvent`        | Calls the `CREATE`event of the `AttachmentService`                                                                                                                                                               |
 | `DoNothingAttachmentEvent`     | Is use if the attachment entity is included in the request but nothing needs to be done in the `AttachmentService` e.g. a field is updates which is not the `content`- or `contentId` - field                    |
 | `MarkAsDeletedAttachmentEvent` | Calls the `MARK_AS_DELETED` event of the `AttachmentService`, but not in case the event is a `DRAFT_PATCH`event from the `DraftService`, in this case the mark as deleted is triggered if the draft is activated |
@@ -344,7 +345,7 @@ the delete-event needs to be called for the attachment entity.
 Example Entity Hierarchy:
 
 ```
-root 
+root
   - item
       - attachment
 ```
@@ -479,7 +480,7 @@ During the processing of the attachment entity the readonly fields are restored 
 
 #### Optimistic Concurrency Control
 
-To avoid the possibility that two update requests update the content field of the same attachment entity we use 
+To avoid the possibility that two update requests update the content field of the same attachment entity we use
 [optimistic concurrency control](https://cap.cloud.sap/docs/java/working-with-cql/query-execution#optimistic) with an Etag for these entities.
 
 The concurrency control is only needed for updates as for new attachment entities there is no possibility to overwrite existing data
@@ -494,7 +495,7 @@ retrieve attachments.
 The following table gives an overview of the events and methods of the `AttachmentService`:
 
 | Event                        | Method in `AttachmentService` | Description                                     |
-|------------------------------|-------------------------------|-------------------------------------------------|
+| ---------------------------- | ----------------------------- | ----------------------------------------------- |
 | `CREATE_ATTACHMENT`          | `createAttachment`            | Create a new attachment with the given content. |
 | `MARK_ATTACHMENT_AS_DELETED` | `markAttachmentAsDeleted`     | Called to mark an attachment as deleted.        |
 | `RESTORE_ATTACHMENT`         | `restoreAttachment`           | Called to restored attachments.                 |
@@ -625,7 +626,7 @@ Because of this, the malware scan needs to be triggered also from the `ReadAttac
 The following table gives an overview of the possible status values and the mapping to the `MalwareScanResultStatus`:
 
 | Status Value | MalwareScanResultStatus | Description                                                                                              |
-|--------------|-------------------------|----------------------------------------------------------------------------------------------------------|
+| ------------ | ----------------------- | -------------------------------------------------------------------------------------------------------- |
 | `Unscanned`  | -                       | The content was not scanned.                                                                             |
 | `Scanning`   | -                       | The content is scanned.                                                                                  |
 | `Clean`      | `CLEAN`, `NO_SCANNER`   | The content was scanned and is clean. In case there is no scanner available the content is always clean. |
@@ -653,7 +654,7 @@ test.
 The following settings are used for this plugin:
 
 | Setting              | Value |
-|----------------------|-------|
+| -------------------- | ----- |
 | Instruction Coverage | 95%   |
 | Branch Coverage      | 95%   |
 | Complexity Coverage  | 95%   |
@@ -667,7 +668,7 @@ To run the mutation tests the plugin `pitest-maven` is included in the same pom.
 Several mutators are maintained in the plugin and the following settings are used:
 
 | Setting                       | Value |
-|-------------------------------|-------|
+| ----------------------------- | ----- |
 | Coverage Threshold            | 95%   |
 | Aggregated Mutation Threshold | 90%   |
 
@@ -718,18 +719,36 @@ based on the scenarios.
 To mock the results of the malware scan wiremock is used for the tests where the malware scanner is available.
 With this positive and negative results of the malware scan can be tested.
 
+### Coverage
+
+Coverage data is collected per module via JaCoCo's `prepare-agent` goal. Each source module and integration test module produces its own `jacoco.exec` file during test execution.
+
+The `coverage-report` module aggregates all coverage data and enforces thresholds. It has no source code of its own and performs the following steps during the `verify` phase:
+
+1. **Merge** — all `.exec` files from source modules and integration tests are merged into a single `jacoco-merged.exec`.
+2. **Report** — an aggregated HTML/XML/CSV report is generated via `report-aggregate`. Generated code (`com.sap.cds.feature.attachments.generated`) is excluded.
+3. **Check** — coverage thresholds are enforced per module against the merged data:
+
+| Check | Instruction | Branch | Complexity | Missed Classes |
+|---|---|---|---|---|
+| `cds-feature-attachments` | 95% | 95% | 95% | 0 |
+| `cds-feature-attachments-oss` | 80% | 80% | 80% | 0 |
+| `cds-feature-attachments-fs` | 0% (placeholder) | 0% | 0% | 4 |
+
+The aggregated report is published to SonarQube for unified coverage visibility. The `coverage-report` module is excluded from Maven Central publishing and from the `skip-integration-tests` profile, since it depends on integration test execution data.
+
 ## Quality Tools
 
 The following quality tools are used in the project to ensure the quality of the code and project:
 
-| Tool                  | Definition                                                                  | Description                                                                                                                                                |
-|-----------------------|-----------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Spotbugs              | Defined in the root `pom.xml`                                               | Static Code check for Java code working in the bytecode.                                                                                                   |
-| PMD/CPD               | Defined in the root `pom.xml`                                               | Static Code check for Java code working on the source code. CPD checks the coding for duplications.                                                        |
-| Maven Enforcer Plugin | Defined in the root `pom.xml`                                               | Checks if there are dependencies declared twice.                                                                                                           |
-| Mutation Tests        | Defined in `cds-feature-attachments/pom.xml`                                | See section [mutation tests](#mutation-tests).                                                                                                             |
-| Jacoco                | Defined in `cds-feature-attachments/pom.xml`                                | See section [unit tests](#unit-tests).                                                                                                                     |
-| Dependabot            | Config is defined in the `.github/dependabot.yml`                           | Checks for new versions of dependencies.                                                                                                                   |
-| CodeQL                | Defined in `pipeline.yml`                                                   | Checks for vulnerabilities in the coding. Executed as part of the CI pipeline.                                                                             |
-| SonarQube             | Defined in `.pipeline/config.yml` and `.github/actions/scan-with-sonar`     | Static code analysis and code quality metrics. Reports are available at SAP's SonarQube instance.                                                          |
-| BlackDuck             | As GitHub action defined in folder `.github/actions/scan-with-blackduck`    | Scans the coding with BlackDuck for vulnerabilities. See [design](#blackduck).                                                                             |
+| Tool                  | Definition                                                               | Description                                                                                         |
+| --------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| Spotbugs              | Defined in the root `pom.xml`                                            | Static Code check for Java code working in the bytecode.                                            |
+| PMD/CPD               | Defined in the root `pom.xml`                                            | Static Code check for Java code working on the source code. CPD checks the coding for duplications. |
+| Maven Enforcer Plugin | Defined in the root `pom.xml`                                            | Checks if there are dependencies declared twice.                                                    |
+| Mutation Tests        | Defined in `cds-feature-attachments/pom.xml`                             | See section [mutation tests](#mutation-tests).                                                      |
+| Jacoco                | Defined in `cds-feature-attachments/pom.xml`                             | See section [unit tests](#unit-tests).                                                              |
+| Dependabot            | Config is defined in the `.github/dependabot.yml`                        | Checks for new versions of dependencies.                                                            |
+| CodeQL                | Defined in `pipeline.yml`                                                | Checks for vulnerabilities in the coding. Executed as part of the CI pipeline.                      |
+| SonarQube             | Defined in `.pipeline/config.yml` and `.github/actions/scan-with-sonar`  | Static code analysis and code quality metrics. Reports are available at SAP's SonarQube instance.   |
+| BlackDuck             | As GitHub action defined in folder `.github/actions/scan-with-blackduck` | Scans the coding with BlackDuck for vulnerabilities. See [design](#blackduck).                      |

@@ -43,9 +43,7 @@ runs:
 
     - name: Build project for SonarQube scan
       run: |
-        mvn clean verify -ntp -B \
-          -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss \
-          -am
+        mvn clean verify -ntp -B
       shell: bash
 
     - name: Verify JaCoCo reports exist
@@ -59,6 +57,12 @@ runs:
             echo "Missing: $module/target/site/jacoco/jacoco.xml"
           fi
         done
+        if [ -f "coverage-report/target/site/jacoco-aggregate/jacoco.xml" ]; then
+          echo "Found: coverage-report/target/site/jacoco-aggregate/jacoco.xml"
+        else
+          echo "Missing: coverage-report/target/site/jacoco-aggregate/jacoco.xml"
+          exit 1
+        fi
       shell: bash
 
     - name: SonarQube Scan
@@ -70,4 +74,4 @@ runs:
           --githubToken=${{ inputs.github-token }}
           --version=${{ steps.get-revision.outputs.REVISION }}
           --inferJavaBinaries=true
-          --options=-Dsonar.exclusions=**/samples/**,-Dsonar.coverage.jacoco.xmlReportPaths=cds-feature-attachments/target/site/jacoco/jacoco.xml,storage-targets/cds-feature-attachments-fs/target/site/jacoco/jacoco.xml,storage-targets/cds-feature-attachments-oss/target/site/jacoco/jacoco.xml
+          --options=-Dsonar.exclusions=**/samples/**,-Dsonar.coverage.jacoco.xmlReportPaths=coverage-report/target/site/jacoco-aggregate/jacoco.xml

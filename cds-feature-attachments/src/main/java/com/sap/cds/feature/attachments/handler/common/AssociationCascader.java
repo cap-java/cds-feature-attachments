@@ -27,14 +27,24 @@ public class AssociationCascader {
   public List<String> findMediaEntityNames(CdsModel model, CdsEntity entity) {
     NodeTree tree = findEntityPath(model, entity);
     List<String> result = new ArrayList<>();
-    collect(model, tree, result);
+    collectEntityNames(model, tree, result);
     return result;
   }
 
-  private void collect(CdsModel model, NodeTree node, List<String> result) {
+  public List<String> findMediaAssociationNames(CdsModel model, CdsEntity entity) {
+    List<String> result = new ArrayList<>();
+    if (ApplicationHandlerHelper.isDirectMediaEntity(entity)) {
+      result.add("");
+    }
+    NodeTree tree = findEntityPath(model, entity);
+    collectAssociationNames(model, tree, result);
+    return result;
+  }
+
+  private void collectEntityNames(CdsModel model, NodeTree node, List<String> result) {
     if (!node.getChildren().isEmpty()) {
       for (NodeTree child : node.getChildren()) {
-        collect(model, child, result);
+        collectEntityNames(model, child, result);
       }
     } else {
       String entityName = node.getIdentifier().fullEntityName();
@@ -42,6 +52,19 @@ public class AssociationCascader {
           .findEntity(entityName)
           .filter(ApplicationHandlerHelper::isMediaEntity)
           .ifPresent(e -> result.add(entityName));
+    }
+  }
+
+  private void collectAssociationNames(CdsModel model, NodeTree node, List<String> result) {
+    for (NodeTree child : node.getChildren()) {
+      if (child.getChildren().isEmpty()) {
+        model
+            .findEntity(child.getIdentifier().fullEntityName())
+            .filter(ApplicationHandlerHelper::isMediaEntity)
+            .ifPresent(e -> result.add(child.getIdentifier().associationName()));
+      } else {
+        collectAssociationNames(model, child, result);
+      }
     }
   }
 

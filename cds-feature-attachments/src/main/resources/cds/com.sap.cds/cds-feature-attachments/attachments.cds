@@ -8,7 +8,7 @@ using {
 // using { Attachments } from 'com.sap.cds/cds-feature-attachments'
 aspect Attachments : sap.attachments.Attachments {}
 
-type Attachment : sap.attachments.Attachment;
+type Attachment     : sap.attachments.Attachment;
 
 context sap.attachments {
 
@@ -26,20 +26,20 @@ context sap.attachments {
             criticality : Integer     @UI.Hidden;
     }
 
-    aspect MediaData @(_is_media_data) : managed {
+    aspect MediaData @(_is_media_data) {
         content   : LargeBinary; // stored only for db-based services
-        mimeType  : String default 'application/octet-stream';
+        mimeType  : String;
         fileName  : String(5000);
-        contentId : String     @readonly; // id of attachment in external storage, if database storage is used, same as id
+        contentId : String                         @readonly; // id of attachment in external storage, if database storage is used, same as id
         status    : StatusCode default 'Unscanned' @readonly;
-        scannedAt : Timestamp  @readonly;
+        scannedAt : Timestamp                      @readonly;
         note      : String(5000);
     }
 
     type Attachment : MediaData {}
 
-    aspect Attachments : cuid, MediaData {
-        statusNav : Association to one ScanStates on statusNav.code = status;
+    aspect Attachments : cuid, MediaData, managed {
+        statusNav : Association to one ScanStates
+                        on statusNav.code = status;
     }
 }
-
