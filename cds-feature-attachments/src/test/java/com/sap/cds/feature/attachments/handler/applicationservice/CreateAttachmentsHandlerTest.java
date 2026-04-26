@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.CdsData;
+import com.sap.cds.feature.attachments.configuration.MessageKeys;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
@@ -320,7 +321,7 @@ class CreateAttachmentsHandlerTest {
     var exception = assertThrows(ServiceException.class, () -> cut.restoreError(context));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
-    assertThat(exception.getMessage()).contains("File size exceeds the limit of 10MB.");
+    assertThat(exception.getMessage()).contains(MessageKeys.FILE_SIZE_EXCEEDED);
     assertThat(exception).isNotSameAs(originalException);
   }
 
@@ -335,7 +336,7 @@ class CreateAttachmentsHandlerTest {
     var exception = assertThrows(ServiceException.class, () -> cut.restoreError(context));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
-    assertThat(exception.getMessage()).contains("File size exceeds the limit.");
+    assertThat(exception.getMessage()).contains(MessageKeys.FILE_SIZE_EXCEEDED_NO_SIZE);
     assertThat(exception).isNotSameAs(originalException);
   }
 

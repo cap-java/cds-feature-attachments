@@ -88,6 +88,11 @@ public class Registration implements CdsRuntimeConfiguration {
   }
 
   @Override
+  public void providers(CdsRuntimeConfigurer configurer) {
+    configurer.provider(new AttachmentsLocalizedMessageProvider());
+  }
+
+  @Override
   public void services(CdsRuntimeConfigurer configurer) {
     configurer.service(new AttachmentsServiceImpl());
     configurer.service(new MalwareScannerServiceImpl());

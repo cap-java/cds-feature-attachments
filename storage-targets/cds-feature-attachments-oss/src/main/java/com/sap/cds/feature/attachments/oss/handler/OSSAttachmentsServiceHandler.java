@@ -3,6 +3,7 @@
  */
 package com.sap.cds.feature.attachments.oss.handler;
 
+import com.sap.cds.feature.attachments.configuration.MessageKeys;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
@@ -71,9 +72,9 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
       context.setContentId(contentId);
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
-      throw new ServiceException("Failed to upload file {}", fileName, ex);
+      throw new ServiceException(MessageKeys.UPLOAD_FAILED, fileName, ex);
     } catch (ObjectStoreServiceException | ExecutionException ex) {
-      throw new ServiceException("Failed to upload file {}", fileName, ex);
+      throw new ServiceException(MessageKeys.UPLOAD_FAILED, fileName, ex);
     } finally {
       context.setCompleted();
     }
@@ -91,11 +92,9 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
       osClient.deleteContent(objectKey).get();
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
-      throw new ServiceException(
-          "Failed to delete file with document id {}", context.getContentId(), ex);
+      throw new ServiceException(MessageKeys.DELETE_FAILED, context.getContentId(), ex);
     } catch (ObjectStoreServiceException | ExecutionException ex) {
-      throw new ServiceException(
-          "Failed to delete file with document id {}", context.getContentId(), ex);
+      throw new ServiceException(MessageKeys.DELETE_FAILED, context.getContentId(), ex);
     } finally {
       context.setCompleted();
     }
@@ -124,16 +123,13 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
         context.getData().setContent(inputStream);
       } else {
         logger.error("Document not found for id {}", context.getContentId());
-        throw new ServiceException(
-            "Document not found for id " + context.getContentId(), context.getContentId());
+        throw new ServiceException(MessageKeys.DOCUMENT_NOT_FOUND, context.getContentId());
       }
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
-      throw new ServiceException(
-          "Failed to read file with document id {}", context.getContentId(), ex);
+      throw new ServiceException(MessageKeys.READ_FAILED, context.getContentId(), ex);
     } catch (ObjectStoreServiceException | ExecutionException ex) {
-      throw new ServiceException(
-          "Failed to read file with document id {}", context.getContentId(), ex);
+      throw new ServiceException(MessageKeys.READ_FAILED, context.getContentId(), ex);
     } finally {
       context.setCompleted();
     }
