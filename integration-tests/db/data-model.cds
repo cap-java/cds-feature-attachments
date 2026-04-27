@@ -2,8 +2,8 @@ namespace test.data.model;
 
 using {cuid} from '@sap/cds/common';
 using {
-    Attachments,
-    Attachment
+    sap.attachments.Attachments,
+    sap.attachments.Attachment
 } from 'com.sap.cds/cds-feature-attachments';
 
 entity AttachmentEntity : Attachments {
