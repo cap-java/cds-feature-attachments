@@ -7,6 +7,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import java.io.InputStream;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,11 @@ public class DoNothingAttachmentEvent implements ModifyAttachmentEvent {
 
   @Override
   public InputStream processEvent(
-      Path path, InputStream content, Attachments attachment, EventContext eventContext) {
+      Path path,
+      InputStream content,
+      Attachments attachment,
+      EventContext eventContext,
+      Optional<String> inlinePrefix) {
     logger.debug("Do nothing event for entity {}", path.target().entity().getQualifiedName());
 
     return content;

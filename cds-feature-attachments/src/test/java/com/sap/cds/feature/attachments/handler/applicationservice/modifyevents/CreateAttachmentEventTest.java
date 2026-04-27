@@ -6,12 +6,15 @@ package com.sap.cds.feature.attachments.handler.applicationservice.modifyevents;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
+import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
@@ -27,7 +30,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,7 +106,7 @@ class CreateAttachmentEventTest {
     existingData.setFileName("some file name");
     existingData.setMimeType("some mime type");
 
-    cut.processEvent(path, attachment.getContent(), existingData, eventContext);
+    cut.processEvent(path, attachment.getContent(), existingData, eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     var createInput = contextArgumentCaptor.getValue();
@@ -124,7 +129,8 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
     when(target.values()).thenReturn(attachment);
 
-    cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
+    cut.processEvent(
+        path, attachment.getContent(), Attachments.create(), eventContext, Optional.empty());
 
     assertThat(attachment.getContentId()).isEqualTo(attachmentServiceResult.contentId());
     assertThat(attachment.getStatus()).isEqualTo(attachmentServiceResult.status());
@@ -140,7 +146,7 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, contentId, "test", null));
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(changeSetContext).register(listener);
   }
@@ -161,7 +167,8 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(isExternalStored, "id", "test", null));
 
     var result =
-        cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
+        cut.processEvent(
+            path, attachment.getContent(), Attachments.create(), eventContext, Optional.empty());
 
     var expectedContent = isExternalStored ? attachment.getContent() : null;
     assertThat(result).isEqualTo(expectedContent);
@@ -180,7 +187,8 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
 
-    cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
+    cut.processEvent(
+        path, attachment.getContent(), Attachments.create(), eventContext, Optional.empty());
     return attachment;
   }
 
@@ -195,7 +203,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Disposition"))
         .thenReturn("attachment; filename*=UTF-8''my%20file%20name.pdf");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file name.pdf");
@@ -210,11 +218,10 @@ class CreateAttachmentEventTest {
     when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
-    // Header with trailing parameters after the filename - should stop at semicolon
     when(parameterInfo.getHeader("Content-Disposition"))
         .thenReturn("attachment; filename*=UTF-8''my%20file.pdf; size=1234");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file.pdf");
@@ -232,7 +239,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Disposition"))
         .thenReturn("attachment; filename=\"report.pdf\"");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("report.pdf");
@@ -249,7 +256,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Disposition"))
         .thenReturn("attachment; filename=report.pdf");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("report.pdf");
@@ -266,7 +273,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Disposition")).thenReturn(null);
     when(parameterInfo.getHeader("slug")).thenReturn("document.docx");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("document.docx");
@@ -284,7 +291,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Disposition"))
         .thenReturn("attachment; filename=\"header-name.pdf\"");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("payload-name.pdf");
@@ -300,7 +307,7 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
     when(parameterInfo.getHeader("Content-Type")).thenReturn("image/jpeg; charset=utf-8");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("image/jpeg");
@@ -318,7 +325,7 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
     when(parameterInfo.getHeader("Content-Type")).thenReturn("application/pdf");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("text/plain");
@@ -332,11 +339,10 @@ class CreateAttachmentEventTest {
     when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
-    // Header exists but has no valid filename pattern
     when(parameterInfo.getHeader("Content-Disposition")).thenReturn("inline");
     when(parameterInfo.getHeader("slug")).thenReturn(null);
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isNull();
@@ -352,7 +358,7 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
     when(parameterInfo.getHeader("Content-Type")).thenReturn("text/csv");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("text/csv");
@@ -368,10 +374,310 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
     when(eventContext.getParameterInfo()).thenReturn(null);
 
-    cut.processEvent(path, null, Attachments.create(), eventContext);
+    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isNull();
     assertThat(contextArgumentCaptor.getValue().mimeType()).isNull();
+  }
+
+  // --- Inline Attachment Tests ---
+
+  @Test
+  void inlineContentIdAndStatusWrittenWithPrefix() {
+    CdsEntity realEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", UUID.randomUUID().toString());
+    values.put("profilePicture_mimeType", "image/png");
+    values.put("profilePicture_fileName", "photo.png");
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+
+    var content = mock(InputStream.class);
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "doc-123", "Clean", null));
+
+    cut.processEvent(
+        path, content, Attachments.create(), eventContext, Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_contentId", "doc-123");
+    assertThat(values).containsEntry("profilePicture_status", "Clean");
+  }
+
+  @Test
+  void inlinePrefixedFieldValuesPassedToService() {
+    CdsEntity realEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", UUID.randomUUID().toString());
+    values.put("profilePicture_mimeType", "image/jpeg");
+    values.put("profilePicture_fileName", "avatar.jpg");
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+
+    var content = mock(InputStream.class);
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "ok", null));
+
+    cut.processEvent(
+        path, content, Attachments.create(), eventContext, Optional.of("profilePicture"));
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    var input = contextArgumentCaptor.getValue();
+    assertThat(input.mimeType()).isEqualTo("image/jpeg");
+    assertThat(input.fileName()).isEqualTo("avatar.jpg");
+    assertThat(input.content()).isEqualTo(content);
+  }
+
+  @Test
+  void inlineFallsBackToAttachmentObjectWhenPrefixedFieldMissing() {
+    CdsEntity realEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", UUID.randomUUID().toString());
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+
+    var content = mock(InputStream.class);
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "ok", null));
+
+    var existingData = Attachments.create();
+    existingData.setFileName("fallback.txt");
+    existingData.setMimeType("text/plain");
+
+    cut.processEvent(path, content, existingData, eventContext, Optional.of("profilePicture"));
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    var input = contextArgumentCaptor.getValue();
+    assertThat(input.mimeType()).isEqualTo("text/plain");
+    assertThat(input.fileName()).isEqualTo("fallback.txt");
+  }
+
+  @Test
+  void nonInlineEntityDoesNotUsePrefixedFields() {
+    when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", UUID.randomUUID().toString());
+    values.put(MediaData.MIME_TYPE, "application/pdf");
+    values.put(MediaData.FILE_NAME, "doc.pdf");
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+
+    var content = mock(InputStream.class);
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "doc-999", "ok", null));
+
+    cut.processEvent(path, content, Attachments.create(), eventContext, Optional.empty());
+
+    assertThat(values).containsEntry(Attachments.CONTENT_ID, "doc-999");
+    assertThat(values).containsEntry(Attachments.STATUS, "ok");
+  }
+
+  @Test
+  void processEventWritesScannedAtWhenNonNull() {
+    CdsEntity realEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", UUID.randomUUID().toString());
+    values.put("profilePicture_mimeType", "image/png");
+    values.put("profilePicture_fileName", "photo.png");
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+
+    var scannedAt = java.time.Instant.now();
+    var content = mock(InputStream.class);
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "doc-scan", "Clean", scannedAt));
+
+    cut.processEvent(
+        path, content, Attachments.create(), eventContext, Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_contentId", "doc-scan");
+    assertThat(values).containsEntry("profilePicture_status", "Clean");
+    assertThat(values).containsEntry("profilePicture_scannedAt", scannedAt);
+  }
+
+  // --- Inline Header Extraction Tests ---
+
+  private Map<String, Object> prepareInlineValuesWithoutMetadata() {
+    CdsEntity realEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", UUID.randomUUID().toString());
+    when(target.values()).thenReturn(values);
+    when(target.keys()).thenReturn(Map.of("ID", values.get("ID")));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "ok", null));
+    return values;
+  }
+
+  @Test
+  void inlineExtractsFileNameFromRfc5987Header() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename*=UTF-8''my%20file.txt");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_fileName", "my file.txt");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file.txt");
+  }
+
+  @Test
+  void inlineExtractsFileNameFromPlainHeader() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename=\"report.pdf\"");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_fileName", "report.pdf");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("report.pdf");
+  }
+
+  @Test
+  void inlineExtractsFileNameFromSlugHeader() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    when(parameterInfo.getHeader("Content-Disposition")).thenReturn(null);
+    when(parameterInfo.getHeader("slug")).thenReturn("slug-file.png");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_fileName", "slug-file.png");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("slug-file.png");
+  }
+
+  @Test
+  void inlineBothHeadersNullReturnsEmptyFileName() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    when(parameterInfo.getHeader("Content-Disposition")).thenReturn(null);
+    when(parameterInfo.getHeader("slug")).thenReturn(null);
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).doesNotContainKey("profilePicture_fileName");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isNull();
+  }
+
+  @Test
+  void inlineExtractsMimeTypeFromContentTypeHeader() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("image/jpeg; charset=utf-8");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_mimeType", "image/jpeg");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("image/jpeg");
+  }
+
+  @Test
+  void inlineMimeTypeOctetStreamKeptWhenExplicitlySet() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    values.put("profilePicture_mimeType", "application/octet-stream");
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("image/png");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_mimeType", "application/octet-stream");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("application/octet-stream");
+  }
+
+  @Test
+  void inlineMimeTypeNullContentTypeReturnsEmpty() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    when(parameterInfo.getHeader("Content-Type")).thenReturn(null);
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).doesNotContainKey("profilePicture_mimeType");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isNull();
+  }
+
+  @Test
+  void inlineMimeTypeOctetStreamFromContentTypeHeaderIsUsed() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("application/octet-stream");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    assertThat(values).containsEntry("profilePicture_mimeType", "application/octet-stream");
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("application/octet-stream");
+  }
+
+  @Test
+  void inlineFileNameAlreadyPresentSkipsHeaderExtraction() {
+    Map<String, Object> values = prepareInlineValuesWithoutMetadata();
+    values.put("profilePicture_fileName", "already-set.pdf");
+
+    cut.processEvent(
+        path,
+        mock(InputStream.class),
+        Attachments.create(),
+        eventContext,
+        Optional.of("profilePicture"));
+
+    verify(parameterInfo, never()).getHeader("Content-Disposition");
+    assertThat(values).containsEntry("profilePicture_fileName", "already-set.pdf");
   }
 }

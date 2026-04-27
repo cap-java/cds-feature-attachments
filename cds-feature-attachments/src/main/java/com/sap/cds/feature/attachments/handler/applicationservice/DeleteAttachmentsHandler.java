@@ -19,6 +19,7 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,9 +53,22 @@ public class DeleteAttachmentsHandler implements EventHandler {
             context.getModel(), context.getTarget(), context.getCqn());
 
     Converter converter =
-        (path, element, value) ->
-            deleteEvent.processEvent(
-                path, (InputStream) value, Attachments.of(path.target().values()), context);
+        (path, element, value) -> {
+          Optional<String> inlinePrefix =
+              ApplicationHandlerHelper.getInlineAttachmentPrefix(
+                  path.target().entity(), element.getName());
+          // For inline attachments, extract the prefixed fields to get proper contentId
+          Attachments attachment;
+          if (inlinePrefix.isPresent()) {
+            attachment =
+                ApplicationHandlerHelper.extractInlineAttachment(
+                    path.target().values(), inlinePrefix.get());
+          } else {
+            attachment = Attachments.of(path.target().values());
+          }
+          return deleteEvent.processEvent(
+              path, (InputStream) value, attachment, context, inlinePrefix);
+        };
 
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
