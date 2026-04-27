@@ -51,7 +51,6 @@
   - [Texts](#texts)
 - [Tests](#tests)
   - [Unit Tests](#unit-tests)
-    - [Mutation Tests](#mutation-tests)
   - [Integration Tests](#integration-tests)
 - [Quality Tools](#quality-tools)
 <!-- TOC -->
@@ -93,21 +92,19 @@ In folder `.github/workflows` are the GitHub Actions defined. The following tabl
 | File Name      | Description                                                                                                                                                           |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pr.yml`       | Builds and tests pull requests for Java 17 and 21. Requires approval for external forks. Each pull request needs green runs from this workflow to be merged.          |
-| `main.yml`     | Builds, tests, and deploys snapshots when commits are merged to main. Runs unit tests, integration tests, and mutation tests for Java 17 and 21.                      |
+| `main.yml`     | Builds, tests, and deploys snapshots when commits are merged to main. Runs unit tests and integration tests for Java 17 and 21.                                       |
 | `release.yml`  | Triggered on GitHub releases. Updates version, runs BlackDuck scan, builds, tests, and deploys to Maven Central. See also [Build and Deploy](#build-and-deploy).      |
 | `pipeline.yml` | Reusable workflow containing shared build, test, integration test, SonarQube scan, CodeQL analysis, and snapshot deployment logic. Called by `pr.yml` and `main.yml`. |
 
 ### Build Action
 
 The build step is implemented in action `.github/actions/build/action.yml` which is used in the workflows via `pipeline.yml`.
-As the build action does not only run a build of the project, but also the mutation tests, this action is used in all
-the mentioned workflows.
 
 Additional reusable actions are defined in `.github/actions/`:
 
 | Action                | Description                                                 |
 | --------------------- | ----------------------------------------------------------- |
-| `build`               | Builds the project and runs unit/mutation tests             |
+| `build`               | Builds the project and runs unit tests                      |
 | `integration-tests`   | Runs integration tests (build-version, latest-version, oss) |
 | `deploy-release`      | Deploys release artifacts to Maven Central                  |
 | `newrelease`          | Updates version in pom.xml for new releases                 |
@@ -142,7 +139,7 @@ The following steps are executed in the workflow:
 
 1. Update the version in the `pom.xml` files. The tag used in the release is read and git commands are used to update
    the property `revision` in the parent `pom.xml` file.
-2. Build the project and run all unit, integration and mutation tests. Here a reuse action is used which is also
+2. Build the project and run all unit and integration tests. Here a reuse action is used which is also
    executed in the main and pull request build.
 3. Deploy the project to maven or artifactory. The deployment is done with the maven command `mvn deploy`. The
    deployment is done to the repository defined in the `pom.xml` file. So only project parts which have defined the
@@ -659,18 +656,6 @@ The following settings are used for this plugin:
 | Branch Coverage      | 95%   |
 | Complexity Coverage  | 95%   |
 | Class Missed Count   | 0     |
-
-#### Mutation Tests
-
-In addition to this plugin, also mutation tests are executed during the build of the project in the GitHub Actions.
-To run the mutation tests the plugin `pitest-maven` is included in the same pom.
-
-Several mutators are maintained in the plugin and the following settings are used:
-
-| Setting                       | Value |
-| ----------------------------- | ----- |
-| Coverage Threshold            | 95%   |
-| Aggregated Mutation Threshold | 90%   |
 
 ### Integration Tests
 

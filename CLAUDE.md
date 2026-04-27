@@ -122,7 +122,6 @@ Defined in `cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-featu
 All enforced in CI:
 
 - **JaCoCo:** 95% minimum (instruction, branch, complexity), 0 missed classes
-- **Mutation testing (Pitest):** 90% aggregated threshold on `handler.*` and `service.*`
 - **SpotBugs:** max effort, includes tests
 - **PMD:** SAP Cloud SDK rules, excludes generated code and tests
 - **Spotless:** Google Java Format check
