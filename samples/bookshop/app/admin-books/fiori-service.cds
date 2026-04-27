@@ -31,22 +31,6 @@ annotate AdminService.Books with @(UI: {
       $Type : 'UI.ReferenceFacet',
       Label : '{i18n>Admin}',
       Target: '@UI.FieldGroup#Admin'
-    },
-    {
-      $Type : 'UI.ReferenceFacet',
-      Label : 'Profile Icon',
-      Target: '@UI.FieldGroup#ProfileIcon'
-    },
-    {
-      $Type : 'UI.ReferenceFacet',
-      Label : 'Cover Image',
-      Target: '@UI.FieldGroup#CoverImage'
-    },
-    {
-      $Type : 'UI.ReferenceFacet',
-      ID    : 'AttachmentsFacet',
-      Label : '{i18n>attachments}',
-      Target: 'attachments/@UI.LineItem'
     }
   ],
   FieldGroup #General: {Data: [
@@ -64,18 +48,6 @@ annotate AdminService.Books with @(UI: {
     {Value: createdAt},
     {Value: modifiedBy},
     {Value: modifiedAt}
-  ]},
-  FieldGroup #ProfileIcon: {Data: [
-    {Value: profileIcon_content, Label: 'Download'},
-    {Value: profileIcon_fileName},
-    {Value: profileIcon_status},
-    {Value: profileIcon_note}
-  ]},
-  FieldGroup #CoverImage: {Data: [
-    {Value: coverImage_content},
-    {Value: coverImage_fileName},
-    {Value: coverImage_status},
-    {Value: coverImage_note}
   ]}
 });
 

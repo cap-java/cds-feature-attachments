@@ -40,3 +40,40 @@ annotate service.Books with @(UI.Facets: [{
   Target: 'attachments/@UI.LineItem'
 }]);
 
+// Adding the UI Component (a table) to the Administrator App
+using {AdminService as adminService} from '../app/services';
+
+annotate adminService.Books with @(UI.Facets: [
+  {
+    $Type : 'UI.ReferenceFacet',
+    ID    : 'AttachmentsFacet',
+    Label : '{i18n>attachments}',
+    Target: 'attachments/@UI.LineItem'
+  },
+  {
+    $Type : 'UI.ReferenceFacet',
+    Label : 'Profile Icon',
+    Target: '@UI.FieldGroup#ProfileIcon'
+  },
+  {
+    $Type : 'UI.ReferenceFacet',
+    Label : 'Cover Image',
+    Target: '@UI.FieldGroup#CoverImage'
+  }
+]);
+
+annotate adminService.Books with @(UI: {
+  FieldGroup #ProfileIcon: {Data: [
+    {Value: profileIcon_content, Label: 'Download'},
+    {Value: profileIcon_fileName},
+    {Value: profileIcon_status},
+    {Value: profileIcon_note}
+  ]},
+  FieldGroup #CoverImage: {Data: [
+    {Value: coverImage_content},
+    {Value: coverImage_fileName},
+    {Value: coverImage_status},
+    {Value: coverImage_note}
+  ]}
+});
+
