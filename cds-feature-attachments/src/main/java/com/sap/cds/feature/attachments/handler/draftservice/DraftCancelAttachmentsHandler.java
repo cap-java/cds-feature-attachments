@@ -26,6 +26,7 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,11 +125,20 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
       Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
       Optional<? extends CdsData> existingEntry =
           activeCondensedAttachments.stream()
-              .filter(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData))
+              .filter(
+                  updatedData -> {
+                    if (inlinePrefix.isPresent()) {
+                      return inlinePrefix
+                          .get()
+                          .equals(updatedData.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER));
+                    }
+                    return ApplicationHandlerHelper.areKeysInData(keys, updatedData);
+                  })
               .findAny();
       existingEntry.ifPresent(
           entry -> {
-            if (!entry.get(Attachments.CONTENT_ID).equals(attachment.getContentId())) {
+            Object existingContentId = entry.get(Attachments.CONTENT_ID);
+            if (!Objects.equals(existingContentId, attachment.getContentId())) {
               deleteEvent.processEvent(null, null, attachment, context, inlinePrefix);
             }
           });

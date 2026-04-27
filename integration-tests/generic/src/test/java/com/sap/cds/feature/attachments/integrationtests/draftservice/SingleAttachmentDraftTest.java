@@ -286,6 +286,37 @@ class SingleAttachmentDraftTest {
     assertThat(activeRoot.getAvatarFileName()).isEqualTo("draft-file.png");
   }
 
+  @Test
+  void updateInlineAttachmentInDraftAndCancelDeletesNewContent() throws Exception {
+    var draft = createNewDraft();
+    var draftRootUrl = getDraftRootUrl(draft.getId());
+    putInlineAttachmentContent(draftRootUrl, "originalContent");
+    prepareAndActivateDraft(draftRootUrl);
+    var activeRootAfterFirstActivation = selectActiveRoot(draft.getId());
+    var originalContentId = activeRootAfterFirstActivation.getAvatarContentId();
+    assertThat(originalContentId).isNotEmpty();
+    serviceHandler.clearEventContext();
+
+    editExistingRoot(draft.getId());
+    var newDraftRootUrl = getDraftRootUrl(draft.getId());
+    putInlineAttachmentContent(newDraftRootUrl, "updatedContent");
+    cancelDraft(newDraftRootUrl);
+
+    waitTillExpectedHandlerMessageSize(2);
+    var createEvents =
+        serviceHandler.getEventContextForEvent(AttachmentService.EVENT_CREATE_ATTACHMENT);
+    assertThat(createEvents).hasSize(1);
+    var deleteEvents =
+        serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
+    assertThat(deleteEvents).hasSize(1);
+    var createContext = (AttachmentCreateEventContext) createEvents.get(0).context();
+    var deleteContext = (AttachmentMarkAsDeletedEventContext) deleteEvents.get(0).context();
+    assertThat(deleteContext.getContentId()).isEqualTo(createContext.getContentId());
+
+    var activeRootAfterCancel = selectActiveRoot(draft.getId());
+    assertThat(activeRootAfterCancel.getAvatarContentId()).isEqualTo(originalContentId);
+  }
+
   // Helper methods
 
   private DraftRoots createNewDraft() throws Exception {

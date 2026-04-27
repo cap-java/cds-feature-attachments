@@ -105,7 +105,7 @@ public final class ModifyApplicationHandlerHelper {
     }
 
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
-    String maxSizeStr = getValMaxValue(path.target().entity(), defaultMaxSize);
+    String maxSizeStr = getValMaxValue(path.target().entity(), defaultMaxSize, inlinePrefix);
     eventContext.put(
         "attachment.MaxSize",
         maxSizeStr); // make max size available in context for error handling later
@@ -139,13 +139,15 @@ public final class ModifyApplicationHandlerHelper {
     }
   }
 
-  private static String getValMaxValue(CdsEntity entity, String defaultMaxSize) {
-    // Try direct content element first (composition-based)
+  private static String getValMaxValue(
+      CdsEntity entity, String defaultMaxSize, Optional<String> inlinePrefix) {
     return entity
         .findElement("content")
         .or(
             () -> {
-              // Try inline attachment content elements (e.g. profilePicture_content)
+              if (inlinePrefix.isPresent()) {
+                return entity.findElement(inlinePrefix.get() + "_content");
+              }
               List<String> prefixes =
                   ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
               for (String prefix : prefixes) {

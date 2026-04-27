@@ -15,6 +15,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
+import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.Delete;
@@ -298,7 +299,39 @@ class DraftCancelAttachmentsHandlerTest {
     verify(deleteContentAttachmentEvent)
         .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext), any());
     assertThat(dataArgumentCaptor.getValue().getContentId()).isEqualTo("new-content-id");
-    assertThat(dataArgumentCaptor.getValue().get("__inlinePrefix")).isEqualTo("profilePicture");
+    assertThat(dataArgumentCaptor.getValue().get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER))
+        .isEqualTo("profilePicture");
+  }
+
+  @Test
+  void inlineAttachmentWithActiveEntityAndChangedContentIdDeletesContent() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(RootTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    var id = UUID.randomUUID().toString();
+
+    CdsData draftRoot = CdsData.create();
+    draftRoot.put(RootTable.ID, id);
+    draftRoot.put(RootTable.PROFILE_PICTURE_CONTENT_ID, "new-content-id");
+    draftRoot.put(Drafts.HAS_ACTIVE_ENTITY, true);
+
+    CdsData activeRoot = CdsData.create();
+    activeRoot.put(RootTable.ID, id);
+    activeRoot.put(RootTable.PROFILE_PICTURE_CONTENT_ID, "old-content-id");
+    activeRoot.put(RootTable.PROFILE_PICTURE_CONTENT, null);
+
+    when(attachmentsReader.readAttachments(any(), any(), any()))
+        .thenReturn(List.of(Attachments.of(draftRoot)))
+        .thenReturn(List.of(Attachments.of(activeRoot)));
+
+    cut.processBeforeDraftCancel(eventContext);
+
+    verify(deleteContentAttachmentEvent)
+        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext), any());
+    assertThat(dataArgumentCaptor.getValue().getContentId()).isEqualTo("new-content-id");
   }
 
   @Test
