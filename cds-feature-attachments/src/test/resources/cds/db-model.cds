@@ -1,8 +1,10 @@
 namespace unit.test;
 
 using {cuid} from '@sap/cds/common';
-using {Attachments} from '../../../main/resources/cds/com.sap.cds/cds-feature-attachments';
-using {Attachment as AttachmentType} from '../../../main/resources/cds/com.sap.cds/cds-feature-attachments';
+using {
+                  Attachments,
+    Attachment as AttachmentType
+} from '../../../main/resources/cds/com.sap.cds/cds-feature-attachments';
 using from '@sap/cds/srv/outbox';
 
 entity Attachment : Attachments {}

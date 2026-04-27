@@ -1,6 +1,8 @@
 using {sap.capire.bookshop as my} from '../db/schema';
-using {Attachments} from 'com.sap.cds/cds-feature-attachments';
-using {Attachment} from 'com.sap.cds/cds-feature-attachments';
+using {
+  Attachments,
+  Attachment
+} from 'com.sap.cds/cds-feature-attachments';
 
 // Extend Books entity to support file attachments (images, PDFs, documents)
 // Each book can have multiple attachments via composition relationship
@@ -30,8 +32,8 @@ extend my.Books with {
   coverImage  : Attachment;
 }
 
-annotate my.Books:profileIcon with {
-  content @Validation.Maximum: '1MB'  @Core.AcceptableMediaTypes: ['image/*'];
+annotate my.Books : profileIcon with {
+  content  @Validation.Maximum: '1MB'  @Core.AcceptableMediaTypes: ['image/*'];
 }
 
 // Add UI component for attachments table to the Browse Books App
@@ -68,16 +70,18 @@ annotate adminService.Books with @(UI.Facets: [
 
 annotate adminService.Books with @(UI: {
   FieldGroup #ProfileIcon: {Data: [
-    {Value: profileIcon_content, Label: 'Download'},
+    {
+      Value: profileIcon_content,
+      Label: 'Download'
+    },
     {Value: profileIcon_fileName},
     {Value: profileIcon_status},
     {Value: profileIcon_note}
   ]},
-  FieldGroup #CoverImage: {Data: [
+  FieldGroup #CoverImage : {Data: [
     {Value: coverImage_content},
     {Value: coverImage_fileName},
     {Value: coverImage_status},
     {Value: coverImage_note}
   ]}
 });
-
