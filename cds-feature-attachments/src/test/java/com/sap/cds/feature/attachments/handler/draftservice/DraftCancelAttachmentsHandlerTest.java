@@ -8,9 +8,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -269,6 +271,63 @@ class DraftCancelAttachmentsHandlerTest {
     cut.processBeforeDraftCancel(eventContext);
 
     // Should not call deleteEvent since keys don't match
+    verifyNoInteractions(deleteContentAttachmentEvent);
+  }
+
+  @Test
+  void inlineAttachmentWithoutActiveEntityDeletesContent() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(RootTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    var id = UUID.randomUUID().toString();
+
+    CdsData draftRoot = CdsData.create();
+    draftRoot.put(RootTable.ID, id);
+    draftRoot.put(RootTable.PROFILE_PICTURE_CONTENT_ID, "new-content-id");
+    draftRoot.put(Drafts.HAS_ACTIVE_ENTITY, false);
+
+    when(attachmentsReader.readAttachments(any(), any(), any()))
+        .thenReturn(List.of(Attachments.of(draftRoot)))
+        .thenReturn(List.of());
+
+    cut.processBeforeDraftCancel(eventContext);
+
+    verify(deleteContentAttachmentEvent)
+        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext), any());
+    assertThat(dataArgumentCaptor.getValue().getContentId()).isEqualTo("new-content-id");
+    assertThat(dataArgumentCaptor.getValue().get("__inlinePrefix")).isEqualTo("profilePicture");
+  }
+
+  @Test
+  void inlineAttachmentWithActiveEntityAndSameContentIdDoesNotDelete() {
+    getEntityAndMockContext(RootTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(RootTable_.class);
+    when(eventContext.getCqn()).thenReturn(delete);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
+    when(eventContext.getEvent()).thenReturn("DRAFT_CANCEL");
+
+    var id = UUID.randomUUID().toString();
+    var contentId = UUID.randomUUID().toString();
+
+    CdsData draftRoot = CdsData.create();
+    draftRoot.put(RootTable.ID, id);
+    draftRoot.put(RootTable.PROFILE_PICTURE_CONTENT_ID, contentId);
+    draftRoot.put(Drafts.HAS_ACTIVE_ENTITY, true);
+
+    CdsData activeRoot = CdsData.create();
+    activeRoot.put(RootTable.ID, id);
+    activeRoot.put(RootTable.PROFILE_PICTURE_CONTENT_ID, contentId);
+    activeRoot.put(RootTable.PROFILE_PICTURE_CONTENT, null);
+
+    when(attachmentsReader.readAttachments(any(), any(), any()))
+        .thenReturn(List.of(Attachments.of(draftRoot)))
+        .thenReturn(List.of(Attachments.of(activeRoot)));
+
+    cut.processBeforeDraftCancel(eventContext);
+
     verifyNoInteractions(deleteContentAttachmentEvent);
   }
 

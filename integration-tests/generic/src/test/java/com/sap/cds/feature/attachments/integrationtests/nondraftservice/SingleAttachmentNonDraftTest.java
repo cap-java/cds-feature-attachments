@@ -686,6 +686,18 @@ class SingleAttachmentNonDraftTest {
     assertThat(rootAfterPut.getAvatarScannedAt()).isNotNull();
   }
 
+  @Test
+  void putOversizedContentToCoverImageReturnsError() throws Exception {
+    var root = buildRootWithoutContent();
+    postServiceRoot(root);
+    var selectedRoot = selectStoredRoot();
+
+    var url = buildRootUrl(selectedRoot.getId()) + "/coverImage_content";
+    byte[] oversizedContent = new byte[6 * 1024 * 1024]; // 6MB > 5MB limit
+    requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+    requestHelper.executePutWithMatcher(url, oversizedContent, status().is4xxClientError());
+  }
+
   private Roots buildRootWithoutContent() {
     var root = Roots.create();
     root.setTitle("root with inline attachment");

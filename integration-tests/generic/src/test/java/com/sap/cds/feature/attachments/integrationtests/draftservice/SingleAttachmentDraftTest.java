@@ -34,6 +34,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -48,6 +50,7 @@ class SingleAttachmentDraftTest {
   @Autowired private PersistenceService persistenceService;
   @Autowired private TableDataDeleter dataDeleter;
   @Autowired private TestPersistenceHandler testPersistenceHandler;
+  @Autowired private MockMvc mvc;
 
   @AfterEach
   void teardown() {
@@ -261,6 +264,26 @@ class SingleAttachmentDraftTest {
     var createContext = (AttachmentCreateEventContext) createEvents.get(0).context();
     var deleteContext = (AttachmentMarkAsDeletedEventContext) deleteEvents.get(0).context();
     assertThat(deleteContext.getContentId()).isEqualTo(createContext.getContentId());
+  }
+
+  @Test
+  void uploadWithContentDispositionHeaderInDraftPersistsFileName() throws Exception {
+    var draft = createNewDraft();
+    var draftRootUrl = getDraftRootUrl(draft.getId());
+
+    var contentUrl = draftRootUrl + "/avatar_content";
+    mvc.perform(
+            MockMvcRequestBuilders.put(contentUrl)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"draft-file.png\"")
+                .content("draft-content".getBytes(StandardCharsets.UTF_8)))
+        .andExpect(status().isNoContent());
+
+    prepareAndActivateDraft(draftRootUrl);
+
+    var activeRoot = selectActiveRoot(draft.getId());
+    assertThat(activeRoot.getAvatarContentId()).isNotEmpty();
+    assertThat(activeRoot.getAvatarFileName()).isEqualTo("draft-file.png");
   }
 
   // Helper methods

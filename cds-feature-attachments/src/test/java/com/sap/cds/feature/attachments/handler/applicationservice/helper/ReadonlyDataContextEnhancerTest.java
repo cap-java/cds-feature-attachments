@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -144,5 +145,74 @@ class ReadonlyDataContextEnhancerTest {
     ReadonlyDataContextEnhancer.preserveReadonlyFields(entity, List.of(attachment), false);
 
     assertThat(attachment.get(DRAFT_READONLY_CONTEXT)).isNull();
+  }
+
+  // --- Inline attachment preserve/restore tests ---
+
+  @Test
+  void preserveReadonlyFieldsForDraftInlineAttachment() {
+    CdsEntity entity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    CdsData data = CdsData.create();
+    data.put("profilePicture_content", new ByteArrayInputStream(new byte[0]));
+    data.put("profilePicture_contentId", "inline-cid");
+    data.put("profilePicture_status", "Clean");
+    Instant now = Instant.now();
+    data.put("profilePicture_scannedAt", now);
+    data.put("profilePicture_fileName", "photo.jpg");
+
+    ReadonlyDataContextEnhancer.preserveReadonlyFields(entity, List.of(data), true);
+
+    CdsData backup = (CdsData) data.get("profilePicture_" + DRAFT_READONLY_CONTEXT);
+    assertThat(backup).isNotNull();
+    assertThat(backup.get(Attachments.CONTENT_ID)).isEqualTo("inline-cid");
+    assertThat(backup.get(Attachments.STATUS)).isEqualTo("Clean");
+    assertThat(backup.get(Attachments.SCANNED_AT)).isEqualTo(now);
+    assertThat(backup.get(MediaData.FILE_NAME)).isEqualTo("photo.jpg");
+  }
+
+  @Test
+  void restoreReadonlyFieldsForInlineAttachment() {
+    CdsData data = CdsData.create();
+    Attachments backup = Attachments.create();
+    backup.setContentId("inline-restored-cid");
+    backup.setStatus("Scanning");
+    Instant scannedAt = Instant.now();
+    backup.setScannedAt(scannedAt);
+    data.put("profilePicture_" + DRAFT_READONLY_CONTEXT, backup);
+
+    ReadonlyDataContextEnhancer.restoreReadonlyFields(data);
+
+    assertThat(data.get("profilePicture_contentId")).isEqualTo("inline-restored-cid");
+    assertThat(data.get("profilePicture_status")).isEqualTo("Scanning");
+    assertThat(data.get("profilePicture_scannedAt")).isEqualTo(scannedAt);
+    assertThat(data.containsKey("profilePicture_" + DRAFT_READONLY_CONTEXT)).isFalse();
+  }
+
+  @Test
+  void restoreReadonlyFieldsForInlineAttachmentWithFileName() {
+    CdsData data = CdsData.create();
+    Attachments backup = Attachments.create();
+    backup.setContentId("inline-cid");
+    backup.setStatus("Clean");
+    backup.setFileName("preserved-file.pdf");
+    data.put("profilePicture_" + DRAFT_READONLY_CONTEXT, backup);
+
+    ReadonlyDataContextEnhancer.restoreReadonlyFields(data);
+
+    assertThat(data.get("profilePicture_contentId")).isEqualTo("inline-cid");
+    assertThat(data.get("profilePicture_fileName")).isEqualTo("preserved-file.pdf");
+    assertThat(data.containsKey("profilePicture_" + DRAFT_READONLY_CONTEXT)).isFalse();
+  }
+
+  @Test
+  void preserveReadonlyFieldsNonDraftRemovesInlinePrefixedContext() {
+    CdsEntity entity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    CdsData data = CdsData.create();
+    data.put("profilePicture_content", new ByteArrayInputStream(new byte[0]));
+    data.put("profilePicture_" + DRAFT_READONLY_CONTEXT, Attachments.create());
+
+    ReadonlyDataContextEnhancer.preserveReadonlyFields(entity, List.of(data), false);
+
+    assertThat(data.containsKey("profilePicture_" + DRAFT_READONLY_CONTEXT)).isFalse();
   }
 }

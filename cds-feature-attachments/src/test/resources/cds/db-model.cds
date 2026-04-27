@@ -58,3 +58,7 @@ annotate EventItems.defaultSizeLimitedAttachments with {
     content @Validation.Maximum;
 };
 
+annotate InlineOnly:avatar with {
+    content @Validation.Maximum: '10KB';
+};
+
