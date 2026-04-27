@@ -30,6 +30,10 @@ extend my.Books with {
   coverImage  : Attachment;
 }
 
+annotate my.Books:profileIcon with {
+  content @Validation.Maximum: '1MB'  @Core.AcceptableMediaTypes: ['image/*'];
+}
+
 // Add UI component for attachments table to the Browse Books App
 using {CatalogService as service} from '../app/services';
 
