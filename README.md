@@ -1,5 +1,5 @@
-[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main.yml) 
-[![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/release.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/release.yml) 
+[![Java Build with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/main.yml)
+[![Deploy new Version with Maven](https://github.com/cap-java/cds-feature-attachments/actions/workflows/release.yml/badge.svg)](https://github.com/cap-java/cds-feature-attachments/actions/workflows/release.yml)
 [![REUSE status](https://api.reuse.software/badge/github.com/cap-java/cds-feature-attachments)](https://api.reuse.software/info/github.com/cap-java/cds-feature-attachments)
 
 # Attachments Plugin for SAP Cloud Application Programming Model (CAP)
@@ -14,31 +14,31 @@ It supports the [AWS, Azure, and Google object stores](storage-targets/cds-featu
 
 <!-- TOC -->
 
-* [Quick Start](#quick-start)
-* [Usage](#usage)
-  * [MVN Setup](#mvn-setup)
-  * [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
-  * [Single (Inline) Attachments](#single-inline-attachments)
-  * [Try the Bookshop Sample](#try-the-bookshop-sample)
-  * [Storage Targets](#storage-targets)
-  * [Malware Scanner](#malware-scanner)
-  * [Specify the maximum file size](#specify-the-maximum-file-size)
-  * [Restrict allowed MIME types](#restrict-allowed-mime-types)
-  * [Outbox](#outbox)
-  * [Restore Endpoint](#restore-endpoint)
-    * [Motivation](#motivation)
-    * [HTTP Endpoint](#http-endpoint)
-    * [Security](#security)
-* [Releases: Maven Central and Artifactory](#releases-maven-central-and-artifactory)
-* [Minimum UI5 and CAP Java Version](#minimum-ui5-and-cap-java-version)
-* [Architecture Overview](#architecture-overview)
-  * [Design](#design)
-  * [Multitenancy](#multitenancy)
-  * [Object Stores](#object-stores)
-  * [Model Texts](#model-texts)
-* [Monitoring \& Logging](#monitoring--logging)
-* [Support, Feedback, Contributing](#support-feedback-contributing)
-* [References \& Links](#references--links)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+  - [MVN Setup](#mvn-setup)
+  - [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
+  - [Single (Inline) Attachments](#single-inline-attachments)
+  - [Try the Bookshop Sample](#try-the-bookshop-sample)
+  - [Storage Targets](#storage-targets)
+  - [Malware Scanner](#malware-scanner)
+  - [Specify the maximum file size](#specify-the-maximum-file-size)
+  - [Restrict allowed MIME types](#restrict-allowed-mime-types)
+  - [Outbox](#outbox)
+  - [Restore Endpoint](#restore-endpoint)
+    - [Motivation](#motivation)
+    - [HTTP Endpoint](#http-endpoint)
+    - [Security](#security)
+- [Releases: Maven Central and Artifactory](#releases-maven-central-and-artifactory)
+- [Minimum UI5 and CAP Java Version](#minimum-ui5-and-cap-java-version)
+- [Architecture Overview](#architecture-overview)
+  - [Design](#design)
+  - [Multitenancy](#multitenancy)
+  - [Object Stores](#object-stores)
+  - [Model Texts](#model-texts)
+- [Monitoring \& Logging](#monitoring--logging)
+- [Support, Feedback, Contributing](#support-feedback-contributing)
+- [References \& Links](#references--links)
 
 ## Quick Start
 
@@ -96,7 +96,7 @@ To use this file with the [incidents app](https://github.com/cap-java/incidents-
 
 ```cds
 using { sap.capire.incidents as my } from '../db/schema';
-using { sap.attachments.Attachments } from 'com.sap.cds/cds-feature-attachments';
+using { Attachments } from 'com.sap.cds/cds-feature-attachments';
 extend my.Incidents with {
   attachments: Composition of many Attachments;
 }
@@ -121,10 +121,10 @@ The UI Facet can also be added directly after other UI Facets in a `cds` file in
 > [!Important]
 > Inline attachments require **cds-services 4.9.0** or higher and are available from **cds-feature-attachments 1.6.0**.
 
-In addition to the composition-based `Attachments` aspect (which supports multiple files), CDS provides the `Attachment` type for **single-file** attachment fields directly on an entity. This is useful when an entity needs exactly one file, for example a profile icon or a cover image.
+In addition to the composition-based `Attachments` aspect (which supports multiple files), `cds-feature-attachments` provides the `Attachment` type for **single-file** attachment fields directly on an entity. This is useful when an entity needs exactly one file, for example a profile icon or a cover image.
 
 ```cds
-using { sap.attachments.Attachment } from 'com.sap.cds/cds-feature-attachments';
+using { Attachment } from 'com.sap.cds/cds-feature-attachments';
 
 entity Books {
   key ID   : UUID;
@@ -142,8 +142,9 @@ CDS flattens inline attachment fields onto the parent entity. For example, `prof
 - `profileIcon_contentId` (String)
 - `profileIcon_status` (StatusCode)
 - `profileIcon_scannedAt` (Timestamp)
+- `profileIcon_note` (String)
 
-All plugin features: malware scanning, status tracking, storage targets, maximum file size, and MIME type validation work the same way for inline attachments as for composition-based attachments.
+All plugin features: malware scanning, storage targets, maximum file size, and MIME type validation work the same way for inline attachments as for composition-based attachments.
 
 #### UI Annotations for Inline Attachments
 
@@ -166,53 +167,6 @@ annotate AdminService.Books with @(UI: {
 });
 ```
 
-> [!Note]
-> For inline attachments, the `content` field is annotated with `@Core.MediaType: 'application/octet-stream'` (a static value) instead of a path reference to the `mimeType` field. This is because CDS flattening rewrites `content` to `profileIcon_content` but does **not** rewrite path references like `mimeType` to `profileIcon_mimeType`, which would result in a broken reference. Static annotations propagate correctly through CDS flattening.
-
-#### Inline Attachments on Composition Children
-
-Inline attachments also work on entities that are composition children. For example, if `Items` is a composition of `Orders`, you can add an inline attachment field to `Items`:
-
-```cds
-entity Orders {
-  key ID : UUID;
-  items  : Composition of many Items;
-}
-entity Items {
-  key ID  : UUID;
-  title   : String;
-  receipt : Attachment;
-}
-```
-
-The plugin automatically discovers inline attachment fields at any level of the composition tree.
-
-#### Combining Inline and Composition-Based Attachments
-
-An entity can use both inline single attachments and composition-based multiple attachments simultaneously:
-
-```cds
-entity Books {
-  key ID      : UUID;
-  profileIcon : Attachment;                        // single file
-  attachments : Composition of many Attachments;   // multiple files
-}
-```
-
-### Try the Bookshop Sample
-
-The easiest way to get started is with the included [bookshop sample](samples/bookshop/):
-
-```bash
-cd samples/bookshop
-mvn compile
-mvn spring-boot:run
-```
-
-Then browse to http://localhost:8080/browse/index.html to see attachments in action.
-
-For detailed setup instructions and implementation details, see the [bookshop sample README](samples/bookshop/README.md).
-
 ### Storage Targets
 
 By default, the plugin operates without a dedicated storage target, storing attachments directly in the [underlying database](cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-feature-attachments/attachments.cds#L17).
@@ -228,8 +182,7 @@ When using a dedicated storage target, the attachment is not stored in the under
 
 ### Malware Scanner
 
-This plugin checks for a binding to
-the [SAP Malware Scanning Service](https://help.sap.com/docs/malware-scanning-servce), which needs to have the label `malware-scanner`. The entry in the [mta-file](https://cap.cloud.sap/docs/guides/deployment/to-cf#add-mta-yaml) may look like:
+This plugin checks for a binding to the [SAP Malware Scanning Service](https://help.sap.com/docs/malware-scanning-servce), which needs to have the label `malware-scanner`. The entry in the [mta-file](https://cap.cloud.sap/docs/guides/deployment/to-cf#add-mta-yaml) may look like:
 
 ```
 _schema-version: '0.1'
@@ -296,6 +249,7 @@ annotate Books.attachments with {
 ```
 
 The @Validation.Maximum value is a size string consisting of a number followed by a unit. The following units are supported:
+
 - B (bytes)
 - KB, MB, GB, TB (decimal units)
 - KiB, MiB, GiB, TiB (binary units)
@@ -332,7 +286,6 @@ annotate Books.attachments with {
   content @Core.AcceptableMediaTypes : ['*/*'];
 }
 ```
-
 
 ### Outbox
 
@@ -427,7 +380,7 @@ In the Spring Boot context the `AttachmentService` can be autowired in the handl
 To secure the endpoint, security annotations can be used. For example:
 
 ```cds
-using {sap.attachments.Attachments} from `com.sap.cds/cds-feature-attachments`;
+using {Attachments} from `com.sap.cds/cds-feature-attachments`;
 
 entity Items : cuid {
     ...
