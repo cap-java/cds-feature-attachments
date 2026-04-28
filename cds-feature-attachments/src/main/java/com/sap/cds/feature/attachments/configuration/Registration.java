@@ -147,8 +147,8 @@ public class Registration implements CdsRuntimeConfiguration {
         new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
     ModifyAttachmentEventFactory eventFactory =
         buildAttachmentEventFactory(attachmentService, deleteEvent, outboxedAttachmentService);
-    AttachmentsReader attachmentsReader =
-        new AttachmentsReader(new AssociationCascader(), persistenceService);
+    AssociationCascader cascader = new AssociationCascader();
+    AttachmentsReader attachmentsReader = new AttachmentsReader(cascader, persistenceService);
     ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
     // register event handlers for application service, if at least one application service is
@@ -170,6 +170,7 @@ public class Registration implements CdsRuntimeConfiguration {
               new AttachmentStatusValidator(),
               scanRunner,
               persistenceService,
+              cascader,
               scanClient != null));
     } else {
       logger.debug(
