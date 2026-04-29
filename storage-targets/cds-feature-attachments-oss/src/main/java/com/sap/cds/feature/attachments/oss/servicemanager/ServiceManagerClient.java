@@ -34,8 +34,6 @@ public class ServiceManagerClient {
   private static final Logger logger = LoggerFactory.getLogger(ServiceManagerClient.class);
   private static final ObjectMapper MAPPER = new ObjectMapper();
   private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
-  private static final long POLL_INTERVAL_MS = 5000;
-  private static final long POLL_TIMEOUT_MS = 5 * 60 * 1000;
   private static final List<String> SUPPORTED_PLANS = List.of("standard", "s3-standard");
   private static final String LABEL_QUERY_TEMPLATE =
       "service eq 'OBJECT_STORE' and tenant_id eq '%s'";
@@ -111,14 +109,13 @@ public class ServiceManagerClient {
   }
 
   /**
-   * Creates an object store instance for the given tenant and polls until provisioning completes.
+   * Creates an object store instance for the given tenant synchronously.
    *
    * @param tenantId the tenant ID
    * @param planId the service plan ID
    * @return the instance ID
-   * @throws ServiceManagerException if creation fails or times out
+   * @throws ServiceManagerException if creation fails
    */
-  @SuppressWarnings("unchecked")
   public String createInstance(String tenantId, String planId) {
     String instanceName = "object-store-" + tenantId + "-" + UUID.randomUUID();
     Map<String, Object> body =
@@ -134,16 +131,19 @@ public class ServiceManagerClient {
 
     logger.info("Creating object store instance '{}' for tenant {}", instanceName, tenantId);
 
-    String url = credentialResolver.getSmUrl() + "/v1/service_instances";
+    String url = credentialResolver.getSmUrl() + "/v1/service_instances?async=false";
     Map<String, Object> response = executePost(url, body);
+
+    logger.debug("Service Manager create instance response: {}", response);
 
     String instanceId = (String) response.get("id");
     if (instanceId == null) {
       throw new ServiceManagerException(
-          "Service Manager did not return an instance ID for tenant " + tenantId);
+          "Service Manager did not return an instance ID for tenant %s. Response: %s"
+              .formatted(tenantId, response));
     }
 
-    pollUntilDone(instanceId, tenantId);
+    logger.info("Object store instance provisioned for tenant {}", tenantId);
     return instanceId;
   }
 
@@ -169,7 +169,7 @@ public class ServiceManagerClient {
 
     logger.info("Creating binding '{}' for tenant {}", bindingName, tenantId);
 
-    String url = credentialResolver.getSmUrl() + "/v1/service_bindings";
+    String url = credentialResolver.getSmUrl() + "/v1/service_bindings?async=false";
     Map<String, Object> response = executePost(url, body);
 
     String bindingId = (String) response.get("id");
@@ -230,46 +230,6 @@ public class ServiceManagerClient {
     logger.info("Deleted service instance {}", instanceId);
   }
 
-  private void pollUntilDone(String instanceId, String tenantId) {
-    String url =
-        credentialResolver.getSmUrl() + "/v1/service_instances/" + instanceId + "/last_operation";
-    long startTime = System.currentTimeMillis();
-    int iteration = 1;
-
-    while (true) {
-      long waitTime = POLL_INTERVAL_MS * iteration;
-      try {
-        Thread.sleep(waitTime);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        throw new ServiceManagerException(
-            "Interrupted while waiting for object store instance for tenant " + tenantId, e);
-      }
-
-      Map<String, Object> operation = executeGet(url);
-      String state = (String) operation.get("state");
-
-      if ("succeeded".equals(state)) {
-        logger.info("Object store instance provisioned for tenant {}", tenantId);
-        return;
-      }
-
-      if ("failed".equals(state)) {
-        String description = (String) operation.get("description");
-        throw new ServiceManagerException(
-            "Object store instance provisioning failed for tenant %s: %s"
-                .formatted(tenantId, description));
-      }
-
-      if (System.currentTimeMillis() - startTime > POLL_TIMEOUT_MS) {
-        throw new ServiceManagerException(
-            "Timed out waiting for object store instance provisioning for tenant " + tenantId);
-      }
-
-      iteration++;
-    }
-  }
-
   @SuppressWarnings("unchecked")
   private List<Map<String, Object>> queryByLabel(String path, String tenantId) {
     String labelQuery = LABEL_QUERY_TEMPLATE.formatted(tenantId);
@@ -327,7 +287,10 @@ public class ServiceManagerClient {
         throw new ServiceManagerException(
             "Service Manager POST %s returned status %d: %s".formatted(url, statusCode, body));
       }
-      return MAPPER.readValue(body, MAP_TYPE);
+
+      return (body != null && !body.isBlank())
+          ? MAPPER.readValue(body, MAP_TYPE)
+          : Map.of();
     } catch (ServiceManagerException e) {
       throw e;
     } catch (Exception e) {
