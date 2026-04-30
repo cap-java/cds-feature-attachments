@@ -61,41 +61,23 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     Map<String, Object> values = path.target().values();
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 
-    Optional<String> mimeTypeOptional =
-        getFieldValue(MediaData.MIME_TYPE, values, attachment, inlinePrefix);
+    String fileNameField = prefixed(inlinePrefix, MediaData.FILE_NAME);
+    String mimeTypeField = prefixed(inlinePrefix, MediaData.MIME_TYPE);
+
     Optional<String> fileNameOptional =
         getFieldValue(MediaData.FILE_NAME, values, attachment, inlinePrefix);
-
-    // For inline attachments, CDS flattening breaks the Core.ContentDisposition.Filename and
-    // Core.MediaType path references, so the framework won't extract fileName/mimeType from the
-    // upload request headers. Extract them manually and persist into the prefixed fields.
-    if (inlinePrefix.isPresent() && fileNameOptional.isEmpty()) {
-      fileNameOptional = extractFileNameFromHeader(eventContext);
-      fileNameOptional.ifPresent(
-          fn -> values.put(inlinePrefix.get() + "_" + MediaData.FILE_NAME, fn));
-    }
-
-    // Extract mimeType from Content-Type header for ALL attachment types (inline and composition)
-    // when mimeType is not already set
-    if (mimeTypeOptional.isEmpty() && eventContext.getParameterInfo() != null) {
-      Optional<String> headerMimeType = extractMimeTypeFromHeader(eventContext);
-      if (headerMimeType.isPresent()) {
-        mimeTypeOptional = headerMimeType;
-        String mimeTypeField =
-            inlinePrefix.map(p -> p + "_" + MediaData.MIME_TYPE).orElse(MediaData.MIME_TYPE);
-        values.put(mimeTypeField, mimeTypeOptional.get());
-      }
-    }
+    Optional<String> mimeTypeOptional =
+        getFieldValue(MediaData.MIME_TYPE, values, attachment, inlinePrefix);
 
     // Fall back to HTTP headers when values are not set in payload
     if (eventContext.getParameterInfo() != null) {
       if (fileNameOptional.isEmpty()) {
         fileNameOptional = extractFileNameFromHeader(eventContext);
-        fileNameOptional.ifPresent(fn -> values.put(MediaData.FILE_NAME, fn));
+        fileNameOptional.ifPresent(fn -> values.put(fileNameField, fn));
       }
       if (mimeTypeOptional.isEmpty()) {
         mimeTypeOptional = extractMimeTypeFromHeader(eventContext);
-        mimeTypeOptional.ifPresent(mt -> values.put(MediaData.MIME_TYPE, mt));
+        mimeTypeOptional.ifPresent(mt -> values.put(mimeTypeField, mt));
       }
     }
 
@@ -112,19 +94,20 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
         listenerProvider.provideListener(result.contentId(), eventContext.getCdsRuntime());
 
     eventContext.getChangeSetContext().register(createListener);
-    // Set contentId and status using correct field names (prefixed for inline)
-    String contentIdField =
-        inlinePrefix.map(p -> p + "_" + Attachments.CONTENT_ID).orElse(Attachments.CONTENT_ID);
-    String statusField =
-        inlinePrefix.map(p -> p + "_" + Attachments.STATUS).orElse(Attachments.STATUS);
+    String contentIdField = prefixed(inlinePrefix, Attachments.CONTENT_ID);
+    String statusField = prefixed(inlinePrefix, Attachments.STATUS);
     path.target().values().put(contentIdField, result.contentId());
     path.target().values().put(statusField, result.status());
     if (nonNull(result.scannedAt())) {
-      String scannedAtField =
-          inlinePrefix.map(p -> p + "_" + Attachments.SCANNED_AT).orElse(Attachments.SCANNED_AT);
-      path.target().values().put(scannedAtField, result.scannedAt());
+      path.target()
+          .values()
+          .put(prefixed(inlinePrefix, Attachments.SCANNED_AT), result.scannedAt());
     }
     return result.isInternalStored() ? content : null;
+  }
+
+  private static String prefixed(Optional<String> inlinePrefix, String fieldName) {
+    return inlinePrefix.map(p -> p + "_" + fieldName).orElse(fieldName);
   }
 
   private static Optional<String> getFieldValue(
@@ -132,12 +115,10 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
       Map<String, Object> values,
       Attachments attachment,
       Optional<String> inlinePrefix) {
-    // Try prefixed field name first (for inline types)
     if (inlinePrefix.isPresent()) {
-      Object prefixedValue = values.get(inlinePrefix.get() + "_" + fieldName);
+      Object prefixedValue = values.get(prefixed(inlinePrefix, fieldName));
       if (nonNull(prefixedValue)) return Optional.of((String) prefixedValue);
     }
-    // Fall back to direct field name
     Object annotationValue = values.get(fieldName);
     Object value = nonNull(annotationValue) ? annotationValue : attachment.get(fieldName);
     return Optional.ofNullable((String) value);

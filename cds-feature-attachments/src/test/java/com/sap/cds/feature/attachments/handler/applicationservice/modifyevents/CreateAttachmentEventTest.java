@@ -12,10 +12,8 @@ import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
-import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
@@ -382,9 +380,7 @@ class CreateAttachmentEventTest {
 
   @Test
   void inlineContentIdAndStatusWrittenWithPrefix() {
-    CdsEntity realEntity =
-        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
-    when(target.entity()).thenReturn(realEntity);
+    when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
 
     Map<String, Object> values = new HashMap<>();
     values.put("ID", UUID.randomUUID().toString());
@@ -405,9 +401,7 @@ class CreateAttachmentEventTest {
 
   @Test
   void inlinePrefixedFieldValuesPassedToService() {
-    CdsEntity realEntity =
-        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
-    when(target.entity()).thenReturn(realEntity);
+    when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
 
     Map<String, Object> values = new HashMap<>();
     values.put("ID", UUID.randomUUID().toString());
@@ -431,9 +425,7 @@ class CreateAttachmentEventTest {
 
   @Test
   void inlineFallsBackToAttachmentObjectWhenPrefixedFieldMissing() {
-    CdsEntity realEntity =
-        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
-    when(target.entity()).thenReturn(realEntity);
+    when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
 
     Map<String, Object> values = new HashMap<>();
     values.put("ID", UUID.randomUUID().toString());
@@ -480,9 +472,7 @@ class CreateAttachmentEventTest {
 
   @Test
   void processEventWritesScannedAtWhenNonNull() {
-    CdsEntity realEntity =
-        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
-    when(target.entity()).thenReturn(realEntity);
+    when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
 
     Map<String, Object> values = new HashMap<>();
     values.put("ID", UUID.randomUUID().toString());
@@ -506,9 +496,7 @@ class CreateAttachmentEventTest {
   // --- Inline Header Extraction Tests ---
 
   private Map<String, Object> prepareInlineValuesWithoutMetadata() {
-    CdsEntity realEntity =
-        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
-    when(target.entity()).thenReturn(realEntity);
+    when(entity.getQualifiedName()).thenReturn(TEST_FULL_NAME);
 
     Map<String, Object> values = new HashMap<>();
     values.put("ID", UUID.randomUUID().toString());
@@ -529,6 +517,7 @@ class CreateAttachmentEventTest {
         path, mock(InputStream.class), inlineAttachment("profilePicture"), eventContext);
 
     assertThat(values).containsEntry("profilePicture_fileName", "my file.txt");
+    assertThat(values).doesNotContainKey(MediaData.FILE_NAME);
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file.txt");
   }
@@ -584,6 +573,7 @@ class CreateAttachmentEventTest {
         path, mock(InputStream.class), inlineAttachment("profilePicture"), eventContext);
 
     assertThat(values).containsEntry("profilePicture_mimeType", "image/jpeg");
+    assertThat(values).doesNotContainKey(MediaData.MIME_TYPE);
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("image/jpeg");
   }
