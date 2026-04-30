@@ -8,9 +8,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Version 1.6.0 - not yet released
 
+### Added
+
+- Added support for single (inline) attachments via the `Attachment` type. Requires cds-services 4.9.0 or higher. (#768)
+- Added top-level `Attachments` aspect to allow usage without `sap.attachments` namespace (#806), i.e., `using {Attachments} from 'com.sap.cds/cds-feature-attachments'`.
+
 ### Changed
 
-- Added top-level `Attachments` aspect to allow usage without `sap.attachments` namespace (#806), i.e., `using {Attachments} from 'com.sap.cds/cds-feature-attachments'`.
 - Extract `fileName` and `mimeType` from HTTP headers (`Content-Disposition`, `Content-Type`, `slug`) when not provided in the request payload (#804)
 
 ## Version 1.5.0 - 2026-04-10

@@ -26,6 +26,7 @@ import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -97,7 +98,8 @@ class AttachmentsServiceImplTest {
     var stream = mock(InputStream.class);
     Map<String, Object> ids = Map.of("ID1", "value1", "id2", "Value2");
     var input =
-        new CreateAttachmentInput(ids, mock(CdsEntity.class), "fileName", "mimeType", stream);
+        new CreateAttachmentInput(
+            ids, mock(CdsEntity.class), "fileName", "mimeType", stream, Optional.empty());
 
     var result = cut.createAttachment(input);
 
@@ -125,7 +127,12 @@ class AttachmentsServiceImplTest {
     Map<String, Object> ids = Map.of("ID1", "value1", "id2", "Value2");
     var input =
         new CreateAttachmentInput(
-            ids, mock(CdsEntity.class), "fileName", "mimeType", mock(InputStream.class));
+            ids,
+            mock(CdsEntity.class),
+            "fileName",
+            "mimeType",
+            mock(InputStream.class),
+            Optional.empty());
 
     var result = cut.createAttachment(input);
 

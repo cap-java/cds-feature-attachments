@@ -1,17 +1,20 @@
 namespace unit.test;
 
 using {cuid} from '@sap/cds/common';
-using {sap.attachments.Attachments} from '../../../main/resources/cds/com.sap.cds/cds-feature-attachments';
+using {
+                  Attachments,
+    Attachment as AttachmentType
+} from '../../../main/resources/cds/com.sap.cds/cds-feature-attachments';
 using from '@sap/cds/srv/outbox';
 
-entity Attachment : Attachments {
-}
+entity Attachment : Attachments {}
 
 entity Roots : cuid {
-    title              : String;
-    itemTable          : Composition of many Items
-                             on itemTable.rootId = $self.ID;
-    attachments        : Composition of many Attachments;
+    title          : String;
+    itemTable      : Composition of many Items
+                         on itemTable.rootId = $self.ID;
+    attachments    : Composition of many Attachments;
+    profilePicture : AttachmentType;
 }
 
 entity Items : cuid {
@@ -19,7 +22,8 @@ entity Items : cuid {
     note            : String;
     events          : Composition of many Events
                           on events.id1 = $self.ID;
-    attachments     : Composition of many Attachment on attachments.ID = $self.ID;
+    attachments     : Composition of many Attachment
+                          on attachments.ID = $self.ID;
     itemAttachments : Composition of many Attachments;
 }
 
@@ -36,10 +40,16 @@ entity Events {
 }
 
 entity EventItems {
-    key id1  : UUID;
-        note : String;
-        sizeLimitedAttachments : Composition of many Attachments;
+    key id1                           : UUID;
+        note                          : String;
+        sizeLimitedAttachments        : Composition of many Attachments;
         defaultSizeLimitedAttachments : Composition of many Attachments;
+}
+
+// Entity with only inline attachment (no composition)
+entity InlineOnly : cuid {
+    title  : String;
+    avatar : AttachmentType;
 }
 
 annotate EventItems.sizeLimitedAttachments with {
@@ -50,3 +60,6 @@ annotate EventItems.defaultSizeLimitedAttachments with {
     content @Validation.Maximum;
 };
 
+annotate InlineOnly : avatar with {
+    content @Validation.Maximum: '10KB';
+};
