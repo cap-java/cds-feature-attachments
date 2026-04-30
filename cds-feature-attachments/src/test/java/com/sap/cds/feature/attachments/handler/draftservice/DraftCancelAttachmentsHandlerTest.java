@@ -6,6 +6,7 @@ package com.sap.cds.feature.attachments.handler.draftservice;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 import com.sap.cds.CdsData;
@@ -271,8 +272,8 @@ class DraftCancelAttachmentsHandlerTest {
 
     cut.processBeforeDraftCancel(eventContext);
 
-    // Should not call deleteEvent since keys don't match
-    verifyNoInteractions(deleteContentAttachmentEvent);
+    // Orphan prevention: draft has contentId but no matching active entry, so delete it
+    verify(deleteContentAttachmentEvent).processEvent(isNull(), isNull(), any(), eq(eventContext));
   }
 
   @Test

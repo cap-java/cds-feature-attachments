@@ -15,6 +15,8 @@ import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
+import com.sap.cds.ql.cqn.Path;
+import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.DraftCancelEventContext;
@@ -101,27 +103,16 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   private Validator buildDeleteContentValidator(
       DraftCancelEventContext context, List<? extends CdsData> activeCondensedAttachments) {
     return (path, element, value) -> {
-      Optional<String> inlinePrefix =
-          ApplicationHandlerHelper.getInlineAttachmentPrefix(
-              path.target().entity(), element.getName());
-
-      Attachments attachment;
-      if (inlinePrefix.isPresent()) {
-        attachment =
-            ApplicationHandlerHelper.extractInlineAttachment(
-                path.target().values(), inlinePrefix.get());
-        Object hasActiveEntity = path.target().values().get(Drafts.HAS_ACTIVE_ENTITY);
-        if (hasActiveEntity != null) {
-          attachment.put(Drafts.HAS_ACTIVE_ENTITY, hasActiveEntity);
-        }
-      } else {
-        attachment = Attachments.of(path.target().values());
-      }
+      Attachments attachment = extractAttachmentFromPath(path, element);
 
       if (Boolean.FALSE.equals(attachment.get(Drafts.HAS_ACTIVE_ENTITY))) {
         deleteEvent.processEvent(path, null, attachment, context);
         return;
       }
+
+      Optional<String> inlinePrefix =
+          ApplicationHandlerHelper.getInlineAttachmentPrefix(
+              path.target().entity(), element.getName());
       Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
       Optional<? extends CdsData> existingEntry =
           activeCondensedAttachments.stream()
@@ -135,14 +126,38 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
                     return ApplicationHandlerHelper.areKeysInData(keys, updatedData);
                   })
               .findAny();
-      existingEntry.ifPresent(
-          entry -> {
-            Object existingContentId = entry.get(Attachments.CONTENT_ID);
-            if (!Objects.equals(existingContentId, attachment.getContentId())) {
-              deleteEvent.processEvent(null, null, attachment, context);
-            }
-          });
+
+      if (existingEntry.isPresent()) {
+        Object existingContentId = existingEntry.get().get(Attachments.CONTENT_ID);
+        if (!Objects.equals(existingContentId, attachment.getContentId())) {
+          deleteEvent.processEvent(null, null, attachment, context);
+        }
+      } else if (attachment.getContentId() != null) {
+        logger.warn(
+            "Draft attachment with contentId {} has no matching active entry. Deleting to prevent orphan.",
+            attachment.getContentId());
+        deleteEvent.processEvent(null, null, attachment, context);
+      }
     };
+  }
+
+  private Attachments extractAttachmentFromPath(Path path, CdsElement element) {
+    Optional<String> inlinePrefix =
+        ApplicationHandlerHelper.getInlineAttachmentPrefix(
+            path.target().entity(), element.getName());
+    Attachments attachment;
+    if (inlinePrefix.isPresent()) {
+      attachment =
+          ApplicationHandlerHelper.extractInlineAttachment(
+              path.target().values(), inlinePrefix.get());
+      Object hasActiveEntity = path.target().values().get(Drafts.HAS_ACTIVE_ENTITY);
+      if (hasActiveEntity != null) {
+        attachment.put(Drafts.HAS_ACTIVE_ENTITY, hasActiveEntity);
+      }
+    } else {
+      attachment = Attachments.of(path.target().values());
+    }
+    return attachment;
   }
 
   private List<Attachments> readAttachments(
