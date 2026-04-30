@@ -192,8 +192,9 @@ public class ReadAttachmentsHandler implements EventHandler {
         attachment.getContentId(),
         attachment.getScannedAt());
 
-    String contentIdCol = resolveColumn(Attachments.CONTENT_ID, inlinePrefix);
-    String statusCol = resolveColumn(Attachments.STATUS, inlinePrefix);
+    String contentIdCol =
+        ApplicationHandlerHelper.resolveFieldName(Attachments.CONTENT_ID, inlinePrefix);
+    String statusCol = ApplicationHandlerHelper.resolveFieldName(Attachments.STATUS, inlinePrefix);
 
     Attachments updateData = Attachments.create();
     updateData.put(statusCol, StatusCode.SCANNING);
@@ -207,10 +208,6 @@ public class ReadAttachmentsHandler implements EventHandler {
     persistenceService.run(update);
 
     attachment.setStatus(StatusCode.SCANNING);
-  }
-
-  private static String resolveColumn(String fieldName, Optional<String> inlinePrefix) {
-    return inlinePrefix.map(p -> p + "_" + fieldName).orElse(fieldName);
   }
 
   private boolean areKeysEmpty(Map<String, Object> keys) {

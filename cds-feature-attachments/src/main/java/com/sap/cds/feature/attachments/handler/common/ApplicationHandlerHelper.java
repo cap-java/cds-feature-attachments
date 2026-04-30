@@ -282,6 +282,10 @@ public final class ApplicationHandlerHelper {
     return keyMap;
   }
 
+  public static String resolveFieldName(String fieldName, Optional<String> inlinePrefix) {
+    return inlinePrefix.map(p -> p + "_" + fieldName).orElse(fieldName);
+  }
+
   private ApplicationHandlerHelper() {
     // avoid instantiation
   }

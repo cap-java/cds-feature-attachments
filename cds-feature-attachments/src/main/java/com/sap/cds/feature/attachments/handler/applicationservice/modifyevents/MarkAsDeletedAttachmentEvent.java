@@ -57,11 +57,16 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
           qualifiedName);
     }
     if (nonNull(path)) {
-      String contentIdField = resolveField(Attachments.CONTENT_ID, inlinePrefix);
-      String statusField = resolveField(Attachments.STATUS, inlinePrefix);
-      String scannedAtField = resolveField(Attachments.SCANNED_AT, inlinePrefix);
-      String mimeTypeField = resolveField(MediaData.MIME_TYPE, inlinePrefix);
-      String fileNameField = resolveField(MediaData.FILE_NAME, inlinePrefix);
+      String contentIdField =
+          ApplicationHandlerHelper.resolveFieldName(Attachments.CONTENT_ID, inlinePrefix);
+      String statusField =
+          ApplicationHandlerHelper.resolveFieldName(Attachments.STATUS, inlinePrefix);
+      String scannedAtField =
+          ApplicationHandlerHelper.resolveFieldName(Attachments.SCANNED_AT, inlinePrefix);
+      String mimeTypeField =
+          ApplicationHandlerHelper.resolveFieldName(MediaData.MIME_TYPE, inlinePrefix);
+      String fileNameField =
+          ApplicationHandlerHelper.resolveFieldName(MediaData.FILE_NAME, inlinePrefix);
 
       String newContentId = (String) path.target().values().get(contentIdField);
       if (nonNull(newContentId) && newContentId.equals(attachment.getContentId())
@@ -76,9 +81,5 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
       }
     }
     return content;
-  }
-
-  private static String resolveField(String fieldName, Optional<String> inlinePrefix) {
-    return inlinePrefix.map(p -> p + "_" + fieldName).orElse(fieldName);
   }
 }
