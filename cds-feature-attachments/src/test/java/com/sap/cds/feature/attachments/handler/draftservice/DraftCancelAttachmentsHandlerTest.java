@@ -238,7 +238,7 @@ class DraftCancelAttachmentsHandlerTest {
   }
 
   @Test
-  void noMatchingActiveEntryForDraftAttachment() {
+  void noMatchingActiveEntryForDraftAttachmentDeletesOrphan() {
     getEntityAndMockContext(Attachment_.CDS_NAME);
     CqnDelete delete = Delete.from(RootTable_.class);
     when(eventContext.getCqn()).thenReturn(delete);
@@ -268,8 +268,11 @@ class DraftCancelAttachmentsHandlerTest {
 
     cut.processBeforeDraftCancel(eventContext);
 
-    // Should not call deleteEvent since keys don't match
-    verifyNoInteractions(deleteContentAttachmentEvent);
+    // Orphan scenario: draft has HAS_ACTIVE_ENTITY=true but no matching active entry.
+    // Delete must be called to prevent orphaned storage.
+    verify(deleteContentAttachmentEvent)
+        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext));
+    assertThat(dataArgumentCaptor.getValue().getContentId()).isEqualTo("draft-content");
   }
 
   private Attachment buildAttachmentAndReturnByReader(

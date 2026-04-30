@@ -98,12 +98,18 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
           activeCondensedAttachments.stream()
               .filter(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData))
               .findAny();
-      existingEntry.ifPresent(
-          entry -> {
-            if (!entry.get(Attachments.CONTENT_ID).equals(value)) {
-              deleteEvent.processEvent(null, null, attachment, context);
-            }
-          });
+      if (existingEntry.isPresent()) {
+        if (!existingEntry.get().get(Attachments.CONTENT_ID).equals(value)) {
+          deleteEvent.processEvent(null, null, attachment, context);
+        }
+      } else {
+        // Data inconsistency: HAS_ACTIVE_ENTITY is true but no matching active attachment found.
+        // Delete draft attachment content to prevent orphaned storage.
+        logger.warn(
+            "Draft attachment with contentId {} has no matching active entry. Deleting to prevent orphan.",
+            attachment.getContentId());
+        deleteEvent.processEvent(null, null, attachment, context);
+      }
     };
   }
 
