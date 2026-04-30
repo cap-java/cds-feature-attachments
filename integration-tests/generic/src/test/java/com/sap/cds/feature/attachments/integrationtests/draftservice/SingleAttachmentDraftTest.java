@@ -287,6 +287,53 @@ class SingleAttachmentDraftTest {
   }
 
   @Test
+  void multiEntityIsolation_activatingOneEntityDoesNotAffectOther() throws Exception {
+    var draftA = createNewDraft();
+    var draftAUrl = getDraftRootUrl(draftA.getId());
+    putInlineAttachmentContent(draftAUrl, "contentA");
+
+    var draftB = createNewDraft();
+    var draftBUrl = getDraftRootUrl(draftB.getId());
+    putInlineAttachmentContent(draftBUrl, "contentB");
+
+    prepareAndActivateDraft(draftAUrl);
+
+    var activeRootA = selectActiveRoot(draftA.getId());
+    assertThat(activeRootA.getAvatarContentId()).isNotEmpty();
+
+    prepareAndActivateDraft(draftBUrl);
+
+    var activeRootB = selectActiveRoot(draftB.getId());
+    assertThat(activeRootB.getAvatarContentId()).isNotEmpty();
+    assertThat(activeRootB.getAvatarContentId()).isNotEqualTo(activeRootA.getAvatarContentId());
+
+    var contentBUrl = getActiveRootUrl(draftB.getId()) + "/avatar_content";
+    Awaitility.await()
+        .atMost(60, TimeUnit.SECONDS)
+        .pollDelay(1, TimeUnit.SECONDS)
+        .pollInterval(2, TimeUnit.SECONDS)
+        .until(
+            () -> {
+              var response = requestHelper.executeGet(contentBUrl);
+              return response.getResponse().getContentAsString().equals("contentB");
+            });
+
+    var response = requestHelper.executeGet(contentBUrl);
+    assertThat(response.getResponse().getContentAsString()).isEqualTo("contentB");
+  }
+
+  @Test
+  void putOversizedContentToCoverImageInDraftReturnsError() throws Exception {
+    var draft = createNewDraft();
+    var draftRootUrl = getDraftRootUrl(draft.getId());
+
+    var url = draftRootUrl + "/coverImage_content";
+    byte[] oversizedContent = new byte[6 * 1024 * 1024]; // 6MB > 5MB limit
+    requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+    requestHelper.executePutWithMatcher(url, oversizedContent, status().is4xxClientError());
+  }
+
+  @Test
   void updateInlineAttachmentInDraftAndCancelDeletesNewContent() throws Exception {
     var draft = createNewDraft();
     var draftRootUrl = getDraftRootUrl(draft.getId());
