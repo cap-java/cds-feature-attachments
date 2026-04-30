@@ -69,8 +69,10 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
           ApplicationHandlerHelper.resolveFieldName(MediaData.FILE_NAME, inlinePrefix);
 
       String newContentId = (String) path.target().values().get(contentIdField);
-      if (nonNull(newContentId) && newContentId.equals(attachment.getContentId())
-          || !path.target().values().containsKey(contentIdField)) {
+      boolean replacedBySameContent =
+          nonNull(newContentId) && newContentId.equals(attachment.getContentId());
+      boolean noNewContentSupplied = !path.target().values().containsKey(contentIdField);
+      if (replacedBySameContent || noNewContentSupplied) {
         path.target().values().put(contentIdField, null);
         path.target().values().put(statusField, null);
         path.target().values().put(scannedAtField, null);
