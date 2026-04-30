@@ -13,7 +13,6 @@ import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 import java.io.InputStream;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,11 +44,9 @@ class UpdateAttachmentEventTest {
     var existingData = Attachments.create();
     var eventContext = mock(EventContext.class);
 
-    cut.processEvent(path, testContentStream, existingData, eventContext, Optional.empty());
+    cut.processEvent(path, testContentStream, existingData, eventContext);
 
-    verify(createEvent)
-        .processEvent(path, testContentStream, existingData, eventContext, Optional.empty());
-    verify(deleteEvent)
-        .processEvent(path, testContentStream, existingData, eventContext, Optional.empty());
+    verify(createEvent).processEvent(path, testContentStream, existingData, eventContext);
+    verify(deleteEvent).processEvent(path, testContentStream, existingData, eventContext);
   }
 }

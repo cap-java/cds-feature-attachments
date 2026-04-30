@@ -10,7 +10,6 @@ import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import java.io.InputStream;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,16 +34,12 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
   @Override
   public InputStream processEvent(
-      Path path,
-      InputStream content,
-      Attachments attachment,
-      EventContext eventContext,
-      Optional<String> inlinePrefix) {
+      Path path, InputStream content, Attachments attachment, EventContext eventContext) {
     logger.debug(
         "Processing UPDATE event by calling attachment service with create and delete event for entity {}",
         path.target().entity().getQualifiedName());
 
-    deleteEvent.processEvent(path, content, attachment, eventContext, inlinePrefix);
-    return createEvent.processEvent(path, content, attachment, eventContext, inlinePrefix);
+    deleteEvent.processEvent(path, content, attachment, eventContext);
+    return createEvent.processEvent(path, content, attachment, eventContext);
   }
 }

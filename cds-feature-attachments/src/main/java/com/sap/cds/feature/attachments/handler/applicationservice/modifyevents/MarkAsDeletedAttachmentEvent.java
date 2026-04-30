@@ -8,6 +8,7 @@ import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.Path;
@@ -35,11 +36,10 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 
   @Override
   public InputStream processEvent(
-      Path path,
-      InputStream content,
-      Attachments attachment,
-      EventContext eventContext,
-      Optional<String> inlinePrefix) {
+      Path path, InputStream content, Attachments attachment, EventContext eventContext) {
+    Optional<String> inlinePrefix =
+        Optional.ofNullable((String) attachment.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER));
+
     String qualifiedName = eventContext.getTarget().getQualifiedName();
     logger.debug(
         "Processing the event for calling attachment service with mark as delete event for entity {}",
@@ -69,11 +69,6 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
         path.target().values().put(contentIdField, null);
         path.target().values().put(statusField, null);
         path.target().values().put(scannedAtField, null);
-        // For inline attachments, also clear mimeType/fileName on the parent entity.
-        // For composition-based attachments these live on the attachment entity itself and must NOT
-        // be cleared here.
-        // Otherwise UpdateAttachmentEvent's delete step would destroy them before the subsequent
-        // create step can use them.
         if (inlinePrefix.isPresent()) {
           path.target().values().put(mimeTypeField, null);
           path.target().values().put(fileNameField, null);

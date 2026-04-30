@@ -186,7 +186,7 @@ class DraftCancelAttachmentsHandlerTest {
     cut.processBeforeDraftCancel(eventContext);
 
     verify(deleteContentAttachmentEvent)
-        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext), any());
+        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext));
     assertThat(dataArgumentCaptor.getValue()).isEqualTo(attachment);
   }
 
@@ -205,7 +205,7 @@ class DraftCancelAttachmentsHandlerTest {
     cut.processBeforeDraftCancel(eventContext);
 
     verify(deleteContentAttachmentEvent)
-        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext), any());
+        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext));
     assertThat(dataArgumentCaptor.getValue()).isEqualTo(draftAttachment);
   }
 
@@ -297,7 +297,7 @@ class DraftCancelAttachmentsHandlerTest {
     cut.processBeforeDraftCancel(eventContext);
 
     verify(deleteContentAttachmentEvent)
-        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext), any());
+        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext));
     assertThat(dataArgumentCaptor.getValue().getContentId()).isEqualTo("new-content-id");
     assertThat(dataArgumentCaptor.getValue().get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER))
         .isEqualTo("profilePicture");
@@ -330,7 +330,7 @@ class DraftCancelAttachmentsHandlerTest {
     cut.processBeforeDraftCancel(eventContext);
 
     verify(deleteContentAttachmentEvent)
-        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext), any());
+        .processEvent(any(), eq(null), dataArgumentCaptor.capture(), eq(eventContext));
     assertThat(dataArgumentCaptor.getValue().getContentId()).isEqualTo("new-content-id");
   }
 

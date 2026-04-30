@@ -51,11 +51,10 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
   @Override
   public InputStream processEvent(
-      Path path,
-      InputStream content,
-      Attachments attachment,
-      EventContext eventContext,
-      Optional<String> inlinePrefix) {
+      Path path, InputStream content, Attachments attachment, EventContext eventContext) {
+    Optional<String> inlinePrefix =
+        Optional.ofNullable((String) attachment.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER));
+
     logger.debug(
         "Calling attachment service with create event for entity {}",
         path.target().entity().getQualifiedName());

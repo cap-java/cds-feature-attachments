@@ -26,17 +26,17 @@ class MediaTypeServiceTest {
   }
 
   @Test
-  void returnsNull_forUnknownExtension() {
+  void returnsDefaultMimeType_forUnknownExtension() {
     String result = MediaTypeService.resolveMimeType("file.unknown");
 
-    assertNull(result);
+    assertEquals(MediaTypeService.DEFAULT_MEDIA_TYPE, result);
   }
 
   @Test
-  void returnsNull_whenNoExtensionPresent() {
+  void returnsDefaultMimeType_whenNoExtensionPresent() {
     String result = MediaTypeService.resolveMimeType("file");
 
-    assertNull(result);
+    assertEquals(MediaTypeService.DEFAULT_MEDIA_TYPE, result);
   }
 
   @Test
@@ -57,28 +57,28 @@ class MediaTypeServiceTest {
   void handlesTrailingDotFile() {
     String result = MediaTypeService.resolveMimeType("file.");
 
-    assertNull(result);
+    assertEquals(MediaTypeService.DEFAULT_MEDIA_TYPE, result);
   }
 
   @Test
   void handlesHiddenDotFile() {
     String result = MediaTypeService.resolveMimeType(".gitignore");
 
-    assertNull(result);
+    assertEquals(MediaTypeService.DEFAULT_MEDIA_TYPE, result);
   }
 
   @Test
   void handlesOnlyDotsFile() {
     String result = MediaTypeService.resolveMimeType("...");
 
-    assertNull(result);
+    assertEquals(MediaTypeService.DEFAULT_MEDIA_TYPE, result);
   }
 
   @Test
   void handlesWeirdFilename() {
     String result = MediaTypeService.resolveMimeType("file..unknown");
 
-    assertNull(result);
+    assertEquals(MediaTypeService.DEFAULT_MEDIA_TYPE, result);
   }
 
   @Test

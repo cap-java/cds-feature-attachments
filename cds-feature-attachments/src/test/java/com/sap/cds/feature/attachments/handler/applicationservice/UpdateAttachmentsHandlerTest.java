@@ -247,7 +247,7 @@ class UpdateAttachmentsHandlerTest {
     attachment.setFileName("test.txt");
     attachment.setContent(null);
     attachment.setId(id);
-    when(event.processEvent(any(), any(), any(), any(), any())).thenThrow(new ServiceException(""));
+    when(event.processEvent(any(), any(), any(), any())).thenThrow(new ServiceException(""));
     when(attachmentsReader.readAttachments(any(), any(), any(CqnFilterableStatement.class)))
         .thenReturn(List.of(attachment));
 
@@ -284,11 +284,7 @@ class UpdateAttachmentsHandlerTest {
     ArgumentCaptor<InputStream> eventStreamCaptor = ArgumentCaptor.forClass(InputStream.class);
     verify(event)
         .processEvent(
-            any(),
-            eventStreamCaptor.capture(),
-            cdsDataArgumentCaptor.capture(),
-            eq(updateContext),
-            any());
+            any(), eventStreamCaptor.capture(), cdsDataArgumentCaptor.capture(), eq(updateContext));
     InputStream eventCaptured = eventStreamCaptor.getValue();
     assertThat(eventCaptured).isInstanceOf(CountingInputStream.class);
     assertThat(((CountingInputStream) eventCaptured).getDelegate()).isSameAs(testStream);

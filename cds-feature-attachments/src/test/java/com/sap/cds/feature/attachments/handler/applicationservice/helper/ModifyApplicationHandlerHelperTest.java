@@ -121,7 +121,7 @@ class ModifyApplicationHandlerHelperTest {
     when(parameterInfo.getHeader("Content-Length")).thenReturn(null);
 
     // Make event.processEvent() read from the stream, triggering the limit check
-    when(event.processEvent(any(), any(), any(), any(), any()))
+    when(event.processEvent(any(), any(), any(), any()))
         .thenAnswer(
             invocation -> {
               InputStream wrappedContent = invocation.getArgument(1);
@@ -302,7 +302,7 @@ class ModifyApplicationHandlerHelperTest {
     when(target.keys()).thenReturn(Map.of("ID", data.getId()));
     when(parameterInfo.getHeader("Content-Length")).thenReturn(null);
 
-    when(event.processEvent(any(), any(), any(), any(), any()))
+    when(event.processEvent(any(), any(), any(), any()))
         .thenAnswer(
             invocation -> {
               InputStream wrappedContent = invocation.getArgument(1);

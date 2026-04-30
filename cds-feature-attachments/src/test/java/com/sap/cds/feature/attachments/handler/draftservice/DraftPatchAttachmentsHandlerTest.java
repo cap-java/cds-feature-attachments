@@ -141,7 +141,7 @@ class DraftPatchAttachmentsHandlerTest {
     InputStream captured = streamCaptor.getValue();
     assertThat(captured).isInstanceOf(CountingInputStream.class);
     assertThat(((CountingInputStream) captured).getDelegate()).isSameAs(content);
-    verify(event).processEvent(any(), eq(captured), eq(attachment), eq(eventContext), any());
+    verify(event).processEvent(any(), eq(captured), eq(attachment), eq(eventContext));
   }
 
   @Test

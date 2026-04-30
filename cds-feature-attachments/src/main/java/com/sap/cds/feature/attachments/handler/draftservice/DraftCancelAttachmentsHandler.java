@@ -119,7 +119,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
       }
 
       if (Boolean.FALSE.equals(attachment.get(Drafts.HAS_ACTIVE_ENTITY))) {
-        deleteEvent.processEvent(path, null, attachment, context, inlinePrefix);
+        deleteEvent.processEvent(path, null, attachment, context);
         return;
       }
       Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
@@ -139,7 +139,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
           entry -> {
             Object existingContentId = entry.get(Attachments.CONTENT_ID);
             if (!Objects.equals(existingContentId, attachment.getContentId())) {
-              deleteEvent.processEvent(null, null, attachment, context, inlinePrefix);
+              deleteEvent.processEvent(null, null, attachment, context);
             }
           });
     };

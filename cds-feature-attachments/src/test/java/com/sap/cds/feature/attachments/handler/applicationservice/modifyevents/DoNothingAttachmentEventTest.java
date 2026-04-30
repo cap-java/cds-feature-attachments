@@ -17,7 +17,6 @@ import com.sap.cds.services.EventContext;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
@@ -50,8 +49,7 @@ class DoNothingAttachmentEventTest {
     when(target.entity()).thenReturn(entity);
     when(entity.getQualifiedName()).thenReturn("some.qualified.name");
 
-    var result =
-        cut.processEvent(path, streamInput, data, mock(EventContext.class), Optional.empty());
+    var result = cut.processEvent(path, streamInput, data, mock(EventContext.class));
 
     assertThat(result).isEqualTo(streamInput);
     verifyNoInteractions(element, data);

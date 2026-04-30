@@ -66,8 +66,7 @@ public class DeleteAttachmentsHandler implements EventHandler {
           } else {
             attachment = Attachments.of(path.target().values());
           }
-          return deleteEvent.processEvent(
-              path, (InputStream) value, attachment, context, inlinePrefix);
+          return deleteEvent.processEvent(path, (InputStream) value, attachment, context);
         };
 
     CdsDataProcessor.create()

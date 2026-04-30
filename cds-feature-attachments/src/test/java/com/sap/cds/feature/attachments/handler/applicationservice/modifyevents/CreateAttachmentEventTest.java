@@ -14,6 +14,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
+import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
@@ -32,7 +33,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -106,7 +106,7 @@ class CreateAttachmentEventTest {
     existingData.setFileName("some file name");
     existingData.setMimeType("some mime type");
 
-    cut.processEvent(path, attachment.getContent(), existingData, eventContext, Optional.empty());
+    cut.processEvent(path, attachment.getContent(), existingData, eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     var createInput = contextArgumentCaptor.getValue();
@@ -129,8 +129,7 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
     when(target.values()).thenReturn(attachment);
 
-    cut.processEvent(
-        path, attachment.getContent(), Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
 
     assertThat(attachment.getContentId()).isEqualTo(attachmentServiceResult.contentId());
     assertThat(attachment.getStatus()).isEqualTo(attachmentServiceResult.status());
@@ -146,7 +145,7 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, contentId, "test", null));
 
-    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, null, Attachments.create(), eventContext);
 
     verify(changeSetContext).register(listener);
   }
@@ -167,8 +166,7 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(isExternalStored, "id", "test", null));
 
     var result =
-        cut.processEvent(
-            path, attachment.getContent(), Attachments.create(), eventContext, Optional.empty());
+        cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
 
     var expectedContent = isExternalStored ? attachment.getContent() : null;
     assertThat(result).isEqualTo(expectedContent);
@@ -187,8 +185,7 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
 
-    cut.processEvent(
-        path, attachment.getContent(), Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
     return attachment;
   }
 
@@ -203,7 +200,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Disposition"))
         .thenReturn("attachment; filename*=UTF-8''my%20file%20name.pdf");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, null, Attachments.create(), eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file name.pdf");
@@ -221,7 +218,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Disposition"))
         .thenReturn("attachment; filename*=UTF-8''my%20file.pdf; size=1234");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, null, Attachments.create(), eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file.pdf");
@@ -239,7 +236,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Disposition"))
         .thenReturn("attachment; filename=\"report.pdf\"");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, null, Attachments.create(), eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("report.pdf");
@@ -256,7 +253,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Disposition"))
         .thenReturn("attachment; filename=report.pdf");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, null, Attachments.create(), eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("report.pdf");
@@ -273,7 +270,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Disposition")).thenReturn(null);
     when(parameterInfo.getHeader("slug")).thenReturn("document.docx");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, null, Attachments.create(), eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("document.docx");
@@ -291,7 +288,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Disposition"))
         .thenReturn("attachment; filename=\"header-name.pdf\"");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, null, Attachments.create(), eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("payload-name.pdf");
@@ -307,7 +304,7 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
     when(parameterInfo.getHeader("Content-Type")).thenReturn("image/jpeg; charset=utf-8");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, null, Attachments.create(), eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("image/jpeg");
@@ -325,7 +322,7 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
     when(parameterInfo.getHeader("Content-Type")).thenReturn("application/pdf");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, null, Attachments.create(), eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("text/plain");
@@ -342,7 +339,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Disposition")).thenReturn("inline");
     when(parameterInfo.getHeader("slug")).thenReturn(null);
 
-    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, null, Attachments.create(), eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isNull();
@@ -358,7 +355,7 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
     when(parameterInfo.getHeader("Content-Type")).thenReturn("text/csv");
 
-    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, null, Attachments.create(), eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("text/csv");
@@ -374,7 +371,7 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
     when(eventContext.getParameterInfo()).thenReturn(null);
 
-    cut.processEvent(path, null, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, null, Attachments.create(), eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isNull();
@@ -400,8 +397,7 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "doc-123", "Clean", null));
 
-    cut.processEvent(
-        path, content, Attachments.create(), eventContext, Optional.of("profilePicture"));
+    cut.processEvent(path, content, inlineAttachment("profilePicture"), eventContext);
 
     assertThat(values).containsEntry("profilePicture_contentId", "doc-123");
     assertThat(values).containsEntry("profilePicture_status", "Clean");
@@ -424,8 +420,7 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "id", "ok", null));
 
-    cut.processEvent(
-        path, content, Attachments.create(), eventContext, Optional.of("profilePicture"));
+    cut.processEvent(path, content, inlineAttachment("profilePicture"), eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     var input = contextArgumentCaptor.getValue();
@@ -452,8 +447,9 @@ class CreateAttachmentEventTest {
     var existingData = Attachments.create();
     existingData.setFileName("fallback.txt");
     existingData.setMimeType("text/plain");
+    existingData.put(ApplicationHandlerHelper.INLINE_PREFIX_MARKER, "profilePicture");
 
-    cut.processEvent(path, content, existingData, eventContext, Optional.of("profilePicture"));
+    cut.processEvent(path, content, existingData, eventContext);
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     var input = contextArgumentCaptor.getValue();
@@ -476,7 +472,7 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "doc-999", "ok", null));
 
-    cut.processEvent(path, content, Attachments.create(), eventContext, Optional.empty());
+    cut.processEvent(path, content, Attachments.create(), eventContext);
 
     assertThat(values).containsEntry(Attachments.CONTENT_ID, "doc-999");
     assertThat(values).containsEntry(Attachments.STATUS, "ok");
@@ -500,8 +496,7 @@ class CreateAttachmentEventTest {
     when(attachmentService.createAttachment(any()))
         .thenReturn(new AttachmentModificationResult(false, "doc-scan", "Clean", scannedAt));
 
-    cut.processEvent(
-        path, content, Attachments.create(), eventContext, Optional.of("profilePicture"));
+    cut.processEvent(path, content, inlineAttachment("profilePicture"), eventContext);
 
     assertThat(values).containsEntry("profilePicture_contentId", "doc-scan");
     assertThat(values).containsEntry("profilePicture_status", "Clean");
@@ -531,11 +526,7 @@ class CreateAttachmentEventTest {
         .thenReturn("attachment; filename*=UTF-8''my%20file.txt");
 
     cut.processEvent(
-        path,
-        mock(InputStream.class),
-        Attachments.create(),
-        eventContext,
-        Optional.of("profilePicture"));
+        path, mock(InputStream.class), inlineAttachment("profilePicture"), eventContext);
 
     assertThat(values).containsEntry("profilePicture_fileName", "my file.txt");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -549,11 +540,7 @@ class CreateAttachmentEventTest {
         .thenReturn("attachment; filename=\"report.pdf\"");
 
     cut.processEvent(
-        path,
-        mock(InputStream.class),
-        Attachments.create(),
-        eventContext,
-        Optional.of("profilePicture"));
+        path, mock(InputStream.class), inlineAttachment("profilePicture"), eventContext);
 
     assertThat(values).containsEntry("profilePicture_fileName", "report.pdf");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -567,11 +554,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("slug")).thenReturn("slug-file.png");
 
     cut.processEvent(
-        path,
-        mock(InputStream.class),
-        Attachments.create(),
-        eventContext,
-        Optional.of("profilePicture"));
+        path, mock(InputStream.class), inlineAttachment("profilePicture"), eventContext);
 
     assertThat(values).containsEntry("profilePicture_fileName", "slug-file.png");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -585,11 +568,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("slug")).thenReturn(null);
 
     cut.processEvent(
-        path,
-        mock(InputStream.class),
-        Attachments.create(),
-        eventContext,
-        Optional.of("profilePicture"));
+        path, mock(InputStream.class), inlineAttachment("profilePicture"), eventContext);
 
     assertThat(values).doesNotContainKey("profilePicture_fileName");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -602,11 +581,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Type")).thenReturn("image/jpeg; charset=utf-8");
 
     cut.processEvent(
-        path,
-        mock(InputStream.class),
-        Attachments.create(),
-        eventContext,
-        Optional.of("profilePicture"));
+        path, mock(InputStream.class), inlineAttachment("profilePicture"), eventContext);
 
     assertThat(values).containsEntry("profilePicture_mimeType", "image/jpeg");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -620,11 +595,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Type")).thenReturn("image/png");
 
     cut.processEvent(
-        path,
-        mock(InputStream.class),
-        Attachments.create(),
-        eventContext,
-        Optional.of("profilePicture"));
+        path, mock(InputStream.class), inlineAttachment("profilePicture"), eventContext);
 
     assertThat(values).containsEntry("profilePicture_mimeType", "application/octet-stream");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -637,11 +608,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Type")).thenReturn(null);
 
     cut.processEvent(
-        path,
-        mock(InputStream.class),
-        Attachments.create(),
-        eventContext,
-        Optional.of("profilePicture"));
+        path, mock(InputStream.class), inlineAttachment("profilePicture"), eventContext);
 
     assertThat(values).doesNotContainKey("profilePicture_mimeType");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -654,11 +621,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Type")).thenReturn("application/octet-stream");
 
     cut.processEvent(
-        path,
-        mock(InputStream.class),
-        Attachments.create(),
-        eventContext,
-        Optional.of("profilePicture"));
+        path, mock(InputStream.class), inlineAttachment("profilePicture"), eventContext);
 
     assertThat(values).containsEntry("profilePicture_mimeType", "application/octet-stream");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -671,13 +634,15 @@ class CreateAttachmentEventTest {
     values.put("profilePicture_fileName", "already-set.pdf");
 
     cut.processEvent(
-        path,
-        mock(InputStream.class),
-        Attachments.create(),
-        eventContext,
-        Optional.of("profilePicture"));
+        path, mock(InputStream.class), inlineAttachment("profilePicture"), eventContext);
 
     verify(parameterInfo, never()).getHeader("Content-Disposition");
     assertThat(values).containsEntry("profilePicture_fileName", "already-set.pdf");
+  }
+
+  private static Attachments inlineAttachment(String prefix) {
+    Attachments attachment = Attachments.create();
+    attachment.put(ApplicationHandlerHelper.INLINE_PREFIX_MARKER, prefix);
+    return attachment;
   }
 }

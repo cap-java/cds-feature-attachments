@@ -129,8 +129,12 @@ public final class ModifyApplicationHandlerHelper {
     ModifyAttachmentEvent eventToProcess =
         eventFactory.getEvent(wrappedContent, contentId, attachment);
     try {
-      return eventToProcess.processEvent(
-          path, wrappedContent, attachment, eventContext, inlinePrefix);
+      // Ensure the attachment carries the inline prefix marker for processEvent implementations
+      if (inlinePrefix.isPresent()
+          && attachment.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER) == null) {
+        attachment.put(ApplicationHandlerHelper.INLINE_PREFIX_MARKER, inlinePrefix.get());
+      }
+      return eventToProcess.processEvent(path, wrappedContent, attachment, eventContext);
     } catch (Exception e) {
       if (wrappedContent != null && wrappedContent.isLimitExceeded()) {
         throw tooLargeException;
