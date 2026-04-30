@@ -14,10 +14,13 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.Update;
+import com.sap.cds.ql.cqn.CqnPredicate;
 import com.sap.cds.ql.cqn.CqnSelect;
 import com.sap.cds.ql.cqn.CqnUpdate;
+import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
@@ -149,10 +152,14 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
           continue;
         }
 
-        CqnUpdate update =
-            Update.entity(draftEntity)
-                .data(updateData)
-                .where(entry -> entry.get(contentIdField).eq(contentId));
+        CqnPredicate predicate = CQL.get(contentIdField).eq(contentId);
+        for (CdsElement key : target.keyElements().toList()) {
+          Object keyValue = d.get(key.getName());
+          if (keyValue != null) {
+            predicate = CQL.and(predicate, CQL.get(key.getName()).eq(keyValue));
+          }
+        }
+        CqnUpdate update = Update.entity(draftEntity).data(updateData).where(predicate);
         persistence.run(update);
       }
     }
