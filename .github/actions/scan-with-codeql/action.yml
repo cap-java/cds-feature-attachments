@@ -31,7 +31,7 @@ runs:
         build-mode: manual
 
     - name: Build Java code
-      run: mvn clean compile -DskipTests -B -ntp
+      run: mvn clean compile -B -ntp
       shell: bash
 
     - name: Perform CodeQL Analysis
