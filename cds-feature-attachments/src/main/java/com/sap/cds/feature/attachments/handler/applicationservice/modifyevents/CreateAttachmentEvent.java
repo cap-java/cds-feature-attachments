@@ -61,8 +61,10 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
     Map<String, Object> values = path.target().values();
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
 
-    String fileNameField = prefixed(inlinePrefix, MediaData.FILE_NAME);
-    String mimeTypeField = prefixed(inlinePrefix, MediaData.MIME_TYPE);
+    String fileNameField =
+        ApplicationHandlerHelper.resolveFieldName(MediaData.FILE_NAME, inlinePrefix);
+    String mimeTypeField =
+        ApplicationHandlerHelper.resolveFieldName(MediaData.MIME_TYPE, inlinePrefix);
 
     Optional<String> fileNameOptional =
         getFieldValue(MediaData.FILE_NAME, values, attachment, inlinePrefix);
@@ -94,20 +96,20 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
         listenerProvider.provideListener(result.contentId(), eventContext.getCdsRuntime());
 
     eventContext.getChangeSetContext().register(createListener);
-    String contentIdField = prefixed(inlinePrefix, Attachments.CONTENT_ID);
-    String statusField = prefixed(inlinePrefix, Attachments.STATUS);
+    String contentIdField =
+        ApplicationHandlerHelper.resolveFieldName(Attachments.CONTENT_ID, inlinePrefix);
+    String statusField =
+        ApplicationHandlerHelper.resolveFieldName(Attachments.STATUS, inlinePrefix);
     path.target().values().put(contentIdField, result.contentId());
     path.target().values().put(statusField, result.status());
     if (nonNull(result.scannedAt())) {
       path.target()
           .values()
-          .put(prefixed(inlinePrefix, Attachments.SCANNED_AT), result.scannedAt());
+          .put(
+              ApplicationHandlerHelper.resolveFieldName(Attachments.SCANNED_AT, inlinePrefix),
+              result.scannedAt());
     }
     return result.isInternalStored() ? content : null;
-  }
-
-  private static String prefixed(Optional<String> inlinePrefix, String fieldName) {
-    return inlinePrefix.map(p -> p + "_" + fieldName).orElse(fieldName);
   }
 
   private static Optional<String> getFieldValue(
@@ -116,7 +118,8 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
       Attachments attachment,
       Optional<String> inlinePrefix) {
     if (inlinePrefix.isPresent()) {
-      Object prefixedValue = values.get(prefixed(inlinePrefix, fieldName));
+      Object prefixedValue =
+          values.get(ApplicationHandlerHelper.resolveFieldName(fieldName, inlinePrefix));
       if (nonNull(prefixedValue)) return Optional.of((String) prefixedValue);
     }
     Object annotationValue = values.get(fieldName);

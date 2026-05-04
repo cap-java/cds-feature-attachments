@@ -154,7 +154,7 @@ public final class ApplicationHandlerHelper {
       return false; // This is a composition-based attachment entity, not inline
     }
     String elementName = element.getName();
-    return elementName.contains("_")
+    return elementName.endsWith("_content")
         && element.getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false)
         && element.findAnnotation(ANNOTATION_CORE_MEDIA_TYPE).isPresent();
   }

@@ -152,7 +152,7 @@ public class ReadAttachmentsHandler implements EventHandler {
   private void verifyStatus(Path path, Attachments attachment) {
     Optional<String> inlinePrefix =
         Optional.ofNullable((String) attachment.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER));
-    if (areKeysEmpty(path.target().keys())) {
+    if (areKeysEmpty(path.target().keys()) || inlinePrefix.isPresent()) {
       String currentStatus = attachment.getStatus();
       logger.debug(
           "In verify status for content id {} and status {}",
