@@ -1,6 +1,10 @@
 name: Reusable Workflow
 
-permissions: read-all
+permissions:
+  actions: read
+  contents: read
+  packages: read
+  security-events: write
 
 env:
   MAVEN_VERSION: '3.9.12'
