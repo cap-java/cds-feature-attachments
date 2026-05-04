@@ -11,43 +11,6 @@ env:
 
 on:
   workflow_call:
-    secrets:
-      AWS_S3_HOST:
-        required: true
-      AWS_S3_BUCKET:
-        required: true
-      AWS_S3_REGION:
-        required: true
-      AWS_S3_ACCESS_KEY_ID:
-        required: true
-      AWS_S3_SECRET_ACCESS_KEY:
-        required: true
-      AZURE_CONTAINER_URI:
-        required: true
-      AZURE_SAS_TOKEN:
-        required: true
-      GS_BASE_64_ENCODED_PRIVATE_KEY_DATA:
-        required: true
-      GS_BUCKET:
-        required: true
-      GS_PROJECT_ID:
-        required: true
-      MALWARE_SCANNER_URL:
-        required: true
-      MALWARE_SCANNER_USERNAME:
-        required: true
-      MALWARE_SCANNER_PASSWORD:
-        required: true
-      MALWARE_SCANNER_MTLS_URI:
-        required: true
-      MALWARE_SCANNER_MTLS_CERTIFICATE:
-        required: true
-      MALWARE_SCANNER_MTLS_KEY:
-        required: true
-      SONARQ_TOKEN:
-        required: true
-      GH_TOKEN:
-        required: true
 
 jobs:
   spotless:
