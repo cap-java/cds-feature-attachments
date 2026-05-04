@@ -166,23 +166,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
 
-      - name: Set up Java
-        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
+      - name: CodeQL Analysis
+        uses: ./.github/actions/scan-with-codeql
         with:
-          java-version: '17'
-          distribution: 'sapmachine'
-          cache: 'maven'
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@ed410739ba306e4ebe5e123421a6bd694e494a2b # v4
-        with:
-          languages: java-kotlin
-          build-mode: manual
-
-      - name: Build Java code
-        run: mvn clean compile -DskipTests -B -ntp
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@ed410739ba306e4ebe5e123421a6bd694e494a2b # v4
-        with:
-          category: "/language:java-kotlin"
+          java-version: 17
+          maven-version: ${{ env.MAVEN_VERSION }}
