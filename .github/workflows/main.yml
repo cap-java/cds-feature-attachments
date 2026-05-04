@@ -1,5 +1,7 @@
 name: CI - MAIN
 
+permissions: read-all
+
 env:
   MAVEN_VERSION: '3.9.12'
 
@@ -15,7 +17,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Scan With Black Duck
         uses: ./.github/actions/scan-with-blackduck
@@ -27,6 +29,22 @@ jobs:
 
   build-and-test:
     uses: ./.github/workflows/pipeline.yml
-    with:
-      deploy-snapshot: true
-    secrets: inherit
+    secrets:
+      AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+      AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
+      AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
+      AZURE_CONTAINER_URI: ${{ secrets.AZURE_CONTAINER_URI }}
+      AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
+      GS_BASE_64_ENCODED_PRIVATE_KEY_DATA: ${{ secrets.GS_BASE_64_ENCODED_PRIVATE_KEY_DATA }}
+      GS_BUCKET: ${{ secrets.GS_BUCKET }}
+      GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
+      MALWARE_SCANNER_URL: ${{ secrets.MALWARE_SCANNER_URL }}
+      MALWARE_SCANNER_USERNAME: ${{ secrets.MALWARE_SCANNER_USERNAME }}
+      MALWARE_SCANNER_PASSWORD: ${{ secrets.MALWARE_SCANNER_PASSWORD }}
+      MALWARE_SCANNER_MTLS_URI: ${{ secrets.MALWARE_SCANNER_MTLS_URI }}
+      MALWARE_SCANNER_MTLS_CERTIFICATE: ${{ secrets.MALWARE_SCANNER_MTLS_CERTIFICATE }}
+      MALWARE_SCANNER_MTLS_KEY: ${{ secrets.MALWARE_SCANNER_MTLS_KEY }}
+      SONARQ_TOKEN: ${{ secrets.SONARQ_TOKEN }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
