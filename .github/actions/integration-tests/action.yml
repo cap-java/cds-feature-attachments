@@ -11,6 +11,9 @@ inputs:
   test-type:
     description: 'Which integration test to run: build-version, latest-version, or oss'
     required: true
+  auth-method:
+    description: 'Authentication method: basic or mtls'
+    required: true
 
 runs:
   using: composite

@@ -46,43 +46,76 @@ on:
         required: true
 
 jobs:
-  build:
-    name: Build (Java ${{ matrix.java-version }})
+  spotless:
+    name: Spotless Check
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      matrix:
-        java-version: [ 17, 21 ]
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
 
-      - name: Spotless check
-        run: mvn spotless:check -Dspotless.check.skip=false
+      - name: Set up Java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
+        with:
+          java-version: '17'
+          distribution: sapmachine
+          cache: maven
 
-      - name: Build
-        uses: ./.github/actions/build
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+        with:
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+      - name: Spotless Check
+        run: mvn spotless:check -Dspotless.check.skip=false -B -ntp
+
+  integration-tests:
+    name: ITests (Java ${{ matrix.java-version }}, ${{ matrix.test-type }}, ${{ matrix.auth-method }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version: [ 17, 21 ]
+        test-type: [ build-version, latest-version, oss ]
+        auth-method: [ basic, mtls ]
+    env:
+      AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+      AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
+      AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
+      AZURE_CONTAINER_URI: ${{ secrets.AZURE_CONTAINER_URI }}
+      AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
+      GS_BASE_64_ENCODED_PRIVATE_KEY_DATA: ${{ secrets.GS_BASE_64_ENCODED_PRIVATE_KEY_DATA }}
+      GS_BUCKET: ${{ secrets.GS_BUCKET }}
+      GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
+      MALWARE_SCANNER_URL: ${{ matrix.auth-method == 'basic' && secrets.MALWARE_SCANNER_URL || '' }}
+      MALWARE_SCANNER_USERNAME: ${{ matrix.auth-method == 'basic' && secrets.MALWARE_SCANNER_USERNAME || '' }}
+      MALWARE_SCANNER_PASSWORD: ${{ matrix.auth-method == 'basic' && secrets.MALWARE_SCANNER_PASSWORD || '' }}
+      MALWARE_SCANNER_MTLS_URI: ${{ matrix.auth-method == 'mtls' && secrets.MALWARE_SCANNER_MTLS_URI || '' }}
+      MALWARE_SCANNER_MTLS_CERTIFICATE: ${{ matrix.auth-method == 'mtls' && secrets.MALWARE_SCANNER_MTLS_CERTIFICATE || '' }}
+      MALWARE_SCANNER_MTLS_KEY: ${{ matrix.auth-method == 'mtls' && secrets.MALWARE_SCANNER_MTLS_KEY || '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Integration Tests
+        uses: ./.github/actions/integration-tests
         with:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
+          test-type: ${{ matrix.test-type }}
+          auth-method: ${{ matrix.auth-method }}
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: build-artifacts-java-${{ matrix.java-version }}
-          path: |
-            **/target/*.jar
-            **/pom.xml
-            .mvn/
-          retention-days: 1
-
-  integration-tests:
-    name: Integration Tests (Java ${{ matrix.java-version }}, ${{ matrix.test-type }})
+  sonarqube-scan:
+    name: SonarQube Scan
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: build
     env:
       AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
       AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
@@ -100,39 +133,12 @@ jobs:
       MALWARE_SCANNER_MTLS_URI: ${{ secrets.MALWARE_SCANNER_MTLS_URI }}
       MALWARE_SCANNER_MTLS_CERTIFICATE: ${{ secrets.MALWARE_SCANNER_MTLS_CERTIFICATE }}
       MALWARE_SCANNER_MTLS_KEY: ${{ secrets.MALWARE_SCANNER_MTLS_KEY }}
-    strategy:
-      fail-fast: false
-      matrix:
-        java-version: [ 17, 21 ]
-        test-type: [ build-version, latest-version, oss ]
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: build-artifacts-java-${{ matrix.java-version }}
-
-      - name: Integration Tests
-        uses: ./.github/actions/integration-tests
-        with:
-          java-version: ${{ matrix.java-version }}
-          maven-version: ${{ env.MAVEN_VERSION }}
-          test-type: ${{ matrix.test-type }}
-
-  sonarqube-scan:
-    name: SonarQube Scan
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
       - name: SonarQube Scan
         uses: ./.github/actions/scan-with-sonar
         with:
@@ -144,7 +150,6 @@ jobs:
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
-    needs: build
     timeout-minutes: 30
     permissions:
       security-events: write
