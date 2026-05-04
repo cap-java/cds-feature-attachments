@@ -1,5 +1,7 @@
 name: Deploy to Maven Central
 
+permissions: read-all
+
 env:
   JAVA_VERSION: '17'
   MAVEN_VERSION: '3.9.12'
@@ -15,7 +17,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Scan With Black Duck
         uses: ./.github/actions/scan-with-blackduck
@@ -28,9 +30,11 @@ jobs:
     name: Update Version
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           token: ${{ secrets.GH_TOKEN }}
 
@@ -41,11 +45,10 @@ jobs:
           maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Upload Changed Artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: root-new-version
           path: .
-          include-hidden-files: true
           retention-days: 1
 
   build:
@@ -66,7 +69,7 @@ jobs:
       GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: root-new-version
 
@@ -85,10 +88,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Changed Artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: root-build
-          include-hidden-files: true
           path: .
           retention-days: 1
 
@@ -99,7 +101,7 @@ jobs:
     needs: [blackduck, build]
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: root-build
 
@@ -113,6 +115,3 @@ jobs:
           pgp-passphrase: ${{ secrets.PGP_PASSPHRASE }}
           revision: ${{ github.event.release.tag_name }}
           maven-version: ${{ env.MAVEN_VERSION }}
-
-      - name: Echo Status
-        run: echo "The job status is ${{ job.status }}"
