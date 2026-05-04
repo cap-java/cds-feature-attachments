@@ -1,7 +1,6 @@
 name: Prevent "New" Label on Issues
 
-permissions:
-  issues: write
+permissions: {}
 
 on:
   issues:
@@ -10,6 +9,8 @@ on:
 jobs:
   remove_new_label:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - name: Remove "New" label if applied by non-bot user
         if: >
