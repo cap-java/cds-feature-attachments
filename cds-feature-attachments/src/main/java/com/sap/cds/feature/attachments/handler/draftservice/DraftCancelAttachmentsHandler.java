@@ -15,6 +15,8 @@ import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
+import com.sap.cds.ql.cqn.Path;
+import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.DraftCancelEventContext;
@@ -26,6 +28,7 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +44,21 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   private static final Logger logger = LoggerFactory.getLogger(DraftCancelAttachmentsHandler.class);
 
   private static final Filter contentIdFilter =
-      (path, element, type) ->
-          ApplicationHandlerHelper.isMediaEntity(path.target().type())
-              && element.getName().equals(Attachments.CONTENT_ID);
+      (path, element, type) -> {
+        // Case 1: Composition-based attachment entity
+        if (ApplicationHandlerHelper.isDirectMediaEntity(path.target().type())
+            && element.getName().equals(Attachments.CONTENT_ID)) {
+          return true;
+        }
+        // Case 2: Inline attachment type — check for prefixed contentId
+        String elementName = element.getName();
+        if (elementName.endsWith("_" + Attachments.CONTENT_ID)) {
+          return ApplicationHandlerHelper.getInlineAttachmentPrefix(
+                  path.target().type(), elementName)
+              .isPresent();
+        }
+        return false;
+      };
 
   private final AttachmentsReader attachmentsReader;
   private final MarkAsDeletedAttachmentEvent deleteEvent;
@@ -88,23 +103,61 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   private Validator buildDeleteContentValidator(
       DraftCancelEventContext context, List<? extends CdsData> activeCondensedAttachments) {
     return (path, element, value) -> {
-      Attachments attachment = Attachments.of(path.target().values());
+      Attachments attachment = extractAttachmentFromPath(path, element);
+
       if (Boolean.FALSE.equals(attachment.get(Drafts.HAS_ACTIVE_ENTITY))) {
         deleteEvent.processEvent(path, null, attachment, context);
         return;
       }
+
+      Optional<String> inlinePrefix =
+          ApplicationHandlerHelper.getInlineAttachmentPrefix(
+              path.target().entity(), element.getName());
       Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
       Optional<? extends CdsData> existingEntry =
           activeCondensedAttachments.stream()
-              .filter(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData))
+              .filter(
+                  updatedData -> {
+                    if (inlinePrefix.isPresent()) {
+                      return inlinePrefix
+                          .get()
+                          .equals(updatedData.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER));
+                    }
+                    return ApplicationHandlerHelper.areKeysInData(keys, updatedData);
+                  })
               .findAny();
-      existingEntry.ifPresent(
-          entry -> {
-            if (!entry.get(Attachments.CONTENT_ID).equals(value)) {
-              deleteEvent.processEvent(null, null, attachment, context);
-            }
-          });
+
+      if (existingEntry.isPresent()) {
+        Object existingContentId = existingEntry.get().get(Attachments.CONTENT_ID);
+        if (!Objects.equals(existingContentId, attachment.getContentId())) {
+          deleteEvent.processEvent(null, null, attachment, context);
+        }
+      } else if (attachment.getContentId() != null) {
+        logger.warn(
+            "Draft attachment with contentId {} has no matching active entry. Deleting to prevent orphan.",
+            attachment.getContentId());
+        deleteEvent.processEvent(null, null, attachment, context);
+      }
     };
+  }
+
+  private Attachments extractAttachmentFromPath(Path path, CdsElement element) {
+    Optional<String> inlinePrefix =
+        ApplicationHandlerHelper.getInlineAttachmentPrefix(
+            path.target().entity(), element.getName());
+    Attachments attachment;
+    if (inlinePrefix.isPresent()) {
+      attachment =
+          ApplicationHandlerHelper.extractInlineAttachment(
+              path.target().values(), inlinePrefix.get());
+      Object hasActiveEntity = path.target().values().get(Drafts.HAS_ACTIVE_ENTITY);
+      if (hasActiveEntity != null) {
+        attachment.put(Drafts.HAS_ACTIVE_ENTITY, hasActiveEntity);
+      }
+    } else {
+      attachment = Attachments.of(path.target().values());
+    }
+    return attachment;
   }
 
   private List<Attachments> readAttachments(

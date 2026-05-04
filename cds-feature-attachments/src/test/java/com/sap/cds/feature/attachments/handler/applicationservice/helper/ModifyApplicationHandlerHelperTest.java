@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -92,7 +93,8 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     attachment.getContent(),
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    Optional.empty()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -146,7 +148,8 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     content,
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    Optional.empty()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -178,7 +181,8 @@ class ModifyApplicationHandlerHelperTest {
                 eventContext,
                 path,
                 content,
-                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                Optional.empty()));
   }
 
   @Test
@@ -210,8 +214,120 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     content,
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    Optional.empty()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
+  }
+
+  @Test
+  void inlineAttachmentSizeLimitFromAnnotation() {
+    String inlineOnlyEntityName = "unit.test.TestService.InlineOnly";
+    CdsEntity entity = runtime.getCdsModel().findEntity(inlineOnlyEntityName).orElseThrow();
+
+    var data = Attachments.create();
+    data.setId(UUID.randomUUID().toString());
+    data.put("avatar_contentId", "inline-cid");
+    data.put("avatar_content", mock(InputStream.class));
+
+    when(target.entity()).thenReturn(entity);
+    when(target.values()).thenReturn(data);
+    when(target.keys()).thenReturn(Map.of("ID", data.getId()));
+
+    when(parameterInfo.getHeader("Content-Length")).thenReturn("20000");
+
+    var existingAttachments = List.<Attachments>of();
+
+    var exception =
+        assertThrows(
+            ServiceException.class,
+            () ->
+                ModifyApplicationHandlerHelper.handleAttachmentForEntity(
+                    existingAttachments,
+                    eventFactory,
+                    eventContext,
+                    path,
+                    (InputStream) data.get("avatar_content"),
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    Optional.of("avatar")));
+
+    assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
+  }
+
+  @Test
+  void inlineAttachmentWithinSizeLimitSucceeds() {
+    String inlineOnlyEntityName = "unit.test.TestService.InlineOnly";
+    CdsEntity entity = runtime.getCdsModel().findEntity(inlineOnlyEntityName).orElseThrow();
+
+    var data = Attachments.create();
+    data.setId(UUID.randomUUID().toString());
+    data.put("avatar_contentId", "inline-cid");
+    var content = mock(InputStream.class);
+    data.put("avatar_content", content);
+
+    when(target.entity()).thenReturn(entity);
+    when(target.values()).thenReturn(data);
+    when(target.keys()).thenReturn(Map.of("ID", data.getId()));
+
+    when(parameterInfo.getHeader("Content-Length")).thenReturn("5000");
+
+    var existingAttachments = List.<Attachments>of();
+
+    assertDoesNotThrow(
+        () ->
+            ModifyApplicationHandlerHelper.handleAttachmentForEntity(
+                existingAttachments,
+                eventFactory,
+                eventContext,
+                path,
+                content,
+                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                Optional.of("avatar")));
+  }
+
+  @Test
+  void streamingLimitExceededOnInlineAttachment() {
+    String inlineOnlyEntityName = "unit.test.TestService.InlineOnly";
+    CdsEntity entity = runtime.getCdsModel().findEntity(inlineOnlyEntityName).orElseThrow();
+
+    var data = Attachments.create();
+    data.setId(UUID.randomUUID().toString());
+    data.put("avatar_contentId", "inline-cid");
+    byte[] largeContent = new byte[15000]; // 15KB > 10KB limit
+    var content = new ByteArrayInputStream(largeContent);
+    data.put("avatar_content", content);
+
+    when(target.entity()).thenReturn(entity);
+    when(target.values()).thenReturn(data);
+    when(target.keys()).thenReturn(Map.of("ID", data.getId()));
+    when(parameterInfo.getHeader("Content-Length")).thenReturn(null);
+
+    when(event.processEvent(any(), any(), any(), any()))
+        .thenAnswer(
+            invocation -> {
+              InputStream wrappedContent = invocation.getArgument(1);
+              if (wrappedContent != null) {
+                byte[] buffer = new byte[1024];
+                while (wrappedContent.read(buffer) != -1) {}
+              }
+              return null;
+            });
+
+    var existingAttachments = List.<Attachments>of();
+
+    var exception =
+        assertThrows(
+            ServiceException.class,
+            () ->
+                ModifyApplicationHandlerHelper.handleAttachmentForEntity(
+                    existingAttachments,
+                    eventFactory,
+                    eventContext,
+                    path,
+                    content,
+                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    Optional.of("avatar")));
+
+    assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
 }

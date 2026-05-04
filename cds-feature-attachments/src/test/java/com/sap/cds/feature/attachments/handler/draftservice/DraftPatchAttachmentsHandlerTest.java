@@ -10,11 +10,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.sap.cds.CdsData;
 import com.sap.cds.Result;
+import com.sap.cds.Struct;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnly;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnly_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -24,6 +28,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.M
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.CqnSelect;
+import com.sap.cds.ql.cqn.CqnUpdate;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
@@ -34,7 +39,9 @@ import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -153,6 +160,34 @@ class DraftPatchAttachmentsHandlerTest {
     cut.processBeforeDraftPatch(eventContext, List.of(Attachments.of(events)));
 
     assertThat(events).doesNotContainKey(Attachments.CONTENT_ID);
+  }
+
+  @Test
+  void inlineMetadataUpdateIncludesEntityKeysInWhereClause() {
+    getEntityAndMockContext(InlineOnly_.CDS_NAME);
+    var entityId = UUID.randomUUID().toString();
+    var contentId = UUID.randomUUID().toString();
+
+    // Build data simulating post-converter state where contentId and mimeType have been set
+    Map<String, Object> data = new HashMap<>();
+    data.put(InlineOnly.ID, entityId);
+    data.put(InlineOnly.AVATAR_CONTENT_ID, contentId);
+    data.put(InlineOnly.AVATAR_MIME_TYPE, "image/png");
+
+    when(persistence.run(any(CqnSelect.class))).thenReturn(mock(Result.class));
+    when(persistence.run(any(CqnUpdate.class))).thenReturn(mock(Result.class));
+
+    cut.processBeforeDraftPatch(eventContext, List.of(Struct.access(data).as(CdsData.class)));
+
+    ArgumentCaptor<CqnUpdate> updateCaptor = ArgumentCaptor.forClass(CqnUpdate.class);
+    verify(persistence).run(updateCaptor.capture());
+    var update = updateCaptor.getValue();
+    assertThat(update.where()).isPresent();
+    var where = update.where().get().toString();
+    assertThat(where).contains("avatar_contentId");
+    assertThat(where).contains(contentId);
+    assertThat(where).contains("ID");
+    assertThat(where).contains(entityId);
   }
 
   @Test

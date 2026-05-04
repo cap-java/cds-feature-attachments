@@ -51,7 +51,7 @@ class AttachmentValidationHelperTest {
 
     try (MockedStatic<ApplicationHandlerHelper> helper =
         mockStatic(ApplicationHandlerHelper.class)) {
-      helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(false);
+      helper.when(() -> ApplicationHandlerHelper.isDirectMediaEntity(entity)).thenReturn(false);
 
       setupMockCascader(entity, model, false);
 
@@ -71,7 +71,7 @@ class AttachmentValidationHelperTest {
         MockedStatic<AttachmentDataExtractor> extractor =
             mockStatic(AttachmentDataExtractor.class)) {
 
-      helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(true);
+      helper.when(() -> ApplicationHandlerHelper.isDirectMediaEntity(entity)).thenReturn(true);
 
       // MediaTypeResolver returns empty map = no entity has the annotation
       resolver
@@ -101,7 +101,7 @@ class AttachmentValidationHelperTest {
         MockedStatic<AttachmentDataExtractor> extractor =
             mockStatic(AttachmentDataExtractor.class)) {
       CdsRuntime runtime = mockRuntime(entity);
-      helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(true);
+      helper.when(() -> ApplicationHandlerHelper.isDirectMediaEntity(entity)).thenReturn(true);
 
       resolver
           .when(
@@ -122,7 +122,7 @@ class AttachmentValidationHelperTest {
 
   @ParameterizedTest
   @MethodSource("validFileScenarios")
-  void doesNotThrow_whenFilesAreValid(boolean isMediaEntity) {
+  void doesNotThrow_whenFilesAreValid(boolean isDirectMediaEntity) {
 
     CdsEntity entity = mockEntity("Entity");
     CdsRuntime runtime = mockRuntime(entity);
@@ -136,8 +136,10 @@ class AttachmentValidationHelperTest {
         MockedStatic<AttachmentDataExtractor> extractor =
             mockStatic(AttachmentDataExtractor.class)) {
 
-      helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(isMediaEntity);
-      setupMockCascader(entity, runtime.getCdsModel(), !isMediaEntity);
+      helper
+          .when(() -> ApplicationHandlerHelper.isDirectMediaEntity(entity))
+          .thenReturn(isDirectMediaEntity);
+      setupMockCascader(entity, runtime.getCdsModel(), !isDirectMediaEntity);
 
       resolver
           .when(
@@ -165,7 +167,7 @@ class AttachmentValidationHelperTest {
 
   @ParameterizedTest
   @MethodSource("invalidFileScenarios")
-  void throwsException_whenFilesAreInvalid(boolean isMediaEntity) {
+  void throwsException_whenFilesAreInvalid(boolean isDirectMediaEntity) {
 
     CdsEntity entity = mockEntity("Entity");
     CdsRuntime runtime = mockRuntime(entity);
@@ -179,8 +181,10 @@ class AttachmentValidationHelperTest {
         MockedStatic<AttachmentDataExtractor> extractor =
             mockStatic(AttachmentDataExtractor.class)) {
 
-      helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(isMediaEntity);
-      setupMockCascader(entity, runtime.getCdsModel(), !isMediaEntity);
+      helper
+          .when(() -> ApplicationHandlerHelper.isDirectMediaEntity(entity))
+          .thenReturn(isDirectMediaEntity);
+      setupMockCascader(entity, runtime.getCdsModel(), !isDirectMediaEntity);
 
       resolver
           .when(

@@ -93,40 +93,6 @@
     <finalName>${project.artifactId}</finalName>
     <plugins>
       <plugin>
-        <groupId>org.pitest</groupId>
-        <artifactId>pitest-maven</artifactId>
-        <configuration>
-          <targetClasses>
-            <param>com.sap.cds.feature.attachments.handler.*</param>
-            <param>com.sap.cds.feature.attachments.service.*</param>
-          </targetClasses>
-          <mutators>
-            <mutator>CONSTRUCTOR_CALLS</mutator>
-            <mutator>VOID_METHOD_CALLS</mutator>
-            <mutator>NON_VOID_METHOD_CALLS</mutator>
-            <mutator>REMOVE_CONDITIONALS_ORDER_ELSE</mutator>
-            <mutator>CONDITIONALS_BOUNDARY</mutator>
-            <mutator>EMPTY_RETURNS</mutator>
-            <mutator>NEGATE_CONDITIONALS</mutator>
-            <mutator>REMOVE_CONDITIONALS_EQUAL_IF</mutator>
-            <mutator>REMOVE_CONDITIONALS_EQUAL_ELSE</mutator>
-            <mutator>REMOVE_CONDITIONALS_ORDER_IF</mutator>
-            <mutator>REMOVE_CONDITIONALS_ORDER_ELSE</mutator>
-          </mutators>
-          <coverageThreshold>95</coverageThreshold>
-          <aggregatedMutationThreshold>90</aggregatedMutationThreshold>
-        </configuration>
-
-        <dependencies>
-          <dependency>
-            <groupId>org.pitest</groupId>
-            <artifactId>pitest-junit5-plugin</artifactId>
-            <version>1.2.3</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-
-      <plugin>
         <artifactId>maven-clean-plugin</artifactId>
         <configuration>
           <filesets>

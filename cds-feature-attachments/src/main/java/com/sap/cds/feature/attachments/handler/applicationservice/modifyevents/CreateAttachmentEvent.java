@@ -52,23 +52,34 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
   @Override
   public InputStream processEvent(
       Path path, InputStream content, Attachments attachment, EventContext eventContext) {
+    Optional<String> inlinePrefix =
+        Optional.ofNullable((String) attachment.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER));
+
     logger.debug(
         "Calling attachment service with create event for entity {}",
         path.target().entity().getQualifiedName());
     Map<String, Object> values = path.target().values();
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-    Optional<String> mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, attachment);
-    Optional<String> fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, attachment);
+
+    String fileNameField =
+        ApplicationHandlerHelper.resolveFieldName(MediaData.FILE_NAME, inlinePrefix);
+    String mimeTypeField =
+        ApplicationHandlerHelper.resolveFieldName(MediaData.MIME_TYPE, inlinePrefix);
+
+    Optional<String> fileNameOptional =
+        getFieldValue(MediaData.FILE_NAME, values, attachment, inlinePrefix);
+    Optional<String> mimeTypeOptional =
+        getFieldValue(MediaData.MIME_TYPE, values, attachment, inlinePrefix);
 
     // Fall back to HTTP headers when values are not set in payload
     if (eventContext.getParameterInfo() != null) {
       if (fileNameOptional.isEmpty()) {
         fileNameOptional = extractFileNameFromHeader(eventContext);
-        fileNameOptional.ifPresent(fn -> values.put(MediaData.FILE_NAME, fn));
+        fileNameOptional.ifPresent(fn -> values.put(fileNameField, fn));
       }
       if (mimeTypeOptional.isEmpty()) {
         mimeTypeOptional = extractMimeTypeFromHeader(eventContext);
-        mimeTypeOptional.ifPresent(mt -> values.put(MediaData.MIME_TYPE, mt));
+        mimeTypeOptional.ifPresent(mt -> values.put(mimeTypeField, mt));
       }
     }
 
@@ -78,22 +89,39 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
             path.target().entity(),
             fileNameOptional.orElse(null),
             mimeTypeOptional.orElse(null),
-            content);
+            content,
+            inlinePrefix);
     AttachmentModificationResult result = attachmentService.createAttachment(createEventInput);
     ChangeSetListener createListener =
         listenerProvider.provideListener(result.contentId(), eventContext.getCdsRuntime());
 
     eventContext.getChangeSetContext().register(createListener);
-    path.target().values().put(Attachments.CONTENT_ID, result.contentId());
-    path.target().values().put(Attachments.STATUS, result.status());
+    String contentIdField =
+        ApplicationHandlerHelper.resolveFieldName(Attachments.CONTENT_ID, inlinePrefix);
+    String statusField =
+        ApplicationHandlerHelper.resolveFieldName(Attachments.STATUS, inlinePrefix);
+    path.target().values().put(contentIdField, result.contentId());
+    path.target().values().put(statusField, result.status());
     if (nonNull(result.scannedAt())) {
-      path.target().values().put(Attachments.SCANNED_AT, result.scannedAt());
+      path.target()
+          .values()
+          .put(
+              ApplicationHandlerHelper.resolveFieldName(Attachments.SCANNED_AT, inlinePrefix),
+              result.scannedAt());
     }
     return result.isInternalStored() ? content : null;
   }
 
   private static Optional<String> getFieldValue(
-      String fieldName, Map<String, Object> values, Attachments attachment) {
+      String fieldName,
+      Map<String, Object> values,
+      Attachments attachment,
+      Optional<String> inlinePrefix) {
+    if (inlinePrefix.isPresent()) {
+      Object prefixedValue =
+          values.get(ApplicationHandlerHelper.resolveFieldName(fieldName, inlinePrefix));
+      if (nonNull(prefixedValue)) return Optional.of((String) prefixedValue);
+    }
     Object annotationValue = values.get(fieldName);
     Object value = nonNull(annotationValue) ? annotationValue : attachment.get(fieldName);
     return Optional.ofNullable((String) value);
