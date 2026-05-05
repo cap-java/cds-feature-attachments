@@ -1,5 +1,11 @@
 name: CI - PR
 
+permissions:
+  actions: read
+  contents: read
+  packages: read
+  security-events: write
+
 on:
   workflow_dispatch:
   pull_request_target:
@@ -20,6 +26,4 @@ jobs:
     needs: requires-approval
     if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
     uses: ./.github/workflows/pipeline.yml
-    with:
-      deploy-snapshot: false
     secrets: inherit
