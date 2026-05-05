@@ -28,12 +28,12 @@ runs:
       run: mvn clean install -ntp -B -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss -am
       shell: bash
 
-    - name: Integration Tests (build version)
+    - name: Integration Tests
       run: npx cds bind --exec -- mvn clean verify -ntp -B -f ../../integration-tests/pom.xml
       working-directory: integration-tests/mtx-local
       shell: bash
 
-    - name: Integration Tests (latest CAP Java)
-      run: npx cds bind --exec -- mvn verify -ntp -B -f ../../integration-tests/pom.xml -P latest-test-version
+    - name: Client Integration Tests (OSS + Malware)
+      run: npx cds bind --exec -- mvn verify -ntp -B -f ../../pom.xml -pl cds-feature-attachments,storage-targets/cds-feature-attachments-oss -P integration-tests,integration-tests-oss
       working-directory: integration-tests/mtx-local
       shell: bash

@@ -37,7 +37,7 @@ runs:
       run: |
         for i in {1..5}; do
           cf login -a ${{ inputs.cf-api }} -u ${{ inputs.cf-username }} \
-            -p ${{ inputs.cf-password }} -o ${{ inputs.cf-org }} -s ${{ inputs.cf-space }} && break
+            -p '${{ inputs.cf-password }}' -o ${{ inputs.cf-org }} -s ${{ inputs.cf-space }} && break
           echo "cf login failed, retrying ($i/5)..."
           sleep 10
           if [ "$i" -eq 5 ]; then
