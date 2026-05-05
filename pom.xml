@@ -69,8 +69,10 @@
     <software.amazon.awssdk-s3-version>2.42.33</software.amazon.awssdk-s3-version>
     <software.amazon.awssdk-crt-version>0.44.0</software.amazon.awssdk-crt-version>
 
-    <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
+    <!-- Versions of CAP Java and cds-dk used for build and integrations tests -->
+    <!-- https://central.sonatype.com/artifact/com.sap.cds/cds-services-api/versions -->
     <cds.services.version>4.9.0</cds.services.version>
+    <!-- https://www.npmjs.com/package/@sap/cds-dk?activeTab=versions -->
     <cds.cdsdk.version>9.9.0</cds.cdsdk.version>
 
     <spotless.check.skip>true</spotless.check.skip>
