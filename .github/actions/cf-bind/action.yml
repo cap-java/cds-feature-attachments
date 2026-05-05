@@ -34,10 +34,14 @@ runs:
 
     - name: CF Login
       shell: bash
+      env:
+        CF_USERNAME: ${{ inputs.cf-username }}
+        CF_PASSWORD: ${{ inputs.cf-password }}
       run: |
         for i in {1..5}; do
-          cf login -a ${{ inputs.cf-api }} -u ${{ inputs.cf-username }} \
-            -p '${{ inputs.cf-password }}' -o ${{ inputs.cf-org }} -s ${{ inputs.cf-space }} && break
+          cf api "${{ inputs.cf-api }}" && \
+          cf auth && \
+          cf target -o "${{ inputs.cf-org }}" -s "${{ inputs.cf-space }}" && break
           echo "cf login failed, retrying ($i/5)..."
           sleep 10
           if [ "$i" -eq 5 ]; then
