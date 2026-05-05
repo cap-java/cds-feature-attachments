@@ -1,0 +1,78 @@
+name: Bind Cloud Foundry Services
+description: Login to CF and bind services for hybrid testing via cds bind
+
+inputs:
+  cf-api:
+    description: Cloud Foundry API endpoint
+    required: true
+  cf-username:
+    description: Cloud Foundry username
+    required: true
+  cf-password:
+    description: Cloud Foundry password
+    required: true
+  cf-org:
+    description: Cloud Foundry organization
+    required: true
+  cf-space:
+    description: Cloud Foundry space
+    required: true
+  auth-method:
+    description: 'Malware scanner authentication method: basic or mtls'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install CF CLI
+      shell: bash
+      run: |
+        wget -q "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=8.9.0&source=github-rel" -O cf-cli.tar.gz
+        tar -xzf cf-cli.tar.gz
+        sudo mv cf8 /usr/local/bin/cf
+        cf --version
+
+    - name: CF Login
+      shell: bash
+      run: |
+        for i in {1..5}; do
+          cf login -a ${{ inputs.cf-api }} -u ${{ inputs.cf-username }} \
+            -p ${{ inputs.cf-password }} -o ${{ inputs.cf-org }} -s ${{ inputs.cf-space }} && break
+          echo "cf login failed, retrying ($i/5)..."
+          sleep 10
+          if [ "$i" -eq 5 ]; then
+            echo "cf login failed after 5 attempts."
+            exit 1
+          fi
+        done
+
+    - name: Install CDS dependencies
+      shell: bash
+      run: npm ci
+      working-directory: integration-tests/mtx-local
+
+    - name: Bind objectstore
+      shell: bash
+      working-directory: integration-tests/mtx-local
+      run: |
+        for i in {1..5}; do
+          npx cds bind os -2 os:pipeline && break
+          echo "cds bind objectstore failed, retrying ($i/5)..."
+          sleep 30
+          if [ "$i" -eq 5 ]; then
+            echo "cds bind objectstore failed after 5 attempts."
+            exit 1
+          fi
+        done
+
+    - name: Bind malware-scanner (basic)
+      if: inputs.auth-method == 'basic'
+      shell: bash
+      working-directory: integration-tests/mtx-local
+      run: npx cds bind malware -2 malware:malware-key-basic
+
+    - name: Bind malware-scanner (mtls)
+      if: inputs.auth-method == 'mtls'
+      shell: bash
+      working-directory: integration-tests/mtx-local
+      run: npx cds bind malware -2 malware:malware-key-mtls

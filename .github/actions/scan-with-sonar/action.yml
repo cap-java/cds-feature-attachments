@@ -71,7 +71,7 @@ runs:
         -Dsonar.qualitygate.wait=true
         -Dsonar.java.source=17
         -Dsonar.exclusions=**/samples/**
-        -Dsonar.coverage.jacoco.xmlReportPaths=coverage-report/target/site/jacoco-aggregate/jacoco.xml
+        -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/coverage-report/target/site/jacoco-aggregate/jacoco.xml
         -Dsonar.coverage.exclusions=cds-feature-attachments/src/test/**,cds-feature-attachments/src/gen/**,storage-targets/cds-feature-attachments-fs/src/test/**,storage-targets/cds-feature-attachments-oss/src/test/**
         -B -ntp
       shell: bash
