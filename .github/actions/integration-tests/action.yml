@@ -1,5 +1,5 @@
-name: Integration Tests with current version of CAP Java
-description: Run integration tests with the current version of CAP Java using Maven.
+name: Integration Tests
+description: Run integration tests using Maven with cds bind for service bindings.
 
 inputs:
   java-version:
@@ -7,12 +7,6 @@ inputs:
     required: true
   maven-version:
     description: The Maven version the build shall run with.
-    required: true
-  test-type:
-    description: 'Which integration test to run: build-version, latest-version, or oss'
-    required: true
-  auth-method:
-    description: 'Authentication method: basic or mtls'
     required: true
 
 runs:
@@ -34,17 +28,12 @@ runs:
       run: mvn clean install -ntp -B -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss -am
       shell: bash
 
-    - name: Integration Tests with version of CAP Java used for build
-      if: inputs.test-type == 'build-version'
-      run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml
+    - name: Integration Tests (build version)
+      run: npx cds bind --exec -- mvn clean verify -ntp -B -f ../../integration-tests/pom.xml
+      working-directory: integration-tests/mtx-local
       shell: bash
 
-    - name: Integration Tests with latest version of CAP Java
-      if: inputs.test-type == 'latest-version'
-      run: mvn clean verify -ntp -B -f ./integration-tests/pom.xml -P latest-test-version
-      shell: bash
-
-    - name: Integration Tests for the object store service
-      if: inputs.test-type == 'oss'
-      run: mvn clean verify -ntp -B -Pintegration-tests-oss
+    - name: Integration Tests (latest CAP Java)
+      run: npx cds bind --exec -- mvn verify -ntp -B -f ../../integration-tests/pom.xml -P latest-test-version
+      working-directory: integration-tests/mtx-local
       shell: bash
