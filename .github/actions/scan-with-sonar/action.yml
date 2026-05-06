@@ -39,7 +39,7 @@ runs:
 
     - name: Build project for SonarQube scan
       run: |
-        mvn clean verify -ntp -B
+        mvn clean verify -ntp -B -Dcds.install-node.skip
       shell: bash
 
     - name: Verify JaCoCo reports exist

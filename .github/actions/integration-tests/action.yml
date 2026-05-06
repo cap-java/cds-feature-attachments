@@ -25,15 +25,15 @@ runs:
         maven-version: ${{ inputs.maven-version }}
 
     - name: Build dependencies for integration tests
-      run: mvn clean install -ntp -B -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss -am
+      run: mvn clean install -ntp -B -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss -am -Dcds.install-node.skip
       shell: bash
 
     - name: Integration Tests
-      run: cds bind --exec -- mvn clean verify -ntp -B -f ../../integration-tests/pom.xml
+      run: cds bind --exec -- mvn clean verify -ntp -B -f ../../integration-tests/pom.xml -Dcds.install-node.skip
       working-directory: integration-tests/mtx-local
       shell: bash
 
     - name: Client Integration Tests (OSS + Malware)
-      run: cds bind --exec -- mvn verify -ntp -B -f ../../pom.xml -pl cds-feature-attachments,storage-targets/cds-feature-attachments-oss -P integration-tests,integration-tests-oss
+      run: cds bind --exec -- mvn verify -ntp -B -f ../../pom.xml -pl cds-feature-attachments,storage-targets/cds-feature-attachments-oss -P integration-tests,integration-tests-oss -Dcds.install-node.skip
       working-directory: integration-tests/mtx-local
       shell: bash
