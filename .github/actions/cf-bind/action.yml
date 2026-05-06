@@ -52,7 +52,7 @@ runs:
 
     - name: Install CDS dependencies
       shell: bash
-      run: npm ci
+      run: npm i
       working-directory: integration-tests/mtx-local
 
     - name: Bind objectstore
