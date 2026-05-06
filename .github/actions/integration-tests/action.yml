@@ -29,11 +29,11 @@ runs:
       shell: bash
 
     - name: Integration Tests
-      run: npx cds bind --exec -- mvn clean verify -ntp -B -f ../../integration-tests/pom.xml
+      run: cds bind --exec -- mvn clean verify -ntp -B -f ../../integration-tests/pom.xml
       working-directory: integration-tests/mtx-local
       shell: bash
 
     - name: Client Integration Tests (OSS + Malware)
-      run: npx cds bind --exec -- mvn verify -ntp -B -f ../../pom.xml -pl cds-feature-attachments,storage-targets/cds-feature-attachments-oss -P integration-tests,integration-tests-oss
+      run: cds bind --exec -- mvn verify -ntp -B -f ../../pom.xml -pl cds-feature-attachments,storage-targets/cds-feature-attachments-oss -P integration-tests,integration-tests-oss
       working-directory: integration-tests/mtx-local
       shell: bash

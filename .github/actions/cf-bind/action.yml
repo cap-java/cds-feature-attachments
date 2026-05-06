@@ -50,6 +50,10 @@ runs:
           fi
         done
 
+    - name: Install @sap/cds-dk
+      shell: bash
+      run: npm i -g @sap/cds-dk
+
     - name: Install CDS dependencies
       shell: bash
       run: npm i
@@ -60,7 +64,7 @@ runs:
       working-directory: integration-tests/mtx-local
       run: |
         for i in {1..5}; do
-          npx cds bind os -2 os:pipeline && break
+          cds bind os -2 os:pipeline && break
           echo "cds bind objectstore failed, retrying ($i/5)..."
           sleep 30
           if [ "$i" -eq 5 ]; then
@@ -73,10 +77,10 @@ runs:
       if: inputs.auth-method == 'basic'
       shell: bash
       working-directory: integration-tests/mtx-local
-      run: npx cds bind malware -2 malware:malware-key-basic
+      run: cds bind malware -2 malware:malware-key-basic
 
     - name: Bind malware-scanner (mtls)
       if: inputs.auth-method == 'mtls'
       shell: bash
       working-directory: integration-tests/mtx-local
-      run: npx cds bind malware -2 malware:malware-key-mtls
+      run: cds bind malware -2 malware:malware-key-mtls
