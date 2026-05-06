@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Scan With Black Duck
-        uses: ./.github/actions/scan-with-blackduck
+        uses: cap-java/cds-feature-attachments/.github/actions/scan-with-blackduck@main
         with:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -39,7 +39,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Update version
-        uses: ./.github/actions/newrelease
+        uses: cap-java/cds-feature-attachments/.github/actions/newrelease@main
         with:
           java-version: ${{ env.JAVA_VERSION }}
           maven-version: ${{ env.MAVEN_VERSION }}
@@ -74,13 +74,13 @@ jobs:
           name: root-new-version
 
       - name: Build
-        uses: ./.github/actions/build
+        uses: cap-java/cds-feature-attachments/.github/actions/build@main
         with:
           java-version: ${{ env.JAVA_VERSION }}
           maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Sonar Scan
-        uses: ./.github/actions/scan-with-sonar
+        uses: cap-java/cds-feature-attachments/.github/actions/scan-with-sonar@main
         with:
           java-version: ${{ env.JAVA_VERSION }}
           maven-version: ${{ env.MAVEN_VERSION }}
@@ -106,7 +106,7 @@ jobs:
           name: root-build
 
       - name: Deploy
-        uses: ./.github/actions/deploy-release
+        uses: cap-java/cds-feature-attachments/.github/actions/deploy-release@main
         with:
           user: ${{ secrets.CENTRAL_REPOSITORY_USER }}
           password: ${{ secrets.CENTRAL_REPOSITORY_PASS }}

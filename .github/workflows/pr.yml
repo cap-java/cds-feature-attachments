@@ -25,5 +25,5 @@ jobs:
   build-and-test:
     needs: requires-approval
     if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
-    uses: ./.github/workflows/pipeline.yml
+    uses: cap-java/cds-feature-attachments/.github/workflows/pipeline.yml@main
     secrets: inherit
