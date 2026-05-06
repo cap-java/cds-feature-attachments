@@ -52,7 +52,9 @@ runs:
 
     - name: Install @sap/cds-dk
       shell: bash
-      run: npm i -g @sap/cds-dk
+      run: |
+        npm i -g @sap/cds-dk
+        echo "$(npm config get prefix)/bin" >> $GITHUB_PATH
 
     - name: Install CDS dependencies
       shell: bash

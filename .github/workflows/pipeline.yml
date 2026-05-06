@@ -38,8 +38,41 @@ jobs:
       - name: Spotless Check
         run: mvn spotless:check -Dspotless.check.skip=false -B -ntp
 
+  tests:
+    name: Tests (Java ${{ matrix.java-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version: [ 17, 21 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Java ${{ matrix.java-version }}
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: sapmachine
+          cache: maven
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+        with:
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+      - name: Install @sap/cds-dk
+        run: npm i -g @sap/cds-dk
+        shell: bash
+
+      - name: Run Tests
+        run: mvn test -ntp -B -P skip-integration-tests -Dcds.install-node.skip
+
   integration-tests:
-    name: ITests (Java ${{ matrix.java-version }}, ${{ matrix.auth-method }}, ${{ matrix.hyperscaler }})
+    name: Integration Tests (Java ${{ matrix.java-version }}, ${{ matrix.auth-method }}, ${{ matrix.hyperscaler }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:

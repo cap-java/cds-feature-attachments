@@ -30,8 +30,12 @@ runs:
         languages: java-kotlin
         build-mode: manual
 
+    - name: Install @sap/cds-dk
+      run: npm i -g @sap/cds-dk
+      shell: bash
+
     - name: Build Java code
-      run: mvn clean compile -B -ntp
+      run: mvn clean compile -B -ntp -Dcds.install-node.skip
       shell: bash
 
     - name: Perform CodeQL Analysis
