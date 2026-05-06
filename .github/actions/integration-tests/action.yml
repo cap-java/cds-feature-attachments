@@ -28,8 +28,12 @@ runs:
       run: mvn clean install -ntp -B -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss -am -Dcds.install-node.skip
       shell: bash
 
-    - name: Integration Tests
-      run: cds bind --exec -- mvn clean verify -ntp -B -f ../../integration-tests/pom.xml -Dcds.install-node.skip
+    - name: Generic Integration Tests
+      run: mvn clean verify -ntp -B -f integration-tests/pom.xml -pl :cds-feature-attachments-integration-tests-parent,:cds-feature-attachments-integration-tests-db,:cds-feature-attachments-integration-tests-generic -Dcds.install-node.skip
+      shell: bash
+
+    - name: MTX-Local Integration Tests
+      run: cds bind --exec -- mvn clean verify -ntp -B -f ../../integration-tests/mtx-local/srv/pom.xml -Dcds.install-node.skip
       working-directory: integration-tests/mtx-local
       shell: bash
 
