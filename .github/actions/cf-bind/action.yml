@@ -37,24 +37,27 @@ runs:
       env:
         CF_USERNAME: ${{ inputs.cf-username }}
         CF_PASSWORD: ${{ inputs.cf-password }}
+        CF_API: ${{ inputs.cf-api }}
+        CF_ORG: ${{ inputs.cf-org }}
+        CF_SPACE: ${{ inputs.cf-space }}
       run: |
         for i in {1..5}; do
-          cf api "${{ inputs.cf-api }}" && \
+          cf api "$CF_API" && \
           cf auth && \
-          cf target -o "${{ inputs.cf-org }}" -s "${{ inputs.cf-space }}" && break
-          echo "cf login failed, retrying ($i/5)..."
-          sleep 10
+          cf target -o "$CF_ORG" -s "$CF_SPACE" && break
           if [ "$i" -eq 5 ]; then
             echo "cf login failed after 5 attempts."
             exit 1
           fi
+          echo "cf login failed, retrying ($i/5)..."
+          sleep 10
         done
 
     - name: Install @sap/cds-dk
       shell: bash
       run: |
         npm i -g @sap/cds-dk
-        echo "$(npm config get prefix)/bin" >> $GITHUB_PATH
+        echo "$(npm config get prefix)/bin" >> "${GITHUB_PATH}"
 
     - name: Install CDS dependencies
       shell: bash

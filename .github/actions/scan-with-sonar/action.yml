@@ -65,7 +65,7 @@ runs:
       run: >
         mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
         -Dsonar.host.url=https://sonar.tools.sap
-        -Dsonar.token=${{ inputs.sonarq-token }}
+        -Dsonar.token="${SONAR_TOKEN}"
         -Dsonar.projectKey=cds-feature-attachments
         -Dsonar.projectVersion=${{ steps.get-revision.outputs.REVISION }}
         -Dsonar.qualitygate.wait=true
@@ -77,3 +77,4 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
+        SONAR_TOKEN: ${{ inputs.sonarq-token }}
