@@ -41,23 +41,20 @@ runs:
         echo "REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: BlackDuck Detect Scan
-      run: |
-        bash <(curl -s -L https://detect.synopsys.com/detect9.sh) \
-          --blackduck.url=https://sap.blackducksoftware.com/ \
-          --blackduck.api.token="${BLACKDUCK_TOKEN}" \
-          --detect.project.name=com.sap.cds.feature.attachments \
-          --detect.project.version.name="${REVISION}" \
-          --detect.included.detector.types=MAVEN \
-          --detect.excluded.directories='**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar,**/samples/**' \
-          --detect.maven.excluded.modules=integration-tests,integration-tests/db,integration-tests/generic,integration-tests/mtx-local/srv \
-          --detect.maven.build.command='-pl com.sap.cds:cds-feature-attachments' \
-          --detect.tools=DETECTOR,BINARY_SCAN \
-          --detect.blackduck.scan.mode="${SCAN_MODE}" \
-          --detect.risk.report.pdf=false \
+    - name: BlackDuck Security Scan
+      uses: blackduck-inc/black-duck-security-scan@v2
+      with:
+        blackducksca_url: https://sap.blackducksoftware.com/
+        blackducksca_token: ${{ inputs.blackduck_token }}
+        blackducksca_scan_full: ${{ inputs.scan_mode == 'FULL' }}
+        github_token: ${{ inputs.github_token }}
+        detect_args: >
+          --detect.project.name=com.sap.cds.feature.attachments
+          --detect.project.version.name=${{ steps.get-revision.outputs.REVISION }}
+          --detect.included.detector.types=MAVEN
+          --detect.excluded.directories=**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar,**/samples/**
+          --detect.maven.excluded.modules=integration-tests,integration-tests/db,integration-tests/generic,integration-tests/mtx-local/srv
+          --detect.maven.build.command=-pl com.sap.cds:cds-feature-attachments
+          --detect.tools=DETECTOR,BINARY_SCAN
+          --detect.risk.report.pdf=false
           --logging.level.detect=INFO
-      shell: bash
-      env:
-        BLACKDUCK_TOKEN: ${{ inputs.blackduck_token }}
-        SCAN_MODE: ${{ inputs.scan_mode }}
-        REVISION: ${{ steps.get-revision.outputs.REVISION }}
