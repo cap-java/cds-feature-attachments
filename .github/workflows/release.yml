@@ -11,7 +11,16 @@ on:
     types: [ "released" ]
 
 jobs:
+  requires-approval:
+    runs-on: ubuntu-latest
+    name: "Waiting for release approval"
+    environment: release-approval
+    steps:
+      - name: Approval Step
+        run: echo "Release has been approved!"
+
   blackduck:
+    needs: requires-approval
     name: Blackduck Scan
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -27,6 +36,7 @@ jobs:
           maven-version: ${{ env.MAVEN_VERSION }}
 
   update-version:
+    needs: requires-approval
     name: Update Version
     runs-on: ubuntu-latest
     timeout-minutes: 30
