@@ -15,6 +15,7 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.Drafts;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -76,10 +77,7 @@ public final class ApplicationHandlerHelper {
    * @return <code>true</code> if the entity is a media entity, <code>false</code> otherwise
    */
   public static boolean isMediaEntity(CdsStructuredType baseEntity) {
-    if (baseEntity.getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false)) {
-      return true;
-    }
-    return hasInlineAttachmentElements(baseEntity);
+    return isDirectMediaEntity(baseEntity) || hasInlineAttachmentElements(baseEntity);
   }
 
   /**
@@ -103,10 +101,7 @@ public final class ApplicationHandlerHelper {
    * @return <code>true</code> if inline attachment elements exist
    */
   public static boolean hasInlineAttachmentElements(CdsStructuredType entity) {
-    if (entity.getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false)) {
-      return false; // Entity itself is a media entity (composition-based), not inline
-    }
-    return !getInlineAttachmentFieldNames(entity).isEmpty();
+    return !isDirectMediaEntity(entity) && !getInlineAttachmentFieldNames(entity).isEmpty();
   }
 
   /**
@@ -150,8 +145,8 @@ public final class ApplicationHandlerHelper {
    */
   public static boolean isInlineAttachmentContentField(
       CdsStructuredType entity, CdsElement element) {
-    if (entity.getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false)) {
-      return false; // This is a composition-based attachment entity, not inline
+    if (isDirectMediaEntity(entity)) {
+      return false;
     }
     String elementName = element.getName();
     return elementName.endsWith("_content")
@@ -172,7 +167,7 @@ public final class ApplicationHandlerHelper {
       CdsStructuredType entity, String elementName) {
     return getInlineAttachmentFieldNames(entity).stream()
         .filter(prefix -> elementName.startsWith(prefix + "_"))
-        .findFirst();
+        .max(Comparator.comparingInt(String::length));
   }
 
   /**
@@ -212,7 +207,7 @@ public final class ApplicationHandlerHelper {
     Validator validator =
         (path, element, value) -> {
           // For composition-based: path.target() is the attachment entity
-          if (path.target().type().getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false)) {
+          if (isDirectMediaEntity(path.target().type())) {
             resultList.add(Attachments.of(path.target().values()));
           } else {
             // For inline type: extract prefixed fields from parent entity

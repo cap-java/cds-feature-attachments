@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Cou
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsAnnotation;
+import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.EventContext;
@@ -145,21 +146,13 @@ public final class ModifyApplicationHandlerHelper {
 
   private static String getValMaxValue(
       CdsEntity entity, String defaultMaxSize, Optional<String> inlinePrefix) {
-    return entity
-        .findElement("content")
-        .or(
-            () -> {
-              if (inlinePrefix.isPresent()) {
-                return entity.findElement(inlinePrefix.get() + "_content");
-              }
-              List<String> prefixes =
-                  ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
-              for (String prefix : prefixes) {
-                var found = entity.findElement(prefix + "_content");
-                if (found.isPresent()) return found;
-              }
-              return Optional.empty();
-            })
+    Optional<CdsElement> contentElement;
+    if (inlinePrefix.isPresent()) {
+      contentElement = entity.findElement(inlinePrefix.get() + "_content");
+    } else {
+      contentElement = entity.findElement("content");
+    }
+    return contentElement
         .flatMap(e -> e.findAnnotation("Validation.Maximum"))
         .map(CdsAnnotation::getValue)
         .filter(v -> !"true".equals(v.toString()))
