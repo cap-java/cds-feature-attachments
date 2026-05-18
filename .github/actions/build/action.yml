@@ -8,10 +8,6 @@ inputs:
   maven-version:
     description: The Maven version the build will run with.
     required: true
-  mutation-testing:
-    description: Whether to run mutation testing or not.
-    default: 'true'
-    required: false
 
 runs:
   using: composite
@@ -33,8 +29,3 @@ runs:
       with:
         step-name: mavenBuild
         docker-image: ''
-
-    - name: Mutation Testing
-      if: ${{ inputs.mutation-testing == 'true' }}
-      run: mvn org.pitest:pitest-maven:mutationCoverage -f cds-feature-attachments/pom.xml -ntp -B
-      shell: bash

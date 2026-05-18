@@ -6,6 +6,7 @@ package com.sap.cds.feature.attachments.service.model.service;
 import com.sap.cds.reflect.CdsEntity;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * The class {@link CreateAttachmentInput} is used to store the input for creating an attachment.
@@ -15,10 +16,12 @@ import java.util.Map;
  * @param fileName The file name of the content
  * @param mimeType The mime type of the content
  * @param content The input stream of the content
+ * @param inlinePrefix For inline attachments, the field name prefix; empty for composition-based
  */
 public record CreateAttachmentInput(
     Map<String, Object> attachmentIds,
     CdsEntity attachmentEntity,
     String fileName,
     String mimeType,
-    InputStream content) {}
+    InputStream content,
+    Optional<String> inlinePrefix) {}

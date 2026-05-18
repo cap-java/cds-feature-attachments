@@ -18,6 +18,7 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import java.util.Objects;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,9 +67,11 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
    */
   @After
   void afterCreateAttachment(AttachmentCreateEventContext context) {
+    String prefix = (String) context.get("attachment.inlinePrefix");
+    Optional<String> inlinePrefix = Optional.ofNullable(prefix);
     ChangeSetListener listener =
         malwareScanProvider.getChangeSetListener(
-            context.getAttachmentEntity(), context.getContentId());
+            context.getAttachmentEntity(), context.getContentId(), inlinePrefix);
     context.getChangeSetContext().register(listener);
   }
 

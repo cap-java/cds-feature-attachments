@@ -13,6 +13,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Cou
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsAnnotation;
+import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.EventContext;
@@ -20,6 +21,7 @@ import com.sap.cds.services.ServiceException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class ModifyApplicationHandlerHelper {
 
@@ -51,14 +53,19 @@ public final class ModifyApplicationHandlerHelper {
         ApplicationHandlerHelper.condenseAttachments(existingAttachments, entity);
 
     Converter converter =
-        (path, element, value) ->
-            handleAttachmentForEntity(
-                condensedExistingAttachments,
-                eventFactory,
-                eventContext,
-                path,
-                (InputStream) value,
-                defaultMaxSize);
+        (path, element, value) -> {
+          Optional<String> inlinePrefix =
+              ApplicationHandlerHelper.getInlineAttachmentPrefix(
+                  path.target().entity(), element.getName());
+          return handleAttachmentForEntity(
+              condensedExistingAttachments,
+              eventFactory,
+              eventContext,
+              path,
+              (InputStream) value,
+              defaultMaxSize,
+              inlinePrefix);
+        };
 
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
@@ -74,6 +81,7 @@ public final class ModifyApplicationHandlerHelper {
    * @param path the {@link Path} of the attachment
    * @param content the content of the attachment
    * @param defaultMaxSize the default max size to use when no annotation is present
+   * @param inlinePrefix the inline attachment field prefix, or empty for composition-based
    * @return the processed content as an {@link InputStream}
    */
   public static InputStream handleAttachmentForEntity(
@@ -82,13 +90,23 @@ public final class ModifyApplicationHandlerHelper {
       EventContext eventContext,
       Path path,
       InputStream content,
-      String defaultMaxSize) {
+      String defaultMaxSize,
+      Optional<String> inlinePrefix) {
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
     ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values());
-    Attachments attachment = getExistingAttachment(keys, existingAttachments);
-    String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+    Attachments attachment = getExistingAttachment(keys, existingAttachments, inlinePrefix);
+
+    // For inline attachment fields, extract contentId using the known prefix
+    String contentId;
+    if (inlinePrefix.isPresent()) {
+      contentId =
+          (String) path.target().values().get(inlinePrefix.get() + "_" + Attachments.CONTENT_ID);
+    } else {
+      contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+    }
+
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
-    String maxSizeStr = getValMaxValue(path.target().entity(), defaultMaxSize);
+    String maxSizeStr = getValMaxValue(path.target().entity(), defaultMaxSize, inlinePrefix);
     eventContext.put(
         "attachment.MaxSize",
         maxSizeStr); // make max size available in context for error handling later
@@ -112,6 +130,11 @@ public final class ModifyApplicationHandlerHelper {
     ModifyAttachmentEvent eventToProcess =
         eventFactory.getEvent(wrappedContent, contentId, attachment);
     try {
+      // Ensure the attachment carries the inline prefix marker for processEvent implementations
+      if (inlinePrefix.isPresent()
+          && attachment.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER) == null) {
+        attachment.put(ApplicationHandlerHelper.INLINE_PREFIX_MARKER, inlinePrefix.get());
+      }
       return eventToProcess.processEvent(path, wrappedContent, attachment, eventContext);
     } catch (Exception e) {
       if (wrappedContent != null && wrappedContent.isLimitExceeded()) {
@@ -121,9 +144,15 @@ public final class ModifyApplicationHandlerHelper {
     }
   }
 
-  private static String getValMaxValue(CdsEntity entity, String defaultMaxSize) {
-    return entity
-        .findElement("content")
+  private static String getValMaxValue(
+      CdsEntity entity, String defaultMaxSize, Optional<String> inlinePrefix) {
+    Optional<CdsElement> contentElement;
+    if (inlinePrefix.isPresent()) {
+      contentElement = entity.findElement(inlinePrefix.get() + "_content");
+    } else {
+      contentElement = entity.findElement("content");
+    }
+    return contentElement
         .flatMap(e -> e.findAnnotation("Validation.Maximum"))
         .map(CdsAnnotation::getValue)
         .filter(v -> !"true".equals(v.toString()))
@@ -132,9 +161,21 @@ public final class ModifyApplicationHandlerHelper {
   }
 
   private static Attachments getExistingAttachment(
-      Map<String, Object> keys, List<Attachments> existingAttachments) {
+      Map<String, Object> keys,
+      List<Attachments> existingAttachments,
+      Optional<String> inlinePrefix) {
     return existingAttachments.stream()
-        .filter(existingData -> ApplicationHandlerHelper.areKeysInData(keys, existingData))
+        .filter(
+            existingData -> {
+              // For inline attachments, match by the prefix marker
+              if (inlinePrefix.isPresent()) {
+                String existingPrefix =
+                    (String) existingData.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER);
+                return inlinePrefix.get().equals(existingPrefix);
+              }
+              // For composition-based attachments, match by keys
+              return ApplicationHandlerHelper.areKeysInData(keys, existingData);
+            })
         .findAny()
         .orElse(Attachments.create());
   }

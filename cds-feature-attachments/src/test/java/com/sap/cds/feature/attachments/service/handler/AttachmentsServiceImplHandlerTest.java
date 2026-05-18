@@ -24,6 +24,7 @@ import com.sap.cds.services.impl.changeset.ChangeSetContextImpl;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -93,7 +94,8 @@ class AttachmentsServiceImplHandlerTest {
   void malwareScannerRegisteredForEndOfTransaction() {
     var listener = mock(ChangeSetListener.class);
     var entity = mock(CdsEntity.class);
-    when(malwareScanProvider.getChangeSetListener(entity, "contentId")).thenReturn(listener);
+    when(malwareScanProvider.getChangeSetListener(entity, "contentId", Optional.empty()))
+        .thenReturn(listener);
     var createContext = AttachmentCreateEventContext.create();
     createContext.setAttachmentIds(Map.of(Attachments.ID, "contentId"));
     createContext.setData(MediaData.create());
@@ -103,7 +105,7 @@ class AttachmentsServiceImplHandlerTest {
     cut.createAttachment(createContext);
     cut.afterCreateAttachment(createContext);
 
-    verify(malwareScanProvider).getChangeSetListener(entity, "contentId");
+    verify(malwareScanProvider).getChangeSetListener(entity, "contentId", Optional.empty());
   }
 
   @Test
@@ -125,7 +127,7 @@ class AttachmentsServiceImplHandlerTest {
   @Test
   void afterCreateAttachment_noChangeSetContext_throws() {
     var entity = mock(CdsEntity.class);
-    when(malwareScanProvider.getChangeSetListener(any(), any()))
+    when(malwareScanProvider.getChangeSetListener(any(), any(), any()))
         .thenReturn(mock(ChangeSetListener.class));
     var createContext = AttachmentCreateEventContext.create();
     createContext.setAttachmentIds(Map.of(Attachments.ID, "some-id"));
