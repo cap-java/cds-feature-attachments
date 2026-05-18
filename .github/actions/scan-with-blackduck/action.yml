@@ -52,9 +52,8 @@ runs:
           --detect.project.name=com.sap.cds.feature.attachments
           --detect.project.version.name=${{ steps.get-revision.outputs.REVISION }}
           --detect.included.detector.types=MAVEN
-          --detect.excluded.directories=**/node_modules,**/*test*,**/localrepo,**/target/site,**/*-site.jar,**/samples/**
-          --detect.maven.excluded.modules=integration-tests,integration-tests/db,integration-tests/generic,integration-tests/mtx-local/srv
-          --detect.maven.build.command=-pl com.sap.cds:cds-feature-attachments
+          --detect.excluded.directories=**/*test*,**/samples/**
+          --detect.maven.build.command=-pl com.sap.cds:cds-feature-attachments,com.sap.cds:cds-feature-attachments-oss,com.sap.cds:cds-feature-attachments-fs
           --detect.tools=DETECTOR,BINARY_SCAN
           --detect.risk.report.pdf=false
           --logging.level.detect=INFO
