@@ -42,7 +42,7 @@ runs:
       shell: bash
 
     - name: BlackDuck Security Scan
-      uses: blackduck-inc/black-duck-security-scan@v2
+      uses: blackduck-inc/black-duck-security-scan@659a0742e793a093377fab3117b0d90f23b04bfa # v2.9.0
       with:
         blackducksca_url: https://sap.blackducksoftware.com/
         blackducksca_token: ${{ inputs.blackduck_token }}
