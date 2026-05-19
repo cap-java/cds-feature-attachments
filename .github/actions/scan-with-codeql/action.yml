@@ -31,7 +31,7 @@ runs:
         build-mode: manual
 
     - name: Install @sap/cds-dk
-      run: npm i -g @sap/cds-dk
+      run: npm i -g @sap/cds-dk@9.9.1
       shell: bash
 
     - name: Build Java code

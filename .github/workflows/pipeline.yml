@@ -65,7 +65,7 @@ jobs:
           maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Install @sap/cds-dk
-        run: npm i -g @sap/cds-dk
+        run: npm i -g @sap/cds-dk@9.9.1
         shell: bash
 
       - name: Run Tests
