@@ -53,7 +53,7 @@ runs:
           --detect.project.version.name=${{ steps.get-revision.outputs.REVISION }}
           --detect.included.detector.types=MAVEN
           --detect.excluded.directories=**/*test*,**/samples/**
-          --detect.maven.build.command=-pl com.sap.cds:cds-feature-attachments,com.sap.cds:cds-feature-attachments-oss,com.sap.cds:cds-feature-attachments-fs
+          --detect.maven.included.modules=cds-feature-attachments,cds-feature-attachments-oss,cds-feature-attachments-fs
           --detect.tools=DETECTOR,BINARY_SCAN
           --detect.risk.report.pdf=false
           --logging.level.detect=INFO
