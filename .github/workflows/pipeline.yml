@@ -20,8 +20,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Java
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
@@ -49,8 +47,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Java ${{ matrix.java-version }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
@@ -84,8 +80,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
 
       - name: Bind CF Services
         uses: cap-java/cds-feature-attachments/.github/actions/cf-bind@main
@@ -111,7 +105,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
       - name: Bind CF Services
@@ -144,8 +137,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
 
       - name: CodeQL Analysis
         uses: cap-java/cds-feature-attachments/.github/actions/scan-with-codeql@main
