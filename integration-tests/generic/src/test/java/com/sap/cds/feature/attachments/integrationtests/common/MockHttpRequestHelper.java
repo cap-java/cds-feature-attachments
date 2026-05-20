@@ -68,8 +68,7 @@ public class MockHttpRequestHelper {
         .andReturn();
   }
 
-  public void executePostWithMatcher(String url, String body, ResultMatcher matcher)
-      throws Exception {
+  public void assertPostStatus(String url, String body, ResultMatcher matcher) throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.post(url).contentType(contentType).accept(accept).content(body))
         .andExpect(matcher);
@@ -88,12 +87,11 @@ public class MockHttpRequestHelper {
         .andReturn();
   }
 
-  public void executeDeleteWithMatcher(String url, ResultMatcher matcher) throws Exception {
-    executeDeleteWithMatcher(url, "*", matcher);
+  public void assertDeleteStatus(String url, ResultMatcher matcher) throws Exception {
+    assertDeleteStatus(url, "*", matcher);
   }
 
-  public void executeDeleteWithMatcher(String url, String etag, ResultMatcher matcher)
-      throws Exception {
+  public void assertDeleteStatus(String url, String etag, ResultMatcher matcher) throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.delete(url)
                 .contentType(contentType)
@@ -136,12 +134,11 @@ public class MockHttpRequestHelper {
         .isEqualTo(status.value());
   }
 
-  public void executePutWithMatcher(String url, byte[] body, ResultMatcher matcher)
-      throws Exception {
-    executePutWithMatcher(url, body, "*", matcher);
+  public void assertPutStatus(String url, byte[] body, ResultMatcher matcher) throws Exception {
+    assertPutStatus(url, body, "*", matcher);
   }
 
-  public void executePutWithMatcher(String url, byte[] body, String etag, ResultMatcher matcher)
+  public void assertPutStatus(String url, byte[] body, String etag, ResultMatcher matcher)
       throws Exception {
     mvc.perform(
             MockMvcRequestBuilders.put(url)

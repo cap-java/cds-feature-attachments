@@ -433,7 +433,7 @@ abstract class OdataRequestValidationBase {
 
     var url =
         MockHttpRequestHelper.ODATA_BASE_URL + "TestService/Roots(" + selectedRoot.getId() + ")";
-    requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
+    requestHelper.assertDeleteStatus(url, status().isNoContent());
 
     verifyTwoDeleteEvents(itemAttachmentEntityAfterChange, itemAttachmentAfterChange);
   }
@@ -644,7 +644,7 @@ abstract class OdataRequestValidationBase {
 
   protected void postServiceRoot(Roots serviceRoot) throws Exception {
     var url = MockHttpRequestHelper.ODATA_BASE_URL + "TestService/Roots";
-    requestHelper.executePostWithMatcher(url, serviceRoot.toJson(), status().isCreated());
+    requestHelper.assertPostStatus(url, serviceRoot.toJson(), status().isCreated());
   }
 
   protected Roots selectStoredRootWithDeepData() {
@@ -741,7 +741,7 @@ abstract class OdataRequestValidationBase {
 
     var testContent = "testContent" + itemAttachment.getNote();
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, testContent.getBytes(StandardCharsets.UTF_8), matcher);
+    requestHelper.assertPutStatus(url, testContent.getBytes(StandardCharsets.UTF_8), matcher);
     return testContent;
   }
 
@@ -780,7 +780,7 @@ abstract class OdataRequestValidationBase {
             + "/content";
     var testContent = "testContent" + attachment.getNote();
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, testContent.getBytes(StandardCharsets.UTF_8), matcher);
+    requestHelper.assertPutStatus(url, testContent.getBytes(StandardCharsets.UTF_8), matcher);
     return testContent;
   }
 
@@ -803,7 +803,7 @@ abstract class OdataRequestValidationBase {
     var url = buildDirectAttachmentEntityUrl(itemAttachment.getId()) + "/content";
     var testContent = "testContent" + itemAttachment.getNote();
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, testContent.getBytes(StandardCharsets.UTF_8), matcher);
+    requestHelper.assertPutStatus(url, testContent.getBytes(StandardCharsets.UTF_8), matcher);
     return testContent;
   }
 

@@ -76,9 +76,12 @@ class AWSClientTest {
     AWSClient awsClient = new AWSClient(mock(S3Client.class), mockAsyncClient, "bucket", executor);
     configureSuccessfulPut(mockAsyncClient);
 
-    awsClient
-        .uploadContent(new ByteArrayInputStream("test".getBytes()), "test.txt", "text/plain")
-        .get();
+    assertDoesNotThrow(
+        () ->
+            awsClient
+                .uploadContent(
+                    new ByteArrayInputStream("test".getBytes()), "test.txt", "text/plain")
+                .get());
   }
 
   @Test

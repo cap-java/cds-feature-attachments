@@ -34,7 +34,7 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     byte[] content = new byte[3 * 1024 * 1024]; // 3MB
     var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, content, status().isNoContent());
+    requestHelper.assertPutStatus(url, content, status().isNoContent());
   }
 
   @Test
@@ -47,7 +47,7 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     byte[] content = new byte[6 * 1024 * 1024]; // 6MB
     var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, content, status().is(413));
+    requestHelper.assertPutStatus(url, content, status().is(413));
 
     // Assert: Error response with HTTP 413 status code indicates size limit
     // exceeded
@@ -63,16 +63,16 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     byte[] content = new byte[3 * 1024 * 1024]; // 3MB
     var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, content, status().isNoContent());
+    requestHelper.assertPutStatus(url, content, status().isNoContent());
 
     // Assert: Draft activation succeeds
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
     var rootUrl = getRootUrl(draftRoot.getId(), false);
     var draftPrepareUrl = rootUrl + "/TestDraftService.draftPrepare";
     var draftActivateUrl = rootUrl + "/TestDraftService.draftActivate";
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         draftPrepareUrl, "{\"SideEffectsQualifier\":\"\"}", status().isOk());
-    requestHelper.executePostWithMatcher(draftActivateUrl, "{}", status().isOk());
+    requestHelper.assertPostStatus(draftActivateUrl, "{}", status().isOk());
   }
 
   @Test
@@ -85,7 +85,7 @@ class SizeLimitedAttachmentsSizeValidationDraftTest extends DraftOdataRequestVal
     byte[] content = new byte[6 * 1024 * 1024]; // 6MB
     var url = buildDraftSizeLimitedAttachmentContentUrl(draftRoot.getId(), attachment.getId());
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, content, status().is(413));
+    requestHelper.assertPutStatus(url, content, status().is(413));
   }
 
   // Helper methods

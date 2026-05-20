@@ -35,7 +35,7 @@ class AzureClientTest {
     when(mockContainer.getBlobClient(anyString())).thenReturn(mockBlobClient);
 
     // Should not throw
-    azureClient.readContent("file.txt").get();
+    assertDoesNotThrow(() -> azureClient.readContent("file.txt").get());
   }
 
   @Test
@@ -53,7 +53,7 @@ class AzureClientTest {
     InputStream mockInput = new java.io.ByteArrayInputStream("test-data".getBytes());
 
     // Should not throw
-    azureClient.uploadContent(mockInput, "file.txt", "text/plain").get();
+    assertDoesNotThrow(() -> azureClient.uploadContent(mockInput, "file.txt", "text/plain").get());
   }
 
   @Test
@@ -104,7 +104,7 @@ class AzureClientTest {
     when(mockContainer.getBlobClient(anyString())).thenReturn(mockBlobClient);
 
     // Should not throw
-    azureClient.deleteContent("file.txt").get();
+    assertDoesNotThrow(() -> azureClient.deleteContent("file.txt").get());
   }
 
   @Test

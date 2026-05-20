@@ -4,6 +4,7 @@
 package com.sap.cds.feature.attachments.integrationtests.draftservice;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import com.sap.cds.feature.attachments.integrationtests.constants.Profiles;
 import com.sap.cds.feature.attachments.integrationtests.testhandler.EventContextHolder;
@@ -248,41 +249,41 @@ class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestVa
   @Test
   @Override
   void errorInTransactionAfterCreateCallsDelete() throws Exception {
-    super.errorInTransactionAfterCreateCallsDelete();
+    assertDoesNotThrow(super::errorInTransactionAfterCreateCallsDelete);
   }
 
   @Disabled("Flaky due to CAP runtime outbox race condition - second DELETE event not processed")
   @Test
   @Override
   void errorInTransactionAfterCreateCallsDeleteAndNothingForCancel() throws Exception {
-    super.errorInTransactionAfterCreateCallsDeleteAndNothingForCancel();
+    assertDoesNotThrow(super::errorInTransactionAfterCreateCallsDeleteAndNothingForCancel);
   }
 
   @Disabled("Flaky due to CAP runtime outbox race condition - second DELETE event not processed")
   @Test
   @Override
   void errorInTransactionAfterUpdateCallsDelete() throws Exception {
-    super.errorInTransactionAfterUpdateCallsDelete();
+    assertDoesNotThrow(super::errorInTransactionAfterUpdateCallsDelete);
   }
 
   @Disabled("Flaky due to CAP runtime outbox race condition - second DELETE event not processed")
   @Test
   @Override
   void errorInTransactionAfterUpdateCallsDeleteEvenIfDraftIsCancelled() throws Exception {
-    super.errorInTransactionAfterUpdateCallsDeleteEvenIfDraftIsCancelled();
+    assertDoesNotThrow(super::errorInTransactionAfterUpdateCallsDeleteEvenIfDraftIsCancelled);
   }
 
   @Disabled("Flaky due to CAP runtime outbox race condition - second DELETE event not processed")
   @Test
   @Override
   void createAttachmentAndCancelDraft() throws Exception {
-    super.createAttachmentAndCancelDraft();
+    assertDoesNotThrow(super::createAttachmentAndCancelDraft);
   }
 
   @Disabled("Flaky due to CAP runtime outbox race condition - second DELETE event not processed")
   @Test
   @Override
   void createAndDeleteAttachmentWorks() throws Exception {
-    super.createAndDeleteAttachmentWorks();
+    assertDoesNotThrow(super::createAndDeleteAttachmentWorks);
   }
 }

@@ -166,8 +166,8 @@ abstract class DraftOdataRequestValidationBase {
         getAttachmentBaseUrl(selectedRoot.getItems().get(0).getId(), itemAttachment.getId(), false);
     var attachmentEntityDeleteUrl = getAttachmentEntityBaseUrl(itemAttachmentEntity.getId(), false);
 
-    requestHelper.executeDeleteWithMatcher(attachmentDeleteUrl, status().isNoContent());
-    requestHelper.executeDeleteWithMatcher(attachmentEntityDeleteUrl, status().isNoContent());
+    requestHelper.assertDeleteStatus(attachmentDeleteUrl, status().isNoContent());
+    requestHelper.assertDeleteStatus(attachmentEntityDeleteUrl, status().isNoContent());
     verifyNoAttachmentEventsCalled();
 
     prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
@@ -409,7 +409,7 @@ abstract class DraftOdataRequestValidationBase {
     createNewDraftForExistingRoot(selectedRoot.getId());
 
     var itemUrl = getItemUrl(selectedRoot.getItems().get(0), false);
-    requestHelper.executeDeleteWithMatcher(itemUrl, status().isNoContent());
+    requestHelper.assertDeleteStatus(itemUrl, status().isNoContent());
     verifyNoAttachmentEventsCalled();
 
     prepareAndActiveDraft(getRootUrl(selectedRoot.getId(), false));
@@ -429,7 +429,7 @@ abstract class DraftOdataRequestValidationBase {
     createNewDraftForExistingRoot(selectedRoot.getId());
 
     var itemUrl = getItemUrl(selectedRoot.getItems().get(0), false);
-    requestHelper.executeDeleteWithMatcher(itemUrl, status().isNoContent());
+    requestHelper.assertDeleteStatus(itemUrl, status().isNoContent());
 
     cancelDraft(getRootUrl(selectedRoot.getId(), false));
     var selectedRootAfterDelete = selectStoredRootData(selectedRoot);
@@ -451,10 +451,10 @@ abstract class DraftOdataRequestValidationBase {
     createNewDraftForExistingRoot(selectedRoot.getId());
 
     var rootUrl = getRootUrl(selectedRoot.getId(), true);
-    requestHelper.executeDeleteWithMatcher(rootUrl, status().isNoContent());
+    requestHelper.assertDeleteStatus(rootUrl, status().isNoContent());
 
     var draftPrepareUrl = rootUrl + "/TestDraftService.draftPrepare";
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         draftPrepareUrl, "{\"SideEffectsQualifier\":\"\"}", status().isNotFound());
 
     var select = Select.from(TestDraftService_.DRAFT_ROOTS);
@@ -572,8 +572,8 @@ abstract class DraftOdataRequestValidationBase {
         getAttachmentBaseUrl(selectedRoot.getItems().get(0).getId(), newAttachment.getId(), false);
     var attachmentEntityDeleteUrl = getAttachmentEntityBaseUrl(newAttachmentEntity.getId(), false);
 
-    requestHelper.executeDeleteWithMatcher(attachmentDeleteUrl, status().isNoContent());
-    requestHelper.executeDeleteWithMatcher(attachmentEntityDeleteUrl, status().isNoContent());
+    requestHelper.assertDeleteStatus(attachmentDeleteUrl, status().isNoContent());
+    requestHelper.assertDeleteStatus(attachmentEntityDeleteUrl, status().isNoContent());
 
     verifyTwoCreateAndDeleteEvents(newAttachmentContent, newAttachmentEntityContent);
     clearServiceHandlerContext();
@@ -651,7 +651,7 @@ abstract class DraftOdataRequestValidationBase {
       throws Exception {
     var attachmentPutUrl = getAttachmentBaseUrl(itemId, attachmentId, false) + "/content";
     requestHelper.setContentType("text/plain");
-    requestHelper.executePutWithMatcher(
+    requestHelper.assertPutStatus(
         attachmentPutUrl, testContentAttachment.getBytes(StandardCharsets.UTF_8), matcher);
     requestHelper.resetHelper();
   }
@@ -699,7 +699,7 @@ abstract class DraftOdataRequestValidationBase {
     var attachmentEntityPutUrl =
         BASE_URL + "/AttachmentEntity(ID=" + attachmentId + ",IsActiveEntity=false)/content";
     requestHelper.setContentType("image/jpeg");
-    requestHelper.executePutWithMatcher(
+    requestHelper.assertPutStatus(
         attachmentEntityPutUrl,
         testContentAttachmentEntity.getBytes(StandardCharsets.UTF_8),
         matcher);
@@ -750,13 +750,13 @@ abstract class DraftOdataRequestValidationBase {
   private void prepareAndActiveDraft(String rootUrl) throws Exception {
     var draftPrepareUrl = rootUrl + "/TestDraftService.draftPrepare";
     var draftActivateUrl = rootUrl + "/TestDraftService.draftActivate";
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         draftPrepareUrl, "{\"SideEffectsQualifier\":\"\"}", status().isOk());
-    requestHelper.executePostWithMatcher(draftActivateUrl, "{}", status().isOk());
+    requestHelper.assertPostStatus(draftActivateUrl, "{}", status().isOk());
   }
 
   private void cancelDraft(String rootUrl) throws Exception {
-    requestHelper.executeDeleteWithMatcher(rootUrl, status().isNoContent());
+    requestHelper.assertDeleteStatus(rootUrl, status().isNoContent());
   }
 
   private DraftRoots selectStoredRootData(DraftRoots responseRoot) {
@@ -838,8 +838,8 @@ abstract class DraftOdataRequestValidationBase {
     var attachmentEntityUrl =
         getAttachmentEntityBaseUrl(itemAttachmentEntity.getId(), false) + "/content";
 
-    requestHelper.executeDeleteWithMatcher(attachmentUrl, status().isNoContent());
-    requestHelper.executeDeleteWithMatcher(attachmentEntityUrl, status().isNoContent());
+    requestHelper.assertDeleteStatus(attachmentUrl, status().isNoContent());
+    requestHelper.assertDeleteStatus(attachmentEntityUrl, status().isNoContent());
   }
 
   private void updateFileName(
