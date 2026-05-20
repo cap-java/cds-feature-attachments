@@ -1,5 +1,7 @@
 name: Deploy to Maven Central
 
+permissions: read-all
+
 env:
   JAVA_VERSION: '17'
   MAVEN_VERSION: '3.9.12'
@@ -9,43 +11,56 @@ on:
     types: [ "released" ]
 
 jobs:
+  requires-approval:
+    runs-on: ubuntu-latest
+    name: "Waiting for release approval"
+    environment: release-approval
+    steps:
+      - name: Approval Step
+        run: echo "Release has been approved!"
+
   blackduck:
+    needs: requires-approval
     name: Blackduck Scan
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    environment: release-approval
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Scan With Black Duck
-        uses: ./.github/actions/scan-with-blackduck
+        uses: cap-java/cds-feature-attachments/.github/actions/scan-with-blackduck@main
         with:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           maven-version: ${{ env.MAVEN_VERSION }}
 
   update-version:
+    needs: requires-approval
     name: Update Version
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    environment: release-approval
+    permissions:
+      contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Update version
-        uses: ./.github/actions/newrelease
+        uses: cap-java/cds-feature-attachments/.github/actions/newrelease@main
         with:
           java-version: ${{ env.JAVA_VERSION }}
           maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Upload Changed Artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: root-new-version
           path: .
-          include-hidden-files: true
           retention-days: 1
 
   build:
@@ -53,31 +68,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: update-version
-    env:
-      AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
-      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
-      AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
-      AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
-      AZURE_CONTAINER_URI: ${{ secrets.AZURE_CONTAINER_URI }}
-      AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
-      GS_BASE_64_ENCODED_PRIVATE_KEY_DATA: ${{ secrets.GS_BASE_64_ENCODED_PRIVATE_KEY_DATA }}
-      GS_BUCKET: ${{ secrets.GS_BUCKET }}
-      GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
+    environment: release-approval
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: root-new-version
 
       - name: Build
-        uses: ./.github/actions/build
+        uses: cap-java/cds-feature-attachments/.github/actions/build@main
         with:
           java-version: ${{ env.JAVA_VERSION }}
           maven-version: ${{ env.MAVEN_VERSION }}
 
       - name: Sonar Scan
-        uses: ./.github/actions/scan-with-sonar
+        uses: cap-java/cds-feature-attachments/.github/actions/scan-with-sonar@main
         with:
           java-version: ${{ env.JAVA_VERSION }}
           maven-version: ${{ env.MAVEN_VERSION }}
@@ -85,10 +90,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Changed Artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: root-build
-          include-hidden-files: true
           path: .
           retention-days: 1
 
@@ -97,14 +101,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [blackduck, build]
+    environment: release-approval
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: root-build
 
       - name: Deploy
-        uses: ./.github/actions/deploy-release
+        uses: cap-java/cds-feature-attachments/.github/actions/deploy-release@main
         with:
           user: ${{ secrets.CENTRAL_REPOSITORY_USER }}
           password: ${{ secrets.CENTRAL_REPOSITORY_PASS }}
@@ -113,6 +118,3 @@ jobs:
           pgp-passphrase: ${{ secrets.PGP_PASSPHRASE }}
           revision: ${{ github.event.release.tag_name }}
           maven-version: ${{ env.MAVEN_VERSION }}
-
-      - name: Echo Status
-        run: echo "The job status is ${{ job.status }}"

@@ -1,7 +1,6 @@
 name: Label issues
 
-permissions:
-  issues: write
+permissions: {}
 
 on:
   issues:
@@ -11,6 +10,8 @@ on:
 jobs:
   label_issues:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - run: gh issue edit "$NUMBER" --add-label "$LABELS"
         env:
@@ -19,7 +20,7 @@ jobs:
           NUMBER: ${{ github.event.issue.number }}
           LABELS: New
 
-      - uses: actions/github-script@v9
+      - uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
         with:
           script: |
             github.rest.issues.createComment({

@@ -1,113 +1,124 @@
 name: Reusable Workflow
 
+permissions:
+  actions: read
+  contents: read
+  packages: read
+  security-events: write
+
 env:
   MAVEN_VERSION: '3.9.12'
 
 on:
   workflow_call:
-    inputs:
-      deploy-snapshot:
-        required: true
-        type: boolean
-        default: false
 
 jobs:
-  build:
-    name: Build (Java ${{ matrix.java-version }})
+  spotless:
+    name: Spotless Check
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      matrix:
-        java-version: [ 17, 21 ]
+    timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          # For internal PRs (same repo), checkout PR head to test actual changes
-          # For external PRs (forks), checkout base branch for security
-          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Spotless check
-        run: mvn spotless:check -Dspotless.check.skip=false
-
-      - name: Build
-        uses: ./.github/actions/build
+      - name: Set up Java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
-          java-version: ${{ matrix.java-version }}
+          java-version: '17'
+          distribution: sapmachine
+          cache: maven
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+        with:
           maven-version: ${{ env.MAVEN_VERSION }}
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v7
-        with:
-          name: build-artifacts-java-${{ matrix.java-version }}
-          path: |
-            **/target/*.jar
-            **/pom.xml
-            .mvn/
-          retention-days: 1
+      - name: Spotless Check
+        run: mvn spotless:check -Dspotless.check.skip=false -B -ntp
 
-  integration-tests:
-    name: Integration Tests (Java ${{ matrix.java-version }}, ${{ matrix.test-type }})
+  tests:
+    name: Tests (Java ${{ matrix.java-version }})
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: build
-    env:
-      ## AWS
-      AWS_S3_HOST: ${{ secrets.AWS_S3_HOST }}
-      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
-      AWS_S3_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
-      AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
-      ## Azure
-      AZURE_CONTAINER_URI: ${{ secrets.AZURE_CONTAINER_URI }}
-      AZURE_SAS_TOKEN: ${{ secrets.AZURE_SAS_TOKEN }}
-      ## GCP
-      GS_BASE_64_ENCODED_PRIVATE_KEY_DATA: ${{ secrets.GS_BASE_64_ENCODED_PRIVATE_KEY_DATA }}
-      GS_BUCKET: ${{ secrets.GS_BUCKET }}
-      GS_PROJECT_ID: ${{ secrets.GS_PROJECT_ID }}
-      ## Malware Scanner (Basic Auth)
-      MALWARE_SCANNER_URL: ${{ secrets.MALWARE_SCANNER_URL }}
-      MALWARE_SCANNER_USERNAME: ${{ secrets.MALWARE_SCANNER_USERNAME }}
-      MALWARE_SCANNER_PASSWORD: ${{ secrets.MALWARE_SCANNER_PASSWORD }}
-      ## Malware Scanner (mTLS)
-      MALWARE_SCANNER_MTLS_URI: ${{ secrets.MALWARE_SCANNER_MTLS_URI }}
-      MALWARE_SCANNER_MTLS_CERTIFICATE: ${{ secrets.MALWARE_SCANNER_MTLS_CERTIFICATE }}
-      MALWARE_SCANNER_MTLS_KEY: ${{ secrets.MALWARE_SCANNER_MTLS_KEY }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         java-version: [ 17, 21 ]
-        test-type: [ build-version, latest-version, oss ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v8
+      - name: Set up Java ${{ matrix.java-version }}
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
-          name: build-artifacts-java-${{ matrix.java-version }}
+          java-version: ${{ matrix.java-version }}
+          distribution: sapmachine
+          cache: maven
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+        with:
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+      - name: Install @sap/cds-dk
+        run: npm i -g @sap/cds-dk@9.9.1
+        shell: bash
+
+      - name: Run Tests
+        run: mvn test -ntp -B -P skip-integration-tests -Dcds.install-node.skip
+
+  integration-tests:
+    name: Integration Tests (Java ${{ matrix.java-version }}, ${{ matrix.auth-method }}, ${{ matrix.hyperscaler }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version: [ 17, 21 ]
+        auth-method: [ basic, mtls ]
+        hyperscaler: [ AWS, AZURE, GCP ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Bind CF Services
+        uses: cap-java/cds-feature-attachments/.github/actions/cf-bind@main
+        with:
+          cf-api: ${{ secrets[format('CF_API_{0}', matrix.hyperscaler)] }}
+          cf-username: ${{ secrets.CF_USERNAME }}
+          cf-password: ${{ secrets.CF_PASSWORD }}
+          cf-org: ${{ secrets[format('CF_ORG_{0}', matrix.hyperscaler)] }}
+          cf-space: ${{ secrets[format('CF_SPACE_{0}', matrix.hyperscaler)] }}
+          auth-method: ${{ matrix.auth-method }}
 
       - name: Integration Tests
-        uses: ./.github/actions/integration-tests
+        uses: cap-java/cds-feature-attachments/.github/actions/integration-tests@main
         with:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
-          test-type: ${{ matrix.test-type }}
 
   sonarqube-scan:
     name: SonarQube Scan
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: build
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Bind CF Services
+        uses: cap-java/cds-feature-attachments/.github/actions/cf-bind@main
+        with:
+          cf-api: ${{ secrets.CF_API_AWS }}
+          cf-username: ${{ secrets.CF_USERNAME }}
+          cf-password: ${{ secrets.CF_PASSWORD }}
+          cf-org: ${{ secrets.CF_ORG_AWS }}
+          cf-space: ${{ secrets.CF_SPACE_AWS }}
+          auth-method: basic
+
       - name: SonarQube Scan
-        uses: ./.github/actions/scan-with-sonar
+        uses: cap-java/cds-feature-attachments/.github/actions/scan-with-sonar@main
         with:
           java-version: 17
           maven-version: ${{ env.MAVEN_VERSION }}
@@ -117,7 +128,6 @@ jobs:
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
-    needs: build
     timeout-minutes: 30
     permissions:
       security-events: write
@@ -126,77 +136,10 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Set up Java
-        uses: actions/setup-java@v5
+      - name: CodeQL Analysis
+        uses: cap-java/cds-feature-attachments/.github/actions/scan-with-codeql@main
         with:
-          java-version: '17'
-          distribution: 'sapmachine'
-          cache: 'maven'
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
-        with:
-          languages: java-kotlin
-          build-mode: manual
-
-      - name: Build Java code
-        run: mvn clean compile -DskipTests -B -ntp
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
-        with:
-          category: "/language:java-kotlin"
-
-  deploy-snapshot:
-    name: Deploy snapshot to Artifactory
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    if: ${{ inputs.deploy-snapshot == true }}
-    needs: [build, integration-tests, codeql]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.sha }}
-
-      - name: Set up Java
-        uses: actions/setup-java@v5
-        with:
-          java-version: '17'
-          distribution: 'sapmachine'
-          cache: 'maven'
-          server-id: artifactory
-          server-username: DEPLOYMENT_USER
-          server-password: DEPLOYMENT_PASS
-
-      - name: Set up Maven ${{ env.MAVEN_VERSION }}
-        uses: stCarolas/setup-maven@v5
-        with:
+          java-version: 17
           maven-version: ${{ env.MAVEN_VERSION }}
-
-      - name: Set Dry Run for Pull Request
-        if: github.event_name == 'pull_request_target'
-        run: echo "DRY_RUN_PARAM=-DaltDeploymentRepository=local-repo::default::file:./local-repo" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Get Revision
-        id: get-revision
-        run: |
-          echo "REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Print Revision
-        run: echo "Current revision ${{ steps.get-revision.outputs.REVISION }}"
-        shell: bash
-
-      - name: Deploy snapshot
-        if: ${{ endsWith(steps.get-revision.outputs.REVISION, '-SNAPSHOT') }}
-        run: mvn -B -ntp -fae -pl !integration-tests,!integration-tests/db,!integration-tests/generic,!integration-tests/mtx-local/srv -Dmaven.install.skip=true -Dmaven.test.skip=true -DdeployAtEnd=true deploy
-        env:
-          DEPLOYMENT_USER: ${{ secrets.DEPLOYMENT_USER }}
-          DEPLOYMENT_PASS: ${{ secrets.DEPLOYMENT_PASS }}
-        shell: bash
