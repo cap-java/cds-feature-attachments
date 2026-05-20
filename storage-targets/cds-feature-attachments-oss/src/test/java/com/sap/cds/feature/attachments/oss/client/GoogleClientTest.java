@@ -70,7 +70,7 @@ class GoogleClientTest {
     when(mockStorage.delete(any(BlobId.class))).thenReturn(true);
 
     // Should not throw
-    googleClient.deleteContent(fileName).get();
+    assertDoesNotThrow(() -> googleClient.deleteContent(fileName).get());
   }
 
   @Test
@@ -85,7 +85,7 @@ class GoogleClientTest {
     InputStream input = new java.io.ByteArrayInputStream("test".getBytes());
 
     // Should not throw
-    googleClient.uploadContent(input, "file.txt", "text/plain").get();
+    assertDoesNotThrow(() -> googleClient.uploadContent(input, "file.txt", "text/plain").get());
   }
 
   @Test
@@ -98,7 +98,7 @@ class GoogleClientTest {
         .thenReturn(mockReadChannel);
 
     // Should not throw
-    googleClient.readContent("file.txt").get();
+    assertDoesNotThrow(() -> googleClient.readContent("file.txt").get());
   }
 
   @Test

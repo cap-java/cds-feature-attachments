@@ -52,7 +52,7 @@ public class MediaValidatedAttachmentsDraftTest extends DraftOdataRequestValidat
     String rootId = createDraftRootAndReturnId();
     String metadata = objectMapper.writeValueAsString(Map.of("fileName", fileName));
 
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         buildDraftAttachmentCreationUrl(rootId), metadata, status().is(expectedStatus));
   }
 
@@ -68,7 +68,7 @@ public class MediaValidatedAttachmentsDraftTest extends DraftOdataRequestValidat
   void shouldPass_whenFileNameMissing_inDraft() throws Exception {
     String rootId = createDraftRootAndReturnId();
     String metadata = "{}";
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         buildDraftAttachmentCreationUrl(rootId), metadata, status().isCreated());
   }
 

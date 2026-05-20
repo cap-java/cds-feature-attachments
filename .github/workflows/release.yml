@@ -1,7 +1,5 @@
 name: Deploy to Maven Central
 
-permissions: read-all
-
 env:
   JAVA_VERSION: '17'
   MAVEN_VERSION: '3.9.12'
@@ -15,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     name: "Waiting for release approval"
     environment: release-approval
+    permissions:
+      contents: read
     steps:
       - name: Approval Step
         run: echo "Release has been approved!"
@@ -25,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: release-approval
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -69,6 +71,8 @@ jobs:
     timeout-minutes: 30
     needs: update-version
     environment: release-approval
+    permissions:
+      contents: read
     steps:
       - name: Download artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -102,6 +106,8 @@ jobs:
     timeout-minutes: 30
     needs: [blackduck, build]
     environment: release-approval
+    permissions:
+      contents: read
     steps:
       - name: Download artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
