@@ -1,11 +1,5 @@
 name: Reusable Workflow
 
-permissions:
-  actions: read
-  contents: read
-  packages: read
-  security-events: write
-
 env:
   MAVEN_VERSION: '3.9.12'
 
@@ -17,6 +11,8 @@ jobs:
     name: Spotless Check
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -40,6 +36,8 @@ jobs:
     name: Tests (Java ${{ matrix.java-version }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -72,6 +70,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: CI
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -103,6 +103,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: CI
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

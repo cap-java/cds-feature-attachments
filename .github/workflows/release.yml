@@ -1,6 +1,7 @@
 name: Deploy to Maven Central
 
-permissions: read-all
+permissions:
+  contents: read
 
 env:
   JAVA_VERSION: '17'
