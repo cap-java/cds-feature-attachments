@@ -19,8 +19,45 @@ jobs:
       - name: Approval Step
         run: echo "Release has been approved!"
 
-  blackduck:
+  verify-version:
     needs: requires-approval
+    name: Verify Version Matches Tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up Java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: sapmachine
+          cache: maven
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+        with:
+          maven-version: ${{ env.MAVEN_VERSION }}
+
+      - name: Verify pom.xml revision matches release tag
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)
+          echo "Tag:      $TAG"
+          echo "Revision: $REVISION"
+          if [ "$TAG" != "$REVISION" ]; then
+            echo "::error::Release tag '$TAG' does not match pom.xml <revision> '$REVISION'. Open a 'Prep release' PR to bump the version before tagging."
+            exit 1
+          fi
+        shell: bash
+
+  blackduck:
+    needs: verify-version
     name: Blackduck Scan
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -29,6 +66,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Scan With Black Duck
         uses: cap-java/cds-feature-attachments/.github/actions/scan-with-blackduck@main
@@ -38,45 +77,19 @@ jobs:
           maven-version: ${{ env.MAVEN_VERSION }}
           version: ${{ github.event.release.tag_name }}
 
-  update-version:
-    needs: requires-approval
-    name: Update Version
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    environment: release
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          token: ${{ secrets.GH_TOKEN }}
-
-      - name: Update version
-        uses: cap-java/cds-feature-attachments/.github/actions/newrelease@main
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          maven-version: ${{ env.MAVEN_VERSION }}
-
-      - name: Upload Changed Artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: root-new-version
-          path: .
-          retention-days: 1
-
   build:
     name: Build and Sonar Scan
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: update-version
+    needs: verify-version
     permissions:
       contents: read
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          name: root-new-version
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 0
 
       - name: Build
         uses: cap-java/cds-feature-attachments/.github/actions/build@main
@@ -92,13 +105,6 @@ jobs:
           sonarq-token: ${{ secrets.SONARQ_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Changed Artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: root-build
-          path: .
-          retention-days: 1
-
   deploy:
     name: Deploy to Maven Central
     runs-on: ubuntu-latest
@@ -108,10 +114,10 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          name: root-build
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Deploy
         uses: cap-java/cds-feature-attachments/.github/actions/deploy-release@main
