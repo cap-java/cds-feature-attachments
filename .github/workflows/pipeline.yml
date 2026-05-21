@@ -69,7 +69,6 @@ jobs:
     name: Integration Tests (Java ${{ matrix.java-version }}, ${{ matrix.auth-method }}, ${{ matrix.hyperscaler }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: CI
     permissions:
       contents: read
     strategy:
@@ -102,7 +101,6 @@ jobs:
     name: SonarQube Scan
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: CI
     permissions:
       contents: read
     steps:
