@@ -66,8 +66,8 @@
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.42.33</software.amazon.awssdk-s3-version>
-    <software.amazon.awssdk-crt-version>0.44.0</software.amazon.awssdk-crt-version>
+    <software.amazon.awssdk-s3-version>2.44.5</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-crt-version>0.45.4</software.amazon.awssdk-crt-version>
 
     <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
     <cds.services.version>4.9.0</cds.services.version>
@@ -89,7 +89,7 @@
       <dependency>
         <groupId>com.sap.cloud.sdk</groupId>
         <artifactId>sdk-bom</artifactId>
-        <version>5.27.0</version>
+        <version>5.30.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
