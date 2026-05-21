@@ -33,6 +33,40 @@ class AssociationCascaderTest {
   }
 
   @Test
+  void findMediaEntityNames_returnsAllLeafMediaEntities_forRoot() {
+    var entity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+
+    var result = cut.findMediaEntityNames(runtime.getCdsModel(), entity);
+
+    assertThat(result)
+        .containsExactlyInAnyOrder(
+            "unit.test.TestService.RootTable.attachments",
+            Attachment_.CDS_NAME,
+            "unit.test.TestService.Items.itemAttachments",
+            "unit.test.TestService.EventItems.sizeLimitedAttachments",
+            "unit.test.TestService.EventItems.defaultSizeLimitedAttachments");
+  }
+
+  @Test
+  void findMediaEntityNames_doesNotIncludeNonLeafNodes() {
+    var entity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+
+    var result = cut.findMediaEntityNames(runtime.getCdsModel(), entity);
+
+    // RootTable and Items should NOT be included (they have children)
+    assertThat(result).isNotEmpty().doesNotContain(RootTable_.CDS_NAME, Items_.CDS_NAME);
+  }
+
+  @Test
+  void findMediaEntityNames_returnsSelf_whenEntityIsLeaf() {
+    var entity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
+
+    var result = cut.findMediaEntityNames(runtime.getCdsModel(), entity);
+
+    assertThat(result).containsExactly(Attachment_.CDS_NAME);
+  }
+
+  @Test
   void pathCorrectFoundForRoot() {
     var serviceEntity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME);
 
@@ -92,6 +126,30 @@ class AssociationCascaderTest {
         databaseRootItemNode,
         com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Attachment_.CDS_NAME,
         "unit.test.Items.itemAttachments");
+  }
+
+  @Test
+  void findMediaAssociationNames_returnsAssociationNames_forRoot() {
+    var entity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+
+    var result = cut.findMediaAssociationNames(runtime.getCdsModel(), entity);
+
+    assertThat(result)
+        .containsExactlyInAnyOrder(
+            RootTable.ATTACHMENTS,
+            Items.ATTACHMENTS,
+            "itemAttachments",
+            "sizeLimitedAttachments",
+            "defaultSizeLimitedAttachments");
+  }
+
+  @Test
+  void findMediaAssociationNames_returnsEmptyString_whenEntityIsMediaEntity() {
+    var entity = runtime.getCdsModel().findEntity(Attachment_.CDS_NAME).orElseThrow();
+
+    var result = cut.findMediaAssociationNames(runtime.getCdsModel(), entity);
+
+    assertThat(result).containsExactly("");
   }
 
   private void verifyItemAttachments(

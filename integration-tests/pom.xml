@@ -17,7 +17,8 @@
 
   <modules>
     <module>db</module>
-    <module>srv</module>
+    <module>generic</module>
+    <module>mtx-local/srv</module>
   </modules>
 
   <dependencyManagement>
@@ -33,7 +34,7 @@
       <dependency>
         <groupId>org.wiremock.integrations</groupId>
         <artifactId>wiremock-spring-boot</artifactId>
-        <version>4.2.0</version>
+        <version>4.2.1</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

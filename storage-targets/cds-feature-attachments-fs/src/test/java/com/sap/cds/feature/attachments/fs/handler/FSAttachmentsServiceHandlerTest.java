@@ -1,5 +1,5 @@
 /*
- * © 2025-2024 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2025 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.fs.handler;
 
@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -111,9 +110,6 @@ class FSAttachmentsServiceHandlerTest {
     assertTrue(Files.exists(deletedPath));
     assertTrue(context.isCompleted());
   }
-
-  @Test
-  void testRestoreAttachment() {}
 
   private static AttachmentCreateEventContext createAttachment(
       String tenant, String id, String content) throws IOException {

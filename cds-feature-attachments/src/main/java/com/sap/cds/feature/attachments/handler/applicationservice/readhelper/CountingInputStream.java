@@ -81,7 +81,9 @@ public final class CountingInputStream extends InputStream {
     byteCount += bytes;
     if (byteCount > maxBytes) {
       throw new ServiceException(
-          ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded", maxBytesString);
+          ExtendedErrorStatuses.CONTENT_TOO_LARGE,
+          "File size exceeds the limit of {}.",
+          maxBytesString);
     }
   }
 }

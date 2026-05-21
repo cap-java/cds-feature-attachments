@@ -1,0 +1,30 @@
+{
+  "name": "mtx-local-sidecar",
+  "version": "0.0.0",
+  "dependencies": {
+    "@sap/cds": "^9",
+    "@sap/cds-mtxs": "^3",
+    "@sap/xssec": "^4",
+    "express": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2"
+  },
+  "cds": {
+    "profile": "mtx-sidecar",
+    "[development]": {
+      "requires": {
+        "auth": "dummy"
+      },
+      "db": {
+        "kind": "sqlite",
+        "credentials": {
+          "url": "../../db.sqlite"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "start": "cds-serve --profile development"
+  }
+}

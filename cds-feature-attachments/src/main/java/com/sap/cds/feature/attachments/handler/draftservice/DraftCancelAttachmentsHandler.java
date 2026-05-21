@@ -15,7 +15,6 @@ import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
-import com.sap.cds.reflect.CdsAssociationType;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.DraftCancelEventContext;
@@ -25,7 +24,6 @@ import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,27 +60,29 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   void processBeforeDraftCancel(DraftCancelEventContext context) {
     CdsEntity entity = context.getTarget();
 
-    if (deepSearchForAttachments(entity)) {
-      logger.debug(
-          "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
+    CdsEntity draftEntity = DraftUtils.getDraftEntity(entity);
 
-      CdsEntity activeEntity = DraftUtils.getActiveEntity(context.getTarget());
-      CdsEntity draftEntity = DraftUtils.getDraftEntity(context.getTarget());
+    List<Attachments> draftAttachments = readAttachments(context, draftEntity, false);
 
-      List<Attachments> draftAttachments = readAttachments(context, draftEntity, false);
-      List<Attachments> activeCondensedAttachments =
-          getCondensedActiveAttachments(context, activeEntity);
-
-      Validator validator = buildDeleteContentValidator(context, activeCondensedAttachments);
-      CdsDataProcessor.create()
-          .addValidator(contentIdFilter, validator)
-          .process(draftAttachments, context.getTarget());
-    } else {
+    if (draftAttachments.isEmpty()) {
       logger.debug(
           "Skipping processing before {} event for entity {}",
           context.getEvent(),
           context.getTarget());
+      return;
     }
+
+    logger.debug(
+        "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
+
+    CdsEntity activeEntity = DraftUtils.getActiveEntity(entity);
+    List<Attachments> activeCondensedAttachments =
+        getCondensedActiveAttachments(context, activeEntity);
+
+    Validator validator = buildDeleteContentValidator(context, activeCondensedAttachments);
+    CdsDataProcessor.create()
+        .addValidator(contentIdFilter, validator)
+        .process(draftAttachments, context.getTarget());
   }
 
   private Validator buildDeleteContentValidator(
@@ -105,28 +105,6 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
             }
           });
     };
-  }
-
-  private boolean deepSearchForAttachments(CdsEntity entity) {
-    return deepSearchForAttachmentsRecursive(entity, new HashSet<>());
-  }
-
-  private boolean deepSearchForAttachmentsRecursive(CdsEntity entity, HashSet<String> visited) {
-
-    if (visited.contains(entity.getQualifiedName())) {
-      return false;
-    }
-    visited.add(entity.getQualifiedName());
-
-    if (ApplicationHandlerHelper.isMediaEntity(entity)) {
-      return true;
-    }
-
-    return entity
-        .compositions()
-        .map(element -> element.getType().as(CdsAssociationType.class))
-        .anyMatch(
-            association -> deepSearchForAttachmentsRecursive(association.getTarget(), visited));
   }
 
   private List<Attachments> readAttachments(

@@ -21,11 +21,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.M
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.Path;
-import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
-import com.sap.cds.services.handler.annotations.Before;
-import com.sap.cds.services.handler.annotations.HandlerOrder;
-import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.InputStream;
 import java.util.List;
@@ -114,25 +110,6 @@ class DeleteAttachmentsHandlerTest {
             any(Path.class), eq(inputStream), eq(Attachments.of(attachment2)), eq(context));
     assertThat(attachment1.getContent()).isNull();
     assertThat(attachment2.getContent()).isNull();
-  }
-
-  @Test
-  void classHasCorrectAnnotation() {
-    var deleteHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
-
-    assertThat(deleteHandlerAnnotation.type()).containsOnly(ApplicationService.class);
-    assertThat(deleteHandlerAnnotation.value()).containsOnly("*");
-  }
-
-  @Test
-  void methodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method = cut.getClass().getDeclaredMethod("processBefore", CdsDeleteEventContext.class);
-
-    var deleteBeforeAnnotation = method.getAnnotation(Before.class);
-    var deleteHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(deleteBeforeAnnotation.event()).isEmpty();
-    assertThat(deleteHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
   }
 
   private Attachment buildAttachment(String id, InputStream inputStream) {

@@ -6,70 +6,132 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.3.1 - 2026-02-06
+## Version 1.6.0 - not yet released
+
+### Changed
+
+- Added top-level `Attachments` aspect to allow usage without `sap.attachments` namespace (#806), i.e., `using {Attachments} from 'com.sap.cds/cds-feature-attachments'`.
+- Extract `fileName` and `mimeType` from HTTP headers (`Content-Disposition`, `Content-Type`, `slug`) when not provided in the request payload (#804)
+
+## Version 1.5.0 - 2026-04-10
 
 ### Added
 
-### Changed
-- Changed default max file size value to only be enforced when using the malware scanner
+- Added shared-bucket multitenancy support for OSS attachments (#767)
+- Added integration tests for multitenancy scenarios (#782)
 
 ### Fixed
+
+- Fixed rescan-on-download being triggered when no malware scanner is bound (#783)
+
+## Version 1.4.1 - 2026-04-08
+
+### Added
+
+- Added `ScanStates` entity with criticality for enhanced malware scan status display (#776)
+
+### Fixed
+
+- Fixed `DRAFT_NEW` crash on non-attachment compositions (#780)
+- Fixed malware scan retriggering on draft activation without content changes (#779)
+- Fixed code smells (#775)
+
+## Version 1.4.0 - 2026-03-31
+
+### Added
+
+- Added support to restrict allowed MIME types via `@Core.AcceptableMediaTypes` annotation (#732)
+- Added malware scan check upon attachment download (#762)
+- Added mTLS authentication support for Malware Scanning Service (#765)
+- Added `isSystemUser` to `DeletionUserInfo` (#769)
+
+### Changed
+
+- Optimized MIME type validation to only run when `@Core.AcceptableMediaTypes` annotation exists (#761)
+
+### Fixed
+
+- Fixed malware scan status stuck at `Scanning` after draft activation (#771)
+
+## Version 1.3.3 - 2026-03-15
+
+### Fixed
+
+- Fixed @Validation.Maximum error message not showing in consuming projects due to messages.properties being overwritten instead of merged. Error messages are now temporary self-contained and no longer rely on a resource bundle.
+
+## Version 1.3.2 - 2026-03-10
+
+### Fixed
+
+- Fixed Validation.Maximum annotation not triggering on first upload of an attachment
+
+## Version 1.3.1 - 2026-02-06
+
+### Changed
+
+- Changed default max file size value to only be enforced when using the malware scanner
 
 ## Version 1.3.0 - 2026-01-26
 
 ### Added
+
 - Added @Validation.Maximum Annotation for setting max file size (default: 400MB)
 
 ### Changed
+
 - Included the filestorage(fs) module in the deployment process for dev purposes
 
 ### Fixed
+
 - fix "no proper error message when exceeding char limit on note field" (also: default char limit for note is now 5000)
 
 ## Version 1.2.4 - 2025-12-17
 
-### Added
-
-### Changed
-
 ### Fixed
+
 - DraftCancel not registering attachments as compositions
 - fix overflowing filename
 
 ## Version 1.2.3 - 2025-12-01
 
-### Added
-
 ### Changed
+
 - Sample: Replaced cap-notebook with a bookshop sample
 
 ### Fixed
+
 - "Attempted read on closed stream" error for usage via api in oss
-- Make up__ID field invisible in UI
+- Make up\_\_ID field invisible in UI
 
 ## Version 1.2.2 - 2025-11-14
 
 ### Changed
+
 - Several version bumps
 
 ### Fixed
-- Deletion error when having "fiori": {"draft_messages": true } (#526) 
+
+- Deletion error when having "fiori": {"draft_messages": true } (#526)
 
 ## Version 1.2.1 - 2025-09-03
 
 ### Changed
+
 - Several version bumps
 - Apply GoogleJavaFormat style GOOGLE and enforce that for PRs (#551)
 
 ### Fixed
+
 - Fixed an issue where the Malware Scanning Service is not triggered after uploading an Attachment, if the target storage is other than the default DB storage. (#557)
 
 ## Version 1.2.0 - 2025-08-26
 
 ### Added
+
 - Support for Object Stores (AWS, Azure and Google) (#481)
 
 ### Changed
+
 - Rename folder 'examples' to 'storage-targets' and add section about this in the README.md (#519)
 - Use spotless plugin to ensure correct license header (#515)
 - Several version bumps
@@ -167,10 +229,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - First public release on https://repo1.maven.org/maven2/com/sap/cds/
 
-### Changed
-
-### Fixed
-
 ## Version 1.0.2 - 2024-05-08
 
 ### Added
@@ -182,13 +240,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - CAP Java version was updated to 2.9.1
 
-### Fixed
-
 ## Version 1.0.1 - 2024-04-29
-
-### Added
-
-### Changed
 
 ### Fixed
 
@@ -206,7 +258,3 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Handlers for application and draft services which calls the attachment service
 - Call of malware scanner if bound to consuming services
 - Spring boot test for attachment service and handlers
-
-### Changed
-
--

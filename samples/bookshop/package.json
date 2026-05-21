@@ -6,5 +6,8 @@
   "repository": "<Add your repository here>",
   "devDependencies": {
     "@sap/cds-dk": "^9.3.2"
+  },
+  "dependencies": {
+    "@sap/cds-mtxs": "^3.8.1"
   }
 }

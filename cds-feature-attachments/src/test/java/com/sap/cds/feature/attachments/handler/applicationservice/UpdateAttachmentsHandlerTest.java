@@ -37,9 +37,6 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsUpdateEventContext;
-import com.sap.cds.services.handler.annotations.Before;
-import com.sap.cds.services.handler.annotations.HandlerOrder;
-import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.request.UserInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
@@ -497,26 +494,6 @@ class UpdateAttachmentsHandlerTest {
     verify(attachmentService).markAttachmentAsDeleted(deletionInputCaptor.capture());
     assertThat(deletionInputCaptor.getValue().contentId()).isEqualTo(attachment.getContentId());
     assertThat(deletionInputCaptor.getValue().userInfo()).isEqualTo(userInfo);
-  }
-
-  @Test
-  void classHasCorrectAnnotation() {
-    var updateHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
-
-    assertThat(updateHandlerAnnotation.type()).containsOnly(ApplicationService.class);
-    assertThat(updateHandlerAnnotation.value()).containsOnly("*");
-  }
-
-  @Test
-  void methodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method =
-        cut.getClass().getDeclaredMethod("processBefore", CdsUpdateEventContext.class, List.class);
-
-    var updateBeforeAnnotation = method.getAnnotation(Before.class);
-    var updateHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(updateBeforeAnnotation.event()).isEmpty();
-    assertThat(updateHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
   }
 
   private RootTable fillRootData(InputStream testStream, String id) {

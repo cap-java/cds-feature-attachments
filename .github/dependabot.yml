@@ -5,10 +5,8 @@ updates:
       - "/"
     schedule:
       interval: weekly
-    ignore:
-      - dependency-name: "com.sap.cds:*"
-        versions:
-          - ">=4"
+    cooldown:
+      default-days: 7
     groups:
       minor-patch:
         patterns:
@@ -21,6 +19,8 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       minor-patch:
         patterns:

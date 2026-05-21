@@ -25,22 +25,21 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusException;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
+import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.cqn.CqnSelect;
-import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsReadEventContext;
-import com.sap.cds.services.handler.annotations.After;
-import com.sap.cds.services.handler.annotations.Before;
-import com.sap.cds.services.handler.annotations.HandlerOrder;
-import com.sap.cds.services.handler.annotations.ServiceName;
+import com.sap.cds.services.persistence.PersistenceService;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -61,6 +60,7 @@ class ReadAttachmentsHandlerTest {
   private AttachmentStatusValidator attachmentStatusValidator;
   private CdsReadEventContext readEventContext;
   private AsyncMalwareScanExecutor asyncMalwareScanExecutor;
+  private PersistenceService persistenceService;
 
   @BeforeAll
   static void classSetup() {
@@ -72,9 +72,15 @@ class ReadAttachmentsHandlerTest {
     attachmentService = mock(AttachmentService.class);
     attachmentStatusValidator = mock(AttachmentStatusValidator.class);
     asyncMalwareScanExecutor = mock(AsyncMalwareScanExecutor.class);
+    persistenceService = mock(PersistenceService.class);
     cut =
         new ReadAttachmentsHandler(
-            attachmentService, attachmentStatusValidator, asyncMalwareScanExecutor);
+            attachmentService,
+            attachmentStatusValidator,
+            asyncMalwareScanExecutor,
+            persistenceService,
+            new AssociationCascader(),
+            true);
 
     readEventContext = mock(CdsReadEventContext.class);
   }
@@ -84,7 +90,7 @@ class ReadAttachmentsHandlerTest {
     var select = Select.from(RootTable_.class).columns(RootTable_::ID);
     mockEventContext(RootTable_.CDS_NAME, select);
 
-    cut.processBefore(readEventContext);
+    assertDoesNotThrow(() -> cut.processBefore(readEventContext));
   }
 
   @Test
@@ -92,7 +98,7 @@ class ReadAttachmentsHandlerTest {
     var select = Select.from(Attachment_.class).columns(Attachment_::ID);
     mockEventContext(Attachment_.CDS_NAME, select);
 
-    cut.processBefore(readEventContext);
+    assertDoesNotThrow(() -> cut.processBefore(readEventContext));
   }
 
   @Test
@@ -100,7 +106,7 @@ class ReadAttachmentsHandlerTest {
     var select = Select.from(EventItems_.class).columns(EventItems_::note);
     mockEventContext(EventItems_.CDS_NAME, select);
 
-    cut.processBefore(readEventContext);
+    assertDoesNotThrow(() -> cut.processBefore(readEventContext));
   }
 
   @Test
@@ -164,6 +170,7 @@ class ReadAttachmentsHandlerTest {
       attachment.setContentId("some ID");
       attachment.setContent(null);
       attachment.setStatus(StatusCode.CLEAN);
+      attachment.setScannedAt(Instant.now());
 
       cut.processAfter(readEventContext, List.of(attachment));
 
@@ -254,6 +261,98 @@ class ReadAttachmentsHandlerTest {
   }
 
   @Test
+  void scannerCalledForStaleCleanAttachment() {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(Instant.now().minus(4, ChronoUnit.DAYS));
+    doThrow(AttachmentStatusException.class)
+        .when(attachmentStatusValidator)
+        .verifyStatus(StatusCode.SCANNING);
+
+    List<CdsData> attachments = List.of(attachment);
+    assertThrows(
+        AttachmentStatusException.class, () -> cut.processAfter(readEventContext, attachments));
+
+    verify(persistenceService).run(any(com.sap.cds.ql.cqn.CqnUpdate.class));
+    verify(asyncMalwareScanExecutor)
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
+  }
+
+  @Test
+  void scannerCalledForCleanAttachmentWithNullScannedAt() {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(null);
+    doThrow(AttachmentStatusException.class)
+        .when(attachmentStatusValidator)
+        .verifyStatus(StatusCode.SCANNING);
+
+    List<CdsData> attachments = List.of(attachment);
+    assertThrows(
+        AttachmentStatusException.class, () -> cut.processAfter(readEventContext, attachments));
+
+    verify(persistenceService).run(any(com.sap.cds.ql.cqn.CqnUpdate.class));
+    verify(asyncMalwareScanExecutor)
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
+  }
+
+  @Test
+  void scannerNotCalledForFreshCleanAttachment() {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(Instant.now().minus(1, ChronoUnit.DAYS));
+
+    cut.processAfter(readEventContext, List.of(attachment));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.CLEAN);
+  }
+
+  @Test
+  void scannerNotCalledForCleanAttachmentScannedExactlyAtThreshold() {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(
+        Instant.now().minus(ReadAttachmentsHandler.RESCAN_THRESHOLD).plusSeconds(60));
+
+    cut.processAfter(readEventContext, List.of(attachment));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
+  }
+
+  @Test
+  void persistenceServiceNotCalledForUnscannedAttachments() {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.UNSCANNED);
+
+    cut.processAfter(readEventContext, List.of(attachment));
+
+    verify(asyncMalwareScanExecutor)
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+    verify(attachmentStatusValidator).verifyStatus(StatusCode.UNSCANNED);
+    verifyNoInteractions(persistenceService);
+  }
+
+  @Test
   void attachmentServiceNotCalledIfNoMediaType() {
     var eventItem = EventItems.create();
     eventItem.setId1("test");
@@ -262,37 +361,6 @@ class ReadAttachmentsHandlerTest {
     cut.processAfter(readEventContext, List.of(eventItem));
 
     verifyNoInteractions(attachmentService);
-  }
-
-  @Test
-  void classHasCorrectAnnotation() {
-    var readHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
-
-    assertThat(readHandlerAnnotation.type()).containsOnly(ApplicationService.class);
-    assertThat(readHandlerAnnotation.value()).containsOnly("*");
-  }
-
-  @Test
-  void afterMethodAfterHasCorrectAnnotations() throws NoSuchMethodException {
-    var method =
-        cut.getClass().getDeclaredMethod("processAfter", CdsReadEventContext.class, List.class);
-
-    var readAfterAnnotation = method.getAnnotation(After.class);
-    var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(readAfterAnnotation.event()).isEmpty();
-    assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
-  }
-
-  @Test
-  void beforeMethodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method = cut.getClass().getDeclaredMethod("processBefore", CdsReadEventContext.class);
-
-    var readBeforeAnnotation = method.getAnnotation(Before.class);
-    var readHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(readBeforeAnnotation.event()).isEmpty();
-    assertThat(readHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
   }
 
   @Test
@@ -320,6 +388,82 @@ class ReadAttachmentsHandlerTest {
 
     verifyNoInteractions(attachmentStatusValidator);
     assertThat(attachment.getContent()).isNull();
+  }
+
+  @Test
+  void scannerNotAvailable_staleCleanAttachmentIsNotRescanned() {
+    var handlerWithoutScanner =
+        new ReadAttachmentsHandler(
+            attachmentService,
+            attachmentStatusValidator,
+            asyncMalwareScanExecutor,
+            persistenceService,
+            new AssociationCascader(),
+            false);
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(Instant.now().minus(4, ChronoUnit.DAYS));
+
+    handlerWithoutScanner.processAfter(readEventContext, List.of(attachment));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.CLEAN);
+  }
+
+  @Test
+  void scannerNotAvailable_cleanAttachmentWithNullScannedAtIsNotRescanned() {
+    var handlerWithoutScanner =
+        new ReadAttachmentsHandler(
+            attachmentService,
+            attachmentStatusValidator,
+            asyncMalwareScanExecutor,
+            persistenceService,
+            new AssociationCascader(),
+            false);
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(null);
+
+    handlerWithoutScanner.processAfter(readEventContext, List.of(attachment));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.CLEAN);
+  }
+
+  @Test
+  void scannerNotAvailable_unscannedAttachmentStillFailsValidation() {
+    var handlerWithoutScanner =
+        new ReadAttachmentsHandler(
+            attachmentService,
+            attachmentStatusValidator,
+            asyncMalwareScanExecutor,
+            persistenceService,
+            new AssociationCascader(),
+            false);
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.UNSCANNED);
+    doThrow(AttachmentStatusException.class)
+        .when(attachmentStatusValidator)
+        .verifyStatus(StatusCode.UNSCANNED);
+
+    List<CdsData> attachments = List.of(attachment);
+    assertThrows(
+        AttachmentStatusException.class,
+        () -> handlerWithoutScanner.processAfter(readEventContext, attachments));
+
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
   }
 
   private void mockEventContext(String entityName, CqnSelect select) {

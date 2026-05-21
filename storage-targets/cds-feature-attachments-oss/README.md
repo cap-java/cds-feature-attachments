@@ -97,4 +97,22 @@ This artifact provides custom handlers for events from the [AttachmentService](.
 
 ### Multitenancy
 
-Multitenancy is not directly supported. All attachments are stored in a flat structure within the provided bucket, which might be shared across tenants.
+The plugin supports multi-tenancy scenarios with shared object store instances.
+
+#### Shared Object Store Instance
+
+To configure a shared object store instance, set the object store kind to `shared`:
+
+```yaml
+cds:
+  attachments:
+    objectStore:
+      kind: shared
+```
+
+To ensure tenant isolation when using a shared object store instance, the plugin prefixes object keys with the tenant ID. When a tenant unsubscribes, all objects prefixed with that tenant's ID are automatically cleaned up from the shared bucket.
+
+#### Separate Object Store Instances
+
+> [!NOTE]
+> Separate object store instances per tenant are not yet supported. This feature is planned for a future release.

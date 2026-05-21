@@ -11,6 +11,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -27,6 +28,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation.AttachmentValidationHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
@@ -37,12 +39,6 @@ import com.sap.cds.services.EventContext;
 import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsCreateEventContext;
-import com.sap.cds.services.cds.CqnService;
-import com.sap.cds.services.draft.DraftService;
-import com.sap.cds.services.handler.annotations.Before;
-import com.sap.cds.services.handler.annotations.HandlerOrder;
-import com.sap.cds.services.handler.annotations.On;
-import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
@@ -55,6 +51,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 class CreateAttachmentsHandlerTest {
 
@@ -78,7 +75,10 @@ class CreateAttachmentsHandlerTest {
     storageReader = mock(ThreadDataStorageReader.class);
     cut =
         new CreateAttachmentsHandler(
-            eventFactory, storageReader, ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+            eventFactory,
+            storageReader,
+            ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+            runtime);
 
     createContext = mock(CdsCreateEventContext.class);
     event = mock(ModifyAttachmentEvent.class);
@@ -301,26 +301,6 @@ class CreateAttachmentsHandlerTest {
   }
 
   @Test
-  void classHasCorrectAnnotation() {
-    var createHandlerAnnotation = cut.getClass().getAnnotation(ServiceName.class);
-
-    assertThat(createHandlerAnnotation.type()).containsOnly(ApplicationService.class);
-    assertThat(createHandlerAnnotation.value()).containsOnly("*");
-  }
-
-  @Test
-  void methodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method =
-        cut.getClass().getDeclaredMethod("processBefore", CdsCreateEventContext.class, List.class);
-
-    var createBeforeAnnotation = method.getAnnotation(Before.class);
-    var createHandlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(createBeforeAnnotation.event()).isEmpty();
-    assertThat(createHandlerOrderAnnotation.value()).isEqualTo(HandlerOrder.LATE);
-  }
-
-  @Test
   void restoreError_proceedsSuccessfully_noException() {
     var context = mock(EventContext.class);
     doNothing().when(context).proceed();
@@ -340,7 +320,7 @@ class CreateAttachmentsHandlerTest {
     var exception = assertThrows(ServiceException.class, () -> cut.restoreError(context));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
-    assertThat(exception.getMessage()).contains("AttachmentSizeExceeded");
+    assertThat(exception.getMessage()).contains("File size exceeds the limit of 10MB.");
     assertThat(exception).isNotSameAs(originalException);
   }
 
@@ -355,7 +335,7 @@ class CreateAttachmentsHandlerTest {
     var exception = assertThrows(ServiceException.class, () -> cut.restoreError(context));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
-    assertThat(exception.getMessage()).contains("AttachmentSizeExceeded");
+    assertThat(exception.getMessage()).contains("File size exceeds the limit.");
     assertThat(exception).isNotSameAs(originalException);
   }
 
@@ -371,16 +351,24 @@ class CreateAttachmentsHandlerTest {
   }
 
   @Test
-  void restoreError_methodHasCorrectAnnotations() throws NoSuchMethodException {
-    var method = cut.getClass().getDeclaredMethod("restoreError", EventContext.class);
+  void processBeforeForMetadata_executesValidation() {
+    EventContext context = mock(EventContext.class);
+    CdsEntity entity = mock(CdsEntity.class);
+    List<CdsData> data = List.of(mock(CdsData.class));
+    when(context.getTarget()).thenReturn(entity);
 
-    var onAnnotation = method.getAnnotation(On.class);
-    var handlerOrderAnnotation = method.getAnnotation(HandlerOrder.class);
-
-    assertThat(onAnnotation.event())
-        .containsExactlyInAnyOrder(
-            CqnService.EVENT_CREATE, CqnService.EVENT_UPDATE, DraftService.EVENT_DRAFT_PATCH);
-    assertThat(handlerOrderAnnotation.value()).isEqualTo(HandlerOrder.EARLY);
+    try (MockedStatic<AttachmentValidationHelper> helper =
+        mockStatic(AttachmentValidationHelper.class)) {
+      helper
+          .when(() -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime))
+          .thenAnswer(invocation -> null);
+      // when
+      new CreateAttachmentsHandler(eventFactory, storageReader, "400MB", runtime)
+          .processBeforeForMetadata(context, data);
+      // then
+      helper.verify(
+          () -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime));
+    }
   }
 
   private void getEntityAndMockContext(String cdsName) {

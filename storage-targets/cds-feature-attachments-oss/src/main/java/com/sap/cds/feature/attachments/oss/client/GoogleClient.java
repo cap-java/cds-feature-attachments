@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import org.slf4j.Logger;
@@ -52,6 +54,12 @@ public class GoogleClient implements OSClient {
             .build()
             .getService();
     logger.info("Initialized client for Google Cloud Storage with binding: {}", binding);
+  }
+
+  GoogleClient(Storage storage, String bucketName, ExecutorService executor) {
+    this.storage = storage;
+    this.bucketName = bucketName;
+    this.executor = executor;
   }
 
   @Override
@@ -132,6 +140,37 @@ public class GoogleClient implements OSClient {
             throw new ObjectStoreServiceException(
                 "Failed to read file from Google Object Store", e);
           }
+        });
+  }
+
+  @Override
+  public Future<Void> deleteContentByPrefix(String prefix) {
+    return executor.submit(
+        () -> {
+          try {
+            Page<Blob> blobs =
+                storage.list(
+                    bucketName,
+                    Storage.BlobListOption.prefix(prefix),
+                    Storage.BlobListOption.versions(true));
+            List<BlobId> blobIds = new ArrayList<>();
+            for (Blob blob : blobs.iterateAll()) {
+              blobIds.add(BlobId.of(bucketName, blob.getName(), blob.getGeneration()));
+            }
+            if (!blobIds.isEmpty()) {
+              List<Boolean> results = storage.delete(blobIds);
+              for (int i = 0; i < results.size(); i++) {
+                if (!results.get(i)) {
+                  logger.warn(
+                      "Failed to delete blob {} during prefix cleanup", blobIds.get(i).getName());
+                }
+              }
+            }
+          } catch (RuntimeException e) {
+            throw new ObjectStoreServiceException(
+                "Failed to delete objects by prefix from Google Object Store", e);
+          }
+          return null;
         });
   }
 }

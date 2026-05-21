@@ -94,7 +94,9 @@ public final class ModifyApplicationHandlerHelper {
         maxSizeStr); // make max size available in context for error handling later
     ServiceException tooLargeException =
         new ServiceException(
-            ExtendedErrorStatuses.CONTENT_TOO_LARGE, "AttachmentSizeExceeded", maxSizeStr);
+            ExtendedErrorStatuses.CONTENT_TOO_LARGE,
+            "File size exceeds the limit of {}.",
+            maxSizeStr);
 
     if (contentLength != null) {
       try {

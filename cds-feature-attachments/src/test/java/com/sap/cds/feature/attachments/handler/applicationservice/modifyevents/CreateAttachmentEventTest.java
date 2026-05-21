@@ -21,6 +21,7 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.changeset.ChangeSetContext;
 import com.sap.cds.services.changeset.ChangeSetListener;
+import com.sap.cds.services.request.ParameterInfo;
 import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -48,6 +49,7 @@ class CreateAttachmentEventTest {
   private ArgumentCaptor<CreateAttachmentInput> contextArgumentCaptor;
   private EventContext eventContext;
   private ChangeSetContext changeSetContext;
+  private ParameterInfo parameterInfo;
 
   @BeforeEach
   void setup() {
@@ -61,7 +63,9 @@ class CreateAttachmentEventTest {
     entity = mock(CdsEntity.class);
     eventContext = mock(EventContext.class);
     changeSetContext = mock(ChangeSetContext.class);
+    parameterInfo = mock(ParameterInfo.class);
     when(eventContext.getChangeSetContext()).thenReturn(changeSetContext);
+    when(eventContext.getParameterInfo()).thenReturn(parameterInfo);
     when(target.entity()).thenReturn(entity);
     when(path.target()).thenReturn(target);
   }
@@ -92,7 +96,7 @@ class CreateAttachmentEventTest {
     when(target.values()).thenReturn(attachment);
     when(target.keys()).thenReturn(Map.of("ID", attachment.getId(), "up__ID", "test"));
     when(attachmentService.createAttachment(any()))
-        .thenReturn(new AttachmentModificationResult(false, "id", "test"));
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
     var existingData = Attachments.create();
     existingData.setFileName("some file name");
     existingData.setMimeType("some mime type");
@@ -116,7 +120,7 @@ class CreateAttachmentEventTest {
     var attachment = Attachments.create();
     attachment.setId("test");
     var attachmentServiceResult =
-        new AttachmentModificationResult(false, "some document id", "test");
+        new AttachmentModificationResult(false, "some document id", "test", null);
     when(attachmentService.createAttachment(any())).thenReturn(attachmentServiceResult);
     when(target.values()).thenReturn(attachment);
 
@@ -134,7 +138,7 @@ class CreateAttachmentEventTest {
     var listener = mock(ChangeSetListener.class);
     when(listenerProvider.provideListener(contentId, runtime)).thenReturn(listener);
     when(attachmentService.createAttachment(any()))
-        .thenReturn(new AttachmentModificationResult(false, contentId, "test"));
+        .thenReturn(new AttachmentModificationResult(false, contentId, "test", null));
 
     cut.processEvent(path, null, Attachments.create(), eventContext);
 
@@ -154,7 +158,7 @@ class CreateAttachmentEventTest {
     }
     when(target.values()).thenReturn(attachment);
     when(attachmentService.createAttachment(any()))
-        .thenReturn(new AttachmentModificationResult(isExternalStored, "id", "test"));
+        .thenReturn(new AttachmentModificationResult(isExternalStored, "id", "test", null));
 
     var result =
         cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
@@ -174,9 +178,200 @@ class CreateAttachmentEventTest {
     when(target.values()).thenReturn(attachment);
     when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
     when(attachmentService.createAttachment(any()))
-        .thenReturn(new AttachmentModificationResult(false, "id", "test"));
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
 
     cut.processEvent(path, attachment.getContent(), Attachments.create(), eventContext);
     return attachment;
+  }
+
+  @Test
+  void fileNameFromRfc5987Header() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename*=UTF-8''my%20file%20name.pdf");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file name.pdf");
+    assertThat(attachment.getFileName()).isEqualTo("my file name.pdf");
+  }
+
+  @Test
+  void fileNameFromRfc5987HeaderWithTrailingParams() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    // Header with trailing parameters after the filename - should stop at semicolon
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename*=UTF-8''my%20file.pdf; size=1234");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file.pdf");
+    assertThat(attachment.getFileName()).isEqualTo("my file.pdf");
+  }
+
+  @Test
+  void fileNameFromPlainHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename=\"report.pdf\"");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("report.pdf");
+  }
+
+  @Test
+  void fileNameFromPlainHeaderWithoutQuotes() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename=report.pdf");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("report.pdf");
+  }
+
+  @Test
+  void fileNameFromSlugHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Disposition")).thenReturn(null);
+    when(parameterInfo.getHeader("slug")).thenReturn("document.docx");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("document.docx");
+  }
+
+  @Test
+  void fileNamePayloadPrecedesHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    attachment.setFileName("payload-name.pdf");
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Disposition"))
+        .thenReturn("attachment; filename=\"header-name.pdf\"");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("payload-name.pdf");
+  }
+
+  @Test
+  void mimeTypeFromContentTypeHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("image/jpeg; charset=utf-8");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("image/jpeg");
+    assertThat(attachment.getMimeType()).isEqualTo("image/jpeg");
+  }
+
+  @Test
+  void mimeTypePayloadPrecedesHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    attachment.setMimeType("text/plain");
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("application/pdf");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("text/plain");
+  }
+
+  @Test
+  void fileNameIgnoredForInvalidHeader() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    // Header exists but has no valid filename pattern
+    when(parameterInfo.getHeader("Content-Disposition")).thenReturn("inline");
+    when(parameterInfo.getHeader("slug")).thenReturn(null);
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isNull();
+  }
+
+  @Test
+  void mimeTypeFromHeaderWhenEmpty() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(parameterInfo.getHeader("Content-Type")).thenReturn("text/csv");
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("text/csv");
+  }
+
+  @Test
+  void headersSkippedWhenParameterInfoIsNull() {
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    when(target.values()).thenReturn(attachment);
+    when(target.keys()).thenReturn(Map.of("ID", attachment.getId()));
+    when(attachmentService.createAttachment(any()))
+        .thenReturn(new AttachmentModificationResult(false, "id", "test", null));
+    when(eventContext.getParameterInfo()).thenReturn(null);
+
+    cut.processEvent(path, null, Attachments.create(), eventContext);
+
+    verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
+    assertThat(contextArgumentCaptor.getValue().fileName()).isNull();
+    assertThat(contextArgumentCaptor.getValue().mimeType()).isNull();
   }
 }

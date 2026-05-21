@@ -15,8 +15,12 @@ inputs:
   maven-version:
     description: The Maven version the build shall run with.
     required: true
+  version:
+    description: The project version to report to Black Duck (e.g. release tag). If empty, falls back to the Maven `revision` reduced to major-minor.
+    required: false
+    default: ''
   scan_mode:
-    description: The scan mode to use (FULL or RAPID)
+    description: The scan mode to use (FULL uploads a report to the Black Duck server; RAPID is a fast policy gate without server upload).
     default: 'FULL'
     required: false
 
@@ -24,35 +28,52 @@ runs:
   using: composite
   steps:
     - name: Set up Java ${{ inputs.java-version }}
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
       with:
         java-version: ${{ inputs.java-version }}
         distribution: sapmachine
         cache: maven
 
     - name: Set up Maven ${{ inputs.maven-version }}
-      uses: stCarolas/setup-maven@v5
+      uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
       with:
         maven-version: ${{ inputs.maven-version }}
 
-    - name: Get Major Version
-      id: get-major-version
-      run: |
-        echo "REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - name: Print Version Number
-      run: echo "${{ steps.get-major-version.outputs.REVISION }}"
-      shell: bash
-
-    - name: BlackDuck Scan
-      uses: SAP/project-piper-action@main
-      with:
-        step-name: detectExecuteScan
-        flags: \
-          --githubToken=$GITHUB_token \
-          --version=${{ steps.get-major-version.outputs.REVISION }}
+    - name: Resolve Project Version
+      id: resolve-version
       env:
-        PIPER_token: ${{ inputs.blackduck_token }}
-        GITHUB_token: ${{ inputs.github_token }}
-        SCAN_MODE: ${{ inputs.scan_mode }}
+        VERSION_INPUT: ${{ inputs.version }}
+      run: |
+        if [ -n "$VERSION_INPUT" ]; then
+          VERSION="$VERSION_INPUT"
+        else
+          REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)
+          VERSION=$(echo "$REVISION" | cut -d. -f1,2)
+        fi
+        echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "Resolved BlackDuck project version: $VERSION"
+      shell: bash
+
+    - name: BlackDuck Security Scan
+      uses: blackduck-inc/black-duck-security-scan@659a0742e793a093377fab3117b0d90f23b04bfa # v2.9.0
+      with:
+        blackducksca_url: https://sap.blackducksoftware.com/
+        blackducksca_token: ${{ inputs.blackduck_token }}
+        blackducksca_scan_full: ${{ inputs.scan_mode == 'FULL' }}
+        github_token: ${{ inputs.github_token }}
+        detect_args: >
+          --detect.project.name=com.sap.cds.feature.attachments
+          --detect.project.version.name=${{ steps.resolve-version.outputs.VERSION }}
+          --detect.project.user.groups=CDSJAVA-OPEN-SOURCE
+          --detect.included.detector.types=MAVEN
+          --detect.excluded.directories=**/*test*,**/samples/**
+          --detect.maven.included.modules=cds-feature-attachments,cds-feature-attachments-oss,cds-feature-attachments-fs
+          --detect.maven.excluded.scopes=test,provided
+          --detect.tools=DETECTOR,BINARY_SCAN
+          --detect.timeout=6000
+          --detect.risk.report.pdf=false
+          --detect.policy.check.fail.on.severities=NONE
+          --detect.force.success.on.skip=true
+          --blackduck.signature.scanner.memory=4096
+          --blackduck.trust.cert=true
+          --logging.level.detect=INFO

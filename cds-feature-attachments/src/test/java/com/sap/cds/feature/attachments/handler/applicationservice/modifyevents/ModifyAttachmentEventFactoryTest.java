@@ -60,14 +60,14 @@ class ModifyAttachmentEventFactoryTest {
   }
 
   @Test
-  void contentIdsSameContentFillReturnsUpdate() {
+  void contentIdsSameContentFillReturnsDoNothing() {
     var contentId = "test ID";
     var data = Attachments.create();
     data.put(Attachments.CONTENT_ID, contentId);
 
     var event = cut.getEvent(mock(InputStream.class), contentId, data);
 
-    assertThat(event).isEqualTo(updateEvent);
+    assertThat(event).isEqualTo(doNothingEvent);
   }
 
   @ParameterizedTest

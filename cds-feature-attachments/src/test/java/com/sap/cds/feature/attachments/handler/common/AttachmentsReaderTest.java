@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import ch.qos.logback.classic.Level;
@@ -52,6 +53,7 @@ class AttachmentsReaderTest {
     cut = new AttachmentsReader(cascader, persistenceService);
 
     entity = mock(CdsEntity.class);
+    when(entity.getAnnotationValue("_is_media_data", false)).thenReturn(false);
     model = mock(CdsModel.class);
     selectArgumentCaptor = ArgumentCaptor.forClass(CqnSelect.class);
     result = mock(Result.class);
@@ -165,6 +167,19 @@ class AttachmentsReaderTest {
   }
 
   @Test
+  void returnsEmptyListWhenNoMediaEntityPaths() {
+    var emptyTree = new NodeTree(new AssociationIdentifier("", RootTable_.CDS_NAME));
+    when(cascader.findEntityPath(model, entity)).thenReturn(emptyTree);
+    when(entity.getQualifiedName()).thenReturn(RootTable_.CDS_NAME);
+    CqnDelete delete = Delete.from(RootTable_.CDS_NAME);
+
+    var resultData = cut.readAttachments(model, entity, delete);
+
+    assertThat(resultData).isEmpty();
+    verifyNoInteractions(persistenceService);
+  }
+
+  @Test
   void dataAreLogged() {
     mockPathListAndEntity(Attachment_.CDS_NAME);
     var keys = buildDefaultKeyMap();
@@ -213,6 +228,8 @@ class AttachmentsReaderTest {
     pathList.forEach(nodeTree::addPath);
     when(cascader.findEntityPath(model, entity)).thenReturn(nodeTree);
     when(entity.getQualifiedName()).thenReturn(entityName);
+    boolean isMediaEntity = Attachment_.CDS_NAME.equals(entityName);
+    when(entity.getAnnotationValue("_is_media_data", false)).thenReturn(isMediaEntity);
   }
 
   private String getExpectedSelectStatementWithWhereAndFilter(String id) {

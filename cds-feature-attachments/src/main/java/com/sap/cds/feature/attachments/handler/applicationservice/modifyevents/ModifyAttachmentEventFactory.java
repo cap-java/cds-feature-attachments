@@ -63,20 +63,9 @@ public class ModifyAttachmentEventFactory {
   private Optional<ModifyAttachmentEvent> handleExistingContentId(
       InputStream content, String contentId, String existingContentId) {
     ModifyAttachmentEvent event = null;
-    if (contentId.equals(existingContentId) && Objects.nonNull(content)) {
-      event = updateEvent;
+    if (Objects.nonNull(existingContentId) && !contentId.equals(existingContentId)) {
+      event = Objects.nonNull(content) ? updateEvent : deleteEvent;
     }
-    if (Objects.nonNull(existingContentId)
-        && !contentId.equals(existingContentId)
-        && Objects.isNull(content)) {
-      event = deleteEvent;
-    }
-    if (Objects.nonNull(existingContentId)
-        && !contentId.equals(existingContentId)
-        && Objects.nonNull(content)) {
-      event = updateEvent;
-    }
-
     return Optional.ofNullable(event);
   }
 

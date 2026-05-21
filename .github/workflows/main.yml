@@ -13,12 +13,14 @@ jobs:
     name: Blackduck Scan
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Scan With Black Duck
-        uses: ./.github/actions/scan-with-blackduck
+        uses: cap-java/cds-feature-attachments/.github/actions/scan-with-blackduck@main
         with:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -26,7 +28,10 @@ jobs:
           scan_mode: RAPID
 
   build-and-test:
-    uses: ./.github/workflows/pipeline.yml
-    with:
-      deploy-snapshot: true
+    uses: cap-java/cds-feature-attachments/.github/workflows/pipeline.yml@main
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+      packages: read
     secrets: inherit

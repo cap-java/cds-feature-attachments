@@ -1,5 +1,5 @@
 /*
- * © 2024-2025 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
+ * © 2024-2026 SAP SE or an SAP affiliate company and cds-feature-attachments contributors.
  */
 package com.sap.cds.feature.attachments.configuration;
 
@@ -24,19 +24,21 @@ import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmen
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.AttachmentsServiceImpl;
+import com.sap.cds.feature.attachments.service.MalwareScannerServiceImpl;
 import com.sap.cds.feature.attachments.service.handler.DefaultAttachmentsServiceHandler;
+import com.sap.cds.feature.attachments.service.handler.DefaultMalwareScannerServiceHandler;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanRunner;
 import com.sap.cds.feature.attachments.service.malware.AttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.DefaultAttachmentMalwareScanner;
 import com.sap.cds.feature.attachments.service.malware.client.DefaultMalwareScanClient;
-import com.sap.cds.feature.attachments.service.malware.client.HttpClientProvider;
 import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClient;
 import com.sap.cds.feature.attachments.service.malware.client.MalwareScanClientProvider;
 import com.sap.cds.services.ServiceCatalog;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.draft.DraftService;
 import com.sap.cds.services.environment.CdsEnvironment;
+import com.sap.cds.services.environment.CdsProperties;
 import com.sap.cds.services.environment.CdsProperties.ConnectionPool;
 import com.sap.cds.services.outbox.OutboxService;
 import com.sap.cds.services.persistence.PersistenceService;
@@ -46,6 +48,8 @@ import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
 import com.sap.cds.services.utils.environment.ServiceBindingUtils;
 import com.sap.cloud.environment.servicebinding.api.ServiceBinding;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,10 +61,36 @@ import org.slf4j.LoggerFactory;
 public class Registration implements CdsRuntimeConfiguration {
 
   private static final Logger logger = LoggerFactory.getLogger(Registration.class);
+  private static final int DEFAULT_TIMEOUT_SECONDS = 120;
+  private static final int DEFAULT_MAX_CONNECTIONS = 20;
+
+  @Override
+  public void environment(CdsRuntimeConfigurer configurer) {
+    CdsEnvironment environment = configurer.getCdsRuntime().getEnvironment();
+    CdsProperties cdsProperties = environment.getCdsProperties();
+
+    CdsProperties.DataSource.Csv csvConfig = cdsProperties.getDataSource().getCsv();
+    if (csvConfig == null) {
+      logger.warn("CSV configuration is not available, skipping CSV path addition");
+      return;
+    }
+
+    List<String> existingPaths = csvConfig.getPaths();
+    List<String> updatedPaths =
+        existingPaths != null ? new ArrayList<>(existingPaths) : new ArrayList<>();
+
+    updatedPaths.add("target/cds/com.sap.cds/cds-feature-attachments/**");
+    updatedPaths.add("../target/cds/com.sap.cds/cds-feature-attachments/**");
+
+    logger.debug("Adding CSV paths for ScanStates data: {}", updatedPaths);
+
+    csvConfig.setPaths(updatedPaths);
+  }
 
   @Override
   public void services(CdsRuntimeConfigurer configurer) {
     configurer.service(new AttachmentsServiceImpl());
+    configurer.service(new MalwareScannerServiceImpl());
   }
 
   @Override
@@ -110,12 +140,15 @@ public class Registration implements CdsRuntimeConfiguration {
     configurer.eventHandler(
         new DefaultAttachmentsServiceHandler(malwareScanEndTransactionListener));
 
+    // register event handler for malware scanner service
+    configurer.eventHandler(new DefaultMalwareScannerServiceHandler(scanClient));
+
     MarkAsDeletedAttachmentEvent deleteEvent =
         new MarkAsDeletedAttachmentEvent(outboxedAttachmentService);
     ModifyAttachmentEventFactory eventFactory =
         buildAttachmentEventFactory(attachmentService, deleteEvent, outboxedAttachmentService);
-    AttachmentsReader attachmentsReader =
-        new AttachmentsReader(new AssociationCascader(), persistenceService);
+    AssociationCascader cascader = new AssociationCascader();
+    AttachmentsReader attachmentsReader = new AttachmentsReader(cascader, persistenceService);
     ThreadLocalDataStorage storage = new ThreadLocalDataStorage();
 
     // register event handlers for application service, if at least one application service is
@@ -123,7 +156,8 @@ public class Registration implements CdsRuntimeConfiguration {
     boolean hasApplicationServices =
         serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
     if (hasApplicationServices) {
-      configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage, defaultMaxSize));
+      configurer.eventHandler(
+          new CreateAttachmentsHandler(eventFactory, storage, defaultMaxSize, runtime));
       configurer.eventHandler(
           new UpdateAttachmentsHandler(
               eventFactory, attachmentsReader, outboxedAttachmentService, storage, defaultMaxSize));
@@ -132,7 +166,12 @@ public class Registration implements CdsRuntimeConfiguration {
           new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
       configurer.eventHandler(
           new ReadAttachmentsHandler(
-              attachmentService, new AttachmentStatusValidator(), scanRunner));
+              attachmentService,
+              new AttachmentStatusValidator(),
+              scanRunner,
+              persistenceService,
+              cascader,
+              scanClient != null));
     } else {
       logger.debug(
           "No application service is available. Application service event handlers will not be registered.");
@@ -172,12 +211,14 @@ public class Registration implements CdsRuntimeConfiguration {
     if (bindingOpt.isPresent()) {
       ServiceBinding binding = bindingOpt.get();
       ConnectionPool connectionPool = getConnectionPool(environment);
-      HttpClientProvider clientProvider = new MalwareScanClientProvider(binding, connectionPool);
+      MalwareScanClientProvider clientProvider =
+          new MalwareScanClientProvider(binding, connectionPool);
       if (logger.isInfoEnabled()) {
         logger.info(
-            "Using Malware Scanning service binding with name '{}' and plan '{}' for malware scanning of attachments.",
+            "Using Malware Scanning service binding with name '{}', plan '{}', and authentication type '{}' for malware scanning of attachments.",
             binding.getName().orElse("unknown"),
-            binding.getServicePlan().orElse("unknown"));
+            binding.getServicePlan().orElse("unknown"),
+            clientProvider.getAuthenticationType());
       }
       return new DefaultMalwareScanClient(clientProvider);
     }
@@ -204,8 +245,10 @@ public class Registration implements CdsRuntimeConfiguration {
     // the common prefix for the connection pool configuration
     final String prefix = "cds.attachments.malwareScanner.http.%s";
     Duration timeout =
-        Duration.ofSeconds(env.getProperty(prefix.formatted("timeout"), Integer.class, 120));
-    int maxConnections = env.getProperty(prefix.formatted("maxConnections"), Integer.class, 20);
+        Duration.ofSeconds(
+            env.getProperty(prefix.formatted("timeout"), Integer.class, DEFAULT_TIMEOUT_SECONDS));
+    int maxConnections =
+        env.getProperty(prefix.formatted("maxConnections"), Integer.class, DEFAULT_MAX_CONNECTIONS);
     logger.debug(
         "Connection pool configuration: timeout={}, maxConnections={}", timeout, maxConnections);
     return new ConnectionPool(timeout, maxConnections, maxConnections);

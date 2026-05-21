@@ -22,6 +22,7 @@ It supports the [AWS, Azure, and Google object stores](storage-targets/cds-featu
   * [Storage Targets](#storage-targets)
   * [Malware Scanner](#malware-scanner)
   * [Specify the maximum file size](#specify-the-maximum-file-size)
+  * [Restrict allowed MIME types](#restrict-allowed-mime-types)
   * [Outbox](#outbox)
   * [Restore Endpoint](#restore-endpoint)
     * [Motivation](#motivation)
@@ -182,6 +183,9 @@ resources:
 The malware scanner is used in the `AttachmentService` to scan
 attachments.
 
+> [!Note]
+> The malware scanner supports both mTLS and basic authentication; mTLS is recommended as basic authentication has been deprecated.
+
 If there is no malware scanner available, the attachments are automatically marked as `Clean`.
 
 Scan status codes:
@@ -213,6 +217,38 @@ The @Validation.Maximum value is a size string consisting of a number followed b
 - KiB, MiB, GiB, TiB (binary units)
 
 The default is 400MB
+
+### Restrict allowed MIME types
+
+You can restrict which MIME types are allowed for attachments by annotating the content property with @Core.AcceptableMediaTypes. This validation is performed during file upload.
+
+```cds
+entity Books {
+  ...
+  attachments: Composition of many Attachments;
+}
+
+annotate Books.attachments with {
+  content @Core.AcceptableMediaTypes : ['image/jpeg', 'image/png', 'application/pdf'];
+}
+```
+
+Wildcard patterns are supported:
+
+```cds
+annotate Books.attachments with {
+  content @Core.AcceptableMediaTypes : ['image/*', 'application/pdf'];
+}
+```
+
+To allow all MIME types (default behavior), either omit the annotation or use:
+
+```cds
+annotate Books.attachments with {
+  content @Core.AcceptableMediaTypes : ['*/*'];
+}
+```
+
 
 ### Outbox
 
@@ -348,7 +384,7 @@ the [CAP Java Documentation](https://cap.cloud.sap/docs/java/security).
 ### Multitenancy
 
 - When using SAP HANA as the storage target, multitenancy support depends on the consuming application. In most cases, multitenancy is achieved by using a dedicated schema for each tenant, providing strong data isolation at the database level.
-- When using an [object store](storage-targets/cds-feature-attachments-oss) as the storage target, true multitenancy is not yet implemented (as of version 1.3.1). In this case, all blobs are stored in a single bucket, and tenant data is not separated.
+- When using an [object store](storage-targets/cds-feature-attachments-oss) as the storage target, shared-bucket multitenancy is supported (since version 1.5.0). The plugin prefixes object keys with the tenant ID to ensure tenant isolation, and automatically cleans up tenant data on unsubscribe. See [Object Stores Multitenancy](storage-targets/cds-feature-attachments-oss#multitenancy) for configuration details.
 
 ### Object Stores
 
