@@ -24,6 +24,10 @@ runs:
       with:
         maven-version: ${{ inputs.maven-version }}
 
+    - name: Install @sap/cds-dk
+      run: npm i -g @sap/cds-dk@9.9.1
+      shell: bash
+
     - name: Maven Build
       run: mvn clean install -DskipTests -B -ntp
       shell: bash
