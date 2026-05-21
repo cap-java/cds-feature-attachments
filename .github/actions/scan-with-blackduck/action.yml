@@ -38,6 +38,10 @@ runs:
       with:
         maven-version: ${{ inputs.maven-version }}
 
+    - name: Install @sap/cds-dk
+      run: npm i -g @sap/cds-dk@9.9.1
+      shell: bash
+
     - name: BlackDuck Security Scan
       uses: blackduck-inc/black-duck-security-scan@659a0742e793a093377fab3117b0d90f23b04bfa # v2.9.0
       with:
