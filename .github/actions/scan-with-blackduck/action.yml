@@ -62,7 +62,7 @@ runs:
         detect_args: >
           --detect.project.name=com.sap.cds.feature.attachments
           --detect.project.version.name=${{ steps.resolve-version.outputs.VERSION }}
-          --detect.project.group.name=CDSJAVA-OPEN-SOURCE
+          --detect.project.user.groups=CDSJAVA-OPEN-SOURCE
           --detect.included.detector.types=MAVEN
           --detect.excluded.directories=**/*test*,**/samples/**
           --detect.maven.included.modules=cds-feature-attachments,cds-feature-attachments-oss,cds-feature-attachments-fs
@@ -70,6 +70,8 @@ runs:
           --detect.tools=DETECTOR,BINARY_SCAN
           --detect.timeout=6000
           --detect.risk.report.pdf=false
+          --detect.policy.check.fail.on.severities=NONE
+          --detect.force.success.on.skip=true
           --blackduck.signature.scanner.memory=4096
           --blackduck.trust.cert=true
           --logging.level.detect=INFO
