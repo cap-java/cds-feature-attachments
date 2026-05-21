@@ -16,10 +16,11 @@ inputs:
     description: The Maven version the build shall run with.
     required: true
   version:
-    description: The project version to report to Black Duck (e.g. release tag).
-    required: true
+    description: The project version to report to Black Duck (e.g. release tag). If empty, falls back to the Maven `revision` reduced to major-minor.
+    required: false
+    default: ''
   scan_mode:
-    description: The scan mode to use (FULL or RAPID)
+    description: The scan mode to use (FULL uploads a report to the Black Duck server; RAPID is a fast policy gate without server upload).
     default: 'FULL'
     required: false
 
@@ -38,8 +39,17 @@ runs:
       with:
         maven-version: ${{ inputs.maven-version }}
 
-    - name: Install @sap/cds-dk
-      run: npm i -g @sap/cds-dk@9.9.1
+    - name: Resolve Project Version
+      id: resolve-version
+      run: |
+        if [ -n "${{ inputs.version }}" ]; then
+          VERSION="${{ inputs.version }}"
+        else
+          REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)
+          VERSION=$(echo "$REVISION" | cut -d. -f1,2)
+        fi
+        echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "Resolved BlackDuck project version: $VERSION"
       shell: bash
 
     - name: BlackDuck Security Scan
@@ -51,11 +61,15 @@ runs:
         github_token: ${{ inputs.github_token }}
         detect_args: >
           --detect.project.name=com.sap.cds.feature.attachments
-          --detect.project.version.name=${{ inputs.version }}
+          --detect.project.version.name=${{ steps.resolve-version.outputs.VERSION }}
           --detect.project.group.name=CDSJAVA-OPEN-SOURCE
           --detect.included.detector.types=MAVEN
           --detect.excluded.directories=**/*test*,**/samples/**
           --detect.maven.included.modules=cds-feature-attachments,cds-feature-attachments-oss,cds-feature-attachments-fs
+          --detect.maven.excluded.scopes=test,provided
           --detect.tools=DETECTOR,BINARY_SCAN
+          --detect.timeout=6000
           --detect.risk.report.pdf=false
+          --blackduck.signature.scanner.memory=4096
+          --blackduck.trust.cert=true
           --logging.level.detect=INFO
