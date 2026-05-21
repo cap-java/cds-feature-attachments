@@ -24,7 +24,7 @@ jobs:
     name: Blackduck Scan
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: release-approval
+    environment: release
     permissions:
       contents: read
     steps:
@@ -43,7 +43,7 @@ jobs:
     name: Update Version
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: release-approval
+    environment: release
     permissions:
       contents: write
     steps:
@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: update-version
-    environment: release-approval
+    environment: release
     permissions:
       contents: read
     steps:
@@ -105,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [blackduck, build]
-    environment: release-approval
+    environment: release
     permissions:
       contents: read
     steps:
