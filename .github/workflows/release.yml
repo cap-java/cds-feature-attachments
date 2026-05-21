@@ -36,6 +36,7 @@ jobs:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           maven-version: ${{ env.MAVEN_VERSION }}
+          version: ${{ github.event.release.tag_name }}
 
   update-version:
     needs: requires-approval
