@@ -41,9 +41,11 @@ runs:
 
     - name: Resolve Project Version
       id: resolve-version
+      env:
+        VERSION_INPUT: ${{ inputs.version }}
       run: |
-        if [ -n "${{ inputs.version }}" ]; then
-          VERSION="${{ inputs.version }}"
+        if [ -n "$VERSION_INPUT" ]; then
+          VERSION="$VERSION_INPUT"
         else
           REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)
           VERSION=$(echo "$REVISION" | cut -d. -f1,2)
