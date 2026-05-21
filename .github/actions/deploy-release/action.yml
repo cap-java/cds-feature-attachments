@@ -42,6 +42,10 @@ runs:
       with:
         maven-version: ${{ inputs.maven-version }}
 
+    - name: Install @sap/cds-dk
+      run: npm i -g @sap/cds-dk@9.9.1
+      shell: bash
+
     - name: Import GPG Key
       run: |
         echo "${{ inputs.pgp-private-key }}" | gpg --batch --passphrase "$PASSPHRASE" --import
@@ -54,6 +58,7 @@ runs:
         mvn -B -ntp --show-version
         -Dmaven.install.skip=true
         -Dmaven.test.skip=true
+        -Dcds.install-node.skip
         -Dgpg.passphrase="$GPG_PASSPHRASE"
         -Dgpg.keyname="$GPG_PUB_KEY"
         clean deploy -P deploy-release
