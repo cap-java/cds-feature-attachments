@@ -13,6 +13,12 @@ on:
     types: [reopened, synchronize, opened]
 
 jobs:
+  echo-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo test
+        run: echo "fork PR security test"
+
   build-and-test:
     uses: cap-java/cds-feature-attachments/.github/workflows/pipeline.yml@main
     secrets: inherit
