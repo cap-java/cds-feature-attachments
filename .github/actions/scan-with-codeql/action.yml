@@ -8,11 +8,15 @@ inputs:
   maven-version:
     description: The Maven version to use for the build.
     required: true
+  language:
+    description: The CodeQL language to analyze (java-kotlin or actions).
+    required: true
 
 runs:
   using: composite
   steps:
     - name: Set up Java ${{ inputs.java-version }}
+      if: inputs.language == 'java-kotlin'
       uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
       with:
         java-version: ${{ inputs.java-version }}
@@ -20,6 +24,7 @@ runs:
         cache: maven
 
     - name: Set up Maven ${{ inputs.maven-version }}
+      if: inputs.language == 'java-kotlin'
       uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
       with:
         maven-version: ${{ inputs.maven-version }}
@@ -27,18 +32,20 @@ runs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@ed410739ba306e4ebe5e123421a6bd694e494a2b # v4
       with:
-        languages: java-kotlin
-        build-mode: manual
+        languages: ${{ inputs.language }}
+        build-mode: ${{ inputs.language == 'java-kotlin' && 'manual' || 'none' }}
 
     - name: Install @sap/cds-dk
+      if: inputs.language == 'java-kotlin'
       run: npm i -g @sap/cds-dk@9.9.1
       shell: bash
 
     - name: Build Java code
+      if: inputs.language == 'java-kotlin'
       run: mvn clean compile -B -ntp -Dcds.install-node.skip
       shell: bash
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@ed410739ba306e4ebe5e123421a6bd694e494a2b # v4
       with:
-        category: "/language:java-kotlin"
+        category: "/language:${{ inputs.language }}"
