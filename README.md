@@ -5,7 +5,7 @@
 # Attachments Plugin for SAP Cloud Application Programming Model (CAP)
 
 The `com.sap.cds:cds-feature-attachments` dependency is
-a [CAP Java plugin](https://cap.cloud.sap/docs/java/building-plugins) that provides out-of-the box attachments storage
+a [CAP Java plugin](https://cap.cloud.sap/docs/java/building-plugins) that provides out-of-the-box attachments storage
 and handling by using an aspect Attachments.
 
 It supports the [AWS, Azure, and Google object stores](storage-targets/cds-feature-attachments-oss) and can connect to a [malware scanner](#malware-scanner).
