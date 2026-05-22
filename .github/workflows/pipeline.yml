@@ -128,7 +128,7 @@ jobs:
           github-token: ${{ secrets.GH_TOKEN }}
 
   codeql:
-    name: CodeQL Analysis
+    name: CodeQL Analysis (${{ matrix.language }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -136,6 +136,10 @@ jobs:
       packages: read
       actions: read
       contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [java-kotlin, actions]
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -145,3 +149,4 @@ jobs:
         with:
           java-version: 17
           maven-version: ${{ env.MAVEN_VERSION }}
+          language: ${{ matrix.language }}
