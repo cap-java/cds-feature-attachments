@@ -1,7 +1,7 @@
 name: CI - MAIN
 
 env:
-  MAVEN_VERSION: '3.9.12'
+  MAVEN_VERSION: "3.9.12"
 
 on:
   workflow_dispatch:
@@ -25,7 +25,7 @@ jobs:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           maven-version: ${{ env.MAVEN_VERSION }}
-          scan_mode: RAPID
+          scan_mode: FULL
 
   build-and-test:
     uses: cap-java/cds-feature-attachments/.github/workflows/pipeline.yml@main
