@@ -20,6 +20,10 @@ inputs:
     description: The scan mode to use (FULL uploads a report to the Black Duck server; RAPID is a fast policy gate without server upload).
     default: 'FULL'
     required: false
+  rapid_compare_mode:
+    description: When set, enables Rapid Scan compare mode (e.g. BOM_COMPARE or BOM_COMPARE_STRICT). Only relevant when scan_mode is RAPID. See https://documentation.blackduck.com/bundle/detect/page/runningdetect/rapidscan.html#rapid-scan-compare-mode for details.
+    default: ''
+    required: false
 
 runs:
   using: composite
@@ -73,3 +77,4 @@ runs:
           --blackduck.signature.scanner.memory=4096
           --blackduck.trust.cert=true
           --logging.level.detect=INFO
+          ${{ inputs.rapid_compare_mode != '' && format('--detect.blackduck.rapid.compare.mode={0}', inputs.rapid_compare_mode) || '' }}
