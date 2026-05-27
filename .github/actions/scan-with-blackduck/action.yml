@@ -5,9 +5,6 @@ inputs:
   blackduck_token:
     description: The token to use for BlackDuck authentication
     required: true
-  github_token:
-    description: The token to use for GitHub authentication
-    required: true
   java-version:
     description: The version of Java to use
     default: '17'
@@ -60,7 +57,6 @@ runs:
         blackducksca_url: https://sap.blackducksoftware.com/
         blackducksca_token: ${{ inputs.blackduck_token }}
         blackducksca_scan_full: ${{ inputs.scan_mode == 'FULL' }}
-        github_token: ${{ inputs.github_token }}
         detect_args: >
           --detect.project.name=com.sap.cds.feature.attachments
           --detect.project.version.name=${{ steps.resolve-version.outputs.VERSION }}
