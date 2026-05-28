@@ -34,6 +34,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+
+    <dependency>
+      <groupId>com.sap.cloud.sdk.cloudplatform</groupId>
+      <artifactId>connectivity-apache-httpclient4</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-services-utils</artifactId>
