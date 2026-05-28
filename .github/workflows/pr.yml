@@ -14,5 +14,5 @@ on:
 
 jobs:
   build-and-test:
-    uses: cap-java/cds-feature-attachments/.github/workflows/pipeline.yml@main
+    uses: ./.github/workflows/pipeline.yml
     secrets: inherit
