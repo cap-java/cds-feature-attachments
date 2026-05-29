@@ -20,10 +20,12 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Scan With Black Duck
-        uses: cap-java/cds-feature-attachments/.github/actions/scan-with-blackduck@main
+        uses: cap-java/.github/actions/scan-with-blackduck@main
         with:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
           maven-version: ${{ env.MAVEN_VERSION }}
+          project-name: com.sap.cds.feature.attachments
+          included-modules: cds-feature-attachments,cds-feature-attachments-oss,cds-feature-attachments-fs
           scan_mode: FULL
 
   build-and-test:
