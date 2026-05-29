@@ -1,5 +1,7 @@
 name: "Close stale issues"
 
+permissions: {}
+
 on:
   schedule:
     - cron: "30 1 * * *"
