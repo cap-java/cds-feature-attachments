@@ -23,7 +23,6 @@ jobs:
         uses: cap-java/cds-feature-attachments/.github/actions/scan-with-blackduck@main
         with:
           blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           maven-version: ${{ env.MAVEN_VERSION }}
           scan_mode: FULL
 

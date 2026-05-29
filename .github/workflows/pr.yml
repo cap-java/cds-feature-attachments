@@ -13,6 +13,24 @@ on:
     types: [reopened, synchronize, opened]
 
 jobs:
+  blackduck:
+    name: Blackduck Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Scan With Black Duck
+        uses: cap-java/cds-feature-attachments/.github/actions/scan-with-blackduck@main
+        with:
+          blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
+          maven-version: ${{ env.MAVEN_VERSION }}
+          scan_mode: RAPID
+          rapid_compare_mode: BOM_COMPARE # PRs might only be blocked by things they introduce, not by pre-existing issues that could have appeared in the main branch in the meantime
+
   build-and-test:
     uses: cap-java/cds-feature-attachments/.github/workflows/pipeline.yml@main
     secrets: inherit
