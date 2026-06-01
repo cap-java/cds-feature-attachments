@@ -117,8 +117,8 @@ jobs:
         with:
           user: ${{ secrets.CENTRAL_REPOSITORY_USER }}
           password: ${{ secrets.CENTRAL_REPOSITORY_PASS }}
-          pgp-pub-key: ${{ secrets.PGP_PUBKEY_ID }}
-          pgp-private-key: ${{ secrets.PGP_PRIVATE_KEY }}
-          pgp-passphrase: ${{ secrets.PGP_PASSPHRASE }}
+          gpg-pub-key: ${{ secrets.PGP_PUBKEY_ID }}
+          gpg-private-key: ${{ secrets.PGP_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.PGP_PASSPHRASE }}
           revision: ${{ github.event.release.tag_name }}
           maven-version: ${{ env.MAVEN_VERSION }}
