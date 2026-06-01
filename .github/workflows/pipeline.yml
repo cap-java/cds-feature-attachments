@@ -1,7 +1,7 @@
 name: Reusable Workflow
 
 env:
-  MAVEN_VERSION: '3.9.12'
+  MAVEN_VERSION: "3.9.12"
 
 on:
   workflow_call:
@@ -20,7 +20,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
-          java-version: '17'
+          java-version: "17"
           distribution: sapmachine
           cache: maven
 
@@ -41,7 +41,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java-version: [ 17, 21 ]
+        java-version: [17, 21]
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -74,9 +74,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java-version: [ 17, 21 ]
-        auth-method: [ basic, mtls ]
-        hyperscaler: [ AWS, AZURE, GCP ]
+        java-version: [17, 21]
+        auth-method: [basic, mtls]
+        hyperscaler: [AWS, AZURE, GCP]
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -120,12 +120,16 @@ jobs:
           auth-method: basic
 
       - name: SonarQube Scan
-        uses: cap-java/cds-feature-attachments/.github/actions/scan-with-sonar@main
+        uses: cap-java/.github/actions/scan-with-sonar@main
         with:
           java-version: 17
           maven-version: ${{ env.MAVEN_VERSION }}
           sonarq-token: ${{ secrets.SONARQ_TOKEN }}
-          github-token: ${{ secrets.GH_TOKEN }}
+          sonar-project-key: cds-feature-attachments
+          coverage-report-path: coverage-report/target/site/jacoco-aggregate/jacoco.xml
+          build-script: mvn clean verify -ntp -B -Dcds.install-node.skip
+          coverage-exclusions: >-
+            cds-feature-attachments/src/test/**,cds-feature-attachments/src/gen/**,storage-targets/cds-feature-attachments-fs/src/test/**,storage-targets/cds-feature-attachments-oss/src/test/**
 
   codeql:
     name: CodeQL Analysis (${{ matrix.language }})
@@ -145,7 +149,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: CodeQL Analysis
-        uses: cap-java/cds-feature-attachments/.github/actions/scan-with-codeql@main
+        uses: cap-java/.github/actions/scan-with-codeql@main
         with:
           java-version: 17
           maven-version: ${{ env.MAVEN_VERSION }}
