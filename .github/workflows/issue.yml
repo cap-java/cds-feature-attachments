@@ -9,4 +9,4 @@ on:
 
 jobs:
   label-issue:
-    uses: cap-java/.github/.github/workflows/issue.yml@main
+    uses: cap-java/.github/.github/workflows/issue.yml@296573b55e906f5c77a1855bcfe4285cbbc5cac4 #main
