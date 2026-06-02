@@ -82,7 +82,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Bind CF Services
-        uses: cap-java/cds-feature-attachments/.github/actions/cf-bind@main
+        uses: cap-java/cds-feature-attachments/.github/actions/cf-bind@296573b55e906f5c77a1855bcfe4285cbbc5cac4 #main
         with:
           cf-api: ${{ secrets[format('CF_API_{0}', matrix.hyperscaler)] }}
           cf-username: ${{ secrets.CF_USERNAME }}
@@ -92,7 +92,7 @@ jobs:
           auth-method: ${{ matrix.auth-method }}
 
       - name: Integration Tests
-        uses: cap-java/cds-feature-attachments/.github/actions/integration-tests@main
+        uses: cap-java/cds-feature-attachments/.github/actions/integration-tests@296573b55e906f5c77a1855bcfe4285cbbc5cac4 #main
         with:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
@@ -110,7 +110,7 @@ jobs:
           fetch-depth: 0
 
       - name: Bind CF Services
-        uses: cap-java/cds-feature-attachments/.github/actions/cf-bind@main
+        uses: cap-java/cds-feature-attachments/.github/actions/cf-bind@296573b55e906f5c77a1855bcfe4285cbbc5cac4 #main
         with:
           cf-api: ${{ secrets.CF_API_AWS }}
           cf-username: ${{ secrets.CF_USERNAME }}
@@ -120,7 +120,7 @@ jobs:
           auth-method: basic
 
       - name: SonarQube Scan
-        uses: cap-java/.github/actions/scan-with-sonar@main
+        uses: cap-java/.github/actions/scan-with-sonar@296573b55e906f5c77a1855bcfe4285cbbc5cac4 #main
         with:
           java-version: 17
           maven-version: ${{ env.MAVEN_VERSION }}
@@ -149,7 +149,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: CodeQL Analysis
-        uses: cap-java/.github/actions/scan-with-codeql@main
+        uses: cap-java/.github/actions/scan-with-codeql@296573b55e906f5c77a1855bcfe4285cbbc5cac4 #main
         with:
           java-version: 17
           maven-version: ${{ env.MAVEN_VERSION }}
