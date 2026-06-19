@@ -92,7 +92,7 @@ In folder `.github/workflows` are the GitHub Actions defined. The following tabl
 | File Name      | Description                                                                                                                                                           |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pr.yml`       | Builds and tests pull requests for Java 17 and 21. Requires approval for external forks. Each pull request needs green runs from this workflow to be merged.          |
-| `main.yml`     | Builds, tests, and deploys snapshots when commits are merged to main. Runs unit tests and integration tests for Java 17 and 21.                                       |
+| `main.yml`     | Builds and tests when commits are merged to main. Runs unit tests and integration tests for Java 17 and 21.                      |
 | `release.yml`  | Triggered on GitHub releases. Updates version, runs BlackDuck scan, builds, tests, and deploys to Maven Central. See also [Build and Deploy](#build-and-deploy).      |
 | `pipeline.yml` | Reusable workflow containing shared build, test, integration test, SonarQube scan, CodeQL analysis, and snapshot deployment logic. Called by `pr.yml` and `main.yml`. |
 
@@ -731,7 +731,6 @@ The following quality tools are used in the project to ensure the quality of the
 | Spotbugs              | Defined in the root `pom.xml`                                            | Static Code check for Java code working in the bytecode.                                            |
 | PMD/CPD               | Defined in the root `pom.xml`                                            | Static Code check for Java code working on the source code. CPD checks the coding for duplications. |
 | Maven Enforcer Plugin | Defined in the root `pom.xml`                                            | Checks if there are dependencies declared twice.                                                    |
-| Mutation Tests        | Defined in `cds-feature-attachments/pom.xml`                             | See section [mutation tests](#mutation-tests).                                                      |
 | Jacoco                | Defined in `cds-feature-attachments/pom.xml`                             | See section [unit tests](#unit-tests).                                                              |
 | Dependabot            | Config is defined in the `.github/dependabot.yml`                        | Checks for new versions of dependencies.                                                            |
 | CodeQL                | Defined in `pipeline.yml`                                                | Checks for vulnerabilities in the coding. Executed as part of the CI pipeline.                      |

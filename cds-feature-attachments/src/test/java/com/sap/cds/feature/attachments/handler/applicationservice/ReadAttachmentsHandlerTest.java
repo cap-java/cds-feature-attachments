@@ -92,7 +92,7 @@ class ReadAttachmentsHandlerTest {
     var select = Select.from(RootTable_.class).columns(RootTable_::ID);
     mockEventContext(RootTable_.CDS_NAME, select);
 
-    cut.processBefore(readEventContext);
+    assertDoesNotThrow(() -> cut.processBefore(readEventContext));
   }
 
   @Test
@@ -100,7 +100,7 @@ class ReadAttachmentsHandlerTest {
     var select = Select.from(Attachment_.class).columns(Attachment_::ID);
     mockEventContext(Attachment_.CDS_NAME, select);
 
-    cut.processBefore(readEventContext);
+    assertDoesNotThrow(() -> cut.processBefore(readEventContext));
   }
 
   @Test
@@ -108,7 +108,7 @@ class ReadAttachmentsHandlerTest {
     var select = Select.from(EventItems_.class).columns(EventItems_::note);
     mockEventContext(EventItems_.CDS_NAME, select);
 
-    cut.processBefore(readEventContext);
+    assertDoesNotThrow(() -> cut.processBefore(readEventContext));
   }
 
   @Test

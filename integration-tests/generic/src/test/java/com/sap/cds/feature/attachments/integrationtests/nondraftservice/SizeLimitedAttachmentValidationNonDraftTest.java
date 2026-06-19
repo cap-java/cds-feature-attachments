@@ -38,7 +38,7 @@ class SizeLimitedAttachmentValidationNonDraftTest extends OdataRequestValidation
         buildNavigationSizeLimitedAttachmentUrl(selectedRoot.getId(), attachment.getId())
             + "/content";
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, content, status().isNoContent());
+    requestHelper.assertPutStatus(url, content, status().isNoContent());
   }
 
   @Test
@@ -56,7 +56,7 @@ class SizeLimitedAttachmentValidationNonDraftTest extends OdataRequestValidation
         buildNavigationSizeLimitedAttachmentUrl(selectedRoot.getId(), attachment.getId())
             + "/content";
     requestHelper.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, content, status().is(413));
+    requestHelper.assertPutStatus(url, content, status().is(413));
 
     // Assert: Error response with HTTP 413 status code indicates size limit
     // exceeded

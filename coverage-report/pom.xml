@@ -53,6 +53,14 @@
         </configuration>
       </plugin>
 
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <configuration>
+          <skipPublishing>true</skipPublishing>
+        </configuration>
+      </plugin>
+
       <!-- Skip static analysis — this module has no source code -->
       <plugin>
         <groupId>com.github.spotbugs</groupId>

@@ -35,7 +35,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
 
   protected void postServiceRoot(Roots serviceRoot) throws Exception {
     String url = MockHttpRequestHelper.ODATA_BASE_URL + "TestService/Roots";
-    requestHelper.executePostWithMatcher(url, serviceRoot.toJson(), status().isCreated());
+    requestHelper.assertPostStatus(url, serviceRoot.toJson(), status().isCreated());
   }
 
   private Roots selectStoredRootWithMediaValidatedAttachments() {
@@ -64,7 +64,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
     String rootId = createRootAndReturnId();
     String attachmentMetadata = createAttachmentMetadata(fileName);
 
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS),
         attachmentMetadata,
         status().is(expectedStatus));
@@ -76,7 +76,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
     String fileName = "";
     String attachmentMetadata = createAttachmentMetadata(fileName);
 
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS),
         attachmentMetadata,
         status().isBadRequest());
@@ -87,7 +87,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
     String rootId = createRootAndReturnId();
     String attachmentMetadata = createAttachmentMetadata("IMAGE.JPG");
 
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS), attachmentMetadata, status().isCreated());
   }
 
@@ -96,7 +96,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
     String rootId = createRootAndReturnId();
     String attachmentMetadata = createAttachmentMetadata("image.JpEg");
 
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS), attachmentMetadata, status().isCreated());
   }
 
@@ -105,7 +105,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
     String rootId = createRootAndReturnId();
     String attachmentMetadata = createAttachmentMetadata("filename");
 
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS),
         attachmentMetadata,
         status().isUnsupportedMediaType());
@@ -116,7 +116,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
     String rootId = createRootAndReturnId();
     String attachmentMetadata = createAttachmentMetadata(".gitignore");
 
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS),
         attachmentMetadata,
         status().isUnsupportedMediaType());
@@ -138,7 +138,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
   void shouldValidateMediaTypes_forMultipleAttachments(String fileNames, int expectedStatus)
       throws Exception {
     String payload = buildPayload(fileNames);
-    requestHelper.executePostWithMatcher(BASE_URL, payload, status().is(expectedStatus));
+    requestHelper.assertPostStatus(BASE_URL, payload, status().is(expectedStatus));
   }
 
   @Test
@@ -148,7 +148,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
     payload.put("mediaValidatedAttachments", List.of());
 
     String payloadStr = objectMapper.writeValueAsString(payload);
-    requestHelper.executePostWithMatcher(BASE_URL, payloadStr, status().is(201));
+    requestHelper.assertPostStatus(BASE_URL, payloadStr, status().is(201));
   }
 
   @Test
@@ -161,7 +161,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
 
     payload.put("mimeValidatedAttachments", List.of(Map.of("fileName", "test3.pdf")));
 
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         BASE_URL, objectMapper.writeValueAsString(payload), status().isCreated());
   }
 
@@ -175,7 +175,7 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
 
     payload.put("mimeValidatedAttachments", List.of(Map.of("fileName", "test3.pdf")));
 
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         BASE_URL, objectMapper.writeValueAsString(payload), status().isUnsupportedMediaType());
   }
 

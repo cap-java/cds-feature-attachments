@@ -1,25 +1,43 @@
 name: CI - PR
 
+permissions:
+  actions: read
+  contents: read
+  packages: read
+  security-events: write
+
 on:
   workflow_dispatch:
-  pull_request_target:
+  pull_request:
     branches: [main]
     types: [reopened, synchronize, opened]
 
 jobs:
-  requires-approval:
+  blackduck:
+    name: Blackduck Scan
     runs-on: ubuntu-latest
-    name: "Waiting for PR approval as this workflow runs on pull_request_target"
-    if: github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.owner.login != 'cap-java'
-    environment: pr-approval
+    timeout-minutes: 30
+    permissions:
+      contents: read
     steps:
-      - name: Approval Step
-        run: echo "This job has been approved!"
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+
+      - name: Scan With Black Duck
+        uses: cap-java/.github/actions/scan-with-blackduck@main
+        with:
+          blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
+          maven-version: ${{ env.MAVEN_VERSION }}
+          project-name: com.sap.cds.feature.attachments
+          included-modules: cds-feature-attachments,cds-feature-attachments-oss,cds-feature-attachments-fs
+          scan_mode: RAPID
+          rapid_compare_mode: BOM_COMPARE # PRs might only be blocked by things they introduce, not by pre-existing issues that could have appeared in the main branch in the meantime
 
   build-and-test:
-    needs: requires-approval
-    if: always() && (needs.requires-approval.result == 'success' || needs.requires-approval.result == 'skipped')
-    uses: ./.github/workflows/pipeline.yml
-    with:
-      deploy-snapshot: false
+    uses: cap-java/cds-feature-attachments/.github/workflows/pipeline.yml@main
+    permissions:
+      actions: read
+      contents: read
+      packages: read
+      security-events: write
     secrets: inherit

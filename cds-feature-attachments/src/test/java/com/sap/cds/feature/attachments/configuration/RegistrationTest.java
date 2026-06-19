@@ -227,7 +227,7 @@ class RegistrationTest {
 
     cut.environment(configurer);
 
-    // No exception should be thrown, and no setPaths should be called
+    verify(dataSource).getCsv();
   }
 
   @Test
