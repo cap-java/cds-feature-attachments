@@ -9,10 +9,10 @@ import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.reflect.CdsEntity;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * The class {@link ReadonlyDataContextEnhancer} provides methods to backup and restore readonly
@@ -23,55 +23,36 @@ public final class ReadonlyDataContextEnhancer {
   private static final String DRAFT_READONLY_CONTEXT = "DRAFT_READONLY_CONTEXT";
 
   /**
-   * Preserves the readonly fields of an {@link Attachments attachment} in a custom field with the
-   * name {@value #DRAFT_READONLY_CONTEXT}. These readonly data will be removed from the data by the
-   * CAP Java runtime, but the preserved copy still exists.
+   * Preserves the readonly fields of an {@link Attachments attachment} in a custom field. These
+   * readonly data will be removed from the data by the CAP Java runtime, but the preserved copy
+   * still exists.
    *
    * @param target the target {@link CdsEntity entity}
    * @param data the list of {@link CdsData data} to enhance
    * @param isDraft <code>true</code> if the data is from a draft entity, <code>false</code>
    *     otherwise
    */
-  public static void preserveReadonlyFields(CdsEntity target, List<CdsData> data, boolean isDraft) {
+  public static void preserveReadonlyFields(
+      CdsEntity target, List<CdsData> data, boolean isDraft) {
 
     Validator validator =
         (path, element, value) -> {
+          AttachmentContext context =
+              AttachmentContext.from(path.target().type(), element);
           if (isDraft) {
-            // Determine if this is an inline attachment field
-            Optional<String> inlinePrefix =
-                ApplicationHandlerHelper.getInlineAttachmentPrefix(
-                    path.target().type(), element.getName());
-            if (inlinePrefix.isPresent()) {
-              // Inline attachment: use prefixed field names
-              String prefix = inlinePrefix.get() + "_";
-              Attachments attachment = Attachments.create();
-              attachment.setContentId(
-                  (String) path.target().values().get(prefix + Attachments.CONTENT_ID));
-              attachment.setStatus(
-                  (String) path.target().values().get(prefix + Attachments.STATUS));
-              attachment.setScannedAt(
-                  (java.time.Instant) path.target().values().get(prefix + Attachments.SCANNED_AT));
-              attachment.setFileName(
-                  (String) path.target().values().get(prefix + MediaData.FILE_NAME));
-              path.target().values().put(prefix + DRAFT_READONLY_CONTEXT, attachment);
-            } else {
-              // Composition-based attachment: use direct field names
-              Attachments values = Attachments.of(path.target().values());
-              Attachments attachment = Attachments.create();
-              attachment.setContentId(values.getContentId());
-              attachment.setStatus(values.getStatus());
-              attachment.setScannedAt(values.getScannedAt());
-              attachment.setFileName(values.getFileName());
-              path.target().values().put(DRAFT_READONLY_CONTEXT, attachment);
-            }
+            Attachments attachment = Attachments.create();
+            attachment.setContentId(
+                (String) path.target().values().get(context.fieldName(Attachments.CONTENT_ID)));
+            attachment.setStatus(
+                (String) path.target().values().get(context.fieldName(Attachments.STATUS)));
+            attachment.setScannedAt(
+                (java.time.Instant)
+                    path.target().values().get(context.fieldName(Attachments.SCANNED_AT)));
+            attachment.setFileName(
+                (String) path.target().values().get(context.fieldName(MediaData.FILE_NAME)));
+            path.target().values().put(context.fieldName(DRAFT_READONLY_CONTEXT), attachment);
           } else {
-            path.target().values().remove(DRAFT_READONLY_CONTEXT);
-            // Also remove inline prefixed draft readonly contexts
-            List<String> prefixes =
-                ApplicationHandlerHelper.getInlineAttachmentFieldNames(path.target().type());
-            for (String prefix : prefixes) {
-              path.target().values().remove(prefix + "_" + DRAFT_READONLY_CONTEXT);
-            }
+            path.target().values().remove(context.fieldName(DRAFT_READONLY_CONTEXT));
           }
         };
 
@@ -81,45 +62,23 @@ public final class ReadonlyDataContextEnhancer {
   }
 
   /**
-   * Restores the readonly fields with the backup from the data in the custom field {@value
-   * #DRAFT_READONLY_CONTEXT}. Supports both composition-based and inline attachment fields.
+   * Restores the readonly fields for the attachment described by the given context from the
+   * preserved backup in the data map.
    *
    * @param data the {@link CdsData data} to restore with readonly fields
+   * @param context the attachment context identifying which attachment's fields to restore
    */
-  public static void restoreReadonlyFields(CdsData data) {
-    // Restore composition-based readonly fields
-    CdsData readOnlyData = (CdsData) data.get(DRAFT_READONLY_CONTEXT);
+  public static void restoreReadonlyFields(CdsData data, AttachmentContext context) {
+    String readonlyKey = context.fieldName(DRAFT_READONLY_CONTEXT);
+    CdsData readOnlyData = (CdsData) data.get(readonlyKey);
     if (Objects.nonNull(readOnlyData)) {
-      data.put(Attachments.CONTENT_ID, readOnlyData.get(Attachments.CONTENT_ID));
-      data.put(Attachments.STATUS, readOnlyData.get(Attachments.STATUS));
-      data.put(Attachments.SCANNED_AT, readOnlyData.get(Attachments.SCANNED_AT));
-      // Only restore fileName if it was preserved (avoid overwriting framework-provided value)
+      data.put(context.fieldName(Attachments.CONTENT_ID), readOnlyData.get(Attachments.CONTENT_ID));
+      data.put(context.fieldName(Attachments.STATUS), readOnlyData.get(Attachments.STATUS));
+      data.put(context.fieldName(Attachments.SCANNED_AT), readOnlyData.get(Attachments.SCANNED_AT));
       if (readOnlyData.get(MediaData.FILE_NAME) != null) {
-        data.put(MediaData.FILE_NAME, readOnlyData.get(MediaData.FILE_NAME));
+        data.put(context.fieldName(MediaData.FILE_NAME), readOnlyData.get(MediaData.FILE_NAME));
       }
-      data.remove(DRAFT_READONLY_CONTEXT);
-    }
-
-    // Restore inline attachment readonly fields
-    for (String key : List.copyOf(data.keySet())) {
-      if (key.endsWith("_" + DRAFT_READONLY_CONTEXT)) {
-        String prefix = key.substring(0, key.length() - DRAFT_READONLY_CONTEXT.length() - 1);
-        CdsData inlineReadOnlyData = (CdsData) data.get(key);
-        if (Objects.nonNull(inlineReadOnlyData)) {
-          data.put(
-              prefix + "_" + Attachments.CONTENT_ID,
-              inlineReadOnlyData.get(Attachments.CONTENT_ID));
-          data.put(prefix + "_" + Attachments.STATUS, inlineReadOnlyData.get(Attachments.STATUS));
-          data.put(
-              prefix + "_" + Attachments.SCANNED_AT,
-              inlineReadOnlyData.get(Attachments.SCANNED_AT));
-          if (inlineReadOnlyData.get(MediaData.FILE_NAME) != null) {
-            data.put(
-                prefix + "_" + MediaData.FILE_NAME, inlineReadOnlyData.get(MediaData.FILE_NAME));
-          }
-          data.remove(key);
-        }
-      }
+      data.remove(readonlyKey);
     }
   }
 

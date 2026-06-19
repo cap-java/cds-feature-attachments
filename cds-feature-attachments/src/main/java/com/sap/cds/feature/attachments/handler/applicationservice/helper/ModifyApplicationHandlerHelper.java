@@ -93,7 +93,7 @@ public final class ModifyApplicationHandlerHelper {
       String defaultMaxSize,
       AttachmentContext context) {
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-    ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values());
+    ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values(), context);
     Attachments attachment = getExistingAttachment(keys, existingAttachments, context);
 
     String contentId =
