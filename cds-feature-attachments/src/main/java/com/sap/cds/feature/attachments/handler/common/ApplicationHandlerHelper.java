@@ -34,9 +34,10 @@ public final class ApplicationHandlerHelper {
   /**
    * Internal marker key used to store the inline attachment prefix in extracted attachment data.
    * This enables correct matching of inline attachments when operating on multiple inline
-   * attachments on the same entity.
+   * attachments on the same entity. Package-private; only used by {@link AttachmentContext.Inline}
+   * for matching.
    */
-  public static final String INLINE_PREFIX_MARKER = "_inlinePrefix";
+  static final String INLINE_PREFIX_MARKER = "_inlinePrefix";
 
   /**
    * A filter for media content fields. The filter checks if the entity is a media entity and if the
@@ -275,10 +276,6 @@ public final class ApplicationHandlerHelper {
     Map<String, Object> keyMap = new HashMap<>(keys);
     keyMap.entrySet().removeIf(entry -> entry.getKey().equals(Drafts.IS_ACTIVE_ENTITY));
     return keyMap;
-  }
-
-  public static String resolveFieldName(String fieldName, Optional<String> inlinePrefix) {
-    return inlinePrefix.map(p -> p + "_" + fieldName).orElse(fieldName);
   }
 
   private ApplicationHandlerHelper() {

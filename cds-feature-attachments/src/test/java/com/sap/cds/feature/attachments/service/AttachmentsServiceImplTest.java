@@ -9,6 +9,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -26,7 +27,6 @@ import com.sap.cds.services.runtime.CdsRuntime;
 import java.io.InputStream;
 import java.time.Instant;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -99,7 +99,12 @@ class AttachmentsServiceImplTest {
     Map<String, Object> ids = Map.of("ID1", "value1", "id2", "Value2");
     var input =
         new CreateAttachmentInput(
-            ids, mock(CdsEntity.class), "fileName", "mimeType", stream, Optional.empty());
+            ids,
+            mock(CdsEntity.class),
+            "fileName",
+            "mimeType",
+            stream,
+            new AttachmentContext.Composition());
 
     var result = cut.createAttachment(input);
 
@@ -132,7 +137,7 @@ class AttachmentsServiceImplTest {
             "fileName",
             "mimeType",
             mock(InputStream.class),
-            Optional.empty());
+            new AttachmentContext.Composition());
 
     var result = cut.createAttachment(input);
 

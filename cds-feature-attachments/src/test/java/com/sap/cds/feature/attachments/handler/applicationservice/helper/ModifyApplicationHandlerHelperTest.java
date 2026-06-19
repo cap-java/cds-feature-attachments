@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
@@ -26,7 +27,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,7 +94,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     attachment.getContent(),
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    Optional.empty()));
+                    new AttachmentContext.Composition()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -121,7 +121,7 @@ class ModifyApplicationHandlerHelperTest {
     when(parameterInfo.getHeader("Content-Length")).thenReturn(null);
 
     // Make event.processEvent() read from the stream, triggering the limit check
-    when(event.processEvent(any(), any(), any(), any()))
+    when(event.processEvent(any(), any(), any(), any(), any()))
         .thenAnswer(
             invocation -> {
               InputStream wrappedContent = invocation.getArgument(1);
@@ -149,7 +149,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     content,
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    Optional.empty()));
+                    new AttachmentContext.Composition()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -182,7 +182,7 @@ class ModifyApplicationHandlerHelperTest {
                 path,
                 content,
                 ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                Optional.empty()));
+                new AttachmentContext.Composition()));
   }
 
   @Test
@@ -215,7 +215,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     content,
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    Optional.empty()));
+                    new AttachmentContext.Composition()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
   }
@@ -249,7 +249,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     (InputStream) data.get("avatar_content"),
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    Optional.of("avatar")));
+                    new AttachmentContext.Inline("avatar")));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -282,7 +282,7 @@ class ModifyApplicationHandlerHelperTest {
                 path,
                 content,
                 ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                Optional.of("avatar")));
+                new AttachmentContext.Inline("avatar")));
   }
 
   @Test
@@ -302,7 +302,7 @@ class ModifyApplicationHandlerHelperTest {
     when(target.keys()).thenReturn(Map.of("ID", data.getId()));
     when(parameterInfo.getHeader("Content-Length")).thenReturn(null);
 
-    when(event.processEvent(any(), any(), any(), any()))
+    when(event.processEvent(any(), any(), any(), any(), any()))
         .thenAnswer(
             invocation -> {
               InputStream wrappedContent = invocation.getArgument(1);
@@ -326,7 +326,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     content,
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    Optional.of("avatar")));
+                    new AttachmentContext.Inline("avatar")));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }

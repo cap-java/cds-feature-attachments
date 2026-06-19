@@ -10,6 +10,7 @@ import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
@@ -19,7 +20,6 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,19 +54,17 @@ public class DeleteAttachmentsHandler implements EventHandler {
 
     Converter converter =
         (path, element, value) -> {
-          Optional<String> inlinePrefix =
-              ApplicationHandlerHelper.getInlineAttachmentPrefix(
-                  path.target().entity(), element.getName());
-          // For inline attachments, extract the prefixed fields to get proper contentId
+          AttachmentContext attachmentCtx = AttachmentContext.from(path.target().type(), element);
           Attachments attachment;
-          if (inlinePrefix.isPresent()) {
+          if (attachmentCtx.isInline()) {
             attachment =
                 ApplicationHandlerHelper.extractInlineAttachment(
-                    path.target().values(), inlinePrefix.get());
+                    path.target().values(), ((AttachmentContext.Inline) attachmentCtx).prefix());
           } else {
             attachment = Attachments.of(path.target().values());
           }
-          return deleteEvent.processEvent(path, (InputStream) value, attachment, context);
+          return deleteEvent.processEvent(
+              path, (InputStream) value, attachment, context, attachmentCtx);
         };
 
     CdsDataProcessor.create()
