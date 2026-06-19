@@ -27,6 +27,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Att
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
@@ -42,7 +43,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -232,7 +232,10 @@ class ReadAttachmentsHandlerTest {
     cut.processAfter(readEventContext, List.of(attachment));
 
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId(), Optional.empty());
+        .scanAsync(
+            readEventContext.getTarget(),
+            attachment.getContentId(),
+            new AttachmentContext.Composition());
   }
 
   @Test
@@ -246,7 +249,10 @@ class ReadAttachmentsHandlerTest {
     cut.processAfter(readEventContext, List.of(attachment));
 
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId(), Optional.empty());
+        .scanAsync(
+            readEventContext.getTarget(),
+            attachment.getContentId(),
+            new AttachmentContext.Composition());
   }
 
   @Test
@@ -280,7 +286,10 @@ class ReadAttachmentsHandlerTest {
 
     verify(persistenceService).run(any(com.sap.cds.ql.cqn.CqnUpdate.class));
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId(), Optional.empty());
+        .scanAsync(
+            readEventContext.getTarget(),
+            attachment.getContentId(),
+            new AttachmentContext.Composition());
     assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
   }
 
@@ -302,7 +311,10 @@ class ReadAttachmentsHandlerTest {
 
     verify(persistenceService).run(any(com.sap.cds.ql.cqn.CqnUpdate.class));
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId(), Optional.empty());
+        .scanAsync(
+            readEventContext.getTarget(),
+            attachment.getContentId(),
+            new AttachmentContext.Composition());
     assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
   }
 
@@ -349,7 +361,10 @@ class ReadAttachmentsHandlerTest {
     cut.processAfter(readEventContext, List.of(attachment));
 
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId(), Optional.empty());
+        .scanAsync(
+            readEventContext.getTarget(),
+            attachment.getContentId(),
+            new AttachmentContext.Composition());
     verify(attachmentStatusValidator).verifyStatus(StatusCode.UNSCANNED);
     verifyNoInteractions(persistenceService);
   }
