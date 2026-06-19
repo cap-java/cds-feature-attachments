@@ -4,6 +4,7 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.modifyevents;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
@@ -22,8 +23,13 @@ public interface ModifyAttachmentEvent {
    * @param content the content of the attachment
    * @param attachment existing attachment data
    * @param eventContext the current event context
+   * @param context the attachment context describing how to address this attachment's fields
    * @return the processed content
    */
   InputStream processEvent(
-      Path path, InputStream content, Attachments attachment, EventContext eventContext);
+      Path path,
+      InputStream content,
+      Attachments attachment,
+      EventContext eventContext,
+      AttachmentContext context);
 }

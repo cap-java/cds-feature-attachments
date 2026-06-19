@@ -8,14 +8,13 @@ import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
-import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.draft.DraftService;
 import java.io.InputStream;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,10 +35,11 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 
   @Override
   public InputStream processEvent(
-      Path path, InputStream content, Attachments attachment, EventContext eventContext) {
-    Optional<String> inlinePrefix =
-        Optional.ofNullable((String) attachment.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER));
-
+      Path path,
+      InputStream content,
+      Attachments attachment,
+      EventContext eventContext,
+      AttachmentContext context) {
     String qualifiedName = eventContext.getTarget().getQualifiedName();
     logger.debug(
         "Processing the event for calling attachment service with mark as delete event for entity {}",
@@ -57,28 +57,18 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
           qualifiedName);
     }
     if (nonNull(path)) {
-      String contentIdField =
-          ApplicationHandlerHelper.resolveFieldName(Attachments.CONTENT_ID, inlinePrefix);
-      String statusField =
-          ApplicationHandlerHelper.resolveFieldName(Attachments.STATUS, inlinePrefix);
-      String scannedAtField =
-          ApplicationHandlerHelper.resolveFieldName(Attachments.SCANNED_AT, inlinePrefix);
-      String mimeTypeField =
-          ApplicationHandlerHelper.resolveFieldName(MediaData.MIME_TYPE, inlinePrefix);
-      String fileNameField =
-          ApplicationHandlerHelper.resolveFieldName(MediaData.FILE_NAME, inlinePrefix);
-
-      String newContentId = (String) path.target().values().get(contentIdField);
+      String newContentId = (String) path.target().values().get(context.fieldName(Attachments.CONTENT_ID));
       boolean replacedBySameContent =
           nonNull(newContentId) && newContentId.equals(attachment.getContentId());
-      boolean noNewContentSupplied = !path.target().values().containsKey(contentIdField);
+      boolean noNewContentSupplied =
+          !path.target().values().containsKey(context.fieldName(Attachments.CONTENT_ID));
       if (replacedBySameContent || noNewContentSupplied) {
-        path.target().values().put(contentIdField, null);
-        path.target().values().put(statusField, null);
-        path.target().values().put(scannedAtField, null);
-        if (inlinePrefix.isPresent()) {
-          path.target().values().put(mimeTypeField, null);
-          path.target().values().put(fileNameField, null);
+        path.target().values().put(context.fieldName(Attachments.CONTENT_ID), null);
+        path.target().values().put(context.fieldName(Attachments.STATUS), null);
+        path.target().values().put(context.fieldName(Attachments.SCANNED_AT), null);
+        if (context.isInline()) {
+          path.target().values().put(context.fieldName(MediaData.MIME_TYPE), null);
+          path.target().values().put(context.fieldName(MediaData.FILE_NAME), null);
         }
       }
     }
