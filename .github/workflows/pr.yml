@@ -35,4 +35,9 @@ jobs:
 
   build-and-test:
     uses: cap-java/cds-feature-attachments/.github/workflows/pipeline.yml@main
+    permissions:
+      actions: read
+      contents: read
+      packages: read
+      security-events: write
     secrets: inherit
