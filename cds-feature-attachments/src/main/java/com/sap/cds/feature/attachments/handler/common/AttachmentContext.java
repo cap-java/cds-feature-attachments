@@ -38,6 +38,16 @@ public sealed interface AttachmentContext {
   boolean isInline();
 
   /**
+   * Extracts an {@link Attachments} view from the given data map. For composition-based
+   * attachments, wraps the values directly. For inline attachments, strips the prefix from flat
+   * keys to produce a logical attachment view.
+   *
+   * @param values the data map (either the attachment entity row or the parent entity row)
+   * @return an {@link Attachments} object with logical field names
+   */
+  Attachments extractFrom(Map<String, Object> values);
+
+  /**
    * Determines the correct {@link AttachmentContext} from a {@code CdsDataProcessor} callback.
    *
    * @param entity the entity type at the current processing path
@@ -67,6 +77,11 @@ public sealed interface AttachmentContext {
     public boolean isInline() {
       return false;
     }
+
+    @Override
+    public Attachments extractFrom(Map<String, Object> values) {
+      return Attachments.of(values);
+    }
   }
 
   /**
@@ -89,6 +104,11 @@ public sealed interface AttachmentContext {
     @Override
     public boolean isInline() {
       return true;
+    }
+
+    @Override
+    public Attachments extractFrom(Map<String, Object> values) {
+      return ApplicationHandlerHelper.extractInlineAttachment(values, prefix);
     }
   }
 }

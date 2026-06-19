@@ -55,14 +55,7 @@ public class DeleteAttachmentsHandler implements EventHandler {
     Converter converter =
         (path, element, value) -> {
           AttachmentContext attachmentCtx = AttachmentContext.from(path.target().type(), element);
-          Attachments attachment;
-          if (attachmentCtx.isInline()) {
-            attachment =
-                ApplicationHandlerHelper.extractInlineAttachment(
-                    path.target().values(), ((AttachmentContext.Inline) attachmentCtx).prefix());
-          } else {
-            attachment = Attachments.of(path.target().values());
-          }
+          Attachments attachment = attachmentCtx.extractFrom(path.target().values());
           return deleteEvent.processEvent(
               path, (InputStream) value, attachment, context, attachmentCtx);
         };

@@ -119,14 +119,7 @@ public class ReadAttachmentsHandler implements EventHandler {
       Converter converter =
           (path, element, value) -> {
             AttachmentContext attachmentCtx = AttachmentContext.from(path.target().type(), element);
-            Attachments attachment;
-            if (attachmentCtx.isInline()) {
-              attachment =
-                  ApplicationHandlerHelper.extractInlineAttachment(
-                      path.target().values(), ((AttachmentContext.Inline) attachmentCtx).prefix());
-            } else {
-              attachment = Attachments.of(path.target().values());
-            }
+            Attachments attachment = attachmentCtx.extractFrom(path.target().values());
             InputStream content = attachment.getContent();
             if (nonNull(attachment.getContentId())) {
               verifyStatus(path, attachment, attachmentCtx);

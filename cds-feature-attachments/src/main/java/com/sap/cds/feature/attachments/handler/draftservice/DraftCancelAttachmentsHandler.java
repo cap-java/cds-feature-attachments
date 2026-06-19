@@ -132,17 +132,12 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   }
 
   private Attachments extractAttachmentFromPath(Path path, AttachmentContext attachmentCtx) {
-    Attachments attachment;
+    Attachments attachment = attachmentCtx.extractFrom(path.target().values());
     if (attachmentCtx.isInline()) {
-      attachment =
-          ApplicationHandlerHelper.extractInlineAttachment(
-              path.target().values(), ((AttachmentContext.Inline) attachmentCtx).prefix());
       Object hasActiveEntity = path.target().values().get(Drafts.HAS_ACTIVE_ENTITY);
       if (hasActiveEntity != null) {
         attachment.put(Drafts.HAS_ACTIVE_ENTITY, hasActiveEntity);
       }
-    } else {
-      attachment = Attachments.of(path.target().values());
     }
     return attachment;
   }
