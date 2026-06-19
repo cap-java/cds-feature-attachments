@@ -40,7 +40,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,14 +118,12 @@ public class ReadAttachmentsHandler implements EventHandler {
 
       Converter converter =
           (path, element, value) -> {
-            AttachmentContext attachmentCtx =
-                AttachmentContext.from(path.target().type(), element);
+            AttachmentContext attachmentCtx = AttachmentContext.from(path.target().type(), element);
             Attachments attachment;
             if (attachmentCtx.isInline()) {
               attachment =
                   ApplicationHandlerHelper.extractInlineAttachment(
-                      path.target().values(),
-                      ((AttachmentContext.Inline) attachmentCtx).prefix());
+                      path.target().values(), ((AttachmentContext.Inline) attachmentCtx).prefix());
             } else {
               attachment = Attachments.of(path.target().values());
             }

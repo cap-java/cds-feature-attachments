@@ -55,8 +55,7 @@ public final class ModifyApplicationHandlerHelper {
 
     Converter converter =
         (path, element, value) -> {
-          AttachmentContext context =
-              AttachmentContext.from(path.target().type(), element);
+          AttachmentContext context = AttachmentContext.from(path.target().type(), element);
           return handleAttachmentForEntity(
               condensedExistingAttachments,
               eventFactory,
@@ -135,8 +134,7 @@ public final class ModifyApplicationHandlerHelper {
 
   private static String getValMaxValue(
       CdsEntity entity, String defaultMaxSize, AttachmentContext context) {
-    Optional<CdsElement> contentElement =
-        entity.findElement(context.fieldName("content"));
+    Optional<CdsElement> contentElement = entity.findElement(context.fieldName("content"));
     return contentElement
         .flatMap(e -> e.findAnnotation("Validation.Maximum"))
         .map(CdsAnnotation::getValue)
@@ -146,9 +144,7 @@ public final class ModifyApplicationHandlerHelper {
   }
 
   private static Attachments getExistingAttachment(
-      Map<String, Object> keys,
-      List<Attachments> existingAttachments,
-      AttachmentContext context) {
+      Map<String, Object> keys, List<Attachments> existingAttachments, AttachmentContext context) {
     return existingAttachments.stream()
         .filter(existingData -> context.matches(existingData, keys))
         .findAny()

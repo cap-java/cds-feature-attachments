@@ -17,7 +17,6 @@ import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
 import com.sap.cds.ql.cqn.Path;
-import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsStructuredType;
 import com.sap.cds.services.draft.DraftCancelEventContext;
@@ -104,8 +103,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   private Validator buildDeleteContentValidator(
       DraftCancelEventContext context, List<? extends CdsData> activeCondensedAttachments) {
     return (path, element, value) -> {
-      AttachmentContext attachmentCtx =
-          AttachmentContext.from(path.target().type(), element);
+      AttachmentContext attachmentCtx = AttachmentContext.from(path.target().type(), element);
       Attachments attachment = extractAttachmentFromPath(path, attachmentCtx);
 
       if (Boolean.FALSE.equals(attachment.get(Drafts.HAS_ACTIVE_ENTITY))) {
@@ -138,8 +136,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
     if (attachmentCtx.isInline()) {
       attachment =
           ApplicationHandlerHelper.extractInlineAttachment(
-              path.target().values(),
-              ((AttachmentContext.Inline) attachmentCtx).prefix());
+              path.target().values(), ((AttachmentContext.Inline) attachmentCtx).prefix());
       Object hasActiveEntity = path.target().values().get(Drafts.HAS_ACTIVE_ENTITY);
       if (hasActiveEntity != null) {
         attachment.put(Drafts.HAS_ACTIVE_ENTITY, hasActiveEntity);

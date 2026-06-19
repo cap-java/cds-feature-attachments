@@ -57,7 +57,8 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
           qualifiedName);
     }
     if (nonNull(path)) {
-      String newContentId = (String) path.target().values().get(context.fieldName(Attachments.CONTENT_ID));
+      String newContentId =
+          (String) path.target().values().get(context.fieldName(Attachments.CONTENT_ID));
       boolean replacedBySameContent =
           nonNull(newContentId) && newContentId.equals(attachment.getContentId());
       boolean noNewContentSupplied =

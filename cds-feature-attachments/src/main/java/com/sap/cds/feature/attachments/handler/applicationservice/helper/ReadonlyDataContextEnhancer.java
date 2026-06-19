@@ -32,13 +32,11 @@ public final class ReadonlyDataContextEnhancer {
    * @param isDraft <code>true</code> if the data is from a draft entity, <code>false</code>
    *     otherwise
    */
-  public static void preserveReadonlyFields(
-      CdsEntity target, List<CdsData> data, boolean isDraft) {
+  public static void preserveReadonlyFields(CdsEntity target, List<CdsData> data, boolean isDraft) {
 
     Validator validator =
         (path, element, value) -> {
-          AttachmentContext context =
-              AttachmentContext.from(path.target().type(), element);
+          AttachmentContext context = AttachmentContext.from(path.target().type(), element);
           if (isDraft) {
             Attachments attachment = Attachments.create();
             attachment.setContentId(

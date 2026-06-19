@@ -73,8 +73,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
           CqnSelect select = Select.from(draftEntity).matching(path.target().keys());
           Result result = persistence.run(select);
 
-          AttachmentContext attachmentCtx =
-              AttachmentContext.from(path.target().type(), element);
+          AttachmentContext attachmentCtx = AttachmentContext.from(path.target().type(), element);
 
           List<Attachments> existingAttachments;
           if (attachmentCtx.isInline()) {

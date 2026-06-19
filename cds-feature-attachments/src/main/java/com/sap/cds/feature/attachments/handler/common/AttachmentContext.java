@@ -82,8 +82,7 @@ public sealed interface AttachmentContext {
 
     @Override
     public boolean matches(Attachments existing, Map<String, Object> parentKeys) {
-      String existingPrefix =
-          (String) existing.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER);
+      String existingPrefix = (String) existing.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER);
       return prefix.equals(existingPrefix);
     }
 
