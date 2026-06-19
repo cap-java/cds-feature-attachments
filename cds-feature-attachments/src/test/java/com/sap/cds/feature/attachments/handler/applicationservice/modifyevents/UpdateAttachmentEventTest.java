@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsEntity;
@@ -44,9 +45,22 @@ class UpdateAttachmentEventTest {
     var existingData = Attachments.create();
     var eventContext = mock(EventContext.class);
 
-    cut.processEvent(path, testContentStream, existingData, eventContext);
+    cut.processEvent(
+        path, testContentStream, existingData, eventContext, new AttachmentContext.Composition());
 
-    verify(createEvent).processEvent(path, testContentStream, existingData, eventContext);
-    verify(deleteEvent).processEvent(path, testContentStream, existingData, eventContext);
+    verify(createEvent)
+        .processEvent(
+            path,
+            testContentStream,
+            existingData,
+            eventContext,
+            new AttachmentContext.Composition());
+    verify(deleteEvent)
+        .processEvent(
+            path,
+            testContentStream,
+            existingData,
+            eventContext,
+            new AttachmentContext.Composition());
   }
 }

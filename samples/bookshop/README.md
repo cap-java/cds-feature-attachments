@@ -19,16 +19,19 @@ This sample demonstrates how to use the `cds-feature-attachments` plugin in a CA
 ## Getting Started
 
 1. **Clone and navigate to the sample**:
+
    ```bash
    cd samples/bookshop
    ```
 
 2. **Install dependencies**:
+
    ```bash
    mvn clean compile
    ```
 
 3. **Run the application**:
+
    ```bash
    mvn spring-boot:run
    ```
@@ -87,7 +90,7 @@ The `srv/attachments.cds` file extends the Books entity with attachments:
 
 ```cds
 using { sap.capire.bookshop as my } from '../db/schema';
-using { sap.attachments.Attachments } from 'com.sap.cds/cds-feature-attachments';
+using { Attachments } from 'com.sap.cds/cds-feature-attachments';
 
 extend my.Books with {
   attachments: Composition of many Attachments;

@@ -16,6 +16,10 @@ annotate db.Roots.mimeValidatedAttachments with {
     content @(Core.AcceptableMediaTypes: ['application/pdf']);
 }
 
+annotate db.Roots:coverImage with {
+    content @Validation.Maximum: '5MB';
+};
+
 service TestService {
     entity Roots            as projection on db.Roots;
     entity AttachmentEntity as projection on db.AttachmentEntity;
