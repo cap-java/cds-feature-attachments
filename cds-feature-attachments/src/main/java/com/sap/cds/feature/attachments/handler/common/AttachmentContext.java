@@ -30,9 +30,10 @@ public sealed interface AttachmentContext {
    * attachment.
    *
    * @param existing the existing attachment data to check
-   * @param parentKeys the parent entity keys from the current path
+   * @param keys the entity keys from the current path (attachment's own keys for composition,
+   *     parent entity keys for inline)
    */
-  boolean matches(Attachments existing, Map<String, Object> parentKeys);
+  boolean matches(Attachments existing, Map<String, Object> keys);
 
   /** Returns {@code true} if this is an inline attachment (flattened into the parent entity). */
   boolean isInline();
@@ -69,8 +70,8 @@ public sealed interface AttachmentContext {
     }
 
     @Override
-    public boolean matches(Attachments existing, Map<String, Object> parentKeys) {
-      return ApplicationHandlerHelper.areKeysInData(parentKeys, existing);
+    public boolean matches(Attachments existing, Map<String, Object> keys) {
+      return ApplicationHandlerHelper.areKeysInData(keys, existing);
     }
 
     @Override
@@ -96,7 +97,7 @@ public sealed interface AttachmentContext {
     }
 
     @Override
-    public boolean matches(Attachments existing, Map<String, Object> parentKeys) {
+    public boolean matches(Attachments existing, Map<String, Object> keys) {
       String existingPrefix = (String) existing.get(ApplicationHandlerHelper.INLINE_PREFIX_MARKER);
       return prefix.equals(existingPrefix);
     }
