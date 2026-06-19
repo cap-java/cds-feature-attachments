@@ -7,6 +7,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.oss.client.OSClient;
+import com.sap.cds.feature.attachments.oss.client.TenantOSClientProvider;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
@@ -32,11 +33,13 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(OSSAttachmentsServiceHandler.class);
   private final OSClient osClient;
+  private final TenantOSClientProvider tenantOSClientProvider;
   private final boolean multitenancyEnabled;
   private final String objectStoreKind;
 
   /**
-   * Creates a new OSSAttachmentsServiceHandler with the given {@link OSClient}.
+   * Creates a new OSSAttachmentsServiceHandler with a fixed {@link OSClient}. Used for
+   * single-tenant and shared multitenancy modes where all tenants share one object store.
    *
    * <p>Use {@link com.sap.cds.feature.attachments.oss.client.OSClientFactory#create
    * OSClientFactory.create()} to obtain an {@link OSClient} from a service binding.
@@ -48,7 +51,24 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
   public OSSAttachmentsServiceHandler(
       OSClient osClient, boolean multitenancyEnabled, String objectStoreKind) {
     this.osClient = osClient;
+    this.tenantOSClientProvider = null;
     this.multitenancyEnabled = multitenancyEnabled;
+    this.objectStoreKind = objectStoreKind;
+  }
+
+  /**
+   * Creates a new OSSAttachmentsServiceHandler for separate-bucket multitenancy mode. Each tenant
+   * gets a dedicated object store instance resolved at runtime via the {@link
+   * TenantOSClientProvider}.
+   *
+   * @param tenantOSClientProvider the provider for per-tenant OSClient instances
+   * @param objectStoreKind the object store kind (must be "separate")
+   */
+  public OSSAttachmentsServiceHandler(
+      TenantOSClientProvider tenantOSClientProvider, String objectStoreKind) {
+    this.osClient = null;
+    this.tenantOSClientProvider = tenantOSClientProvider;
+    this.multitenancyEnabled = true;
     this.objectStoreKind = objectStoreKind;
   }
 
@@ -64,7 +84,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     String objectKey = buildObjectKey(context, contentId);
 
     try {
-      osClient.uploadContent(data.getContent(), objectKey, data.getMimeType()).get();
+      resolveClient(context).uploadContent(data.getContent(), objectKey, data.getMimeType()).get();
       logger.info("Uploaded file {}", fileName);
       context.getData().setStatus(StatusCode.SCANNING);
       context.setIsInternalStored(false);
@@ -88,7 +108,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
 
     try {
       String objectKey = buildObjectKey(context, context.getContentId());
-      osClient.deleteContent(objectKey).get();
+      resolveClient(context).deleteContent(objectKey).get();
     } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
       throw new ServiceException(
@@ -118,7 +138,7 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
         context.getContentId());
     try {
       String objectKey = buildObjectKey(context, context.getContentId());
-      Future<InputStream> future = osClient.readContent(objectKey);
+      Future<InputStream> future = resolveClient(context).readContent(objectKey);
       InputStream inputStream = future.get(); // Wait for the content to be read
       if (inputStream != null) {
         context.getData().setContent(inputStream);
@@ -137,6 +157,19 @@ public class OSSAttachmentsServiceHandler implements EventHandler {
     } finally {
       context.setCompleted();
     }
+  }
+
+  /**
+   * Resolves the appropriate {@link OSClient} for the current request. In separate multitenancy
+   * mode, each tenant has a dedicated object store instance resolved via the {@link
+   * TenantOSClientProvider}. In shared or single-tenant mode, the fixed client is returned.
+   */
+  private OSClient resolveClient(EventContext context) {
+    if (tenantOSClientProvider != null && "separate".equals(objectStoreKind)) {
+      String tenant = getTenant(context);
+      return tenantOSClientProvider.getClientForTenant(tenant);
+    }
+    return osClient;
   }
 
   /**

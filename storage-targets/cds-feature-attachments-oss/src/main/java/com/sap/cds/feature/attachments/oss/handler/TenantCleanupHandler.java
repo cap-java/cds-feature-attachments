@@ -13,8 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Event handler that cleans up a tenant's attachment data from the shared object store when the
- * tenant unsubscribes. Registered only in shared multitenancy mode.
+ * Event handler that cleans up a tenant's attachment objects when the tenant unsubscribes in
+ * <b>shared</b> multitenancy mode. Deletes all objects with the tenant's prefix from the shared
+ * object store.
+ *
+ * <p>For <b>separate</b> multitenancy mode, see {@link ObjectStoreInstanceLifecycleHandler} which
+ * handles instance deprovisioning via Service Manager.
  */
 @ServiceName(DeploymentService.DEFAULT_NAME)
 public class TenantCleanupHandler implements EventHandler {
@@ -30,6 +34,7 @@ public class TenantCleanupHandler implements EventHandler {
   void cleanupTenantData(UnsubscribeEventContext context) {
     String tenantId = context.getTenant();
     OSSAttachmentsServiceHandler.validateTenantId(tenantId);
+
     String prefix = tenantId + "/";
     try {
       osClient.deleteContentByPrefix(prefix).get();
