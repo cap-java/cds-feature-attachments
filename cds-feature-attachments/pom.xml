@@ -78,13 +78,13 @@
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
-      <version>4.10.1</version>
+      <version>4.10.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.5.34</version>
+      <version>1.5.35</version>
       <scope>test</scope>
     </dependency>
     <dependency>
