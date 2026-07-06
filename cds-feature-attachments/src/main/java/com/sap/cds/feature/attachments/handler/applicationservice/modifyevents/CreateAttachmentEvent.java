@@ -10,6 +10,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
@@ -51,24 +52,31 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
   @Override
   public InputStream processEvent(
-      Path path, InputStream content, Attachments attachment, EventContext eventContext) {
+      Path path,
+      InputStream content,
+      Attachments attachment,
+      EventContext eventContext,
+      AttachmentContext context) {
     logger.debug(
         "Calling attachment service with create event for entity {}",
         path.target().entity().getQualifiedName());
     Map<String, Object> values = path.target().values();
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-    Optional<String> mimeTypeOptional = getFieldValue(MediaData.MIME_TYPE, values, attachment);
-    Optional<String> fileNameOptional = getFieldValue(MediaData.FILE_NAME, values, attachment);
+
+    Optional<String> fileNameOptional =
+        getFieldValue(MediaData.FILE_NAME, values, attachment, context);
+    Optional<String> mimeTypeOptional =
+        getFieldValue(MediaData.MIME_TYPE, values, attachment, context);
 
     // Fall back to HTTP headers when values are not set in payload
     if (eventContext.getParameterInfo() != null) {
       if (fileNameOptional.isEmpty()) {
         fileNameOptional = extractFileNameFromHeader(eventContext);
-        fileNameOptional.ifPresent(fn -> values.put(MediaData.FILE_NAME, fn));
+        fileNameOptional.ifPresent(fn -> values.put(context.fieldName(MediaData.FILE_NAME), fn));
       }
       if (mimeTypeOptional.isEmpty()) {
         mimeTypeOptional = extractMimeTypeFromHeader(eventContext);
-        mimeTypeOptional.ifPresent(mt -> values.put(MediaData.MIME_TYPE, mt));
+        mimeTypeOptional.ifPresent(mt -> values.put(context.fieldName(MediaData.MIME_TYPE), mt));
       }
     }
 
@@ -78,22 +86,30 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
             path.target().entity(),
             fileNameOptional.orElse(null),
             mimeTypeOptional.orElse(null),
-            content);
+            content,
+            context);
     AttachmentModificationResult result = attachmentService.createAttachment(createEventInput);
     ChangeSetListener createListener =
         listenerProvider.provideListener(result.contentId(), eventContext.getCdsRuntime());
 
     eventContext.getChangeSetContext().register(createListener);
-    path.target().values().put(Attachments.CONTENT_ID, result.contentId());
-    path.target().values().put(Attachments.STATUS, result.status());
+    path.target().values().put(context.fieldName(Attachments.CONTENT_ID), result.contentId());
+    path.target().values().put(context.fieldName(Attachments.STATUS), result.status());
     if (nonNull(result.scannedAt())) {
-      path.target().values().put(Attachments.SCANNED_AT, result.scannedAt());
+      path.target().values().put(context.fieldName(Attachments.SCANNED_AT), result.scannedAt());
     }
     return result.isInternalStored() ? content : null;
   }
 
   private static Optional<String> getFieldValue(
-      String fieldName, Map<String, Object> values, Attachments attachment) {
+      String fieldName,
+      Map<String, Object> values,
+      Attachments attachment,
+      AttachmentContext context) {
+    if (context.isInline()) {
+      Object prefixedValue = values.get(context.fieldName(fieldName));
+      if (nonNull(prefixedValue)) return Optional.of((String) prefixedValue);
+    }
     Object annotationValue = values.get(fieldName);
     Object value = nonNull(annotationValue) ? annotationValue : attachment.get(fieldName);
     return Optional.ofNullable((String) value);

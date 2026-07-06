@@ -41,7 +41,8 @@ public final class MediaTypeResolver {
 
   public static Optional<CdsAnnotation<Object>> getAcceptableMediaTypesAnnotation(
       CdsEntity entity) {
-    return Optional.ofNullable(entity.getElement(CONTENT_ELEMENT))
+    return entity
+        .findElement(CONTENT_ELEMENT)
         .flatMap(element -> element.findAnnotation(ACCEPTABLE_MEDIA_TYPES_ANNOTATION));
   }
 

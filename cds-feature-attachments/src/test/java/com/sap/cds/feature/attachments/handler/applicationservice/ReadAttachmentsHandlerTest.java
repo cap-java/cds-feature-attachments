@@ -19,6 +19,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Atta
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.EventItems_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnly_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Items;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
@@ -26,6 +27,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Att
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
@@ -230,7 +232,10 @@ class ReadAttachmentsHandlerTest {
     cut.processAfter(readEventContext, List.of(attachment));
 
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+        .scanAsync(
+            readEventContext.getTarget(),
+            attachment.getContentId(),
+            new AttachmentContext.Composition());
   }
 
   @Test
@@ -244,7 +249,10 @@ class ReadAttachmentsHandlerTest {
     cut.processAfter(readEventContext, List.of(attachment));
 
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+        .scanAsync(
+            readEventContext.getTarget(),
+            attachment.getContentId(),
+            new AttachmentContext.Composition());
   }
 
   @Test
@@ -278,7 +286,10 @@ class ReadAttachmentsHandlerTest {
 
     verify(persistenceService).run(any(com.sap.cds.ql.cqn.CqnUpdate.class));
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+        .scanAsync(
+            readEventContext.getTarget(),
+            attachment.getContentId(),
+            new AttachmentContext.Composition());
     assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
   }
 
@@ -300,7 +311,10 @@ class ReadAttachmentsHandlerTest {
 
     verify(persistenceService).run(any(com.sap.cds.ql.cqn.CqnUpdate.class));
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+        .scanAsync(
+            readEventContext.getTarget(),
+            attachment.getContentId(),
+            new AttachmentContext.Composition());
     assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
   }
 
@@ -347,7 +361,10 @@ class ReadAttachmentsHandlerTest {
     cut.processAfter(readEventContext, List.of(attachment));
 
     verify(asyncMalwareScanExecutor)
-        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+        .scanAsync(
+            readEventContext.getTarget(),
+            attachment.getContentId(),
+            new AttachmentContext.Composition());
     verify(attachmentStatusValidator).verifyStatus(StatusCode.UNSCANNED);
     verifyNoInteractions(persistenceService);
   }
@@ -464,6 +481,48 @@ class ReadAttachmentsHandlerTest {
 
     verifyNoInteractions(asyncMalwareScanExecutor);
     verifyNoInteractions(persistenceService);
+  }
+
+  @Test
+  void processBeforeWithInlineOnlyEntity() {
+    var select = Select.from(InlineOnly_.class).columns(InlineOnly_::ID);
+    mockEventContext(InlineOnly_.CDS_NAME, select);
+
+    cut.processBefore(readEventContext);
+  }
+
+  @Test
+  void processBeforeWithBothCompositionAndInlineEntity() {
+    var select = Select.from(RootTable_.class).columns(RootTable_::ID);
+    mockEventContext(RootTable_.CDS_NAME, select);
+
+    cut.processBefore(readEventContext);
+  }
+
+  @Test
+  void processAfterWithInlineAttachmentData() {
+    mockEventContext(RootTable_.CDS_NAME, mock(CqnSelect.class));
+    var root = RootTable.create();
+    root.setProfilePictureContentId("inline-cid");
+    root.setProfilePictureContent(mock(InputStream.class));
+    root.setProfilePictureStatus(StatusCode.CLEAN);
+    root.setProfilePictureScannedAt(Instant.now());
+
+    cut.processAfter(readEventContext, List.of(root));
+
+    assertThat(root.getProfilePictureContent()).isInstanceOf(LazyProxyInputStream.class);
+  }
+
+  @Test
+  void processAfterWithInlineAttachmentWithoutContentIdReturnsOriginalValue() {
+    mockEventContext(RootTable_.CDS_NAME, mock(CqnSelect.class));
+    var root = RootTable.create();
+    var originalStream = mock(InputStream.class);
+    root.setProfilePictureContent(originalStream);
+
+    cut.processAfter(readEventContext, List.of(root));
+
+    assertThat(root.getProfilePictureContent()).isSameAs(originalStream);
   }
 
   private void mockEventContext(String entityName, CqnSelect select) {

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
 import com.sap.cds.reflect.CdsElement;
@@ -49,7 +50,9 @@ class DoNothingAttachmentEventTest {
     when(target.entity()).thenReturn(entity);
     when(entity.getQualifiedName()).thenReturn("some.qualified.name");
 
-    var result = cut.processEvent(path, streamInput, data, mock(EventContext.class));
+    var result =
+        cut.processEvent(
+            path, streamInput, data, mock(EventContext.class), new AttachmentContext.Composition());
 
     assertThat(result).isEqualTo(streamInput);
     verifyNoInteractions(element, data);

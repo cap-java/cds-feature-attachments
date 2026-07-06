@@ -11,8 +11,10 @@ import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.M
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsAnnotation;
+import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.EventContext;
@@ -20,6 +22,7 @@ import com.sap.cds.services.ServiceException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class ModifyApplicationHandlerHelper {
 
@@ -51,14 +54,17 @@ public final class ModifyApplicationHandlerHelper {
         ApplicationHandlerHelper.condenseAttachments(existingAttachments, entity);
 
     Converter converter =
-        (path, element, value) ->
-            handleAttachmentForEntity(
-                condensedExistingAttachments,
-                eventFactory,
-                eventContext,
-                path,
-                (InputStream) value,
-                defaultMaxSize);
+        (path, element, value) -> {
+          AttachmentContext context = AttachmentContext.from(path.target().type(), element);
+          return handleAttachmentForEntity(
+              condensedExistingAttachments,
+              eventFactory,
+              eventContext,
+              path,
+              (InputStream) value,
+              defaultMaxSize,
+              context);
+        };
 
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
@@ -74,6 +80,7 @@ public final class ModifyApplicationHandlerHelper {
    * @param path the {@link Path} of the attachment
    * @param content the content of the attachment
    * @param defaultMaxSize the default max size to use when no annotation is present
+   * @param context the attachment context describing how to address this attachment's fields
    * @return the processed content as an {@link InputStream}
    */
   public static InputStream handleAttachmentForEntity(
@@ -82,13 +89,17 @@ public final class ModifyApplicationHandlerHelper {
       EventContext eventContext,
       Path path,
       InputStream content,
-      String defaultMaxSize) {
+      String defaultMaxSize,
+      AttachmentContext context) {
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
-    ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values());
-    Attachments attachment = getExistingAttachment(keys, existingAttachments);
-    String contentId = (String) path.target().values().get(Attachments.CONTENT_ID);
+    ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values(), context);
+    Attachments attachment = getExistingAttachment(keys, existingAttachments, context);
+
+    String contentId =
+        (String) path.target().values().get(context.fieldName(Attachments.CONTENT_ID));
+
     String contentLength = eventContext.getParameterInfo().getHeader("Content-Length");
-    String maxSizeStr = getValMaxValue(path.target().entity(), defaultMaxSize);
+    String maxSizeStr = getValMaxValue(path.target().entity(), defaultMaxSize, context);
     eventContext.put(
         "attachment.MaxSize",
         maxSizeStr); // make max size available in context for error handling later
@@ -112,7 +123,7 @@ public final class ModifyApplicationHandlerHelper {
     ModifyAttachmentEvent eventToProcess =
         eventFactory.getEvent(wrappedContent, contentId, attachment);
     try {
-      return eventToProcess.processEvent(path, wrappedContent, attachment, eventContext);
+      return eventToProcess.processEvent(path, wrappedContent, attachment, eventContext, context);
     } catch (Exception e) {
       if (wrappedContent != null && wrappedContent.isLimitExceeded()) {
         throw tooLargeException;
@@ -121,9 +132,10 @@ public final class ModifyApplicationHandlerHelper {
     }
   }
 
-  private static String getValMaxValue(CdsEntity entity, String defaultMaxSize) {
-    return entity
-        .findElement("content")
+  private static String getValMaxValue(
+      CdsEntity entity, String defaultMaxSize, AttachmentContext context) {
+    Optional<CdsElement> contentElement = entity.findElement(context.fieldName("content"));
+    return contentElement
         .flatMap(e -> e.findAnnotation("Validation.Maximum"))
         .map(CdsAnnotation::getValue)
         .filter(v -> !"true".equals(v.toString()))
@@ -132,9 +144,9 @@ public final class ModifyApplicationHandlerHelper {
   }
 
   private static Attachments getExistingAttachment(
-      Map<String, Object> keys, List<Attachments> existingAttachments) {
+      Map<String, Object> keys, List<Attachments> existingAttachments, AttachmentContext context) {
     return existingAttachments.stream()
-        .filter(existingData -> ApplicationHandlerHelper.areKeysInData(keys, existingData))
+        .filter(existingData -> context.matches(existingData, keys))
         .findAny()
         .orElse(Attachments.create());
   }

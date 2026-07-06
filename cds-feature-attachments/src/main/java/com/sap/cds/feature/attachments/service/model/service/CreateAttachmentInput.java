@@ -3,6 +3,7 @@
  */
 package com.sap.cds.feature.attachments.service.model.service;
 
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.reflect.CdsEntity;
 import java.io.InputStream;
 import java.util.Map;
@@ -15,10 +16,12 @@ import java.util.Map;
  * @param fileName The file name of the content
  * @param mimeType The mime type of the content
  * @param content The input stream of the content
+ * @param attachmentContext The context describing how to address this attachment's fields
  */
 public record CreateAttachmentInput(
     Map<String, Object> attachmentIds,
     CdsEntity attachmentEntity,
     String fileName,
     String mimeType,
-    InputStream content) {}
+    InputStream content,
+    AttachmentContext attachmentContext) {}

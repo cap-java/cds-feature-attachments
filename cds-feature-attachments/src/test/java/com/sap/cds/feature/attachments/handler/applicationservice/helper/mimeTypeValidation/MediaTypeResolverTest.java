@@ -36,7 +36,7 @@ class MediaTypeResolverTest {
 
     when(model.getEntity("MediaEntity")).thenReturn(media);
 
-    when(media.getElement("content")).thenReturn(element);
+    when(media.findElement("content")).thenReturn(Optional.of(element));
     when(element.findAnnotation("Core.AcceptableMediaTypes")).thenReturn(Optional.of(annotation));
     when(annotation.getValue()).thenReturn(List.of("image/png", "image/jpeg"));
 
@@ -52,7 +52,7 @@ class MediaTypeResolverTest {
     CdsEntity media = mock(CdsEntity.class);
 
     when(model.getEntity("MediaEntity")).thenReturn(media);
-    when(media.getElement(any())).thenReturn(null);
+    when(media.findElement(any())).thenReturn(Optional.empty());
 
     Map<String, List<String>> result =
         MediaTypeResolver.getAcceptableMediaTypesFromEntity(model, List.of("MediaEntity"));

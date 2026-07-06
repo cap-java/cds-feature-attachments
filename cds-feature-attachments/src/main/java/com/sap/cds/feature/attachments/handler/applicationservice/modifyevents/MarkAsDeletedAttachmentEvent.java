@@ -7,6 +7,8 @@ import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.Path;
@@ -33,7 +35,11 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 
   @Override
   public InputStream processEvent(
-      Path path, InputStream content, Attachments attachment, EventContext eventContext) {
+      Path path,
+      InputStream content,
+      Attachments attachment,
+      EventContext eventContext,
+      AttachmentContext context) {
     String qualifiedName = eventContext.getTarget().getQualifiedName();
     logger.debug(
         "Processing the event for calling attachment service with mark as delete event for entity {}",
@@ -51,12 +57,20 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
           qualifiedName);
     }
     if (nonNull(path)) {
-      String newContentId = (String) path.target().values().get(Attachments.CONTENT_ID);
-      if (nonNull(newContentId) && newContentId.equals(attachment.getContentId())
-          || !path.target().values().containsKey(Attachments.CONTENT_ID)) {
-        path.target().values().put(Attachments.CONTENT_ID, null);
-        path.target().values().put(Attachments.STATUS, null);
-        path.target().values().put(Attachments.SCANNED_AT, null);
+      String newContentId =
+          (String) path.target().values().get(context.fieldName(Attachments.CONTENT_ID));
+      boolean replacedBySameContent =
+          nonNull(newContentId) && newContentId.equals(attachment.getContentId());
+      boolean noNewContentSupplied =
+          !path.target().values().containsKey(context.fieldName(Attachments.CONTENT_ID));
+      if (replacedBySameContent || noNewContentSupplied) {
+        path.target().values().put(context.fieldName(Attachments.CONTENT_ID), null);
+        path.target().values().put(context.fieldName(Attachments.STATUS), null);
+        path.target().values().put(context.fieldName(Attachments.SCANNED_AT), null);
+        if (context.isInline()) {
+          path.target().values().put(context.fieldName(MediaData.MIME_TYPE), null);
+          path.target().values().put(context.fieldName(MediaData.FILE_NAME), null);
+        }
       }
     }
     return content;

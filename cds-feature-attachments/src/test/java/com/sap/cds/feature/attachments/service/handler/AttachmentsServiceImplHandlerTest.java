@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
@@ -93,7 +94,9 @@ class AttachmentsServiceImplHandlerTest {
   void malwareScannerRegisteredForEndOfTransaction() {
     var listener = mock(ChangeSetListener.class);
     var entity = mock(CdsEntity.class);
-    when(malwareScanProvider.getChangeSetListener(entity, "contentId")).thenReturn(listener);
+    when(malwareScanProvider.getChangeSetListener(
+            entity, "contentId", new AttachmentContext.Composition()))
+        .thenReturn(listener);
     var createContext = AttachmentCreateEventContext.create();
     createContext.setAttachmentIds(Map.of(Attachments.ID, "contentId"));
     createContext.setData(MediaData.create());
@@ -103,7 +106,8 @@ class AttachmentsServiceImplHandlerTest {
     cut.createAttachment(createContext);
     cut.afterCreateAttachment(createContext);
 
-    verify(malwareScanProvider).getChangeSetListener(entity, "contentId");
+    verify(malwareScanProvider)
+        .getChangeSetListener(entity, "contentId", new AttachmentContext.Composition());
   }
 
   @Test
@@ -125,7 +129,7 @@ class AttachmentsServiceImplHandlerTest {
   @Test
   void afterCreateAttachment_noChangeSetContext_throws() {
     var entity = mock(CdsEntity.class);
-    when(malwareScanProvider.getChangeSetListener(any(), any()))
+    when(malwareScanProvider.getChangeSetListener(any(), any(), any()))
         .thenReturn(mock(ChangeSetListener.class));
     var createContext = AttachmentCreateEventContext.create();
     createContext.setAttachmentIds(Map.of(Attachments.ID, "some-id"));

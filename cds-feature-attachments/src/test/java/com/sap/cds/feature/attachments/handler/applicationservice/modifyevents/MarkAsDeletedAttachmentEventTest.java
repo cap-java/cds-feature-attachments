@@ -10,6 +10,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
+import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.Path;
@@ -31,6 +35,7 @@ class MarkAsDeletedAttachmentEventTest {
   private MarkAsDeletedAttachmentEvent cut;
   private AttachmentService attachmentService;
   private Path path;
+  private ResolvedSegment target;
   private Map<String, Object> currentData;
   private EventContext context;
   private UserInfo userInfo;
@@ -42,9 +47,13 @@ class MarkAsDeletedAttachmentEventTest {
 
     context = mock(EventContext.class);
     path = mock(Path.class);
-    var target = mock(ResolvedSegment.class);
+    target = mock(ResolvedSegment.class);
     currentData = new HashMap<>();
     when(path.target()).thenReturn(target);
+    // Default: non-inline entity (mock with no elements → getInlineAttachmentFieldNames returns
+    // empty)
+    var entity = mock(CdsEntity.class);
+    when(target.entity()).thenReturn(entity);
     var eventTarget = mock(CdsEntity.class);
     when(context.getTarget()).thenReturn(eventTarget);
     when(eventTarget.getQualifiedName()).thenReturn("some.qualified.name");
@@ -60,7 +69,8 @@ class MarkAsDeletedAttachmentEventTest {
     var data = Attachments.create();
     data.setContentId(contentId);
 
-    var expectedValue = cut.processEvent(path, value, data, context);
+    var expectedValue =
+        cut.processEvent(path, value, data, context, new AttachmentContext.Composition());
 
     assertThat(expectedValue).isEqualTo(value);
     assertThat(data.getContentId()).isEqualTo(contentId);
@@ -71,7 +81,9 @@ class MarkAsDeletedAttachmentEventTest {
     assertThat(currentData)
         .containsEntry(Attachments.CONTENT_ID, null)
         .containsEntry(Attachments.STATUS, null)
-        .containsEntry(Attachments.SCANNED_AT, null);
+        .containsEntry(Attachments.SCANNED_AT, null)
+        .doesNotContainKey(MediaData.MIME_TYPE)
+        .doesNotContainKey(MediaData.FILE_NAME);
   }
 
   @Test
@@ -79,12 +91,16 @@ class MarkAsDeletedAttachmentEventTest {
     var value = new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8));
     var data = Attachments.create();
 
-    var expectedValue = cut.processEvent(path, value, data, context);
+    var expectedValue =
+        cut.processEvent(path, value, data, context, new AttachmentContext.Composition());
 
     assertThat(expectedValue).isEqualTo(value);
     assertThat(data.getContentId()).isNull();
     verifyNoInteractions(attachmentService);
-    assertThat(currentData).containsEntry(Attachments.CONTENT_ID, null);
+    assertThat(currentData)
+        .containsEntry(Attachments.CONTENT_ID, null)
+        .doesNotContainKey(MediaData.MIME_TYPE)
+        .doesNotContainKey(MediaData.FILE_NAME);
   }
 
   @Test
@@ -95,12 +111,16 @@ class MarkAsDeletedAttachmentEventTest {
     data.setContentId(contentId);
     when(context.getEvent()).thenReturn(DraftService.EVENT_DRAFT_PATCH);
 
-    var expectedValue = cut.processEvent(path, value, data, context);
+    var expectedValue =
+        cut.processEvent(path, value, data, context, new AttachmentContext.Composition());
 
     assertThat(expectedValue).isEqualTo(value);
     assertThat(data.getContentId()).isEqualTo(contentId);
     verifyNoInteractions(attachmentService);
-    assertThat(currentData).containsEntry(Attachments.CONTENT_ID, null);
+    assertThat(currentData)
+        .containsEntry(Attachments.CONTENT_ID, null)
+        .doesNotContainKey(MediaData.MIME_TYPE)
+        .doesNotContainKey(MediaData.FILE_NAME);
   }
 
   @Test
@@ -110,7 +130,8 @@ class MarkAsDeletedAttachmentEventTest {
     var data = Attachments.create();
     data.setContentId(contentId);
 
-    var expectedValue = cut.processEvent(null, value, data, context);
+    var expectedValue =
+        cut.processEvent(null, value, data, context, new AttachmentContext.Composition());
 
     assertThat(expectedValue).isEqualTo(value);
     // Attachment service should still be called to mark as deleted
@@ -131,7 +152,8 @@ class MarkAsDeletedAttachmentEventTest {
     // Set a different contentId in the path values
     currentData.put(Attachments.CONTENT_ID, newContentId);
 
-    var expectedValue = cut.processEvent(path, value, data, context);
+    var expectedValue =
+        cut.processEvent(path, value, data, context, new AttachmentContext.Composition());
 
     assertThat(expectedValue).isEqualTo(value);
     // Attachment service should be called to mark old content as deleted
@@ -140,5 +162,64 @@ class MarkAsDeletedAttachmentEventTest {
     assertThat(deletionInputCaptor.getValue().contentId()).isEqualTo(oldContentId);
     // currentData should NOT be cleared since newContentId differs from attachment.getContentId()
     assertThat(currentData).containsEntry(Attachments.CONTENT_ID, newContentId);
+  }
+
+  // --- Inline Attachment Tests ---
+
+  @Test
+  void inlineDelete_clearsPrefixedFields() {
+    // Use real entity from CDS model so that getInlineAttachmentFieldNames returns
+    // ["profilePicture"]
+    CdsEntity realEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", "some-id");
+    values.put("profilePicture_contentId", "old-content-id");
+    values.put("profilePicture_status", "Clean");
+    values.put("profilePicture_mimeType", "image/png");
+    values.put("profilePicture_fileName", "photo.png");
+    when(target.values()).thenReturn(values);
+
+    var data = Attachments.create();
+    data.setContentId("old-content-id");
+    data.put("_inlinePrefix", "profilePicture");
+    when(context.getEvent()).thenReturn(DraftService.EVENT_DRAFT_PATCH);
+
+    cut.processEvent(path, null, data, context, new AttachmentContext.Inline("profilePicture"));
+
+    // All prefixed fields should be cleared
+    assertThat(values)
+        .containsEntry("profilePicture_contentId", null)
+        .containsEntry("profilePicture_status", null)
+        .containsEntry("profilePicture_scannedAt", null)
+        .containsEntry("profilePicture_mimeType", null)
+        .containsEntry("profilePicture_fileName", null);
+    // Unprefixed fields should NOT be set
+    assertThat(values).doesNotContainKey(Attachments.CONTENT_ID);
+    assertThat(values).doesNotContainKey(Attachments.STATUS);
+  }
+
+  @Test
+  void inlineDelete_withDifferentNewContentId_doesNotClearPrefixedFields() {
+    CdsEntity realEntity =
+        RuntimeHelper.runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
+    when(target.entity()).thenReturn(realEntity);
+
+    Map<String, Object> values = new HashMap<>();
+    values.put("ID", "some-id");
+    values.put("profilePicture_contentId", "different-new-content-id");
+    when(target.values()).thenReturn(values);
+
+    var data = Attachments.create();
+    data.setContentId("old-content-id");
+    data.put("_inlinePrefix", "profilePicture");
+
+    cut.processEvent(path, null, data, context, new AttachmentContext.Inline("profilePicture"));
+
+    // contentId differs from attachment's contentId, so fields should NOT be cleared
+    assertThat(values).containsEntry("profilePicture_contentId", "different-new-content-id");
+    assertThat(values).doesNotContainKey("profilePicture_status");
   }
 }
