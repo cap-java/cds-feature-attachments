@@ -116,6 +116,80 @@ annotate service.Books with @(
 
 This sample uses the default in-memory storage, which stores attachments directly in the H2 database. For production scenarios, consider using object store backends.
 
+## Standalone Malware Scanning
+
+Since cds-feature-attachments 1.6.0 the malware scanner is exposed as a standalone `MalwareScannerService` that can be injected and used independently of attachment storage. This sample demonstrates the API via two REST endpoints:
+
+- `POST /api/v1/malware/scan` — raw request body
+- `POST /api/v1/malware/scan/upload` — `multipart/form-data` with a `file` field
+
+Both return `{"status": "<CLEAN|INFECTED|ENCRYPTED|NO_SCANNER|FAILED>"}`.
+
+### Consumer code
+
+Injecting and calling the service in any Spring bean:
+
+```java
+import com.sap.cds.feature.attachments.service.MalwareScannerService;
+import com.sap.cds.feature.attachments.service.malware.client.MalwareScanResultStatus;
+
+@Autowired
+private MalwareScannerService malwareScannerService;
+
+public MalwareScanResultStatus scanBytes(InputStream content) {
+    return malwareScannerService.scanContent(content);
+}
+```
+
+See `srv/src/main/java/customer/bookshop/handlers/MalwareScanRestHandler.java` for the full controller in this sample.
+
+### Try it locally (no binding)
+
+Without a `malware-scanner` service binding the scanner returns `NO_SCANNER`. This still proves the service is wired correctly:
+
+```bash
+curl -u admin:admin -X POST --data-binary 'hello world' \
+     http://localhost:8080/api/v1/malware/scan
+# {"status":"NO_SCANNER"}
+
+curl -u admin:admin -F file=@somefile.pdf \
+     http://localhost:8080/api/v1/malware/scan/upload
+# {"status":"NO_SCANNER","filename":"somefile.pdf","size":12345}
+```
+
+### Try it with a real binding (BTP hybrid mode)
+
+To exercise `CLEAN` / `INFECTED` results, bind an SAP Malware Scanning Service instance and run in hybrid mode:
+
+```bash
+# One-time: log in to Cloud Foundry and bind the service instance
+cf login
+cds bind malware-scanner -2 <INSTANCE-NAME>:<SERVICE-KEY-NAME>
+# creates .cdsrc-private.json with the binding
+
+# Restart the app in hybrid mode so the binding is picked up
+mvn spring-boot:run \
+    -Dspring-boot.run.profiles=hybrid \
+    -Dspring-boot.run.jvmArguments="-Dcds.env.profiles=hybrid"
+```
+
+Then:
+
+```bash
+# Safe content: expected CLEAN
+curl -u admin:admin -X POST --data 'hello world' \
+     http://localhost:8080/api/v1/malware/scan
+# {"status":"CLEAN"}
+
+# EICAR standard antivirus test string: expected INFECTED
+curl -u admin:admin -X POST \
+     --data 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*' \
+     http://localhost:8080/api/v1/malware/scan
+# {"status":"INFECTED"}
+```
+
+Status codes are documented in `com.sap.cds.feature.attachments.service.malware.client.MalwareScanResultStatus`.
+
 ## Advanced Configuration
 
 For advanced topics like object store integration, malware scanning, and security configuration, see the [main project documentation](../../README.md).
