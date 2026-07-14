@@ -11,8 +11,8 @@ This sample demonstrates how to use the `cds-feature-attachments` plugin in a CA
 
 ## Prerequisites
 
-- Java 17 or higher
-- Maven 3.6 or higher
+- Java 21 or higher
+- Maven 3.9.14 or higher
 - Node.js 18 or higher
 - npm
 
