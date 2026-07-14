@@ -59,8 +59,8 @@
   </distributionManagement>
 
   <properties>
-    <revision>1.6.0-rc1</revision>
-    <java.version>17</java.version>
+    <revision>1.6.0</revision>
+    <java.version>21</java.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -70,8 +70,8 @@
     <software.amazon.awssdk-crt-version>0.47.0</software.amazon.awssdk-crt-version>
 
     <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
-    <cds.services.version>4.9.0</cds.services.version>
-    <cds.cdsdk.version>9.9.0</cds.cdsdk.version>
+    <cds.services.version>5.0.0</cds.services.version>
+    <cds.cdsdk.version>10.0.4</cds.cdsdk.version>
 
     <spotless.check.skip>true</spotless.check.skip>
   </properties>
@@ -352,7 +352,7 @@
               <rules>
                 <banDuplicatePomDependencyVersions/>
                 <requireMavenVersion>
-                  <version>3.6.3</version>
+                  <version>3.9.14</version>
                 </requireMavenVersion>
                 <requireJavaVersion>
                   <version>${java.version}</version>
