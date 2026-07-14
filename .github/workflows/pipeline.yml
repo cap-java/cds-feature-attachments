@@ -58,12 +58,8 @@ jobs:
         with:
           maven-version: ${{ env.MAVEN_VERSION }}
 
-      - name: Install @sap/cds-dk
-        run: npm i -g @sap/cds-dk@10.0.4
-        shell: bash
-
       - name: Run Tests
-        run: mvn test -ntp -B -P skip-integration-tests -Dcds.install-node.skip
+        run: mvn test -ntp -B -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss -am -Dcds.install-node.skip
 
   integration-tests:
     name: Integration Tests (Java ${{ matrix.java-version }}, ${{ matrix.auth-method }}, ${{ matrix.hyperscaler }})

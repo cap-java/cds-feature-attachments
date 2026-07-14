@@ -55,16 +55,12 @@ runs:
           sleep 10
         done
 
-    - name: Install @sap/cds-dk
-      shell: bash
-      run: |
-        npm i -g @sap/cds-dk@10.0.4
-        echo "$(npm config get prefix)/bin" >> "${GITHUB_PATH}"
-
     - name: Install CDS dependencies
       shell: bash
-      run: npm ci
       working-directory: integration-tests/mtx-local
+      run: |
+        npm ci
+        echo "$(pwd)/node_modules/.bin" >> "${GITHUB_PATH}"
 
     - name: Bind objectstore
       shell: bash

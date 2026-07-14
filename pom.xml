@@ -433,15 +433,6 @@
         </plugins>
       </build>
     </profile>
-    <profile>
-      <id>skip-integration-tests</id>
-      <modules>
-        <module>cds-feature-attachments</module>
-        <module>storage-targets/cds-feature-attachments-fs</module>
-        <module>storage-targets/cds-feature-attachments-oss</module>
-        <!-- Exclude integration-tests and coverage-report modules -->
-      </modules>
-    </profile>
   </profiles>
 
 </project>
