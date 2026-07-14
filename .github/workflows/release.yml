@@ -1,8 +1,8 @@
 name: Deploy to Maven Central
 
 env:
-  JAVA_VERSION: '17'
-  MAVEN_VERSION: '3.9.12'
+  JAVA_VERSION: '21'
+  MAVEN_VERSION: '3.9.16'
 
 on:
   release:

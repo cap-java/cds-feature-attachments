@@ -1,7 +1,7 @@
 name: CI - MAIN
 
 env:
-  MAVEN_VERSION: "3.9.12"
+  MAVEN_VERSION: "3.9.16"
 
 on:
   workflow_dispatch:
