@@ -166,6 +166,16 @@
           </execution>
 
           <execution>
+            <id>cds.npm-ci</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>ci</arguments>
+            </configuration>
+          </execution>
+
+          <execution>
             <id>cds.build</id>
             <goals>
               <goal>cds</goal>

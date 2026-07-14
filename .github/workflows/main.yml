@@ -1,7 +1,7 @@
 name: CI - MAIN
 
 env:
-  MAVEN_VERSION: "3.9.12"
+  MAVEN_VERSION: "3.9.16"
 
 on:
   workflow_dispatch:
@@ -29,7 +29,7 @@ jobs:
           scan_mode: FULL
 
   build-and-test:
-    uses: cap-java/cds-feature-attachments/.github/workflows/pipeline.yml@main
+    uses: ./.github/workflows/pipeline.yml
     permissions:
       contents: read
       security-events: write

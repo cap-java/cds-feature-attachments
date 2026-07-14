@@ -1,7 +1,7 @@
 name: Reusable Workflow
 
 env:
-  MAVEN_VERSION: "3.9.12"
+  MAVEN_VERSION: "3.9.16"
 
 on:
   workflow_call:
@@ -20,7 +20,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
         with:
-          java-version: "17"
+          java-version: "21"
           distribution: sapmachine
           cache: maven
 
@@ -41,7 +41,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java-version: [17, 21]
+        java-version: [21, 25]
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
@@ -58,12 +58,8 @@ jobs:
         with:
           maven-version: ${{ env.MAVEN_VERSION }}
 
-      - name: Install @sap/cds-dk
-        run: npm i -g @sap/cds-dk@9.9.1
-        shell: bash
-
       - name: Run Tests
-        run: mvn test -ntp -B -P skip-integration-tests -Dcds.install-node.skip
+        run: mvn test -ntp -B -pl cds-feature-attachments,storage-targets/cds-feature-attachments-fs,storage-targets/cds-feature-attachments-oss -am -Dcds.install-node.skip
 
   integration-tests:
     name: Integration Tests (Java ${{ matrix.java-version }}, ${{ matrix.auth-method }}, ${{ matrix.hyperscaler }})
@@ -74,7 +70,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java-version: [17, 21]
+        java-version: [21, 25]
         auth-method: [basic, mtls]
         hyperscaler: [AWS, AZURE, GCP]
     steps:
@@ -82,7 +78,7 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Bind CF Services
-        uses: cap-java/cds-feature-attachments/.github/actions/cf-bind@main
+        uses: ./.github/actions/cf-bind
         with:
           cf-api: ${{ secrets[format('CF_API_{0}', matrix.hyperscaler)] }}
           cf-username: ${{ secrets.CF_USERNAME }}
@@ -92,7 +88,7 @@ jobs:
           auth-method: ${{ matrix.auth-method }}
 
       - name: Integration Tests
-        uses: cap-java/cds-feature-attachments/.github/actions/integration-tests@main
+        uses: ./.github/actions/integration-tests
         with:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
@@ -110,7 +106,7 @@ jobs:
           fetch-depth: 0
 
       - name: Bind CF Services
-        uses: cap-java/cds-feature-attachments/.github/actions/cf-bind@main
+        uses: ./.github/actions/cf-bind
         with:
           cf-api: ${{ secrets.CF_API_AWS }}
           cf-username: ${{ secrets.CF_USERNAME }}
@@ -122,7 +118,7 @@ jobs:
       - name: SonarQube Scan
         uses: cap-java/.github/actions/scan-with-sonar@main
         with:
-          java-version: 17
+          java-version: 21
           maven-version: ${{ env.MAVEN_VERSION }}
           sonarq-token: ${{ secrets.SONARQ_TOKEN }}
           sonar-project-key: cds-feature-attachments
@@ -151,6 +147,6 @@ jobs:
       - name: CodeQL Analysis
         uses: cap-java/.github/actions/scan-with-codeql@main
         with:
-          java-version: 17
+          java-version: 21
           maven-version: ${{ env.MAVEN_VERSION }}
           language: ${{ matrix.language }}
