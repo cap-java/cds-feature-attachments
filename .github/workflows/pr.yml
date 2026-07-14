@@ -34,7 +34,7 @@ jobs:
           rapid_compare_mode: BOM_COMPARE # PRs might only be blocked by things they introduce, not by pre-existing issues that could have appeared in the main branch in the meantime
 
   build-and-test:
-    uses: cap-java/cds-feature-attachments/.github/workflows/pipeline.yml@main
+    uses: ./.github/workflows/pipeline.yml
     permissions:
       actions: read
       contents: read

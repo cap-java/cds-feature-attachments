@@ -82,7 +82,7 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Bind CF Services
-        uses: cap-java/cds-feature-attachments/.github/actions/cf-bind@main
+        uses: ./.github/actions/cf-bind
         with:
           cf-api: ${{ secrets[format('CF_API_{0}', matrix.hyperscaler)] }}
           cf-username: ${{ secrets.CF_USERNAME }}
@@ -92,7 +92,7 @@ jobs:
           auth-method: ${{ matrix.auth-method }}
 
       - name: Integration Tests
-        uses: cap-java/cds-feature-attachments/.github/actions/integration-tests@main
+        uses: ./.github/actions/integration-tests
         with:
           java-version: ${{ matrix.java-version }}
           maven-version: ${{ env.MAVEN_VERSION }}
@@ -110,7 +110,7 @@ jobs:
           fetch-depth: 0
 
       - name: Bind CF Services
-        uses: cap-java/cds-feature-attachments/.github/actions/cf-bind@main
+        uses: ./.github/actions/cf-bind
         with:
           cf-api: ${{ secrets.CF_API_AWS }}
           cf-username: ${{ secrets.CF_USERNAME }}
