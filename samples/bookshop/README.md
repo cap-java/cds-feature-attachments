@@ -19,16 +19,19 @@ This sample demonstrates how to use the `cds-feature-attachments` plugin in a CA
 ## Getting Started
 
 1. **Clone and navigate to the sample**:
+
    ```bash
    cd samples/bookshop
    ```
 
 2. **Install dependencies**:
+
    ```bash
    mvn clean compile
    ```
 
 3. **Run the application**:
+
    ```bash
    mvn spring-boot:run
    ```
@@ -167,10 +170,8 @@ cf login
 cds bind malware-scanner -2 <INSTANCE-NAME>:<SERVICE-KEY-NAME>
 # creates .cdsrc-private.json with the binding
 
-# Restart the app in hybrid mode so the binding is picked up
-mvn spring-boot:run \
-    -Dspring-boot.run.profiles=hybrid \
-    -Dspring-boot.run.jvmArguments="-Dcds.env.profiles=hybrid"
+# start the app in hybrid mode so the binding is picked up
+cds bind --exec mvn spring-boot:run
 ```
 
 Then:
