@@ -14,8 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,7 +28,7 @@ class MultiTenantAttachmentIsolationTest {
   private static final String DOCUMENTS_URL = "/odata/v4/MtTestService/Documents";
 
   @Autowired MockMvc client;
-  @Autowired ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
   void createDocumentInTenant1_notVisibleInTenant2() throws Exception {
