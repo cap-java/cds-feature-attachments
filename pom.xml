@@ -66,8 +66,8 @@
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.46.6</software.amazon.awssdk-s3-version>
-    <software.amazon.awssdk-crt-version>0.47.0</software.amazon.awssdk-crt-version>
+    <software.amazon.awssdk-s3-version>2.47.1</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-crt-version>0.47.2</software.amazon.awssdk-crt-version>
 
     <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
     <cds.services.version>5.0.0</cds.services.version>
@@ -89,7 +89,7 @@
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-bom</artifactId>
-        <version>4.2.15.Final</version>
+        <version>4.2.16.Final</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -97,7 +97,7 @@
       <dependency>
         <groupId>com.sap.cloud.sdk</groupId>
         <artifactId>sdk-bom</artifactId>
-        <version>5.30.0</version>
+        <version>5.32.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -105,7 +105,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>6.1.0</version>
+        <version>6.1.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -191,7 +191,7 @@
         <plugin>
           <groupId>org.sonatype.central</groupId>
           <artifactId>central-publishing-maven-plugin</artifactId>
-          <version>0.10.0</version>
+          <version>0.11.0</version>
           <extensions>true</extensions>
         </plugin>
         <plugin>
@@ -243,7 +243,7 @@
         <plugin>
           <groupId>com.github.spotbugs</groupId>
           <artifactId>spotbugs-maven-plugin</artifactId>
-          <version>4.9.8.3</version>
+          <version>4.10.2.0</version>
         </plugin>
         <plugin>
           <groupId>com.sap.cds</groupId>
@@ -367,7 +367,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>3.6.0</version>
+        <version>3.8.0</version>
         <configuration>
           <java>
             <googleJavaFormat>
