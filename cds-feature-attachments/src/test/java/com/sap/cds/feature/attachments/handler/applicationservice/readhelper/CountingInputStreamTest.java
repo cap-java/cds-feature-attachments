@@ -15,6 +15,7 @@ import com.sap.cds.services.ServiceException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
@@ -139,15 +140,7 @@ class CountingInputStreamTest {
     var cut = new CountingInputStream(delegate, "5"); // limit is 5 bytes
 
     ServiceException exception =
-        assertThrows(
-            ServiceException.class,
-            () -> {
-              byte[] buffer = new byte[1024];
-              int bytesRead;
-              while ((bytesRead = cut.read(buffer)) != -1) {
-                assertThat(bytesRead).isPositive(); // use value to satisfy SpotBugs
-              }
-            });
+        assertThrows(ServiceException.class, () -> cut.transferTo(OutputStream.nullOutputStream()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -159,15 +152,7 @@ class CountingInputStreamTest {
     var cut = new CountingInputStream(delegate, "10");
 
     ServiceException exception =
-        assertThrows(
-            ServiceException.class,
-            () -> {
-              byte[] buffer = new byte[1024];
-              int bytesRead;
-              while ((bytesRead = cut.read(buffer)) != -1) {
-                assertThat(bytesRead).isPositive(); // use value to satisfy SpotBugs
-              }
-            });
+        assertThrows(ServiceException.class, () -> cut.transferTo(OutputStream.nullOutputStream()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
     assertThat(cut.isLimitExceeded()).isTrue();
