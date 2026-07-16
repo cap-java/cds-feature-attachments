@@ -18,7 +18,7 @@ import java.util.function.Consumer;
  * closed for which the listener was registered. It marks the attachment as deleted by calling the
  * {@link AttachmentService} for the mark as deleted event.
  */
-public class CreationChangeSetListener implements ChangeSetListener {
+public final class CreationChangeSetListener implements ChangeSetListener {
 
   private final String contentId;
   private final CdsRuntime cdsRuntime;

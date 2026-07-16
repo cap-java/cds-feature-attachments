@@ -143,8 +143,9 @@ class CountingInputStreamTest {
             ServiceException.class,
             () -> {
               byte[] buffer = new byte[1024];
-              while (cut.read(buffer) != -1) {
-                // read until exception
+              int bytesRead;
+              while ((bytesRead = cut.read(buffer)) != -1) {
+                assertThat(bytesRead).isPositive(); // use value to satisfy SpotBugs
               }
             });
 
@@ -162,8 +163,9 @@ class CountingInputStreamTest {
             ServiceException.class,
             () -> {
               byte[] buffer = new byte[1024];
-              while (cut.read(buffer) != -1) {
-                // read until exception
+              int bytesRead;
+              while ((bytesRead = cut.read(buffer)) != -1) {
+                assertThat(bytesRead).isPositive(); // use value to satisfy SpotBugs
               }
             });
 
@@ -231,8 +233,9 @@ class CountingInputStreamTest {
     assertDoesNotThrow(
         () -> {
           byte[] buffer = new byte[1024];
-          while (cut.read(buffer) != -1) {
-            // read all bytes
+          int bytesRead;
+          while ((bytesRead = cut.read(buffer)) != -1) {
+            assertThat(bytesRead).isPositive(); // use value to satisfy SpotBugs
           }
         });
   }

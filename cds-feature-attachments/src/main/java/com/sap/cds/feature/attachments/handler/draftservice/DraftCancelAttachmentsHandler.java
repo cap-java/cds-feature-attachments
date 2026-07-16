@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * valid and deletes the content of the attachments if necessary.
  */
 @ServiceName(value = "*", type = DraftService.class)
-public class DraftCancelAttachmentsHandler implements EventHandler {
+public final class DraftCancelAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(DraftCancelAttachmentsHandler.class);
 

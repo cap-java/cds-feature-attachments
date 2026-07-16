@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * event factory and corresponding events.
  */
 @ServiceName(value = "*", type = DraftService.class)
-public class DraftPatchAttachmentsHandler implements EventHandler {
+public final class DraftPatchAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(DraftPatchAttachmentsHandler.class);
 

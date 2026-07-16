@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * {@link AttachmentService} to create the attachment and registers the transaction listener to be
  * able to revert the creation in case of errors.
  */
-public class CreateAttachmentEvent implements ModifyAttachmentEvent {
+public final class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
   private static final Logger logger = LoggerFactory.getLogger(CreateAttachmentEvent.class);
   private static final Pattern RFC5987_FILENAME_PATTERN =

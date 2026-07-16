@@ -25,7 +25,7 @@ import java.util.Optional;
  *   <li>doNothing
  * </ul>
  */
-public class ModifyAttachmentEventFactory {
+public final class ModifyAttachmentEventFactory {
 
   private final CreateAttachmentEvent createEvent;
   private final UpdateAttachmentEvent updateEvent;

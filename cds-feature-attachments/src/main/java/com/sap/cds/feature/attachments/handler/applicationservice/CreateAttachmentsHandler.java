@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * attachments for entities. It is called before a create event is executed.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
-public class CreateAttachmentsHandler implements EventHandler {
+public final class CreateAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(CreateAttachmentsHandler.class);
 

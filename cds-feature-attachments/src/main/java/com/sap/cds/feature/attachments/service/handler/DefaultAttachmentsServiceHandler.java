@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * deleted in the database.
  */
 @ServiceName(value = "*", type = AttachmentService.class)
-public class DefaultAttachmentsServiceHandler implements EventHandler {
+public final class DefaultAttachmentsServiceHandler implements EventHandler {
 
   // Positions this handler very late so it runs after all standard and custom handlers
   private static final int DEFAULT_ON = 10 * HandlerOrder.AFTER + HandlerOrder.LATE;

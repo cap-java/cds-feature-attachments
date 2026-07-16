@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * The class {@link MarkAsDeletedAttachmentEvent} handles the mark of deletion of an attachment. It
  * calls the {@link AttachmentService} to mark the attachment as deleted.
  */
-public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
+public final class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
 
   private static final Logger logger = LoggerFactory.getLogger(MarkAsDeletedAttachmentEvent.class);
 

@@ -13,7 +13,7 @@ import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
 
 @ServiceName(value = "*", type = DraftService.class)
-public class DraftActiveAttachmentsHandler implements EventHandler {
+public final class DraftActiveAttachmentsHandler implements EventHandler {
 
   private final ThreadDataStorageSetter threadLocalSetter;
 

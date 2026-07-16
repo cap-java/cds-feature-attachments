@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * update-events or delete-events the handler needs to distinguish between the different cases.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
-public class UpdateAttachmentsHandler implements EventHandler {
+public final class UpdateAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentsHandler.class);
 

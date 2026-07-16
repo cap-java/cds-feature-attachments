@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>The returned data is deep including the path structure to the media entity.
  */
-public class AttachmentsReader {
+public final class AttachmentsReader {
 
   private static final Logger logger = LoggerFactory.getLogger(AttachmentsReader.class);
 

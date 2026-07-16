@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * attachments for entities. It is called before a delete event is executed.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
-public class DeleteAttachmentsHandler implements EventHandler {
+public final class DeleteAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(DeleteAttachmentsHandler.class);
 

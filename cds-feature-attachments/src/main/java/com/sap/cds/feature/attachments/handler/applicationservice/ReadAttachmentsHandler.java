@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * scanned" error. The client must retry the download after the rescan completes.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
-public class ReadAttachmentsHandler implements EventHandler {
+public final class ReadAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(ReadAttachmentsHandler.class);
 

@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * and create method of the attachment service {@link AttachmentService}. To call these attachment
  * service events the class calls the delete and create event implementation.
  */
-public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
+public final class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
   private static final Logger logger = LoggerFactory.getLogger(UpdateAttachmentEvent.class);
 
