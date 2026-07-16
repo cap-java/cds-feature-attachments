@@ -4,7 +4,6 @@
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import static java.util.Objects.nonNull;
-import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
@@ -58,7 +57,7 @@ import org.slf4j.LoggerFactory;
  * scanned" error. The client must retry the download after the rescan completes.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
-public final class ReadAttachmentsHandler implements EventHandler {
+public class ReadAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(ReadAttachmentsHandler.class);
 
@@ -82,13 +81,11 @@ public final class ReadAttachmentsHandler implements EventHandler {
       PersistenceService persistenceService,
       AssociationCascader cascader,
       boolean scannerAvailable) {
-    this.attachmentService =
-        requireNonNull(attachmentService, "attachmentService must not be null");
-    this.statusValidator = requireNonNull(statusValidator, "statusValidator must not be null");
-    this.scanExecutor = requireNonNull(scanExecutor, "scanExecutor must not be null");
-    this.persistenceService =
-        requireNonNull(persistenceService, "persistenceService must not be null");
-    this.cascader = requireNonNull(cascader, "cascader must not be null");
+    this.attachmentService = attachmentService;
+    this.statusValidator = statusValidator;
+    this.scanExecutor = scanExecutor;
+    this.persistenceService = persistenceService;
+    this.cascader = cascader;
     this.scannerAvailable = scannerAvailable;
   }
 

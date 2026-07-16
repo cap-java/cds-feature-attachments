@@ -3,8 +3,6 @@
  */
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
-import static java.util.Objects.requireNonNull;
-
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
@@ -37,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * attachments for entities. It is called before a create event is executed.
  */
 @ServiceName(value = "*", type = ApplicationService.class)
-public final class CreateAttachmentsHandler implements EventHandler {
+public class CreateAttachmentsHandler implements EventHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(CreateAttachmentsHandler.class);
 
@@ -51,10 +49,10 @@ public final class CreateAttachmentsHandler implements EventHandler {
       ThreadDataStorageReader storageReader,
       String defaultMaxSize,
       CdsRuntime cdsRuntime) {
-    this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
-    this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
-    this.defaultMaxSize = requireNonNull(defaultMaxSize, "defaultMaxSize must not be null");
-    this.cdsRuntime = requireNonNull(cdsRuntime, "cdsRuntime must not be null");
+    this.eventFactory = eventFactory;
+    this.storageReader = storageReader;
+    this.defaultMaxSize = defaultMaxSize;
+    this.cdsRuntime = cdsRuntime;
   }
 
   @Before

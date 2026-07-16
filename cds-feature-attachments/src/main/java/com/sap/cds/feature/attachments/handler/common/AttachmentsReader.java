@@ -3,8 +3,6 @@
  */
 package com.sap.cds.feature.attachments.handler.common;
 
-import static java.util.Objects.requireNonNull;
-
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.ql.CQL;
@@ -27,7 +25,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>The returned data is deep including the path structure to the media entity.
  */
-public final class AttachmentsReader {
+public class AttachmentsReader {
 
   private static final Logger logger = LoggerFactory.getLogger(AttachmentsReader.class);
 
@@ -35,8 +33,8 @@ public final class AttachmentsReader {
   private final PersistenceService persistence;
 
   public AttachmentsReader(AssociationCascader cascader, PersistenceService persistence) {
-    this.cascader = requireNonNull(cascader, "cascader must not be null");
-    this.persistence = requireNonNull(persistence, "persistence must not be null");
+    this.cascader = cascader;
+    this.persistence = persistence;
   }
 
   public List<Attachments> readAttachments(

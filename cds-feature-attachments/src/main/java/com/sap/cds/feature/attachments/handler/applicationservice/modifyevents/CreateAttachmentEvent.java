@@ -4,7 +4,6 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.modifyevents;
 
 import static java.util.Objects.nonNull;
-import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
@@ -31,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * {@link AttachmentService} to create the attachment and registers the transaction listener to be
  * able to revert the creation in case of errors.
  */
-public final class CreateAttachmentEvent implements ModifyAttachmentEvent {
+public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
   private static final Logger logger = LoggerFactory.getLogger(CreateAttachmentEvent.class);
   private static final Pattern RFC5987_FILENAME_PATTERN =
@@ -44,9 +43,8 @@ public final class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
   public CreateAttachmentEvent(
       AttachmentService attachmentService, ListenerProvider listenerProvider) {
-    this.attachmentService =
-        requireNonNull(attachmentService, "attachmentService must not be null");
-    this.listenerProvider = requireNonNull(listenerProvider, "listenerProvider must not be null");
+    this.attachmentService = attachmentService;
+    this.listenerProvider = listenerProvider;
   }
 
   @Override
