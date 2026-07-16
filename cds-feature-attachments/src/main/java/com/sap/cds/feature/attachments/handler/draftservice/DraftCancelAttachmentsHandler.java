@@ -3,8 +3,6 @@
  */
 package com.sap.cds.feature.attachments.handler.draftservice;
 
-import static java.util.Objects.requireNonNull;
-
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Filter;
@@ -50,9 +48,8 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
 
   public DraftCancelAttachmentsHandler(
       AttachmentsReader attachmentsReader, MarkAsDeletedAttachmentEvent deleteEvent) {
-    this.attachmentsReader =
-        requireNonNull(attachmentsReader, "attachmentsReader must not be null");
-    this.deleteEvent = requireNonNull(deleteEvent, "deleteEvent must not be null");
+    this.attachmentsReader = attachmentsReader;
+    this.deleteEvent = deleteEvent;
   }
 
   @Before

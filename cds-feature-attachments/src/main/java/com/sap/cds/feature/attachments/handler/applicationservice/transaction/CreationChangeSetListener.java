@@ -3,8 +3,6 @@
  */
 package com.sap.cds.feature.attachments.handler.applicationservice.transaction;
 
-import static java.util.Objects.requireNonNull;
-
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.services.changeset.ChangeSetContext;
@@ -33,10 +31,9 @@ public class CreationChangeSetListener implements ChangeSetListener {
    */
   public CreationChangeSetListener(
       String contentId, CdsRuntime cdsRuntime, AttachmentService attachmentService) {
-    this.contentId = requireNonNull(contentId, "contentId must not be null");
-    this.cdsRuntime = requireNonNull(cdsRuntime, "cdsRuntime must not be null");
-    this.attachmentService =
-        requireNonNull(attachmentService, "attachmentService must not be null");
+    this.contentId = contentId;
+    this.cdsRuntime = cdsRuntime;
+    this.attachmentService = attachmentService;
   }
 
   @Override

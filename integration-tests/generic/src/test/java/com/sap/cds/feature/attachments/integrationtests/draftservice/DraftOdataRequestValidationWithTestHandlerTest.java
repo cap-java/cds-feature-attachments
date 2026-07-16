@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles(Profiles.TEST_HANDLER_ENABLED)
-class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestValidationBase {
+final class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataRequestValidationBase {
 
   private static final Logger logger =
       LoggerFactory.getLogger(DraftOdataRequestValidationWithTestHandlerTest.class);

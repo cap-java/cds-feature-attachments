@@ -126,8 +126,9 @@ class ModifyApplicationHandlerHelperTest {
               if (wrappedContent != null) {
                 // Read all bytes - this will trigger CountingInputStream to throw
                 byte[] buffer = new byte[1024];
-                while (wrappedContent.read(buffer) != -1) {
-                  // Keep reading until exception or EOF
+                int bytesRead;
+                while ((bytesRead = wrappedContent.read(buffer)) != -1) {
+                  assertThat(bytesRead).isPositive(); // use value to satisfy SpotBugs
                 }
               }
               return null;
