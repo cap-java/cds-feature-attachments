@@ -6,12 +6,20 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.6.0 - not yet released
+## Version 1.6.0 - 2026-07-17
 
-### Changed
+### Added
 
 - Added top-level `Attachments` aspect to allow usage without `sap.attachments` namespace (#806), i.e., `using {Attachments} from 'com.sap.cds/cds-feature-attachments'`.
 - Extract `fileName` and `mimeType` from HTTP headers (`Content-Disposition`, `Content-Type`, `slug`) when not provided in the request payload (#804)
+- Added independent `MalwareScannerService` for scanning arbitrary content without the `AttachmentService` (#785)
+- Added translations for `ScanStates` entity texts (#787, #814)
+
+### Changed
+
+- Upgraded to CAP Java CDS 5 / @sap/cds-dk 10 (#856)
+- Minimum required Java version raised from 17 to 21 (#856)
+- Enabled S3 server-side encryption (AES256) by default for AWS Object Store (#788)
 
 ## Version 1.5.0 - 2026-04-10
 
