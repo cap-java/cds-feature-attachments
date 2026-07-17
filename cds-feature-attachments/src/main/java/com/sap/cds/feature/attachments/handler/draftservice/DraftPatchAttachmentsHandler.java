@@ -3,8 +3,6 @@
  */
 package com.sap.cds.feature.attachments.handler.draftservice;
 
-import static java.util.Objects.requireNonNull;
-
 import com.sap.cds.CdsData;
 import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
@@ -46,9 +44,9 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
       PersistenceService persistence,
       ModifyAttachmentEventFactory eventFactory,
       String defaultMaxSize) {
-    this.persistence = requireNonNull(persistence, "persistence must not be null");
-    this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
-    this.defaultMaxSize = requireNonNull(defaultMaxSize, "defaultMaxSize must not be null");
+    this.persistence = persistence;
+    this.eventFactory = eventFactory;
+    this.defaultMaxSize = defaultMaxSize;
   }
 
   @Before

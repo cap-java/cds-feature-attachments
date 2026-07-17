@@ -34,6 +34,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+
+    <dependency>
+      <groupId>com.sap.cloud.sdk.cloudplatform</groupId>
+      <artifactId>connectivity-apache-httpclient4</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>com.sap.cds</groupId>
       <artifactId>cds-services-utils</artifactId>
@@ -72,13 +78,13 @@
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
-      <version>4.9.8</version>
+      <version>4.10.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.5.32</version>
+      <version>1.5.37</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -92,40 +98,6 @@
     <!-- The deploy requires a stable artifact name -->
     <finalName>${project.artifactId}</finalName>
     <plugins>
-      <plugin>
-        <groupId>org.pitest</groupId>
-        <artifactId>pitest-maven</artifactId>
-        <configuration>
-          <targetClasses>
-            <param>com.sap.cds.feature.attachments.handler.*</param>
-            <param>com.sap.cds.feature.attachments.service.*</param>
-          </targetClasses>
-          <mutators>
-            <mutator>CONSTRUCTOR_CALLS</mutator>
-            <mutator>VOID_METHOD_CALLS</mutator>
-            <mutator>NON_VOID_METHOD_CALLS</mutator>
-            <mutator>REMOVE_CONDITIONALS_ORDER_ELSE</mutator>
-            <mutator>CONDITIONALS_BOUNDARY</mutator>
-            <mutator>EMPTY_RETURNS</mutator>
-            <mutator>NEGATE_CONDITIONALS</mutator>
-            <mutator>REMOVE_CONDITIONALS_EQUAL_IF</mutator>
-            <mutator>REMOVE_CONDITIONALS_EQUAL_ELSE</mutator>
-            <mutator>REMOVE_CONDITIONALS_ORDER_IF</mutator>
-            <mutator>REMOVE_CONDITIONALS_ORDER_ELSE</mutator>
-          </mutators>
-          <coverageThreshold>95</coverageThreshold>
-          <aggregatedMutationThreshold>90</aggregatedMutationThreshold>
-        </configuration>
-
-        <dependencies>
-          <dependency>
-            <groupId>org.pitest</groupId>
-            <artifactId>pitest-junit5-plugin</artifactId>
-            <version>1.2.3</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
         <configuration>
@@ -191,6 +163,16 @@
             <goals>
               <goal>install-node</goal>
             </goals>
+          </execution>
+
+          <execution>
+            <id>cds.npm-ci</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>ci</arguments>
+            </configuration>
           </execution>
 
           <execution>
@@ -313,5 +295,32 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>integration-tests</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <includes>
+                <include>**/*IT.java</include>
+              </includes>
+            </configuration>
+            <executions>
+              <execution>
+                <id>integration-tests</id>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

@@ -16,6 +16,9 @@ target/
 .flattened-pom.xml
 node_modules
 package-lock.json
+!integration-tests/mtx-local/package-lock.json
+!cds-feature-attachments/package-lock.json
+!integration-tests/package-lock.json
 
 ## PMD
 .pmd

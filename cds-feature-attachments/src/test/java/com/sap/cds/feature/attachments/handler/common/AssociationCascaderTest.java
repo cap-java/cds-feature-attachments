@@ -54,7 +54,7 @@ class AssociationCascaderTest {
     var result = cut.findMediaEntityNames(runtime.getCdsModel(), entity);
 
     // RootTable and Items should NOT be included (they have children)
-    assertThat(result).doesNotContain(RootTable_.CDS_NAME).doesNotContain(Items_.CDS_NAME);
+    assertThat(result).isNotEmpty().doesNotContain(RootTable_.CDS_NAME, Items_.CDS_NAME);
   }
 
   @Test

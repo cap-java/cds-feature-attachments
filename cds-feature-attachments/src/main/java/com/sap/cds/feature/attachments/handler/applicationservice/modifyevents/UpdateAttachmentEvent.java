@@ -3,8 +3,6 @@
  */
 package com.sap.cds.feature.attachments.handler.applicationservice.modifyevents;
 
-import static java.util.Objects.requireNonNull;
-
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
@@ -28,8 +26,8 @@ public class UpdateAttachmentEvent implements ModifyAttachmentEvent {
 
   public UpdateAttachmentEvent(
       CreateAttachmentEvent createEvent, MarkAsDeletedAttachmentEvent deleteEvent) {
-    this.createEvent = requireNonNull(createEvent, "createEvent must not be null");
-    this.deleteEvent = requireNonNull(deleteEvent, "deleteEvent must not be null");
+    this.createEvent = createEvent;
+    this.deleteEvent = deleteEvent;
   }
 
   @Override

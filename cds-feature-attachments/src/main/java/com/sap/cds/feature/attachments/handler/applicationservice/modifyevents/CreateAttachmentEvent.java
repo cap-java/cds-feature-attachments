@@ -4,7 +4,6 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.modifyevents;
 
 import static java.util.Objects.nonNull;
-import static java.util.Objects.requireNonNull;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
@@ -44,9 +43,8 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
 
   public CreateAttachmentEvent(
       AttachmentService attachmentService, ListenerProvider listenerProvider) {
-    this.attachmentService =
-        requireNonNull(attachmentService, "attachmentService must not be null");
-    this.listenerProvider = requireNonNull(listenerProvider, "listenerProvider must not be null");
+    this.attachmentService = attachmentService;
+    this.listenerProvider = listenerProvider;
   }
 
   @Override

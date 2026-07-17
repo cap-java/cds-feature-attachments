@@ -17,7 +17,6 @@ import com.sap.cds.services.handler.annotations.After;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +40,7 @@ public class DefaultAttachmentsServiceHandler implements EventHandler {
   private final EndTransactionMalwareScanProvider malwareScanProvider;
 
   public DefaultAttachmentsServiceHandler(EndTransactionMalwareScanProvider malwareScanProvider) {
-    this.malwareScanProvider =
-        Objects.requireNonNull(malwareScanProvider, "malwareScanProvider must not be null");
+    this.malwareScanProvider = malwareScanProvider;
   }
 
   @On
