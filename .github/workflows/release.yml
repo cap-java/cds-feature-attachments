@@ -121,4 +121,5 @@ jobs:
           gpg-private-key: ${{ secrets.PGP_PRIVATE_KEY }}
           gpg-passphrase: ${{ secrets.PGP_PASSPHRASE }}
           revision: ${{ github.event.release.tag_name }}
+          java-version: ${{ env.JAVA_VERSION }}
           maven-version: ${{ env.MAVEN_VERSION }}
