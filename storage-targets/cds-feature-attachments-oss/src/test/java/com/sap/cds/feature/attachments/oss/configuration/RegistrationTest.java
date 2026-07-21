@@ -3,6 +3,7 @@
  */
 package com.sap.cds.feature.attachments.oss.configuration;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
+import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.runtime.CdsRuntime;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
@@ -87,29 +89,31 @@ class RegistrationTest {
   }
 
   @Test
-  void testMtEnabledNonSharedKindRegistersOnlyOSSHandler() {
+  void testMtEnabledNonSharedKindFailsStartup() {
     when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
     when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
         .thenReturn(Boolean.TRUE);
     when(environment.getProperty("cds.attachments.objectStore.kind", String.class, null))
         .thenReturn("dedicated");
 
-    registration.eventHandlers(configurer);
+    assertThatThrownBy(() -> registration.eventHandlers(configurer))
+        .isInstanceOf(ServiceException.class)
+        .hasMessageContaining("shared");
 
-    verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
-    verify(configurer, times(1)).eventHandler(any());
+    verify(configurer, never()).eventHandler(any());
   }
 
   @Test
-  void testMtEnabledNullKindRegistersOnlyOSSHandler() {
+  void testMtEnabledNullKindFailsStartup() {
     when(environment.getServiceBindings()).thenReturn(Stream.of(awsBinding));
     when(environment.getProperty("cds.multitenancy.enabled", Boolean.class, Boolean.FALSE))
         .thenReturn(Boolean.TRUE);
 
-    registration.eventHandlers(configurer);
+    assertThatThrownBy(() -> registration.eventHandlers(configurer))
+        .isInstanceOf(ServiceException.class)
+        .hasMessageContaining("shared");
 
-    verify(configurer, times(1)).eventHandler(any(OSSAttachmentsServiceHandler.class));
-    verify(configurer, times(1)).eventHandler(any());
+    verify(configurer, never()).eventHandler(any());
   }
 
   @Test
