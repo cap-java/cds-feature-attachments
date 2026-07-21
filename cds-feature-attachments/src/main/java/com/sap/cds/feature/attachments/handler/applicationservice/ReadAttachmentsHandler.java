@@ -115,11 +115,16 @@ public class ReadAttachmentsHandler implements EventHandler {
             InputStream content = attachment.getContent();
             if (nonNull(attachment.getContentId())) {
               verifyStatus(path, attachment);
+              CdsEntity attachmentEntity = path.target().entity();
               Supplier<InputStream> supplier =
                   nonNull(content)
                       ? () -> content
                       : () -> attachmentService.readAttachment(attachment.getContentId());
-              return new LazyProxyInputStream(supplier, statusValidator, attachment.getStatus());
+              // Enforce the status/freshness policy before bytes are served for every read shape,
+              // including keyed reads that stream content (content-only reads are additionally
+              // guarded eagerly above via verifyStatus).
+              return new LazyProxyInputStream(
+                  supplier, () -> enforceReadPolicy(attachmentEntity, attachment));
             } else {
               return value;
             }
@@ -133,23 +138,32 @@ public class ReadAttachmentsHandler implements EventHandler {
 
   private void verifyStatus(Path path, Attachments attachment) {
     if (areKeysEmpty(path.target().keys())) {
-      String currentStatus = attachment.getStatus();
+      enforceReadPolicy(path.target().entity(), attachment);
+    }
+  }
+
+  /**
+   * Enforces the malware scan status and freshness policy for the given attachment: triggers a
+   * rescan when the attachment is unscanned, scanning, or a stale clean, and validates that the
+   * (possibly updated) status permits serving the content.
+   */
+  private void enforceReadPolicy(CdsEntity entity, Attachments attachment) {
+    String currentStatus = attachment.getStatus();
+    logger.debug(
+        "In verify status for content id {} and status {}",
+        attachment.getContentId(),
+        currentStatus);
+    if (scannerAvailable && needsScan(currentStatus, attachment.getScannedAt())) {
+      if (StatusCode.CLEAN.equals(currentStatus)) {
+        transitionToScanning(entity, attachment);
+      }
       logger.debug(
-          "In verify status for content id {} and status {}",
+          "Scanning content with ID {} for malware, has current status {}",
           attachment.getContentId(),
           currentStatus);
-      if (scannerAvailable && needsScan(currentStatus, attachment.getScannedAt())) {
-        if (StatusCode.CLEAN.equals(currentStatus)) {
-          transitionToScanning(path.target().entity(), attachment);
-        }
-        logger.debug(
-            "Scanning content with ID {} for malware, has current status {}",
-            attachment.getContentId(),
-            currentStatus);
-        scanExecutor.scanAsync(path.target().entity(), attachment.getContentId());
-      }
-      statusValidator.verifyStatus(attachment.getStatus());
+      scanExecutor.scanAsync(entity, attachment.getContentId());
     }
+    statusValidator.verifyStatus(attachment.getStatus());
   }
 
   private boolean needsScan(String status, Instant scannedAt) {
