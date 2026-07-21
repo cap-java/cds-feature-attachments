@@ -23,11 +23,14 @@ import java.util.Map;
 
 public final class ModifyApplicationHandlerHelper {
 
-  /** Default max size when malware scanner binding is present (400 MB). */
-  public static final String DEFAULT_SIZE_WITH_SCANNER = "400MB";
-
-  /** Effectively unlimited max size when no malware scanner binding is present. */
-  public static final String UNLIMITED_SIZE = String.valueOf(Long.MAX_VALUE);
+  /**
+   * Default maximum upload size for attachment content (400 MB). A finite default is used
+   * regardless of the malware scanner binding so that a missing scanner does not silently allow
+   * unbounded uploads. It can be raised via the {@code cds.attachments.maxUploadSize} property or a
+   * per-entity {@code @Validation.Maximum} annotation, and matches the SAP Malware Scanning Service
+   * limit when a scanner is present.
+   */
+  public static final String DEFAULT_MAX_UPLOAD_SIZE = "400MB";
 
   /**
    * Handles attachments for entities.
