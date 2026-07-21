@@ -66,8 +66,8 @@
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.47.1</software.amazon.awssdk-s3-version>
-    <software.amazon.awssdk-crt-version>0.47.2</software.amazon.awssdk-crt-version>
+    <software.amazon.awssdk-s3-version>2.47.6</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-crt-version>0.47.3</software.amazon.awssdk-crt-version>
 
     <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
     <cds.services.version>5.0.0</cds.services.version>
@@ -105,7 +105,7 @@
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>6.1.1</version>
+        <version>6.1.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -243,7 +243,7 @@
         <plugin>
           <groupId>com.github.spotbugs</groupId>
           <artifactId>spotbugs-maven-plugin</artifactId>
-          <version>4.10.2.0</version>
+          <version>4.10.3.0</version>
         </plugin>
         <plugin>
           <groupId>com.sap.cds</groupId>
