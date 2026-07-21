@@ -9,6 +9,7 @@ import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation.AttachmentValidationHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.ql.Select;
@@ -54,6 +55,11 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
   void processBeforeDraftPatch(DraftPatchEventContext context, List<? extends CdsData> data) {
     logger.debug(
         "Processing before {} event for entity {}", context.getEvent(), context.getTarget());
+
+    // Enforce @Core.AcceptableMediaTypes on draft patches as well, so replacement content or
+    // metadata cannot bypass the media type policy that is applied on create/activate.
+    AttachmentValidationHelper.validateMediaAttachments(
+        context.getTarget(), data, context.getModel());
 
     Converter converter =
         (path, element, value) -> {

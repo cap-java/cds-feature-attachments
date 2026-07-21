@@ -156,8 +156,7 @@ public class Registration implements CdsRuntimeConfiguration {
     boolean hasApplicationServices =
         serviceCatalog.getServices(ApplicationService.class).findFirst().isPresent();
     if (hasApplicationServices) {
-      configurer.eventHandler(
-          new CreateAttachmentsHandler(eventFactory, storage, defaultMaxSize, runtime));
+      configurer.eventHandler(new CreateAttachmentsHandler(eventFactory, storage, defaultMaxSize));
       configurer.eventHandler(
           new UpdateAttachmentsHandler(
               eventFactory, attachmentsReader, outboxedAttachmentService, storage, defaultMaxSize));
