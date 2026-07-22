@@ -15,7 +15,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
       - name: Set up Java
         uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
@@ -44,7 +44,7 @@ jobs:
         java-version: [21, 25]
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
       - name: Set up Java ${{ matrix.java-version }}
         uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
@@ -75,7 +75,7 @@ jobs:
         hyperscaler: [AWS, AZURE, GCP]
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
       - name: Bind CF Services
         uses: ./.github/actions/cf-bind
@@ -101,7 +101,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
         with:
           fetch-depth: 0
 
@@ -142,7 +142,7 @@ jobs:
         language: [java-kotlin, actions]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
 
       - name: CodeQL Analysis
         uses: cap-java/.github/actions/scan-with-codeql@main
