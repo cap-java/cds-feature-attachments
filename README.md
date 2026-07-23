@@ -264,7 +264,7 @@ annotate Books.attachments with {
 }
 ```
 
-> **Security warning:** Only enable inline disposition for MIME types that cannot execute script (for example, restrict to `image/jpeg`, `image/png`, `application/pdf` via `@Core.AcceptableMediaTypes`). Never enable inline disposition for `image/svg+xml`, `text/html`, `application/xhtml+xml`, or `application/xml` when the uploader is not fully trusted.
+> **Security warning:** Only enable inline disposition for MIME types that cannot execute script — for example, plain images such as `image/jpeg` or `image/png` — restricted via `@Core.AcceptableMediaTypes`. Never enable inline disposition for `image/svg+xml`, `text/html`, `application/xhtml+xml`, or `application/xml` when the uploader is not fully trusted. Note that `application/pdf` may execute JavaScript in some PDF viewers (notably Adobe Reader); verify the viewer used by your target audience before allowing PDFs inline.
 
 ### Outbox
 
