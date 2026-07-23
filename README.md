@@ -23,6 +23,7 @@ It supports the [AWS, Azure, and Google object stores](storage-targets/cds-featu
   * [Malware Scanner](#malware-scanner)
   * [Specify the maximum file size](#specify-the-maximum-file-size)
   * [Restrict allowed MIME types](#restrict-allowed-mime-types)
+  * [Content Disposition](#content-disposition)
   * [Outbox](#outbox)
   * [Restore Endpoint](#restore-endpoint)
     * [Motivation](#motivation)
@@ -249,6 +250,21 @@ annotate Books.attachments with {
 }
 ```
 
+### Content Disposition
+
+Attachment content is served with `Content-Disposition: attachment`. Browsers therefore download the file instead of rendering it inline in the application origin. This is the safe default that mitigates stored XSS attacks via user-uploaded HTML or SVG payloads, because the content type of a stored attachment is derived from the uploaded file.
+
+If your application intentionally wants to preview certain attachments inline (e.g. images restricted via `@Core.AcceptableMediaTypes`), you can opt in explicitly in your own CDS model:
+
+```cds
+using { sap.attachments.Attachments } from '@cap-js/cds-feature-attachments';
+
+annotate Books.attachments with {
+  content @Core.ContentDisposition.Type: 'inline';
+}
+```
+
+> **Security warning:** Only enable inline disposition for MIME types that cannot execute script (for example, restrict to `image/jpeg`, `image/png`, `application/pdf` via `@Core.AcceptableMediaTypes`). Never enable inline disposition for `image/svg+xml`, `text/html`, `application/xhtml+xml`, or `application/xml` when the uploader is not fully trusted.
 
 ### Outbox
 
