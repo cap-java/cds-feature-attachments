@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## Unreleased
+
+### Security
+
+- Attachment content is now served with `Content-Disposition: attachment` by default (previously `inline`) to mitigate stored XSS (CWE-79) via user-uploaded SVG/HTML payloads (cds-calesi #1263). Applications that require inline previews can opt in by annotating `content` in their own CDS model — see the "Content Disposition" section in the README. It is recommended to combine this with `@Core.AcceptableMediaTypes` restricting inline content to non-scriptable types (e.g. `image/jpeg`, `image/png`, `application/pdf`).
+
 ## Version 1.6.0 - 2026-07-17
 
 ### Added
