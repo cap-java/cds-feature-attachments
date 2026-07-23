@@ -34,6 +34,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.M
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
+import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.EventContext;
 import com.sap.cds.services.ServiceException;
@@ -75,10 +76,7 @@ class CreateAttachmentsHandlerTest {
     storageReader = mock(ThreadDataStorageReader.class);
     cut =
         new CreateAttachmentsHandler(
-            eventFactory,
-            storageReader,
-            ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-            runtime);
+            eventFactory, storageReader, ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
 
     createContext = mock(CdsCreateEventContext.class);
     event = mock(ModifyAttachmentEvent.class);
@@ -355,19 +353,20 @@ class CreateAttachmentsHandlerTest {
     EventContext context = mock(EventContext.class);
     CdsEntity entity = mock(CdsEntity.class);
     List<CdsData> data = List.of(mock(CdsData.class));
+    CdsModel model = runtime.getCdsModel();
     when(context.getTarget()).thenReturn(entity);
+    when(context.getModel()).thenReturn(model);
 
     try (MockedStatic<AttachmentValidationHelper> helper =
         mockStatic(AttachmentValidationHelper.class)) {
       helper
-          .when(() -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime))
+          .when(() -> AttachmentValidationHelper.validateMediaAttachments(entity, data, model))
           .thenAnswer(invocation -> null);
       // when
-      new CreateAttachmentsHandler(eventFactory, storageReader, "400MB", runtime)
+      new CreateAttachmentsHandler(eventFactory, storageReader, "400MB")
           .processBeforeForMetadata(context, data);
       // then
-      helper.verify(
-          () -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime));
+      helper.verify(() -> AttachmentValidationHelper.validateMediaAttachments(entity, data, model));
     }
   }
 

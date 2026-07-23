@@ -8,6 +8,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation.AttachmentValidationHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
@@ -66,6 +67,16 @@ public class UpdateAttachmentsHandler implements EventHandler {
     // field in data
     ReadonlyDataContextEnhancer.preserveReadonlyFields(
         context.getTarget(), data, storageReader.get());
+  }
+
+  @Before
+  @HandlerOrder(HandlerOrder.BEFORE)
+  void processBeforeForMetadata(CdsUpdateEventContext context, List<CdsData> data) {
+    // Enforce @Core.AcceptableMediaTypes on updates as well, so replacement content or a
+    // metadata-only change (e.g. mimeType/fileName) cannot bypass the media type policy that is
+    // applied on create.
+    AttachmentValidationHelper.validateMediaAttachments(
+        context.getTarget(), data, context.getModel());
   }
 
   @Before

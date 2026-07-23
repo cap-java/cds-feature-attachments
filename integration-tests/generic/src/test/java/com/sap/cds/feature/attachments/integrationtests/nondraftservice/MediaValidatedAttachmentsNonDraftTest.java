@@ -3,11 +3,14 @@
  */
 package com.sap.cds.feature.attachments.integrationtests.nondraftservice;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sap.cds.CdsData;
 import com.sap.cds.Result;
+import com.sap.cds.Struct;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.AttachmentEntity;
 import com.sap.cds.feature.attachments.generated.integration.test.cds4j.testservice.Roots;
@@ -26,6 +29,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MvcResult;
 
 @ActiveProfiles(Profiles.TEST_HANDLER_DISABLED)
 class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
@@ -80,6 +84,29 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
         createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS),
         attachmentMetadata,
         status().isBadRequest());
+  }
+
+  @Test
+  void shouldValidateMediaType_whenUpdatingNonDraftAttachment() throws Exception {
+    String rootId = createRootAndReturnId();
+    CdsData created =
+        requestHelper.executePostWithODataResponseAndAssertStatusCreated(
+            createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS),
+            objectMapper.writeValueAsString(Map.of("fileName", "image.jpg")));
+    Attachments attachment = Struct.access(created).as(Attachments.class);
+    String attachmentUrl =
+        createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS)
+            + "(ID="
+            + attachment.getId()
+            + ",up__ID="
+            + rootId
+            + ")";
+
+    MvcResult result =
+        requestHelper.executePatch(
+            attachmentUrl, objectMapper.writeValueAsString(Map.of("fileName", "notes.txt")));
+
+    assertThat(result.getResponse().getStatus()).isEqualTo(415);
   }
 
   @Test

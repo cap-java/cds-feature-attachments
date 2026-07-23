@@ -17,7 +17,6 @@ import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.ServiceException;
-import com.sap.cds.services.runtime.CdsRuntime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,8 +46,6 @@ class AttachmentValidationHelperTest {
     CdsModel model = mock(CdsModel.class);
     when(model.findEntity("Entity")).thenReturn(Optional.empty());
 
-    CdsRuntime runtime = mockRuntime(model);
-
     try (MockedStatic<ApplicationHandlerHelper> helper =
         mockStatic(ApplicationHandlerHelper.class)) {
       helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(false);
@@ -56,14 +53,14 @@ class AttachmentValidationHelperTest {
       setupMockCascader(entity, model, false);
 
       assertDoesNotThrow(
-          () -> AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), runtime));
+          () -> AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), model));
     }
   }
 
   @Test
   void doesNothing_whenNoEntityHasAcceptableMediaTypesAnnotation() {
     CdsEntity entity = mockEntity("Entity");
-    CdsRuntime runtime = mockRuntime(entity);
+    CdsModel model = mockModel(entity);
 
     try (MockedStatic<ApplicationHandlerHelper> helper =
             mockStatic(ApplicationHandlerHelper.class);
@@ -83,7 +80,7 @@ class AttachmentValidationHelperTest {
 
       // Verify that AttachmentDataExtractor is never called (early return)
       assertDoesNotThrow(
-          () -> AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), runtime));
+          () -> AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), model));
 
       extractor.verifyNoInteractions();
     }
@@ -100,7 +97,7 @@ class AttachmentValidationHelperTest {
         MockedStatic<MediaTypeResolver> resolver = mockStatic(MediaTypeResolver.class);
         MockedStatic<AttachmentDataExtractor> extractor =
             mockStatic(AttachmentDataExtractor.class)) {
-      CdsRuntime runtime = mockRuntime(entity);
+      CdsModel model = mockModel(entity);
       helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(true);
 
       resolver
@@ -116,7 +113,7 @@ class AttachmentValidationHelperTest {
           .thenReturn(null);
 
       assertDoesNotThrow(
-          () -> AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), runtime));
+          () -> AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), model));
     }
   }
 
@@ -125,7 +122,7 @@ class AttachmentValidationHelperTest {
   void doesNotThrow_whenFilesAreValid(boolean isMediaEntity) {
 
     CdsEntity entity = mockEntity("Entity");
-    CdsRuntime runtime = mockRuntime(entity);
+    CdsModel model = mockModel(entity);
 
     Map<String, List<String>> allowed = Map.of(ATTACHMENTS_ENTITY, List.of("image/png"));
     Map<String, Set<String>> files = Map.of(ATTACHMENTS_ENTITY, Set.of("file.png"));
@@ -137,7 +134,7 @@ class AttachmentValidationHelperTest {
             mockStatic(AttachmentDataExtractor.class)) {
 
       helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(isMediaEntity);
-      setupMockCascader(entity, runtime.getCdsModel(), !isMediaEntity);
+      setupMockCascader(entity, model, !isMediaEntity);
 
       resolver
           .when(
@@ -152,7 +149,7 @@ class AttachmentValidationHelperTest {
           .thenReturn(files);
 
       assertDoesNotThrow(
-          () -> AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), runtime));
+          () -> AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), model));
     }
   }
 
@@ -168,7 +165,7 @@ class AttachmentValidationHelperTest {
   void throwsException_whenFilesAreInvalid(boolean isMediaEntity) {
 
     CdsEntity entity = mockEntity("Entity");
-    CdsRuntime runtime = mockRuntime(entity);
+    CdsModel model = mockModel(entity);
 
     Map<String, List<String>> allowed = Map.of(ATTACHMENTS_ENTITY, List.of("image/png"));
     Map<String, Set<String>> files = Map.of(ATTACHMENTS_ENTITY, Set.of("file.txt"));
@@ -180,7 +177,7 @@ class AttachmentValidationHelperTest {
             mockStatic(AttachmentDataExtractor.class)) {
 
       helper.when(() -> ApplicationHandlerHelper.isMediaEntity(entity)).thenReturn(isMediaEntity);
-      setupMockCascader(entity, runtime.getCdsModel(), !isMediaEntity);
+      setupMockCascader(entity, model, !isMediaEntity);
 
       resolver
           .when(
@@ -197,8 +194,7 @@ class AttachmentValidationHelperTest {
       ServiceException ex =
           assertThrows(
               ServiceException.class,
-              () ->
-                  AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), runtime));
+              () -> AttachmentValidationHelper.validateMediaAttachments(entity, List.of(), model));
 
       assertTrue(ex.getMessage().contains("Unsupported file types detected"));
     }
@@ -215,20 +211,10 @@ class AttachmentValidationHelperTest {
     AttachmentValidationHelper.setCascader(cascader);
   }
 
-  private CdsRuntime mockRuntime(CdsEntity entity) {
+  private CdsModel mockModel(CdsEntity entity) {
     CdsModel model = mock(CdsModel.class);
     when(model.findEntity(entity.getQualifiedName())).thenReturn(Optional.of(entity));
-
-    CdsRuntime runtime = mock(CdsRuntime.class);
-    when(runtime.getCdsModel()).thenReturn(model);
-
-    return runtime;
-  }
-
-  private CdsRuntime mockRuntime(CdsModel model) {
-    CdsRuntime runtime = mock(CdsRuntime.class);
-    when(runtime.getCdsModel()).thenReturn(model);
-    return runtime;
+    return model;
   }
 
   private CdsEntity mockEntity(String name) {

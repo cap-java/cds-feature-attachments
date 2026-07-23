@@ -192,5 +192,6 @@ class DraftPatchAttachmentsHandlerTest {
 
   private void mockTargetInUpdateContext(CdsEntity serviceEntity) {
     when(eventContext.getTarget()).thenReturn(serviceEntity);
+    when(eventContext.getModel()).thenReturn(runtime.getCdsModel());
   }
 }
