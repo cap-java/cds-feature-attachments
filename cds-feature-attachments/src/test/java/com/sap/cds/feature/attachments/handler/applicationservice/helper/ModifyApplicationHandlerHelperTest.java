@@ -92,7 +92,7 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     attachment.getContent(),
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                    ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -147,7 +147,7 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     content,
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                    ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -179,7 +179,7 @@ class ModifyApplicationHandlerHelperTest {
                 eventContext,
                 path,
                 content,
-                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE));
   }
 
   @Test
@@ -211,7 +211,7 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     content,
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER));
+                    ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
   }

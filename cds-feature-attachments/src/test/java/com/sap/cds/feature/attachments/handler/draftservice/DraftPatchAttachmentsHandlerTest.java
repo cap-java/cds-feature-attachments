@@ -63,7 +63,7 @@ class DraftPatchAttachmentsHandlerTest {
     eventFactory = mock(ModifyAttachmentEventFactory.class);
     cut =
         new DraftPatchAttachmentsHandler(
-            persistence, eventFactory, ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+            persistence, eventFactory, ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE);
     eventContext = mock(DraftPatchEventContext.class);
     event = mock(ModifyAttachmentEvent.class);
     when(eventFactory.getEvent(any(), any(), any())).thenReturn(event);

@@ -122,11 +122,9 @@ public class Registration implements CdsRuntimeConfiguration {
     // build malware scanner client, could be null if no service binding is available
     MalwareScanClient scanClient = buildMalwareScanClient(runtime.getEnvironment());
 
-    // determine default max size based on malware scanner binding availability
-    String defaultMaxSize =
-        scanClient != null
-            ? ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER
-            : ModifyApplicationHandlerHelper.UNLIMITED_SIZE;
+    // determine default max size; independent of the scanner binding it stays finite so a missing
+    // scanner does not allow unbounded uploads. An explicit configuration can raise the limit.
+    String defaultMaxSize = resolveDefaultMaxSize(runtime.getEnvironment());
 
     AttachmentMalwareScanner malwareScanner =
         new DefaultAttachmentMalwareScanner(persistenceService, attachmentService, scanClient);
@@ -188,6 +186,26 @@ public class Registration implements CdsRuntimeConfiguration {
     } else {
       logger.debug("No draft service is available. Draft event handlers will not be registered.");
     }
+  }
+
+  /**
+   * Resolves the default maximum upload size for attachment content.
+   *
+   * <p>An explicit {@code cds.attachments.maxUploadSize} configuration takes precedence. Otherwise
+   * a finite default is used regardless of the malware scanner binding, so that a missing scanner
+   * does not silently allow unbounded uploads. Consuming apps can still override the limit per
+   * entity via {@code @Validation.Maximum}.
+   *
+   * @param environment the {@link CdsEnvironment} to read configuration from
+   * @return the default maximum upload size as a size string (e.g. {@code "400MB"})
+   */
+  static String resolveDefaultMaxSize(CdsEnvironment environment) {
+    String configured =
+        environment.getProperty("cds.attachments.maxUploadSize", String.class, null);
+    if (configured != null && !configured.isBlank()) {
+      return configured;
+    }
+    return ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE;
   }
 
   /**
