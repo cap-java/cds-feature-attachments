@@ -14,7 +14,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
@@ -22,32 +21,27 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 class LazyProxyInputStreamTest {
 
   private LazyProxyInputStream cut;
   private InputStream inputStream;
   private AttachmentService attachmentService;
-  private AttachmentStatusValidator attachmentStatusValidator;
+  private ContentReadGuard contentReadGuard;
 
   @BeforeEach
   void setup() {
     inputStream = mock(InputStream.class);
     attachmentService = mock(AttachmentService.class);
-    attachmentStatusValidator = mock(AttachmentStatusValidator.class);
+    contentReadGuard = mock(ContentReadGuard.class);
     when(attachmentService.readAttachment(any())).thenReturn(inputStream);
-    cut =
-        new LazyProxyInputStream(
-            () -> attachmentService.readAttachment(any()),
-            attachmentStatusValidator,
-            StatusCode.CLEAN);
+    cut = new LazyProxyInputStream(() -> attachmentService.readAttachment(any()), contentReadGuard);
   }
 
   @Test
   void noMethodCallNoStreamAccess() {
     verifyNoInteractions(attachmentService);
+    verifyNoInteractions(contentReadGuard);
   }
 
   @Test
@@ -115,26 +109,24 @@ class LazyProxyInputStreamTest {
     verify(attachmentService).readAttachment(any());
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {StatusCode.UNSCANNED, StatusCode.INFECTED})
-  void exceptionIfWrongStatus(String status) {
-    doThrow(AttachmentStatusException.class).when(attachmentStatusValidator).verifyStatus(status);
+  @Test
+  void guardIsVerifiedBeforeContentIsServed() throws IOException {
+    cut.read();
 
-    cut =
-        new LazyProxyInputStream(
-            () -> attachmentService.readAttachment(any()), attachmentStatusValidator, status);
-
-    assertThrows(AttachmentStatusException.class, () -> cut.read());
+    verify(contentReadGuard).verify();
+    verify(attachmentService).readAttachment(any());
   }
 
   @Test
-  void noExceptionIfCorrectStatus() {
-    cut =
-        new LazyProxyInputStream(
-            () -> attachmentService.readAttachment(any()),
-            attachmentStatusValidator,
-            StatusCode.CLEAN);
+  void exceptionIfGuardBlocksRead() {
+    doThrow(AttachmentStatusException.class).when(contentReadGuard).verify();
 
+    assertThrows(AttachmentStatusException.class, () -> cut.read());
+    verifyNoInteractions(attachmentService);
+  }
+
+  @Test
+  void noExceptionIfGuardPasses() {
     assertDoesNotThrow(() -> cut.read());
   }
 }
