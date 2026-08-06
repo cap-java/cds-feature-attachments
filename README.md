@@ -14,31 +14,32 @@ It supports the [AWS, Azure, and Google object stores](storage-targets/cds-featu
 
 <!-- TOC -->
 
-- [Quick Start](#quick-start)
-- [Usage](#usage)
-  - [MVN Setup](#mvn-setup)
-  - [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
-  - [Single (Inline) Attachments](#single-inline-attachments)
-  - [Try the Bookshop Sample](#try-the-bookshop-sample)
-  - [Storage Targets](#storage-targets)
-  - [Malware Scanner](#malware-scanner)
-  - [Specify the maximum file size](#specify-the-maximum-file-size)
-  - [Restrict allowed MIME types](#restrict-allowed-mime-types)
-  - [Outbox](#outbox)
-  - [Restore Endpoint](#restore-endpoint)
-    - [Motivation](#motivation)
-    - [HTTP Endpoint](#http-endpoint)
-    - [Security](#security)
-- [Releases: Maven Central and Artifactory](#releases-maven-central-and-artifactory)
-- [Minimum UI5 and CAP Java Version](#minimum-ui5-and-cap-java-version)
-- [Architecture Overview](#architecture-overview)
-  - [Design](#design)
-  - [Multitenancy](#multitenancy)
-  - [Object Stores](#object-stores)
-  - [Model Texts](#model-texts)
-- [Monitoring \& Logging](#monitoring--logging)
-- [Support, Feedback, Contributing](#support-feedback-contributing)
-- [References \& Links](#references--links)
+* [Quick Start](#quick-start)
+* [Usage](#usage)
+  * [MVN Setup](#mvn-setup)
+  * [Changes in the CDS Models and for the UI](#changes-in-the-cds-models-and-for-the-UI)
+  * [Single (Inline) Attachments](#single-inline-attachments)
+  * [Try the Bookshop Sample](#try-the-bookshop-sample)
+  * [Storage Targets](#storage-targets)
+  * [Malware Scanner](#malware-scanner)
+  * [Specify the maximum file size](#specify-the-maximum-file-size)
+  * [Restrict allowed MIME types](#restrict-allowed-mime-types)
+  * [Content Disposition](#content-disposition)
+  * [Outbox](#outbox)
+  * [Restore Endpoint](#restore-endpoint)
+    * [Motivation](#motivation)
+    * [HTTP Endpoint](#http-endpoint)
+    * [Security](#security)
+* [Releases: Maven Central and Artifactory](#releases-maven-central-and-artifactory)
+* [Minimum UI5 and CAP Java Version](#minimum-ui5-and-cap-java-version)
+* [Architecture Overview](#architecture-overview)
+  * [Design](#design)
+  * [Multitenancy](#multitenancy)
+  * [Object Stores](#object-stores)
+  * [Model Texts](#model-texts)
+* [Monitoring \& Logging](#monitoring--logging)
+* [Support, Feedback, Contributing](#support-feedback-contributing)
+* [References \& Links](#references--links)
 
 ## Quick Start
 
@@ -286,6 +287,22 @@ annotate Books.attachments with {
   content @Core.AcceptableMediaTypes : ['*/*'];
 }
 ```
+
+### Content Disposition
+
+Attachment content is served with `Content-Disposition: attachment`. Browsers therefore download the file instead of rendering it inline in the application origin. This is the safe default that mitigates stored XSS attacks via user-uploaded HTML or SVG payloads, because the content type of a stored attachment is derived from the uploaded file.
+
+If your application intentionally wants to preview certain attachments inline (e.g. images restricted via `@Core.AcceptableMediaTypes`), you can opt in explicitly in your own CDS model:
+
+```cds
+using { sap.attachments.Attachments } from '@cap-js/cds-feature-attachments';
+
+annotate Books.attachments with {
+  content @Core.ContentDisposition.Type: 'inline';
+}
+```
+
+> **Security warning:** Only enable inline disposition for MIME types that cannot execute script — for example, plain images such as `image/jpeg` or `image/png` — restricted via `@Core.AcceptableMediaTypes`. Never enable inline disposition for `image/svg+xml`, `text/html`, `application/xhtml+xml`, or `application/xml` when the uploader is not fully trusted. Note that `application/pdf` may execute JavaScript in some PDF viewers (notably Adobe Reader); verify the viewer used by your target audience before allowing PDFs inline.
 
 ### Outbox
 

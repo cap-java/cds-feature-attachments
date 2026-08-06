@@ -7,13 +7,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sap.cds.CdsData;
 import com.sap.cds.Struct;
 import java.util.HashMap;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 class JsonToCapMapperTestHelper {
 
-  @Autowired private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   public CdsData mapResponseToSingleResult(String resultBody) throws Exception {
     return Struct.access(objectMapper.readValue(resultBody, HashMap.class)).as(CdsData.class);

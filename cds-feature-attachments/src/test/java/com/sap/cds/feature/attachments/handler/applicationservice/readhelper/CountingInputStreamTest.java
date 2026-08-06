@@ -15,6 +15,7 @@ import com.sap.cds.services.ServiceException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
@@ -137,16 +138,10 @@ class CountingInputStreamTest {
     var data = "hello world".getBytes(StandardCharsets.UTF_8); // 11 bytes
     var delegate = new ByteArrayInputStream(data);
     var cut = new CountingInputStream(delegate, "5"); // limit is 5 bytes
+    var nullOut = OutputStream.nullOutputStream();
 
     ServiceException exception =
-        assertThrows(
-            ServiceException.class,
-            () -> {
-              byte[] buffer = new byte[1024];
-              while (cut.read(buffer) != -1) {
-                // read until exception
-              }
-            });
+        assertThrows(ServiceException.class, () -> cut.transferTo(nullOut));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -156,16 +151,10 @@ class CountingInputStreamTest {
     var data = "hello world test".getBytes(StandardCharsets.UTF_8); // 16 bytes
     var delegate = new ByteArrayInputStream(data);
     var cut = new CountingInputStream(delegate, "10");
+    var nullOut = OutputStream.nullOutputStream();
 
     ServiceException exception =
-        assertThrows(
-            ServiceException.class,
-            () -> {
-              byte[] buffer = new byte[1024];
-              while (cut.read(buffer) != -1) {
-                // read until exception
-              }
-            });
+        assertThrows(ServiceException.class, () -> cut.transferTo(nullOut));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
     assertThat(cut.isLimitExceeded()).isTrue();
@@ -231,8 +220,9 @@ class CountingInputStreamTest {
     assertDoesNotThrow(
         () -> {
           byte[] buffer = new byte[1024];
-          while (cut.read(buffer) != -1) {
-            // read all bytes
+          int bytesRead;
+          while ((bytesRead = cut.read(buffer)) != -1) {
+            assertThat(bytesRead).isPositive(); // use value to satisfy SpotBugs
           }
         });
   }

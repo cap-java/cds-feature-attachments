@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles(Profiles.TEST_HANDLER_ENABLED)
-class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBase {
+final class OdataRequestValidationWithTestHandlerTest extends OdataRequestValidationBase {
 
   @Test
   void serviceHandlerAvailable() {

@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
 @ServiceName(value = "*", type = AttachmentService.class)
 @Profile(Profiles.TEST_HANDLER_ENABLED)
 @Component
-public class TestPluginAttachmentsServiceHandler implements EventHandler {
+public final class TestPluginAttachmentsServiceHandler implements EventHandler {
 
   private static final Marker marker = MarkerFactory.getMarker("DUMMY_HANDLER");
   private static final Logger logger =

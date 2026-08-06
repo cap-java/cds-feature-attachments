@@ -56,6 +56,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
@@ -84,6 +90,10 @@
                 <include>*.db</include>
                 <include>*.sqlite*</include>
               </includes>
+            </fileset>
+            <fileset>
+              <directory>${project.basedir}/../node_modules/com.sap.cds</directory>
+              <followSymlinks>false</followSymlinks>
             </fileset>
           </filesets>
         </configuration>
@@ -136,7 +146,7 @@
             <configuration>
               <workingDirectory>${project.basedir}/..</workingDirectory>
               <commands>
-                <command>install</command>
+                <command>ci</command>
               </commands>
             </configuration>
           </execution>

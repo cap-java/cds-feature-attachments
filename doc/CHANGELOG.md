@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## Version 1.6.0 - not yet released
+## Unreleased
 
 ### Added
 
@@ -14,8 +14,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Added top-level `Attachments` aspect to allow usage without `sap.attachments` namespace (#806), i.e., `using {Attachments} from 'com.sap.cds/cds-feature-attachments'`.
 
 ### Changed
+### Security
+
+- Attachment content is now served with `Content-Disposition: attachment` by default (previously `inline`) to mitigate stored XSS (CWE-79) via user-uploaded SVG/HTML payloads (cds-calesi #1263). Applications that require inline previews can opt in by annotating `content` in their own CDS model — see the "Content Disposition" section in the README. It is recommended to combine this with `@Core.AcceptableMediaTypes` restricting inline content to non-scriptable types (e.g. `image/jpeg`, `image/png`, `application/pdf`).
+
+## Version 1.6.0 - 2026-07-17
+
+### Added
 
 - Extract `fileName` and `mimeType` from HTTP headers (`Content-Disposition`, `Content-Type`, `slug`) when not provided in the request payload (#804)
+- Added independent `MalwareScannerService` for scanning arbitrary content without the `AttachmentService` (#785)
+- Added translations for `ScanStates` entity texts (#787, #814)
+
+### Changed
+
+- Upgraded to CAP Java CDS 5 / @sap/cds-dk 10 (#856)
+- Minimum required Java version raised from 17 to 21 (#856)
+- Enabled S3 server-side encryption (AES256) by default for AWS Object Store (#788)
 
 ## Version 1.5.0 - 2026-04-10
 

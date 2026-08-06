@@ -3,8 +3,6 @@
  */
 package com.sap.cds.feature.attachments.handler.applicationservice;
 
-import static java.util.Objects.requireNonNull;
-
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
@@ -53,13 +51,11 @@ public class UpdateAttachmentsHandler implements EventHandler {
       AttachmentService attachmentService,
       ThreadDataStorageReader storageReader,
       String defaultMaxSize) {
-    this.eventFactory = requireNonNull(eventFactory, "eventFactory must not be null");
-    this.attachmentsReader =
-        requireNonNull(attachmentsReader, "attachmentsReader must not be null");
-    this.attachmentService =
-        requireNonNull(attachmentService, "attachmentService must not be null");
-    this.storageReader = requireNonNull(storageReader, "storageReader must not be null");
-    this.defaultMaxSize = requireNonNull(defaultMaxSize, "defaultMaxSize must not be null");
+    this.eventFactory = eventFactory;
+    this.attachmentsReader = attachmentsReader;
+    this.attachmentService = attachmentService;
+    this.storageReader = storageReader;
+    this.defaultMaxSize = defaultMaxSize;
   }
 
   @Before

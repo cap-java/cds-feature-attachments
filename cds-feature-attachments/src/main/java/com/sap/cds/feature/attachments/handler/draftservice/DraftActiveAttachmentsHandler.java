@@ -3,8 +3,6 @@
  */
 package com.sap.cds.feature.attachments.handler.draftservice;
 
-import static java.util.Objects.requireNonNull;
-
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageSetter;
 import com.sap.cds.services.draft.DraftSaveEventContext;
 import com.sap.cds.services.draft.DraftService;
@@ -18,8 +16,7 @@ public class DraftActiveAttachmentsHandler implements EventHandler {
   private final ThreadDataStorageSetter threadLocalSetter;
 
   public DraftActiveAttachmentsHandler(ThreadDataStorageSetter threadLocalSetter) {
-    this.threadLocalSetter =
-        requireNonNull(threadLocalSetter, "threadLocalSetter must not be null");
+    this.threadLocalSetter = threadLocalSetter;
   }
 
   @On

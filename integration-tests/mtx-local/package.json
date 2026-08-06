@@ -2,8 +2,8 @@
   "name": "mtx-local-integration-tests",
   "version": "0.0.0",
   "devDependencies": {
-    "@sap/cds-dk": "^9",
-    "@sap/cds-mtxs": "^3"
+    "@sap/cds-dk": "^10",
+    "@sap/cds-mtxs": "^4"
   },
   "workspaces": [
     "mtx/sidecar"

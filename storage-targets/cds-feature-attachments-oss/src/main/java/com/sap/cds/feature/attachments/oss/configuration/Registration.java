@@ -7,6 +7,7 @@ import com.sap.cds.feature.attachments.oss.client.OSClient;
 import com.sap.cds.feature.attachments.oss.client.OSClientFactory;
 import com.sap.cds.feature.attachments.oss.handler.OSSAttachmentsServiceHandler;
 import com.sap.cds.feature.attachments.oss.handler.TenantCleanupHandler;
+import com.sap.cds.services.ServiceException;
 import com.sap.cds.services.environment.CdsEnvironment;
 import com.sap.cds.services.runtime.CdsRuntimeConfiguration;
 import com.sap.cds.services.runtime.CdsRuntimeConfigurer;
@@ -29,6 +30,17 @@ public class Registration implements CdsRuntimeConfiguration {
     if (bindingOpt.isPresent()) {
       boolean multitenancyEnabled = isMultitenancyEnabled(env);
       String objectStoreKind = getObjectStoreKind(env);
+
+      // Fail fast on an insecure multitenant configuration: without a shared object store the
+      // object keys are not prefixed with the tenant ID, so tenants are not isolated in the
+      // bucket. Refuse to start rather than silently storing all tenants under the same keyspace.
+      if (multitenancyEnabled && !"shared".equals(objectStoreKind)) {
+        throw new ServiceException(
+            "Multitenancy is enabled but the object store kind is not 'shared' (was: '{}'). "
+                + "A shared object store is required to isolate tenants via tenant-prefixed object "
+                + "keys. Configure 'cds.attachments.objectStore.kind: shared'.",
+            objectStoreKind);
+      }
 
       // Fixed thread pool for background I/O operations (upload, download, delete).
       // Default 16 is tuned for I/O-bound cloud storage calls, not CPU-bound work.

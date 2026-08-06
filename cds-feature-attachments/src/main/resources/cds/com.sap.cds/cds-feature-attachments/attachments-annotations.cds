@@ -40,8 +40,7 @@ annotate sap.attachments.MediaData with @UI.MediaResource: {Stream: content} {
 annotate sap.attachments.Attachments {
     content    @(
         Core.ContentDisposition: {
-            Filename: fileName,
-            Type    : 'inline',
+            Filename: fileName
         },
         Core.MediaType         : mimeType
     );
