@@ -7,7 +7,6 @@ using {
 annotate sap.attachments.MediaData with @UI.MediaResource: {Stream: content} {
     content   @(
         title                           : '{i18n>attachment_content}',
-        Core.ContentDisposition.Type    : 'inline',
         Core.MediaType                  : (mimeType),
         Core.ContentDisposition.Filename: (fileName),
     );
@@ -97,5 +96,8 @@ annotate sap.attachments.Attachments with
 }};
 
 annotate sap.attachments.Attachment with {
-    content @Core.ContentDisposition.Filename: (fileName);
+    content @(
+        Core.ContentDisposition.Filename: (fileName),
+        Core.ContentDisposition.Type    : 'inline',
+    );
 }
