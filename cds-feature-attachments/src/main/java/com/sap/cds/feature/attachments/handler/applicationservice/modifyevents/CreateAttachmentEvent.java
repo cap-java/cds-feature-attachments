@@ -104,12 +104,10 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
       Map<String, Object> values,
       Attachments attachment,
       AttachmentContext context) {
-    if (context.isInline()) {
-      Object prefixedValue = values.get(context.fieldName(fieldName));
-      if (nonNull(prefixedValue)) return Optional.of((String) prefixedValue);
+    Object value = values.get(context.fieldName(fieldName));
+    if (value == null) {
+      value = attachment.get(fieldName);
     }
-    Object annotationValue = values.get(fieldName);
-    Object value = nonNull(annotationValue) ? annotationValue : attachment.get(fieldName);
     return Optional.ofNullable((String) value);
   }
 
