@@ -311,7 +311,7 @@ class ModifyApplicationHandlerHelperTest {
                 byte[] buffer = new byte[1024];
                 int bytesRead;
                 while ((bytesRead = wrappedContent.read(buffer)) != -1) {
-                  assertThat(bytesRead).isPositive(); 
+                  assertThat(bytesRead).isPositive();
                 }
               }
               return null;
