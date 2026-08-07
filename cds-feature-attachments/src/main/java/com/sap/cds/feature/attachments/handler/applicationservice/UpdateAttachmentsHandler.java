@@ -101,16 +101,13 @@ public class UpdateAttachmentsHandler implements EventHandler {
             .noneMatch(
                 association -> data.stream().anyMatch(d -> d.containsKey(association.getName())));
 
-    // Also check inline attachment fields
+    // Also check inline attachment fields — only the content field signals an actual change
     List<String> inlinePrefixes = ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
     boolean inlineUnchanged =
         inlinePrefixes.stream()
             .noneMatch(
                 prefix ->
-                    data.stream()
-                        .anyMatch(
-                            d ->
-                                d.keySet().stream().anyMatch(key -> key.startsWith(prefix + "_"))));
+                    data.stream().anyMatch(d -> d.containsKey(prefix + "_" + Attachments.CONTENT)));
 
     return compositionsUnchanged && inlineUnchanged;
   }
