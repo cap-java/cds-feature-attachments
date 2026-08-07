@@ -489,6 +489,8 @@ class ReadAttachmentsHandlerTest {
     mockEventContext(InlineOnly_.CDS_NAME, select);
 
     cut.processBefore(readEventContext);
+
+    verify(readEventContext).setCqn(any(CqnSelect.class));
   }
 
   @Test
@@ -497,6 +499,8 @@ class ReadAttachmentsHandlerTest {
     mockEventContext(RootTable_.CDS_NAME, select);
 
     cut.processBefore(readEventContext);
+
+    verify(readEventContext).setCqn(any(CqnSelect.class));
   }
 
   @Test
