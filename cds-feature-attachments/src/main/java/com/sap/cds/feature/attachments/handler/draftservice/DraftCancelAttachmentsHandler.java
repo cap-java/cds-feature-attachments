@@ -119,7 +119,7 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
         if (!Objects.equals(existingContentId, attachment.getContentId())) {
           deleteEvent.processEvent(null, null, attachment, context, attachmentCtx);
         }
-      } else if (attachment.getContentId() != null) {
+      } else if (attachment.getContentId() != null && !activeCondensedAttachments.isEmpty()) {
         logger.warn(
             "Draft attachment with contentId {} has no matching active entry. Deleting to prevent orphan.",
             attachment.getContentId());
