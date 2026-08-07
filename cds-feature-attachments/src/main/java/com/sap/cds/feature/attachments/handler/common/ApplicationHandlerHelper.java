@@ -274,7 +274,7 @@ public final class ApplicationHandlerHelper {
    */
   public static Map<String, Object> removeDraftKey(Map<String, Object> keys) {
     Map<String, Object> keyMap = new HashMap<>(keys);
-    keyMap.entrySet().removeIf(entry -> entry.getKey().equals(Drafts.IS_ACTIVE_ENTITY));
+    keyMap.remove(Drafts.IS_ACTIVE_ENTITY);
     return keyMap;
   }
 
