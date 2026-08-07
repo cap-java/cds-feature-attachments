@@ -74,11 +74,11 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
           AttachmentContext attachmentCtx = AttachmentContext.from(path.target().type(), element);
 
           List<Attachments> existingAttachments;
-          if (attachmentCtx.isInline()) {
+          if (attachmentCtx instanceof AttachmentContext.Inline inline) {
             // For inline attachments, the DB result has flattened column names (e.g.
             // profileIcon_contentId).
             // Extract to unprefixed Attachments and carry over parent entity keys for matching.
-            String prefix = ((AttachmentContext.Inline) attachmentCtx).prefix();
+            String prefix = inline.prefix();
             Map<String, Object> parentKeys = path.target().keys();
             existingAttachments =
                 result.listOf(Attachments.class).stream()

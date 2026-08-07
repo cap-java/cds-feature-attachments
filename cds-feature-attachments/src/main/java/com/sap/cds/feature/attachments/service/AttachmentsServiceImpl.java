@@ -52,8 +52,8 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
     mediaData.setContent(input.content());
     createContext.setData(mediaData);
     AttachmentContext ctx = input.attachmentContext();
-    if (ctx.isInline()) {
-      createContext.put("attachment.inlinePrefix", ((AttachmentContext.Inline) ctx).prefix());
+    if (ctx instanceof AttachmentContext.Inline inline) {
+      createContext.put("attachment.inlinePrefix", inline.prefix());
     }
 
     emit(createContext);
