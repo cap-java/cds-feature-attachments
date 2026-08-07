@@ -309,7 +309,10 @@ class ModifyApplicationHandlerHelperTest {
               InputStream wrappedContent = invocation.getArgument(1);
               if (wrappedContent != null) {
                 byte[] buffer = new byte[1024];
-                while (wrappedContent.read(buffer) != -1) {}
+                int bytesRead;
+                while ((bytesRead = wrappedContent.read(buffer)) != -1) {
+                  assertThat(bytesRead).isPositive(); 
+                }
               }
               return null;
             });
