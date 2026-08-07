@@ -31,8 +31,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -172,7 +172,7 @@ class SingleAttachmentNonDraftTest {
 
     var url = buildRootUrl(selectedRoot.getId()) + "/avatar_content";
     requestHelper.setContentType(MediaType.IMAGE_PNG);
-    requestHelper.executePutWithMatcher(
+    requestHelper.assertPutStatus(
         url, "fake-image-content".getBytes(StandardCharsets.UTF_8), status().isNoContent());
     requestHelper.resetHelper();
 
@@ -193,7 +193,7 @@ class SingleAttachmentNonDraftTest {
 
     var url = buildRootUrl(selectedRoot.getId()) + "/avatar_content";
     requestHelper.setContentType(MediaType.TEXT_PLAIN);
-    requestHelper.executePutWithMatcher(
+    requestHelper.assertPutStatus(
         url, "test-content".getBytes(StandardCharsets.UTF_8), status().isNoContent());
     requestHelper.resetHelper();
 
@@ -263,7 +263,7 @@ class SingleAttachmentNonDraftTest {
     var contentId = rootAfterPut.getAvatarContentId();
 
     var url = buildRootUrl(rootAfterPut.getId());
-    requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
+    requestHelper.assertDeleteStatus(url, status().isNoContent());
 
     verifySingleDeletionEvent(contentId);
   }
@@ -395,7 +395,7 @@ class SingleAttachmentNonDraftTest {
     var contentId = itemAfterPut.getIconContentId();
 
     var url = buildItemUrl(selectedRoot.getId(), item.getId());
-    requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
+    requestHelper.assertDeleteStatus(url, status().isNoContent());
 
     verifySingleDeletionEvent(contentId);
   }
@@ -414,7 +414,7 @@ class SingleAttachmentNonDraftTest {
     var contentId = itemAfterPut.getIconContentId();
 
     var url = buildRootUrl(rootAfterPut.getId());
-    requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
+    requestHelper.assertDeleteStatus(url, status().isNoContent());
 
     verifySingleDeletionEvent(contentId);
   }
@@ -435,7 +435,7 @@ class SingleAttachmentNonDraftTest {
     var itemContentId = itemAfterPut.getIconContentId();
 
     var url = buildRootUrl(rootAfterPut.getId());
-    requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
+    requestHelper.assertDeleteStatus(url, status().isNoContent());
 
     verifyTwoDeletionEvents(rootContentId, itemContentId);
   }
@@ -556,7 +556,7 @@ class SingleAttachmentNonDraftTest {
     var coverImageContentId = rootAfterPut.getCoverImageContentId();
 
     var url = buildRootUrl(rootAfterPut.getId());
-    requestHelper.executeDeleteWithMatcher(url, status().isNoContent());
+    requestHelper.assertDeleteStatus(url, status().isNoContent());
 
     verifyTwoDeletionEvents(avatarContentId, coverImageContentId);
   }
@@ -665,7 +665,7 @@ class SingleAttachmentNonDraftTest {
 
     var url = buildRootUrl(selectedRoot.getId()) + "/avatar_content";
     requestHelper.setContentType(MediaType.IMAGE_JPEG);
-    requestHelper.executePutWithMatcher(
+    requestHelper.assertPutStatus(
         url, "jpeg-data".getBytes(StandardCharsets.UTF_8), status().isNoContent());
 
     var rootAfterPut = selectStoredRoot();
@@ -695,7 +695,7 @@ class SingleAttachmentNonDraftTest {
     var url = buildRootUrl(selectedRoot.getId()) + "/coverImage_content";
     byte[] oversizedContent = new byte[6 * 1024 * 1024]; // 6MB > 5MB limit
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, oversizedContent, status().is4xxClientError());
+    requestHelper.assertPutStatus(url, oversizedContent, status().is4xxClientError());
   }
 
   private Roots buildRootWithoutContent() {
@@ -717,7 +717,7 @@ class SingleAttachmentNonDraftTest {
 
   private void postServiceRoot(Roots root) throws Exception {
     var url = MockHttpRequestHelper.ODATA_BASE_URL + "TestService/Roots";
-    requestHelper.executePostWithMatcher(url, root.toJson(), status().isCreated());
+    requestHelper.assertPostStatus(url, root.toJson(), status().isCreated());
   }
 
   private Roots selectStoredRoot() {
@@ -757,14 +757,14 @@ class SingleAttachmentNonDraftTest {
       String rootId, String content, ResultMatcher matcher) throws Exception {
     var url = buildRootUrl(rootId) + "/avatar_content";
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, content.getBytes(StandardCharsets.UTF_8), matcher);
+    requestHelper.assertPutStatus(url, content.getBytes(StandardCharsets.UTF_8), matcher);
     return content;
   }
 
   private String putCoverImageContentOnRoot(String rootId, String content) throws Exception {
     var url = buildRootUrl(rootId) + "/coverImage_content";
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(
+    requestHelper.assertPutStatus(
         url, content.getBytes(StandardCharsets.UTF_8), status().isNoContent());
     return content;
   }
@@ -777,7 +777,7 @@ class SingleAttachmentNonDraftTest {
       throws Exception {
     var url = buildItemUrl(rootId, itemId) + "/icon_content";
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(
+    requestHelper.assertPutStatus(
         url, content.getBytes(StandardCharsets.UTF_8), status().isNoContent());
     return content;
   }

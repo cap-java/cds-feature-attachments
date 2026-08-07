@@ -30,8 +30,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -149,8 +149,7 @@ class SingleAttachmentDraftTest {
 
     editExistingRoot(draft.getId());
     var newDraftRootUrl = getDraftRootUrl(draft.getId());
-    requestHelper.executeDeleteWithMatcher(
-        newDraftRootUrl + "/avatar_content", status().isNoContent());
+    requestHelper.assertDeleteStatus(newDraftRootUrl + "/avatar_content", status().isNoContent());
     prepareAndActivateDraft(newDraftRootUrl);
 
     var activeRootAfterDelete = selectActiveRoot(draft.getId());
@@ -170,8 +169,7 @@ class SingleAttachmentDraftTest {
 
     editExistingRoot(draft.getId());
     var newDraftRootUrl = getDraftRootUrl(draft.getId());
-    requestHelper.executeDeleteWithMatcher(
-        newDraftRootUrl + "/avatar_content", status().isNoContent());
+    requestHelper.assertDeleteStatus(newDraftRootUrl + "/avatar_content", status().isNoContent());
     cancelDraft(newDraftRootUrl);
 
     verifyNoAttachmentEventsCalled();
@@ -250,7 +248,7 @@ class SingleAttachmentDraftTest {
     testPersistenceHandler.setThrowExceptionOnUpdate(true);
     var contentUrl = draftRootUrl + "/avatar_content";
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(
+    requestHelper.assertPutStatus(
         contentUrl, "errorContent".getBytes(StandardCharsets.UTF_8), status().is5xxServerError());
     requestHelper.resetHelper();
 
@@ -330,7 +328,7 @@ class SingleAttachmentDraftTest {
     var url = draftRootUrl + "/coverImage_content";
     byte[] oversizedContent = new byte[6 * 1024 * 1024]; // 6MB > 5MB limit
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(url, oversizedContent, status().is4xxClientError());
+    requestHelper.assertPutStatus(url, oversizedContent, status().is4xxClientError());
   }
 
   @Test
@@ -384,24 +382,24 @@ class SingleAttachmentDraftTest {
   private void prepareAndActivateDraft(String draftRootUrl) throws Exception {
     var draftPrepareUrl = draftRootUrl + "/TestDraftService.draftPrepare";
     var draftActivateUrl = draftRootUrl + "/TestDraftService.draftActivate";
-    requestHelper.executePostWithMatcher(
+    requestHelper.assertPostStatus(
         draftPrepareUrl, "{\"SideEffectsQualifier\":\"\"}", status().isOk());
-    requestHelper.executePostWithMatcher(draftActivateUrl, "{}", status().isOk());
+    requestHelper.assertPostStatus(draftActivateUrl, "{}", status().isOk());
   }
 
   private void editExistingRoot(String rootId) throws Exception {
     var url = getActiveRootUrl(rootId) + "/TestDraftService.draftEdit";
-    requestHelper.executePostWithMatcher(url, "{\"PreserveChanges\":true}", status().isOk());
+    requestHelper.assertPostStatus(url, "{\"PreserveChanges\":true}", status().isOk());
   }
 
   private void cancelDraft(String draftRootUrl) throws Exception {
-    requestHelper.executeDeleteWithMatcher(draftRootUrl, status().isNoContent());
+    requestHelper.assertDeleteStatus(draftRootUrl, status().isNoContent());
   }
 
   private String putInlineAttachmentContent(String draftRootUrl, String content) throws Exception {
     var contentUrl = draftRootUrl + "/avatar_content";
     requestHelper.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    requestHelper.executePutWithMatcher(
+    requestHelper.assertPutStatus(
         contentUrl, content.getBytes(StandardCharsets.UTF_8), status().isNoContent());
     requestHelper.resetHelper();
     return content;
