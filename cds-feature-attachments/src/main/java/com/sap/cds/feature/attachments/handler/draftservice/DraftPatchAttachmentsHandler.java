@@ -123,30 +123,28 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
     CdsEntity draftEntity = DraftUtils.getDraftEntity(target);
     for (CdsData d : data) {
       for (String prefix : inlinePrefixes) {
-        String mimeTypeField = prefix + "_" + MediaData.MIME_TYPE;
-        String fileNameField = prefix + "_" + MediaData.FILE_NAME;
-        String contentIdField = prefix + "_" + Attachments.CONTENT_ID;
+        var ctx = new AttachmentContext.Inline(prefix);
 
         // Only update if the attachment was actually processed (contentId present)
-        Object contentId = d.get(contentIdField);
+        Object contentId = d.get(ctx.fieldName(Attachments.CONTENT_ID));
         if (contentId == null) {
           continue;
         }
 
         Map<String, Object> updateData = new HashMap<>();
-        Object mimeType = d.get(mimeTypeField);
-        Object fileName = d.get(fileNameField);
+        Object mimeType = d.get(ctx.fieldName(MediaData.MIME_TYPE));
+        Object fileName = d.get(ctx.fieldName(MediaData.FILE_NAME));
         if (mimeType != null) {
-          updateData.put(mimeTypeField, mimeType);
+          updateData.put(ctx.fieldName(MediaData.MIME_TYPE), mimeType);
         }
         if (fileName != null) {
-          updateData.put(fileNameField, fileName);
+          updateData.put(ctx.fieldName(MediaData.FILE_NAME), fileName);
         }
         if (updateData.isEmpty()) {
           continue;
         }
 
-        CqnPredicate predicate = CQL.get(contentIdField).eq(contentId);
+        CqnPredicate predicate = CQL.get(ctx.fieldName(Attachments.CONTENT_ID)).eq(contentId);
         for (CdsElement key : target.keyElements().toList()) {
           Object keyValue = d.get(key.getName());
           if (keyValue != null) {
