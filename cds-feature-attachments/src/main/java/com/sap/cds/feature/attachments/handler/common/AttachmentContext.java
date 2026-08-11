@@ -6,6 +6,7 @@ package com.sap.cds.feature.attachments.handler.common;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsStructuredType;
+import com.sap.cds.services.draft.Drafts;
 import java.util.Map;
 import java.util.Optional;
 
@@ -109,7 +110,12 @@ public sealed interface AttachmentContext {
 
     @Override
     public Attachments extractFrom(Map<String, Object> values) {
-      return ApplicationHandlerHelper.extractInlineAttachment(values, prefix);
+      Attachments attachment = ApplicationHandlerHelper.extractInlineAttachment(values, prefix);
+      Object hasActiveEntity = values.get(Drafts.HAS_ACTIVE_ENTITY);
+      if (hasActiveEntity != null) {
+        attachment.put(Drafts.HAS_ACTIVE_ENTITY, hasActiveEntity);
+      }
+      return attachment;
     }
   }
 }
