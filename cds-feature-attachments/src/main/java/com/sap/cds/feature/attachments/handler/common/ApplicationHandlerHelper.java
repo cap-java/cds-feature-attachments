@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,7 +48,7 @@ public final class ApplicationHandlerHelper {
   public static final Filter MEDIA_CONTENT_FILTER =
       (path, element, type) -> {
         // Case 1: Composition-based attachment entity (existing behavior)
-        if (path.target().type().getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false)
+        if (isDirectMediaEntity(path.target().type())
             && element.findAnnotation(ANNOTATION_CORE_MEDIA_TYPE).isPresent()) {
           return true;
         }
@@ -80,7 +79,7 @@ public final class ApplicationHandlerHelper {
    * @return <code>true</code> if the entity is a media entity, <code>false</code> otherwise
    */
   public static boolean isMediaEntity(CdsStructuredType baseEntity) {
-    return isDirectMediaEntity(baseEntity) || hasInlineAttachmentElements(baseEntity);
+    return isDirectMediaEntity(baseEntity) || !getInlineAttachmentFieldNames(baseEntity).isEmpty();
   }
 
   /**
@@ -120,7 +119,7 @@ public final class ApplicationHandlerHelper {
     var elements = entity.elements();
     if (elements == null) return List.of();
     String contentSuffix = "_content";
-    LinkedHashSet<String> fieldNames = new LinkedHashSet<>();
+    List<String> fieldNames = new ArrayList<>();
     elements
         .filter(e -> e.getName().endsWith(contentSuffix))
         .filter(e -> e.getAnnotationValue(ANNOTATION_IS_MEDIA_DATA, false))
@@ -133,7 +132,7 @@ public final class ApplicationHandlerHelper {
                 fieldNames.add(prefix);
               }
             });
-    return new ArrayList<>(fieldNames);
+    return fieldNames;
   }
 
   /**

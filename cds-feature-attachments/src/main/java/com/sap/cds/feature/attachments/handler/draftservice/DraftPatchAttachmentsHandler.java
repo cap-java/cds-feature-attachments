@@ -32,7 +32,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +88,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
                           parentKeys.forEach(extracted::putIfAbsent);
                           return extracted;
                         })
-                    .collect(Collectors.toList());
+                    .toList();
           } else {
             existingAttachments = result.listOf(Attachments.class);
           }
