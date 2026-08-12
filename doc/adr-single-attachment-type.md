@@ -54,3 +54,5 @@ Fields from the `MediaData` aspect are flattened into the parent entity with a p
 `type Attachment` (Option 2) was chosen. Although the implementation inside the plugin is more complex due to prefix handling, all that complexity is fully encapsulated. Application developers declare a single field of type `Attachment` on their entity and get draft support, malware scanning, and file lifecycle management without writing any custom handlers.
 
 The `Composition of one` approach would have shifted the complexity to every application developer using the plugin, which is contrary to the plugin's core purpose.
+
+This decision was implemented in [PR #768](https://github.com/cap-java/cds-feature-attachments/pull/768).
