@@ -42,16 +42,20 @@ public class AssociationCascader {
   }
 
   private void collectEntityNames(CdsModel model, NodeTree node, List<String> result) {
-    if (!node.getChildren().isEmpty()) {
-      for (NodeTree child : node.getChildren()) {
-        collectEntityNames(model, child, result);
-      }
-    } else {
-      String entityName = node.getIdentifier().fullEntityName();
+    String entityName = node.getIdentifier().fullEntityName();
+    if (node.getChildren().isEmpty()) {
       model
           .findEntity(entityName)
           .filter(ApplicationHandlerHelper::isMediaEntity)
           .ifPresent(e -> result.add(entityName));
+    } else {
+      model
+          .findEntity(entityName)
+          .filter(ApplicationHandlerHelper::hasInlineAttachmentElements)
+          .ifPresent(e -> result.add(entityName));
+      for (NodeTree child : node.getChildren()) {
+        collectEntityNames(model, child, result);
+      }
     }
   }
 
