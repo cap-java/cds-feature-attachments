@@ -17,11 +17,9 @@ import com.sap.cds.services.draft.Drafts;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -206,7 +204,6 @@ public final class ApplicationHandlerHelper {
       List<? extends CdsData> data, CdsEntity entity) {
     List<Attachments> resultList = new ArrayList<>();
 
-    Set<String> seenPrefixes = new HashSet<>();
     Validator validator =
         (path, element, value) -> {
           // For composition-based: path.target() is the attachment entity
@@ -214,11 +211,10 @@ public final class ApplicationHandlerHelper {
             resultList.add(Attachments.of(path.target().values()));
           } else {
             // For inline type: extract prefixed fields from parent entity
-            Optional<String> prefix =
-                getInlineAttachmentPrefix(path.target().type(), element.getName());
-            if (prefix.isPresent() && seenPrefixes.add(prefix.get())) {
-              resultList.add(extractInlineAttachment(path.target().values(), prefix.get()));
-            }
+            getInlineAttachmentPrefix(path.target().type(), element.getName())
+                .ifPresent(
+                    prefix ->
+                        resultList.add(extractInlineAttachment(path.target().values(), prefix)));
           }
         };
 
