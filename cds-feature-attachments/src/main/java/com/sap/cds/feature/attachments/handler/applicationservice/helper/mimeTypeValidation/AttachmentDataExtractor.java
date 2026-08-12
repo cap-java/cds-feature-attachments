@@ -79,18 +79,15 @@ public final class AttachmentDataExtractor {
 
   private static void ensureAttachmentsHaveFileNames(
       CdsEntity entity, List<? extends CdsData> data, Map<String, Set<String>> result) {
-    // Collect attachment-related elements/fields from the entity
+    // Collect composition-based attachment elements with acceptable media types annotation
     List<CdsElement> attachmentElements =
         entity
             .elements()
             .filter(
                 e -> {
-                  // Only consider associations
                   if (!e.getType().isAssociation()) {
                     return false;
                   }
-                  // Keep only associations targeting media entities
-                  // that define acceptable media types
                   CdsAssociationType association = e.getType().as(CdsAssociationType.class);
                   return ApplicationHandlerHelper.isMediaEntity(association.getTarget())
                       && MediaTypeResolver.getAcceptableMediaTypesAnnotation(
@@ -99,8 +96,18 @@ public final class AttachmentDataExtractor {
                 })
             .toList();
 
-    // Validate that required attachments have file names
     ensureFilenamesPresent(data, result, attachmentElements);
+
+    // Check inline attachment fields (e.g. avatar_content → expect avatar_fileName)
+    List<String> inlinePrefixes = ApplicationHandlerHelper.getInlineAttachmentFieldNames(entity);
+    Set<String> dataKeys = collectValidDataKeys(data);
+    for (String prefix : inlinePrefixes) {
+      String contentField = prefix + "_content";
+      String fileNameField = prefix + "_fileName";
+      if (dataKeys.contains(contentField) && !dataKeys.contains(fileNameField)) {
+        throw new ServiceException(ErrorStatuses.BAD_REQUEST, "Filename is missing");
+      }
+    }
   }
 
   private static void ensureFilenamesPresent(

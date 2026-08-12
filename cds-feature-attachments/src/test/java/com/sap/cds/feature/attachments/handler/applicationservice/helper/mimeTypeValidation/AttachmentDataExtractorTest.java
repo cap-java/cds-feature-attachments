@@ -196,6 +196,22 @@ class AttachmentDataExtractorTest {
   }
 
   @Test
+  void ensureFilenamesPresent_whenInlineAttachmentMissingFileName_throwsException() {
+    // Entity has inline attachment prefix "avatar", data has avatar_content but no avatar_fileName
+    helperMock
+        .when(() -> ApplicationHandlerHelper.getInlineAttachmentFieldNames(targetEntity))
+        .thenReturn(List.of("avatar"));
+    helperMock.when(() -> ApplicationHandlerHelper.isMediaEntity(any())).thenReturn(false);
+    processorMock.when(CdsDataProcessor::create).thenReturn(processor);
+    doAnswer(invocation -> processor).when(processor).addValidator(any(), any());
+    doNothing().when(processor).process(anyList(), any());
+    CdsData data = CdsData.create(Map.of("avatar_content", "some-content"));
+
+    ServiceException ex = assertThrows(ServiceException.class, () -> extractFileNames(data));
+    assertThat(ex.getMessage()).contains("Filename is missing");
+  }
+
+  @Test
   void ensureFilenamesPresent_whenResultMissingKey_throwsException() {
     // Arrange
     doAnswer(invocation -> processor).when(processor).addValidator(any(), any());
