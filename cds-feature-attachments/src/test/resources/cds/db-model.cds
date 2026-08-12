@@ -50,6 +50,7 @@ entity EventItems {
 entity InlineOnly : cuid {
     title  : String;
     avatar : AttachmentType;
+    photo  : AttachmentType;
 }
 
 annotate EventItems.sizeLimitedAttachments with {
@@ -61,5 +62,10 @@ annotate EventItems.defaultSizeLimitedAttachments with {
 };
 
 annotate InlineOnly : avatar with {
-    content @Validation.Maximum: '10KB';
+    content @Validation.Maximum: '10KB'
+            @Core.AcceptableMediaTypes: ['image/png', 'image/jpeg'];
+};
+
+annotate InlineOnly : photo with {
+    content @Core.AcceptableMediaTypes: ['application/pdf'];
 };
