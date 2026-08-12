@@ -188,6 +188,8 @@ class DraftPatchAttachmentsHandlerTest {
     assertThat(where).contains(contentId);
     assertThat(where).contains("ID");
     assertThat(where).contains(entityId);
+    assertThat(where).contains("IsActiveEntity");
+    assertThat(where).contains("false");
   }
 
   @Test

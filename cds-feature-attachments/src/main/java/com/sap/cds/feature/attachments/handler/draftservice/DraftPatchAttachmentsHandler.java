@@ -23,6 +23,7 @@ import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
+import com.sap.cds.services.draft.Drafts;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
@@ -143,7 +144,10 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
           continue;
         }
 
-        CqnPredicate predicate = CQL.get(ctx.fieldName(Attachments.CONTENT_ID)).eq(contentId);
+        CqnPredicate predicate =
+            CQL.and(
+                CQL.get(ctx.fieldName(Attachments.CONTENT_ID)).eq(contentId),
+                CQL.get(Drafts.IS_ACTIVE_ENTITY).eq(false));
         for (CdsElement key : target.keyElements().toList()) {
           Object keyValue = d.get(key.getName());
           if (keyValue != null) {
