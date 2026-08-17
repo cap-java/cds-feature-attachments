@@ -3,6 +3,8 @@
  */
 package com.sap.cds.feature.attachments.handler.common;
 
+import static java.util.Objects.requireNonNull;
+
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsStructuredType;
@@ -63,7 +65,7 @@ public sealed interface AttachmentContext {
   }
 
   /** Context for composition-based attachments where the attachment is its own entity. */
-  record Composition() implements AttachmentContext {
+  final class Composition implements AttachmentContext {
 
     @Override
     public String fieldName(String logicalName) {
@@ -84,13 +86,33 @@ public sealed interface AttachmentContext {
     public Attachments extractFrom(Map<String, Object> values) {
       return Attachments.of(values);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+      return obj instanceof Composition;
+    }
+
+    @Override
+    public int hashCode() {
+      return Composition.class.hashCode();
+    }
   }
 
   /**
    * Context for inline attachments where the structured type fields are flattened into the parent
    * entity with a prefix (e.g. {@code "avatar_content"}, {@code "avatar_contentId"}).
    */
-  record Inline(String prefix) implements AttachmentContext {
+  final class Inline implements AttachmentContext {
+
+    private final String prefix;
+
+    public Inline(String prefix) {
+      this.prefix = requireNonNull(prefix, "prefix must not be null");
+    }
+
+    public String prefix() {
+      return prefix;
+    }
 
     @Override
     public String fieldName(String logicalName) {
@@ -116,6 +138,16 @@ public sealed interface AttachmentContext {
         attachment.put(Drafts.HAS_ACTIVE_ENTITY, hasActiveEntity);
       }
       return attachment;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      return obj instanceof Inline other && prefix.equals(other.prefix);
+    }
+
+    @Override
+    public int hashCode() {
+      return prefix.hashCode();
     }
   }
 }
