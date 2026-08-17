@@ -26,6 +26,7 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.HeaderMediaMetadataResolver;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.mimeTypeValidation.AttachmentValidationHelper;
@@ -366,6 +367,28 @@ class CreateAttachmentsHandlerTest {
       new CreateAttachmentsHandler(eventFactory, storageReader, "400MB", runtime)
           .processBeforeForMetadata(context, data);
       // then
+      helper.verify(
+          () -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime));
+    }
+  }
+
+  @Test
+  void processBeforeForMetadata_appliesHeaderFallbackBeforeValidation() {
+    EventContext context = mock(EventContext.class);
+    CdsEntity entity = mock(CdsEntity.class);
+    List<CdsData> data = List.of(mock(CdsData.class));
+    when(context.getTarget()).thenReturn(entity);
+
+    try (MockedStatic<HeaderMediaMetadataResolver> resolver =
+            mockStatic(HeaderMediaMetadataResolver.class);
+        MockedStatic<AttachmentValidationHelper> helper =
+            mockStatic(AttachmentValidationHelper.class)) {
+      // when
+      new CreateAttachmentsHandler(eventFactory, storageReader, "400MB", runtime)
+          .processBeforeForMetadata(context, data);
+
+      // then header-derived metadata is normalized into the data and validation runs over it
+      resolver.verify(() -> HeaderMediaMetadataResolver.applyHeaderFallback(entity, data, context));
       helper.verify(
           () -> AttachmentValidationHelper.validateMediaAttachments(entity, data, runtime));
     }

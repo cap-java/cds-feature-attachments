@@ -5,6 +5,7 @@ package com.sap.cds.feature.attachments.handler.applicationservice;
 
 import com.sap.cds.CdsData;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ExtendedErrorStatuses;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.HeaderMediaMetadataResolver;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ReadonlyDataContextEnhancer;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ThreadDataStorageReader;
@@ -69,6 +70,10 @@ public class CreateAttachmentsHandler implements EventHandler {
   @HandlerOrder(HandlerOrder.BEFORE)
   void processBeforeForMetadata(EventContext context, List<CdsData> data) {
     CdsEntity target = context.getTarget();
+    // Normalize file name / MIME type derived from request headers (Content-Disposition, slug,
+    // Content-Type) into the data first, so acceptable-media-type validation runs over the exact
+    // values that storage will persist and the read model will serve.
+    HeaderMediaMetadataResolver.applyHeaderFallback(target, data, context);
     AttachmentValidationHelper.validateMediaAttachments(target, data, cdsRuntime);
   }
 
