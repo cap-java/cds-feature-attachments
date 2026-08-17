@@ -23,7 +23,6 @@ import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.On;
 import com.sap.cds.services.handler.annotations.ServiceName;
-import com.sap.cds.services.runtime.CdsRuntime;
 import com.sap.cds.services.utils.OrderConstants;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,17 +41,14 @@ public class CreateAttachmentsHandler implements EventHandler {
   private final ModifyAttachmentEventFactory eventFactory;
   private final ThreadDataStorageReader storageReader;
   private final String defaultMaxSize;
-  private final CdsRuntime cdsRuntime;
 
   public CreateAttachmentsHandler(
       ModifyAttachmentEventFactory eventFactory,
       ThreadDataStorageReader storageReader,
-      String defaultMaxSize,
-      CdsRuntime cdsRuntime) {
+      String defaultMaxSize) {
     this.eventFactory = eventFactory;
     this.storageReader = storageReader;
     this.defaultMaxSize = defaultMaxSize;
-    this.cdsRuntime = cdsRuntime;
   }
 
   @Before
@@ -69,7 +65,7 @@ public class CreateAttachmentsHandler implements EventHandler {
   @HandlerOrder(HandlerOrder.BEFORE)
   void processBeforeForMetadata(EventContext context, List<CdsData> data) {
     CdsEntity target = context.getTarget();
-    AttachmentValidationHelper.validateMediaAttachments(target, data, cdsRuntime);
+    AttachmentValidationHelper.validateMediaAttachments(target, data, context.getModel());
   }
 
   @Before

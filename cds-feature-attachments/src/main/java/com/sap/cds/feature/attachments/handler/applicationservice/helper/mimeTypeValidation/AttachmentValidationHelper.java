@@ -10,7 +10,6 @@ import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.reflect.CdsModel;
 import com.sap.cds.services.ErrorStatuses;
 import com.sap.cds.services.ServiceException;
-import com.sap.cds.services.runtime.CdsRuntime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,14 +28,14 @@ public final class AttachmentValidationHelper {
    *
    * @param entity the {@link CdsEntity entity} type of the given data
    * @param data the list of {@link CdsData} to process
+   * @param cdsModel the (tenant-specific) {@link CdsModel} to resolve media entities against
    * @throws ServiceException if the media type of the attachment is not acceptable
    */
   public static void validateMediaAttachments(
-      CdsEntity entity, List<CdsData> data, CdsRuntime cdsRuntime) {
+      CdsEntity entity, List<? extends CdsData> data, CdsModel cdsModel) {
     if (entity == null) {
       return;
     }
-    CdsModel cdsModel = cdsRuntime.getCdsModel();
 
     List<String> mediaEntityNames =
         ApplicationHandlerHelper.isMediaEntity(entity)

@@ -22,6 +22,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MvcResult;
 
 @ActiveProfiles(Profiles.TEST_HANDLER_DISABLED)
 public class MediaValidatedAttachmentsDraftTest extends DraftOdataRequestValidationBase {
@@ -70,6 +71,30 @@ public class MediaValidatedAttachmentsDraftTest extends DraftOdataRequestValidat
     String metadata = "{}";
     requestHelper.assertPostStatus(
         buildDraftAttachmentCreationUrl(rootId), metadata, status().isCreated());
+  }
+
+  @Test
+  void shouldValidateMediaType_whenPatchingDraftAttachment() throws Exception {
+    String rootId = createDraftRootAndReturnId();
+    CdsData created =
+        requestHelper.executePostWithODataResponseAndAssertStatusCreated(
+            buildDraftAttachmentCreationUrl(rootId),
+            objectMapper.writeValueAsString(Map.of("fileName", "image.jpg")));
+    String attachmentId = (String) created.get("ID");
+
+    String attachmentUrl =
+        BASE_URL
+            + "DraftRoots_mediaValidatedAttachments(up__ID="
+            + rootId
+            + ",ID="
+            + attachmentId
+            + ",IsActiveEntity=false)";
+
+    MvcResult result =
+        requestHelper.executePatch(
+            attachmentUrl, objectMapper.writeValueAsString(Map.of("fileName", "notes.txt")));
+
+    assertThat(result.getResponse().getStatus()).isEqualTo(415);
   }
 
   // Helper methods
