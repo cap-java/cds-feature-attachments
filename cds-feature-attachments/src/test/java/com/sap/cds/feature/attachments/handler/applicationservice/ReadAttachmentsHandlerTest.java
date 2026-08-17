@@ -378,6 +378,55 @@ class ReadAttachmentsHandlerTest {
   }
 
   @Test
+  void keyedStaleCleanAttachmentIsRescannedWhenContentIsRead() throws IOException {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.CLEAN);
+    attachment.setScannedAt(Instant.now().minus(4, ChronoUnit.DAYS));
+    doThrow(AttachmentStatusException.class)
+        .when(attachmentStatusValidator)
+        .verifyStatus(StatusCode.SCANNING);
+
+    cut.processAfter(readEventContext, List.of(attachment));
+
+    // keyed read: nothing is scanned or validated eagerly
+    verifyNoInteractions(asyncMalwareScanExecutor);
+    verifyNoInteractions(persistenceService);
+
+    // reading the content enforces the freshness policy: rescan is triggered and download blocked
+    var content = attachment.getContent();
+    assertThat(content).isInstanceOf(LazyProxyInputStream.class);
+    assertThrows(AttachmentStatusException.class, content::readAllBytes);
+    verify(persistenceService).run(any(com.sap.cds.ql.cqn.CqnUpdate.class));
+    verify(asyncMalwareScanExecutor)
+        .scanAsync(readEventContext.getTarget(), attachment.getContentId());
+    assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
+  }
+
+  @Test
+  void keyedInfectedAttachmentIsBlockedWhenContentIsRead() {
+    mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
+    var attachment = Attachments.create();
+    attachment.setId(UUID.randomUUID().toString());
+    attachment.setContentId("some ID");
+    attachment.setContent(mock(InputStream.class));
+    attachment.setStatus(StatusCode.INFECTED);
+    doThrow(AttachmentStatusException.class)
+        .when(attachmentStatusValidator)
+        .verifyStatus(StatusCode.INFECTED);
+
+    cut.processAfter(readEventContext, List.of(attachment));
+
+    var content = attachment.getContent();
+    assertThat(content).isInstanceOf(LazyProxyInputStream.class);
+    verifyNoInteractions(attachmentService);
+    assertThrows(AttachmentStatusException.class, content::readAllBytes);
+  }
+
+  @Test
   void emptyContentIdAndEmptyContentReturnNullContent() {
     mockEventContext(Attachment_.CDS_NAME, mock(CqnSelect.class));
     var attachment = Attachments.create();
