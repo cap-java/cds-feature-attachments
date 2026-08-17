@@ -16,11 +16,11 @@ import java.util.Optional;
  * Encapsulates how to address one attachment's fields regardless of whether it resides in a
  * composition child entity (composition-based) or is flattened into the parent entity (inline).
  *
- * <p>The plugin processes one attachment at a time. {@code AttachmentContext} describes how to read
- * and write that attachment's fields in the data map, and how to match it against existing
- * attachment data.
+ * <p>The plugin processes one attachment at a time. {@code FieldAccessor} describes how to read and
+ * write that attachment's fields in the data map, and how to match it against existing attachment
+ * data.
  */
-public sealed interface AttachmentContext {
+public sealed interface FieldAccessor {
 
   /**
    * Resolves a logical attachment field name (e.g. {@code "contentId"}) to the actual key in the
@@ -52,20 +52,20 @@ public sealed interface AttachmentContext {
   Attachments extractFrom(Map<String, Object> values);
 
   /**
-   * Determines the correct {@link AttachmentContext} from a {@code CdsDataProcessor} callback.
+   * Determines the correct {@link FieldAccessor} from a {@code CdsDataProcessor} callback.
    *
    * @param entity the entity type at the current processing path
    * @param element the element that matched the media content filter
    * @return the appropriate context implementation
    */
-  static AttachmentContext from(CdsStructuredType entity, CdsElement element) {
+  static FieldAccessor from(CdsStructuredType entity, CdsElement element) {
     Optional<String> prefix =
         ApplicationHandlerHelper.getInlineAttachmentPrefix(entity, element.getName());
-    return prefix.<AttachmentContext>map(Inline::new).orElseGet(Composition::new);
+    return prefix.<FieldAccessor>map(Inline::new).orElseGet(Composition::new);
   }
 
   /** Context for composition-based attachments where the attachment is its own entity. */
-  final class Composition implements AttachmentContext {
+  final class Composition implements FieldAccessor {
 
     @Override
     public String fieldName(String logicalName) {
@@ -102,7 +102,7 @@ public sealed interface AttachmentContext {
    * Context for inline attachments where the structured type fields are flattened into the parent
    * entity with a prefix (e.g. {@code "avatar_content"}, {@code "avatar_contentId"}).
    */
-  final class Inline implements AttachmentContext {
+  final class Inline implements FieldAccessor {
 
     private final String prefix;
 

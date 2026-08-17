@@ -9,7 +9,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
@@ -104,7 +104,7 @@ class AttachmentsServiceImplTest {
             "fileName",
             "mimeType",
             stream,
-            new AttachmentContext.Composition());
+            new FieldAccessor.Composition());
 
     var result = cut.createAttachment(input);
 
@@ -137,7 +137,7 @@ class AttachmentsServiceImplTest {
             "fileName",
             "mimeType",
             mock(InputStream.class),
-            new AttachmentContext.Composition());
+            new FieldAccessor.Composition());
 
     var result = cut.createAttachment(input);
 

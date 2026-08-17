@@ -9,7 +9,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
@@ -54,7 +54,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
       InputStream content,
       Attachments attachment,
       EventContext eventContext,
-      AttachmentContext context) {
+      FieldAccessor context) {
     logger.debug(
         "Calling attachment service with create event for entity {}",
         path.target().entity().getQualifiedName());
@@ -100,10 +100,7 @@ public class CreateAttachmentEvent implements ModifyAttachmentEvent {
   }
 
   private static Optional<String> getFieldValue(
-      String fieldName,
-      Map<String, Object> values,
-      Attachments attachment,
-      AttachmentContext context) {
+      String fieldName, Map<String, Object> values, Attachments attachment, FieldAccessor context) {
     Object value = values.get(context.fieldName(fieldName));
     if (value == null) {
       value = attachment.get(fieldName);

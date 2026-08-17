@@ -11,7 +11,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Events_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.runtime.CdsRuntime;
@@ -87,7 +87,7 @@ class ReadonlyDataContextEnhancerTest {
     backup.setScannedAt(scannedAt);
     data.put(DRAFT_READONLY_CONTEXT, backup);
 
-    ReadonlyDataContextEnhancer.restoreReadonlyFields(data, new AttachmentContext.Composition());
+    ReadonlyDataContextEnhancer.restoreReadonlyFields(data, new FieldAccessor.Composition());
 
     assertThat(data.get(Attachments.CONTENT_ID)).isEqualTo("cid-restored");
     assertThat(data.get(Attachments.STATUS)).isEqualTo("Scanning");
@@ -100,7 +100,7 @@ class ReadonlyDataContextEnhancerTest {
     CdsData data = CdsData.create();
     data.put("ID", "123");
 
-    ReadonlyDataContextEnhancer.restoreReadonlyFields(data, new AttachmentContext.Composition());
+    ReadonlyDataContextEnhancer.restoreReadonlyFields(data, new FieldAccessor.Composition());
 
     assertThat(data.get("ID")).isEqualTo("123");
     assertThat(data).hasSize(1);
@@ -129,7 +129,7 @@ class ReadonlyDataContextEnhancerTest {
     // STATUS and SCANNED_AT intentionally absent from backup
     data.put(DRAFT_READONLY_CONTEXT, backup);
 
-    ReadonlyDataContextEnhancer.restoreReadonlyFields(data, new AttachmentContext.Composition());
+    ReadonlyDataContextEnhancer.restoreReadonlyFields(data, new FieldAccessor.Composition());
 
     assertThat(data.get(Attachments.CONTENT_ID)).isEqualTo("restored-id");
     assertThat(data.get(Attachments.STATUS)).isNull();
@@ -182,7 +182,7 @@ class ReadonlyDataContextEnhancerTest {
     data.put("profilePicture_" + DRAFT_READONLY_CONTEXT, backup);
 
     ReadonlyDataContextEnhancer.restoreReadonlyFields(
-        data, new AttachmentContext.Inline("profilePicture"));
+        data, new FieldAccessor.Inline("profilePicture"));
 
     assertThat(data.get("profilePicture_contentId")).isEqualTo("inline-restored-cid");
     assertThat(data.get("profilePicture_status")).isEqualTo("Scanning");
@@ -200,7 +200,7 @@ class ReadonlyDataContextEnhancerTest {
     data.put("profilePicture_" + DRAFT_READONLY_CONTEXT, backup);
 
     ReadonlyDataContextEnhancer.restoreReadonlyFields(
-        data, new AttachmentContext.Inline("profilePicture"));
+        data, new FieldAccessor.Inline("profilePicture"));
 
     assertThat(data.get("profilePicture_contentId")).isEqualTo("inline-cid");
     assertThat(data.get("profilePicture_fileName")).isEqualTo("preserved-file.pdf");

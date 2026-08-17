@@ -11,7 +11,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.M
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.CountingInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.reflect.CdsAnnotation;
 import com.sap.cds.reflect.CdsElement;
@@ -55,7 +55,7 @@ public final class ModifyApplicationHandlerHelper {
 
     Converter converter =
         (path, element, value) -> {
-          AttachmentContext context = AttachmentContext.from(path.target().type(), element);
+          FieldAccessor context = FieldAccessor.from(path.target().type(), element);
           return handleAttachmentForEntity(
               condensedExistingAttachments,
               eventFactory,
@@ -90,7 +90,7 @@ public final class ModifyApplicationHandlerHelper {
       Path path,
       InputStream content,
       String defaultMaxSize,
-      AttachmentContext context) {
+      FieldAccessor context) {
     Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
     ReadonlyDataContextEnhancer.restoreReadonlyFields((CdsData) path.target().values(), context);
     Attachments attachment = getExistingAttachment(keys, existingAttachments, context);
@@ -133,7 +133,7 @@ public final class ModifyApplicationHandlerHelper {
   }
 
   private static String getValMaxValue(
-      CdsEntity entity, String defaultMaxSize, AttachmentContext context) {
+      CdsEntity entity, String defaultMaxSize, FieldAccessor context) {
     Optional<CdsElement> contentElement = entity.findElement(context.fieldName("content"));
     return contentElement
         .flatMap(e -> e.findAnnotation("Validation.Maximum"))
@@ -144,7 +144,7 @@ public final class ModifyApplicationHandlerHelper {
   }
 
   private static Attachments getExistingAttachment(
-      Map<String, Object> keys, List<Attachments> existingAttachments, AttachmentContext context) {
+      Map<String, Object> keys, List<Attachments> existingAttachments, FieldAccessor context) {
     return existingAttachments.stream()
         .filter(existingData -> context.matches(existingData, keys))
         .findAny()

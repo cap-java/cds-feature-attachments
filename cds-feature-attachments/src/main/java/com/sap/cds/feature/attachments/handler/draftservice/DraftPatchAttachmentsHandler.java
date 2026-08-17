@@ -12,7 +12,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Select;
 import com.sap.cds.ql.Update;
@@ -71,10 +71,10 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
           CqnSelect select = Select.from(draftEntity).matching(path.target().keys());
           Result result = persistence.run(select);
 
-          AttachmentContext attachmentCtx = AttachmentContext.from(path.target().type(), element);
+          FieldAccessor attachmentCtx = FieldAccessor.from(path.target().type(), element);
 
           List<Attachments> existingAttachments;
-          if (attachmentCtx instanceof AttachmentContext.Inline inline) {
+          if (attachmentCtx instanceof FieldAccessor.Inline inline) {
             // For inline attachments, the DB result has flattened column names (e.g.
             // profileIcon_contentId).
             // Extract to unprefixed Attachments and carry over parent entity keys for matching.
@@ -123,7 +123,7 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
     CdsEntity draftEntity = DraftUtils.getDraftEntity(target);
     for (CdsData d : data) {
       for (String prefix : inlinePrefixes) {
-        var ctx = new AttachmentContext.Inline(prefix);
+        var ctx = new FieldAccessor.Inline(prefix);
 
         // Only update if the attachment was actually processed (contentId present)
         Object contentId = d.get(ctx.fieldName(Attachments.CONTENT_ID));

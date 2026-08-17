@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.ql.cqn.ResolvedSegment;
@@ -94,7 +94,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     attachment.getContent(),
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    new AttachmentContext.Composition()));
+                    new FieldAccessor.Composition()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -150,7 +150,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     content,
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    new AttachmentContext.Composition()));
+                    new FieldAccessor.Composition()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -183,7 +183,7 @@ class ModifyApplicationHandlerHelperTest {
                 path,
                 content,
                 ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                new AttachmentContext.Composition()));
+                new FieldAccessor.Composition()));
   }
 
   @Test
@@ -216,7 +216,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     content,
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    new AttachmentContext.Composition()));
+                    new FieldAccessor.Composition()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
   }
@@ -250,7 +250,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     (InputStream) data.get("avatar_content"),
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    new AttachmentContext.Inline("avatar")));
+                    new FieldAccessor.Inline("avatar")));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }
@@ -283,7 +283,7 @@ class ModifyApplicationHandlerHelperTest {
                 path,
                 content,
                 ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                new AttachmentContext.Inline("avatar")));
+                new FieldAccessor.Inline("avatar")));
   }
 
   @Test
@@ -330,7 +330,7 @@ class ModifyApplicationHandlerHelperTest {
                     path,
                     content,
                     ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
-                    new AttachmentContext.Inline("avatar")));
+                    new FieldAccessor.Inline("avatar")));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
   }

@@ -7,7 +7,7 @@ import static java.util.Objects.nonNull;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
 import com.sap.cds.ql.cqn.Path;
@@ -37,7 +37,7 @@ public class MarkAsDeletedAttachmentEvent implements ModifyAttachmentEvent {
       InputStream content,
       Attachments attachment,
       EventContext eventContext,
-      AttachmentContext context) {
+      FieldAccessor context) {
     String qualifiedName = eventContext.getTarget().getQualifiedName();
     logger.debug(
         "Processing the event for calling attachment service with mark as delete event for entity {}",

@@ -15,7 +15,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Bef
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.CQL;
@@ -115,7 +115,7 @@ public class ReadAttachmentsHandler implements EventHandler {
 
       Converter converter =
           (path, element, value) -> {
-            AttachmentContext attachmentCtx = AttachmentContext.from(path.target().type(), element);
+            FieldAccessor attachmentCtx = FieldAccessor.from(path.target().type(), element);
             Attachments attachment = attachmentCtx.extractFrom(path.target().values());
             InputStream content = attachment.getContent();
             if (nonNull(attachment.getContentId())) {
@@ -136,7 +136,7 @@ public class ReadAttachmentsHandler implements EventHandler {
     }
   }
 
-  private void verifyStatus(Path path, Attachments attachment, AttachmentContext attachmentCtx) {
+  private void verifyStatus(Path path, Attachments attachment, FieldAccessor attachmentCtx) {
     if (areKeysEmpty(path.target().keys()) || attachmentCtx.isInline()) {
       String currentStatus = attachment.getStatus();
       logger.debug(
@@ -171,7 +171,7 @@ public class ReadAttachmentsHandler implements EventHandler {
   }
 
   private void transitionToScanning(
-      CdsEntity entity, Attachments attachment, AttachmentContext attachmentCtx) {
+      CdsEntity entity, Attachments attachment, FieldAccessor attachmentCtx) {
     logger.debug(
         "Attachment {} has stale scan (scannedAt={}), transitioning to SCANNING for rescan.",
         attachment.getContentId(),

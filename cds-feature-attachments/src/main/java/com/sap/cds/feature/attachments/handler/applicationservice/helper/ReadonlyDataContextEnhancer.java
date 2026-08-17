@@ -9,7 +9,7 @@ import com.sap.cds.CdsDataProcessor.Validator;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.reflect.CdsEntity;
 import java.util.List;
 import java.util.Objects;
@@ -36,7 +36,7 @@ public final class ReadonlyDataContextEnhancer {
 
     Validator validator =
         (path, element, value) -> {
-          AttachmentContext context = AttachmentContext.from(path.target().type(), element);
+          FieldAccessor context = FieldAccessor.from(path.target().type(), element);
           if (isDraft) {
             Attachments attachment = Attachments.create();
             attachment.setContentId(
@@ -66,7 +66,7 @@ public final class ReadonlyDataContextEnhancer {
    * @param data the {@link CdsData data} to restore with readonly fields
    * @param context the attachment context identifying which attachment's fields to restore
    */
-  public static void restoreReadonlyFields(CdsData data, AttachmentContext context) {
+  public static void restoreReadonlyFields(CdsData data, FieldAccessor context) {
     String readonlyKey = context.fieldName(DRAFT_READONLY_CONTEXT);
     CdsData readOnlyData = (CdsData) data.get(readonlyKey);
     if (Objects.nonNull(readOnlyData)) {

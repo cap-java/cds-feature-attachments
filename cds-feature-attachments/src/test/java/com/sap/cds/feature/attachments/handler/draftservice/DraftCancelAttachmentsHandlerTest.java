@@ -16,8 +16,8 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservic
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.Delete;
 import com.sap.cds.ql.cqn.CqnDelete;
@@ -192,7 +192,7 @@ class DraftCancelAttachmentsHandlerTest {
             eq(null),
             dataArgumentCaptor.capture(),
             eq(eventContext),
-            any(AttachmentContext.class));
+            any(FieldAccessor.class));
     assertThat(dataArgumentCaptor.getValue()).isEqualTo(attachment);
   }
 
@@ -216,7 +216,7 @@ class DraftCancelAttachmentsHandlerTest {
             eq(null),
             dataArgumentCaptor.capture(),
             eq(eventContext),
-            any(AttachmentContext.class));
+            any(FieldAccessor.class));
     assertThat(dataArgumentCaptor.getValue()).isEqualTo(draftAttachment);
   }
 
@@ -284,7 +284,7 @@ class DraftCancelAttachmentsHandlerTest {
 
     // Orphan prevention: draft has contentId but no matching active entry, so delete it
     verify(deleteContentAttachmentEvent)
-        .processEvent(isNull(), isNull(), any(), eq(eventContext), any(AttachmentContext.class));
+        .processEvent(isNull(), isNull(), any(), eq(eventContext), any(FieldAccessor.class));
   }
 
   @Test
@@ -314,7 +314,7 @@ class DraftCancelAttachmentsHandlerTest {
             eq(null),
             dataArgumentCaptor.capture(),
             eq(eventContext),
-            any(AttachmentContext.class));
+            any(FieldAccessor.class));
     assertThat(dataArgumentCaptor.getValue().getContentId()).isEqualTo("new-content-id");
     assertThat(dataArgumentCaptor.getValue().get("_inlinePrefix")).isEqualTo("profilePicture");
   }
@@ -351,7 +351,7 @@ class DraftCancelAttachmentsHandlerTest {
             eq(null),
             dataArgumentCaptor.capture(),
             eq(eventContext),
-            any(AttachmentContext.class));
+            any(FieldAccessor.class));
     assertThat(dataArgumentCaptor.getValue().getContentId()).isEqualTo("new-content-id");
   }
 

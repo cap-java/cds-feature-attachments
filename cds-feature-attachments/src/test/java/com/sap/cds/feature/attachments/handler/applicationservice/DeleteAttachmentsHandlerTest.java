@@ -18,8 +18,8 @@ import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.Roots_;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.Attachment_;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
@@ -82,7 +82,7 @@ class DeleteAttachmentsHandlerTest {
     cut.processBefore(context);
 
     verify(modifyAttachmentEvent)
-        .processEvent(any(), eq(inputStream), eq(data), eq(context), any(AttachmentContext.class));
+        .processEvent(any(), eq(inputStream), eq(data), eq(context), any(FieldAccessor.class));
     assertThat(data.getContent()).isNull();
   }
 
@@ -110,14 +110,14 @@ class DeleteAttachmentsHandlerTest {
             eq(inputStream),
             eq(Attachments.of(attachment1)),
             eq(context),
-            any(AttachmentContext.class));
+            any(FieldAccessor.class));
     verify(modifyAttachmentEvent)
         .processEvent(
             any(Path.class),
             eq(inputStream),
             eq(Attachments.of(attachment2)),
             eq(context),
-            any(AttachmentContext.class));
+            any(FieldAccessor.class));
     assertThat(attachment1.getContent()).isNull();
     assertThat(attachment2.getContent()).isNull();
   }

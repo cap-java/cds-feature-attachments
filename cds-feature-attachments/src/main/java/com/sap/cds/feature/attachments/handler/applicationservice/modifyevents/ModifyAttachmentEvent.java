@@ -4,7 +4,7 @@
 package com.sap.cds.feature.attachments.handler.applicationservice.modifyevents;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.ql.cqn.Path;
 import com.sap.cds.services.EventContext;
@@ -31,5 +31,5 @@ public interface ModifyAttachmentEvent {
       InputStream content,
       Attachments attachment,
       EventContext eventContext,
-      AttachmentContext context);
+      FieldAccessor context);
 }

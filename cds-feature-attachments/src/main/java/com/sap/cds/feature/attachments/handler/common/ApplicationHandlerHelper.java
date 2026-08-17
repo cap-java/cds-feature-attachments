@@ -33,8 +33,8 @@ public final class ApplicationHandlerHelper {
   /**
    * Internal marker key used to store the inline attachment prefix in extracted attachment data.
    * This enables correct matching of inline attachments when operating on multiple inline
-   * attachments on the same entity. Package-private; only used by {@link AttachmentContext.Inline}
-   * for matching.
+   * attachments on the same entity. Package-private; only used by {@link FieldAccessor.Inline} for
+   * matching.
    */
   static final String INLINE_PREFIX_MARKER = "_inlinePrefix";
 

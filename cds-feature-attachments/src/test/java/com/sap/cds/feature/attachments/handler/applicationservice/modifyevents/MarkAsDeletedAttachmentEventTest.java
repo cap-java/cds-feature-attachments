@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.RootTable_;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
@@ -70,7 +70,7 @@ class MarkAsDeletedAttachmentEventTest {
     data.setContentId(contentId);
 
     var expectedValue =
-        cut.processEvent(path, value, data, context, new AttachmentContext.Composition());
+        cut.processEvent(path, value, data, context, new FieldAccessor.Composition());
 
     assertThat(expectedValue).isEqualTo(value);
     assertThat(data.getContentId()).isEqualTo(contentId);
@@ -92,7 +92,7 @@ class MarkAsDeletedAttachmentEventTest {
     var data = Attachments.create();
 
     var expectedValue =
-        cut.processEvent(path, value, data, context, new AttachmentContext.Composition());
+        cut.processEvent(path, value, data, context, new FieldAccessor.Composition());
 
     assertThat(expectedValue).isEqualTo(value);
     assertThat(data.getContentId()).isNull();
@@ -112,7 +112,7 @@ class MarkAsDeletedAttachmentEventTest {
     when(context.getEvent()).thenReturn(DraftService.EVENT_DRAFT_PATCH);
 
     var expectedValue =
-        cut.processEvent(path, value, data, context, new AttachmentContext.Composition());
+        cut.processEvent(path, value, data, context, new FieldAccessor.Composition());
 
     assertThat(expectedValue).isEqualTo(value);
     assertThat(data.getContentId()).isEqualTo(contentId);
@@ -131,7 +131,7 @@ class MarkAsDeletedAttachmentEventTest {
     data.setContentId(contentId);
 
     var expectedValue =
-        cut.processEvent(null, value, data, context, new AttachmentContext.Composition());
+        cut.processEvent(null, value, data, context, new FieldAccessor.Composition());
 
     assertThat(expectedValue).isEqualTo(value);
     // Attachment service should still be called to mark as deleted
@@ -153,7 +153,7 @@ class MarkAsDeletedAttachmentEventTest {
     currentData.put(Attachments.CONTENT_ID, newContentId);
 
     var expectedValue =
-        cut.processEvent(path, value, data, context, new AttachmentContext.Composition());
+        cut.processEvent(path, value, data, context, new FieldAccessor.Composition());
 
     assertThat(expectedValue).isEqualTo(value);
     // Attachment service should be called to mark old content as deleted
@@ -187,7 +187,7 @@ class MarkAsDeletedAttachmentEventTest {
     data.put("_inlinePrefix", "profilePicture");
     when(context.getEvent()).thenReturn(DraftService.EVENT_DRAFT_PATCH);
 
-    cut.processEvent(path, null, data, context, new AttachmentContext.Inline("profilePicture"));
+    cut.processEvent(path, null, data, context, new FieldAccessor.Inline("profilePicture"));
 
     // All prefixed fields should be cleared
     assertThat(values)
@@ -216,7 +216,7 @@ class MarkAsDeletedAttachmentEventTest {
     data.setContentId("old-content-id");
     data.put("_inlinePrefix", "profilePicture");
 
-    cut.processEvent(path, null, data, context, new AttachmentContext.Inline("profilePicture"));
+    cut.processEvent(path, null, data, context, new FieldAccessor.Inline("profilePicture"));
 
     // contentId differs from attachment's contentId, so fields should NOT be cleared
     assertThat(values).containsEntry("profilePicture_contentId", "different-new-content-id");

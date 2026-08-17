@@ -18,8 +18,8 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Att
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.CreationChangeSetListener;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
@@ -133,9 +133,9 @@ public class Registration implements CdsRuntimeConfiguration {
         new DefaultAttachmentMalwareScanner(persistenceService, attachmentService, scanClient);
 
     EndTransactionMalwareScanProvider malwareScanEndTransactionListener =
-        (attachmentEntity, contentId, attachmentContext) ->
+        (attachmentEntity, contentId, fieldAccessor) ->
             new EndTransactionMalwareScanRunner(
-                attachmentEntity, contentId, attachmentContext, malwareScanner, runtime);
+                attachmentEntity, contentId, fieldAccessor, malwareScanner, runtime);
 
     // register event handlers for attachment service
     configurer.eventHandler(
@@ -165,7 +165,7 @@ public class Registration implements CdsRuntimeConfiguration {
       configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteEvent));
       EndTransactionMalwareScanRunner scanRunner =
           new EndTransactionMalwareScanRunner(
-              null, null, new AttachmentContext.Composition(), malwareScanner, runtime);
+              null, null, new FieldAccessor.Composition(), malwareScanner, runtime);
       configurer.eventHandler(
           new ReadAttachmentsHandler(
               attachmentService,

@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
@@ -105,11 +105,7 @@ class CreateAttachmentEventTest {
     existingData.setMimeType("some mime type");
 
     cut.processEvent(
-        path,
-        attachment.getContent(),
-        existingData,
-        eventContext,
-        new AttachmentContext.Composition());
+        path, attachment.getContent(), existingData, eventContext, new FieldAccessor.Composition());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     var createInput = contextArgumentCaptor.getValue();
@@ -137,7 +133,7 @@ class CreateAttachmentEventTest {
         attachment.getContent(),
         Attachments.create(),
         eventContext,
-        new AttachmentContext.Composition());
+        new FieldAccessor.Composition());
 
     assertThat(attachment.getContentId()).isEqualTo(attachmentServiceResult.contentId());
     assertThat(attachment.getStatus()).isEqualTo(attachmentServiceResult.status());
@@ -154,7 +150,7 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(false, contentId, "test", null));
 
     cut.processEvent(
-        path, null, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, null, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     verify(changeSetContext).register(listener);
   }
@@ -180,7 +176,7 @@ class CreateAttachmentEventTest {
             attachment.getContent(),
             Attachments.create(),
             eventContext,
-            new AttachmentContext.Composition());
+            new FieldAccessor.Composition());
 
     var expectedContent = isExternalStored ? attachment.getContent() : null;
     assertThat(result).isEqualTo(expectedContent);
@@ -204,7 +200,7 @@ class CreateAttachmentEventTest {
         attachment.getContent(),
         Attachments.create(),
         eventContext,
-        new AttachmentContext.Composition());
+        new FieldAccessor.Composition());
     return attachment;
   }
 
@@ -220,7 +216,7 @@ class CreateAttachmentEventTest {
         .thenReturn("attachment; filename*=UTF-8''my%20file%20name.pdf");
 
     cut.processEvent(
-        path, null, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, null, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file name.pdf");
@@ -239,7 +235,7 @@ class CreateAttachmentEventTest {
         .thenReturn("attachment; filename*=UTF-8''my%20file.pdf; size=1234");
 
     cut.processEvent(
-        path, null, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, null, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("my file.pdf");
@@ -258,7 +254,7 @@ class CreateAttachmentEventTest {
         .thenReturn("attachment; filename=\"report.pdf\"");
 
     cut.processEvent(
-        path, null, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, null, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("report.pdf");
@@ -276,7 +272,7 @@ class CreateAttachmentEventTest {
         .thenReturn("attachment; filename=report.pdf");
 
     cut.processEvent(
-        path, null, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, null, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("report.pdf");
@@ -294,7 +290,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("slug")).thenReturn("document.docx");
 
     cut.processEvent(
-        path, null, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, null, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("document.docx");
@@ -313,7 +309,7 @@ class CreateAttachmentEventTest {
         .thenReturn("attachment; filename=\"header-name.pdf\"");
 
     cut.processEvent(
-        path, null, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, null, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isEqualTo("payload-name.pdf");
@@ -330,7 +326,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Type")).thenReturn("image/jpeg; charset=utf-8");
 
     cut.processEvent(
-        path, null, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, null, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("image/jpeg");
@@ -349,7 +345,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Type")).thenReturn("application/pdf");
 
     cut.processEvent(
-        path, null, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, null, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("text/plain");
@@ -367,7 +363,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("slug")).thenReturn(null);
 
     cut.processEvent(
-        path, null, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, null, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isNull();
@@ -384,7 +380,7 @@ class CreateAttachmentEventTest {
     when(parameterInfo.getHeader("Content-Type")).thenReturn("text/csv");
 
     cut.processEvent(
-        path, null, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, null, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().mimeType()).isEqualTo("text/csv");
@@ -401,7 +397,7 @@ class CreateAttachmentEventTest {
     when(eventContext.getParameterInfo()).thenReturn(null);
 
     cut.processEvent(
-        path, null, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, null, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     assertThat(contextArgumentCaptor.getValue().fileName()).isNull();
@@ -430,7 +426,7 @@ class CreateAttachmentEventTest {
         content,
         inlineAttachment("profilePicture"),
         eventContext,
-        new AttachmentContext.Inline("profilePicture"));
+        new FieldAccessor.Inline("profilePicture"));
 
     assertThat(values).containsEntry("profilePicture_contentId", "doc-123");
     assertThat(values).containsEntry("profilePicture_status", "Clean");
@@ -456,7 +452,7 @@ class CreateAttachmentEventTest {
         content,
         inlineAttachment("profilePicture"),
         eventContext,
-        new AttachmentContext.Inline("profilePicture"));
+        new FieldAccessor.Inline("profilePicture"));
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     var input = contextArgumentCaptor.getValue();
@@ -484,7 +480,7 @@ class CreateAttachmentEventTest {
     existingData.put("_inlinePrefix", "profilePicture");
 
     cut.processEvent(
-        path, content, existingData, eventContext, new AttachmentContext.Inline("profilePicture"));
+        path, content, existingData, eventContext, new FieldAccessor.Inline("profilePicture"));
 
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
     var input = contextArgumentCaptor.getValue();
@@ -508,7 +504,7 @@ class CreateAttachmentEventTest {
         .thenReturn(new AttachmentModificationResult(false, "doc-999", "ok", null));
 
     cut.processEvent(
-        path, content, Attachments.create(), eventContext, new AttachmentContext.Composition());
+        path, content, Attachments.create(), eventContext, new FieldAccessor.Composition());
 
     assertThat(values).containsEntry(Attachments.CONTENT_ID, "doc-999");
     assertThat(values).containsEntry(Attachments.STATUS, "ok");
@@ -535,7 +531,7 @@ class CreateAttachmentEventTest {
         content,
         inlineAttachment("profilePicture"),
         eventContext,
-        new AttachmentContext.Inline("profilePicture"));
+        new FieldAccessor.Inline("profilePicture"));
 
     assertThat(values).containsEntry("profilePicture_contentId", "doc-scan");
     assertThat(values).containsEntry("profilePicture_status", "Clean");
@@ -567,7 +563,7 @@ class CreateAttachmentEventTest {
         mock(InputStream.class),
         inlineAttachment("profilePicture"),
         eventContext,
-        new AttachmentContext.Inline("profilePicture"));
+        new FieldAccessor.Inline("profilePicture"));
 
     assertThat(values).containsEntry("profilePicture_fileName", "my file.txt");
     assertThat(values).doesNotContainKey(MediaData.FILE_NAME);
@@ -586,7 +582,7 @@ class CreateAttachmentEventTest {
         mock(InputStream.class),
         inlineAttachment("profilePicture"),
         eventContext,
-        new AttachmentContext.Inline("profilePicture"));
+        new FieldAccessor.Inline("profilePicture"));
 
     assertThat(values).containsEntry("profilePicture_fileName", "report.pdf");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -604,7 +600,7 @@ class CreateAttachmentEventTest {
         mock(InputStream.class),
         inlineAttachment("profilePicture"),
         eventContext,
-        new AttachmentContext.Inline("profilePicture"));
+        new FieldAccessor.Inline("profilePicture"));
 
     assertThat(values).containsEntry("profilePicture_fileName", "slug-file.png");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -622,7 +618,7 @@ class CreateAttachmentEventTest {
         mock(InputStream.class),
         inlineAttachment("profilePicture"),
         eventContext,
-        new AttachmentContext.Inline("profilePicture"));
+        new FieldAccessor.Inline("profilePicture"));
 
     assertThat(values).doesNotContainKey("profilePicture_fileName");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -639,7 +635,7 @@ class CreateAttachmentEventTest {
         mock(InputStream.class),
         inlineAttachment("profilePicture"),
         eventContext,
-        new AttachmentContext.Inline("profilePicture"));
+        new FieldAccessor.Inline("profilePicture"));
 
     assertThat(values).containsEntry("profilePicture_mimeType", "image/jpeg");
     assertThat(values).doesNotContainKey(MediaData.MIME_TYPE);
@@ -658,7 +654,7 @@ class CreateAttachmentEventTest {
         mock(InputStream.class),
         inlineAttachment("profilePicture"),
         eventContext,
-        new AttachmentContext.Inline("profilePicture"));
+        new FieldAccessor.Inline("profilePicture"));
 
     assertThat(values).containsEntry("profilePicture_mimeType", "application/octet-stream");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -675,7 +671,7 @@ class CreateAttachmentEventTest {
         mock(InputStream.class),
         inlineAttachment("profilePicture"),
         eventContext,
-        new AttachmentContext.Inline("profilePicture"));
+        new FieldAccessor.Inline("profilePicture"));
 
     assertThat(values).doesNotContainKey("profilePicture_mimeType");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -692,7 +688,7 @@ class CreateAttachmentEventTest {
         mock(InputStream.class),
         inlineAttachment("profilePicture"),
         eventContext,
-        new AttachmentContext.Inline("profilePicture"));
+        new FieldAccessor.Inline("profilePicture"));
 
     assertThat(values).containsEntry("profilePicture_mimeType", "application/octet-stream");
     verify(attachmentService).createAttachment(contextArgumentCaptor.capture());
@@ -709,7 +705,7 @@ class CreateAttachmentEventTest {
         mock(InputStream.class),
         inlineAttachment("profilePicture"),
         eventContext,
-        new AttachmentContext.Inline("profilePicture"));
+        new FieldAccessor.Inline("profilePicture"));
 
     verify(parameterInfo, never()).getHeader("Content-Disposition");
     assertThat(values).containsEntry("profilePicture_fileName", "already-set.pdf");

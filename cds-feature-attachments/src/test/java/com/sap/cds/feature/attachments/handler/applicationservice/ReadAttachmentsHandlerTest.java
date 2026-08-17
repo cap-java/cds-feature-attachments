@@ -27,7 +27,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Att
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.AttachmentStatusValidator;
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
@@ -235,7 +235,7 @@ class ReadAttachmentsHandlerTest {
         .scanAsync(
             readEventContext.getTarget(),
             attachment.getContentId(),
-            new AttachmentContext.Composition());
+            new FieldAccessor.Composition());
   }
 
   @Test
@@ -252,7 +252,7 @@ class ReadAttachmentsHandlerTest {
         .scanAsync(
             readEventContext.getTarget(),
             attachment.getContentId(),
-            new AttachmentContext.Composition());
+            new FieldAccessor.Composition());
   }
 
   @Test
@@ -289,7 +289,7 @@ class ReadAttachmentsHandlerTest {
         .scanAsync(
             readEventContext.getTarget(),
             attachment.getContentId(),
-            new AttachmentContext.Composition());
+            new FieldAccessor.Composition());
     assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
   }
 
@@ -314,7 +314,7 @@ class ReadAttachmentsHandlerTest {
         .scanAsync(
             readEventContext.getTarget(),
             attachment.getContentId(),
-            new AttachmentContext.Composition());
+            new FieldAccessor.Composition());
     assertThat(attachment.getStatus()).isEqualTo(StatusCode.SCANNING);
   }
 
@@ -364,7 +364,7 @@ class ReadAttachmentsHandlerTest {
         .scanAsync(
             readEventContext.getTarget(),
             attachment.getContentId(),
-            new AttachmentContext.Composition());
+            new FieldAccessor.Composition());
     verify(attachmentStatusValidator).verifyStatus(StatusCode.UNSCANNED);
     verifyNoInteractions(persistenceService);
   }

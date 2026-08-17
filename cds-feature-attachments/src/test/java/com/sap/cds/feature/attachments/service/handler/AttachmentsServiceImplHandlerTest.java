@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.StatusCode;
 import com.sap.cds.feature.attachments.generated.test.cds4j.sap.attachments.Attachments;
-import com.sap.cds.feature.attachments.handler.common.AttachmentContext;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.service.handler.transaction.EndTransactionMalwareScanProvider;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentCreateEventContext;
 import com.sap.cds.feature.attachments.service.model.servicehandler.AttachmentMarkAsDeletedEventContext;
@@ -95,7 +95,7 @@ class AttachmentsServiceImplHandlerTest {
     var listener = mock(ChangeSetListener.class);
     var entity = mock(CdsEntity.class);
     when(malwareScanProvider.getChangeSetListener(
-            entity, "contentId", new AttachmentContext.Composition()))
+            entity, "contentId", new FieldAccessor.Composition()))
         .thenReturn(listener);
     var createContext = AttachmentCreateEventContext.create();
     createContext.setAttachmentIds(Map.of(Attachments.ID, "contentId"));
@@ -107,7 +107,7 @@ class AttachmentsServiceImplHandlerTest {
     cut.afterCreateAttachment(createContext);
 
     verify(malwareScanProvider)
-        .getChangeSetListener(entity, "contentId", new AttachmentContext.Composition());
+        .getChangeSetListener(entity, "contentId", new FieldAccessor.Composition());
   }
 
   @Test
