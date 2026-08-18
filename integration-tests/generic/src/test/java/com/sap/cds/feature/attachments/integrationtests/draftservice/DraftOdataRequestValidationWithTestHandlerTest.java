@@ -129,6 +129,11 @@ final class DraftOdataRequestValidationWithTestHandlerTest extends DraftOdataReq
         AttachmentService.EVENT_CREATE_ATTACHMENT, AttachmentService.EVENT_READ_ATTACHMENT);
     var deleteEvents =
         serviceHandler.getEventContextForEvent(AttachmentService.EVENT_MARK_ATTACHMENT_AS_DELETED);
+    deleteEvents.forEach(
+        e -> {
+          var ctx = (AttachmentMarkAsDeletedEventContext) e.context();
+          logger.info("DELETE EVENT contentId={}", ctx.getContentId());
+        });
     assertThat(deleteEvents).hasSize(2);
     verifyDeleteEventContainsContentId(deleteEvents, attachmentContentId);
     verifyDeleteEventContainsContentId(deleteEvents, attachmentEntityContentId);

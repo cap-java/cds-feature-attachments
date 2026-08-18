@@ -33,7 +33,7 @@ public class AssociationCascader {
 
   public List<String> findMediaAssociationNames(CdsModel model, CdsEntity entity) {
     List<String> result = new ArrayList<>();
-    if (ApplicationHandlerHelper.isMediaEntity(entity)) {
+    if (ApplicationHandlerHelper.isDirectMediaEntity(entity)) {
       result.add("");
     }
     NodeTree tree = findEntityPath(model, entity);
@@ -42,16 +42,20 @@ public class AssociationCascader {
   }
 
   private void collectEntityNames(CdsModel model, NodeTree node, List<String> result) {
-    if (!node.getChildren().isEmpty()) {
-      for (NodeTree child : node.getChildren()) {
-        collectEntityNames(model, child, result);
-      }
-    } else {
-      String entityName = node.getIdentifier().fullEntityName();
+    String entityName = node.getIdentifier().fullEntityName();
+    if (node.getChildren().isEmpty()) {
       model
           .findEntity(entityName)
           .filter(ApplicationHandlerHelper::isMediaEntity)
           .ifPresent(e -> result.add(entityName));
+    } else {
+      model
+          .findEntity(entityName)
+          .filter(ApplicationHandlerHelper::hasInlineAttachmentElements)
+          .ifPresent(e -> result.add(entityName));
+      for (NodeTree child : node.getChildren()) {
+        collectEntityNames(model, child, result);
+      }
     }
   }
 
@@ -93,15 +97,25 @@ public class AssociationCascader {
     var currentList = new LinkedList<AssociationIdentifier>();
     var localProcessEntities = new ArrayList<String>();
 
-    var isMediaEntity = ApplicationHandlerHelper.isMediaEntity(entity);
-    if (isMediaEntity) {
+    var isDirectMediaEntity = ApplicationHandlerHelper.isDirectMediaEntity(entity);
+    var hasInlineAttachments = ApplicationHandlerHelper.hasInlineAttachmentElements(entity);
+
+    // Direct media entities (e.g. Attachments) are always leaf nodes
+    // No need to traverse compositions
+    if (isDirectMediaEntity) {
       var identifier = new AssociationIdentifier(associationName, entity.getQualifiedName());
       firstList.addLast(identifier);
-    }
-
-    if (isMediaEntity) {
       internalResultList.add(firstList);
       return internalResultList;
+    }
+
+    // Entities with inline attachment fields (e.g. Items with receipt : Attachment)
+    // are treated as media entities, but may also have compositions that need traversal.
+    // Record this entity as a path AND continue to discover child compositions.
+    if (hasInlineAttachments) {
+      var inlinePath = new LinkedList<>(firstList);
+      inlinePath.addLast(new AssociationIdentifier(associationName, entity.getQualifiedName()));
+      internalResultList.add(inlinePath);
     }
 
     Map<String, CdsEntity> associations =

@@ -8,6 +8,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.sap.cds.feature.attachments.generated.test.cds4j.unit.test.testservice.InlineOnly_;
+import com.sap.cds.feature.attachments.handler.helper.RuntimeHelper;
 import com.sap.cds.reflect.CdsAnnotation;
 import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
@@ -15,9 +17,18 @@ import com.sap.cds.reflect.CdsModel;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class MediaTypeResolverTest {
+
+  private static CdsModel cdsModel;
+
+  @BeforeAll
+  static void classSetup() {
+    cdsModel = RuntimeHelper.runtime.getCdsModel();
+  }
 
   @Test
   void shouldReturnEmptyMapWhenNoMediaEntitiesFound() {
@@ -36,7 +47,7 @@ class MediaTypeResolverTest {
 
     when(model.getEntity("MediaEntity")).thenReturn(media);
 
-    when(media.getElement("content")).thenReturn(element);
+    when(media.findElement("content")).thenReturn(Optional.of(element));
     when(element.findAnnotation("Core.AcceptableMediaTypes")).thenReturn(Optional.of(annotation));
     when(annotation.getValue()).thenReturn(List.of("image/png", "image/jpeg"));
 
@@ -52,12 +63,28 @@ class MediaTypeResolverTest {
     CdsEntity media = mock(CdsEntity.class);
 
     when(model.getEntity("MediaEntity")).thenReturn(media);
-    when(media.getElement(any())).thenReturn(null);
+    when(media.findElement(any())).thenReturn(Optional.empty());
+    when(media.elements()).thenReturn(Stream.empty());
 
     Map<String, List<String>> result =
         MediaTypeResolver.getAcceptableMediaTypesFromEntity(model, List.of("MediaEntity"));
 
     assertThat(result).doesNotContainKey("MediaEntity");
     assertThat(result).isEmpty();
+  }
+
+  @Test
+  void shouldReturnMediaTypesForInlineEntity() {
+    CdsEntity entity = cdsModel.findEntity(InlineOnly_.CDS_NAME).orElseThrow();
+    String entityName = entity.getQualifiedName();
+
+    Map<String, List<String>> result =
+        MediaTypeResolver.getAcceptableMediaTypesFromEntity(cdsModel, List.of(entityName));
+
+    assertThat(result).containsKey(entityName + "#avatar");
+    assertThat(result.get(entityName + "#avatar"))
+        .containsExactlyInAnyOrder("image/png", "image/jpeg");
+    assertThat(result).containsKey(entityName + "#photo");
+    assertThat(result.get(entityName + "#photo")).containsExactly("application/pdf");
   }
 }

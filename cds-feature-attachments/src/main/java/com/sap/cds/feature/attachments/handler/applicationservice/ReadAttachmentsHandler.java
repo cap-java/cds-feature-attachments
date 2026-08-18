@@ -15,6 +15,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.Bef
 import com.sap.cds.feature.attachments.handler.applicationservice.readhelper.LazyProxyInputStream;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.service.AttachmentService;
 import com.sap.cds.feature.attachments.service.malware.AsyncMalwareScanExecutor;
 import com.sap.cds.ql.CQL;
@@ -96,8 +97,11 @@ public class ReadAttachmentsHandler implements EventHandler {
 
     CdsModel cdsModel = context.getModel();
     List<String> fieldNames = cascader.findMediaAssociationNames(cdsModel, context.getTarget());
-    if (!fieldNames.isEmpty()) {
-      CqnSelect resultCqn = CQL.copy(context.getCqn(), new BeforeReadItemsModifier(fieldNames));
+    List<String> inlinePrefixes =
+        ApplicationHandlerHelper.getInlineAttachmentFieldNames(context.getTarget());
+    if (!fieldNames.isEmpty() || !inlinePrefixes.isEmpty()) {
+      CqnSelect resultCqn =
+          CQL.copy(context.getCqn(), new BeforeReadItemsModifier(fieldNames, inlinePrefixes));
       context.setCqn(resultCqn);
     }
   }
@@ -111,10 +115,11 @@ public class ReadAttachmentsHandler implements EventHandler {
 
       Converter converter =
           (path, element, value) -> {
-            Attachments attachment = Attachments.of(path.target().values());
+            FieldAccessor attachmentCtx = FieldAccessor.from(path.target().type(), element);
+            Attachments attachment = attachmentCtx.extractFrom(path.target().values());
             InputStream content = attachment.getContent();
             if (nonNull(attachment.getContentId())) {
-              verifyStatus(path, attachment);
+              verifyStatus(path, attachment, attachmentCtx);
               Supplier<InputStream> supplier =
                   nonNull(content)
                       ? () -> content
@@ -131,8 +136,8 @@ public class ReadAttachmentsHandler implements EventHandler {
     }
   }
 
-  private void verifyStatus(Path path, Attachments attachment) {
-    if (areKeysEmpty(path.target().keys())) {
+  private void verifyStatus(Path path, Attachments attachment, FieldAccessor attachmentCtx) {
+    if (areKeysEmpty(path.target().keys()) || attachmentCtx.isInline()) {
       String currentStatus = attachment.getStatus();
       logger.debug(
           "In verify status for content id {} and status {}",
@@ -140,13 +145,13 @@ public class ReadAttachmentsHandler implements EventHandler {
           currentStatus);
       if (scannerAvailable && needsScan(currentStatus, attachment.getScannedAt())) {
         if (StatusCode.CLEAN.equals(currentStatus)) {
-          transitionToScanning(path.target().entity(), attachment);
+          transitionToScanning(path.target().entity(), attachment, attachmentCtx);
         }
         logger.debug(
             "Scanning content with ID {} for malware, has current status {}",
             attachment.getContentId(),
             currentStatus);
-        scanExecutor.scanAsync(path.target().entity(), attachment.getContentId());
+        scanExecutor.scanAsync(path.target().entity(), attachment.getContentId(), attachmentCtx);
       }
       statusValidator.verifyStatus(attachment.getStatus());
     }
@@ -165,21 +170,25 @@ public class ReadAttachmentsHandler implements EventHandler {
     return scannedAt == null || Instant.now().isAfter(scannedAt.plus(RESCAN_THRESHOLD));
   }
 
-  private void transitionToScanning(CdsEntity entity, Attachments attachment) {
+  private void transitionToScanning(
+      CdsEntity entity, Attachments attachment, FieldAccessor attachmentCtx) {
     logger.debug(
         "Attachment {} has stale scan (scannedAt={}), transitioning to SCANNING for rescan.",
         attachment.getContentId(),
         attachment.getScannedAt());
 
+    String contentIdCol = attachmentCtx.fieldName(Attachments.CONTENT_ID);
+    String statusCol = attachmentCtx.fieldName(Attachments.STATUS);
+
     Attachments updateData = Attachments.create();
-    updateData.setStatus(StatusCode.SCANNING);
+    updateData.put(statusCol, StatusCode.SCANNING);
 
     // Filter by contentId because primary keys are unavailable during content-only reads
     // (areKeysEmpty returns true). This is consistent with DefaultAttachmentMalwareScanner.
     CqnUpdate update =
         Update.entity(entity)
             .data(updateData)
-            .where(entry -> entry.get(Attachments.CONTENT_ID).eq(attachment.getContentId()));
+            .where(entry -> entry.get(contentIdCol).eq(attachment.getContentId()));
     persistenceService.run(update);
 
     attachment.setStatus(StatusCode.SCANNING);

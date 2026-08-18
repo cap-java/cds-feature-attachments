@@ -1,12 +1,14 @@
 using {
+    sap.attachments.Attachment,
     sap.attachments.MediaData,
     sap.attachments.Attachments
 } from './attachments';
 
 annotate sap.attachments.MediaData with @UI.MediaResource: {Stream: content} {
     content   @(
-        title         : '{i18n>attachment_content}',
-        Core.MediaType: mimeType,
+        title                           : '{i18n>attachment_content}',
+        Core.MediaType                  : (mimeType),
+        Core.ContentDisposition.Filename: (fileName),
     );
     mimeType  @(
         title: '{i18n>attachment_mimeType}',
@@ -91,4 +93,11 @@ annotate sap.attachments.Attachments with
 @Common      : {SideEffects #ContentChanged: {
     SourceProperties: [content],
     TargetProperties: ['status']
-}}
+}};
+
+annotate sap.attachments.Attachment with {
+    content @(
+        Core.ContentDisposition.Filename: (fileName),
+        Core.ContentDisposition.Type    : 'inline',
+    );
+}

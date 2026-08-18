@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 
+### Added
+
+- Added support for single (inline) attachments via the `Attachment` type. Requires cds-services 4.9.0 or higher. (#768)
+- Added top-level `Attachments` aspect to allow usage without `sap.attachments` namespace (#806), i.e., `using {Attachments} from 'com.sap.cds/cds-feature-attachments'`.
+
+### Changed
 ### Security
 
 - Attachment content is now served with `Content-Disposition: attachment` by default (previously `inline`) to mitigate stored XSS (CWE-79) via user-uploaded SVG/HTML payloads (cds-calesi #1263). Applications that require inline previews can opt in by annotating `content` in their own CDS model — see the "Content Disposition" section in the README. It is recommended to combine this with `@Core.AcceptableMediaTypes` restricting inline content to non-scriptable types (e.g. `image/jpeg`, `image/png`, `application/pdf`).
@@ -16,7 +22,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- Added top-level `Attachments` aspect to allow usage without `sap.attachments` namespace (#806), i.e., `using {Attachments} from 'com.sap.cds/cds-feature-attachments'`.
 - Extract `fileName` and `mimeType` from HTTP headers (`Content-Disposition`, `Content-Type`, `slug`) when not provided in the request payload (#804)
 - Added independent `MalwareScannerService` for scanning arbitrary content without the `AttachmentService` (#785)
 - Added translations for `ScanStates` entity texts (#787, #814)
