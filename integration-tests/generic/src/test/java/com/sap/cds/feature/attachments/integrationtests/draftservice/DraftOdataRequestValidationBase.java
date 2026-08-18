@@ -104,6 +104,9 @@ abstract class DraftOdataRequestValidationBase {
         .first()
         .satisfies(
             attachment -> verifyContent(attachment.getContent(), testContentAttachmentEntity));
+    // Wait for the async malware scan to complete on the active entity before
+    // creating a draft, so the draft copy inherits status=CLEAN.
+    readAndValidateActiveContent(selectedRoot, testContentAttachment, testContentAttachmentEntity);
     clearServiceHandlerContext();
     createNewDraftForExistingRoot(selectedRoot.getId());
 

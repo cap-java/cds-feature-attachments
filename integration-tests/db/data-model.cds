@@ -1,7 +1,10 @@
 namespace test.data.model;
 
 using {cuid} from '@sap/cds/common';
-using {sap.attachments.Attachments} from 'com.sap.cds/cds-feature-attachments';
+using {
+    sap.attachments.Attachments,
+    sap.attachments.Attachment
+} from 'com.sap.cds/cds-feature-attachments';
 
 entity AttachmentEntity : Attachments {
     parentKey : UUID;
@@ -9,6 +12,8 @@ entity AttachmentEntity : Attachments {
 
 entity Roots : cuid {
     title                     : String;
+    avatar                    : Attachment;
+    coverImage                : Attachment;
     attachments               : Composition of many AttachmentEntity
                                     on attachments.parentKey = $self.ID;
     items                     : Composition of many Items
@@ -28,6 +33,7 @@ entity Contributors : cuid {
 entity Items : cuid {
     parentID           : UUID;
     title              : String;
+    icon               : Attachment;
     events             : Association to many Events
                              on events.itemId = $self.ID;
     attachments        : Composition of many Attachments;

@@ -4,6 +4,7 @@
 package com.sap.cds.feature.attachments.service;
 
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.service.model.service.AttachmentModificationResult;
 import com.sap.cds.feature.attachments.service.model.service.CreateAttachmentInput;
 import com.sap.cds.feature.attachments.service.model.service.MarkAsDeletedInput;
@@ -50,6 +51,10 @@ public class AttachmentsServiceImpl extends ServiceDelegator implements Attachme
     mediaData.setMimeType(input.mimeType());
     mediaData.setContent(input.content());
     createContext.setData(mediaData);
+    FieldAccessor ctx = input.fieldAccessor();
+    if (ctx instanceof FieldAccessor.Inline inline) {
+      createContext.put("attachment.inlinePrefix", inline.prefix());
+    }
 
     emit(createContext);
 

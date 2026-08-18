@@ -8,21 +8,31 @@ import com.sap.cds.CdsDataProcessor;
 import com.sap.cds.CdsDataProcessor.Converter;
 import com.sap.cds.Result;
 import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachments;
+import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.MediaData;
 import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.ModifyAttachmentEventFactory;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
+import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.Select;
+import com.sap.cds.ql.Update;
+import com.sap.cds.ql.cqn.CqnPredicate;
 import com.sap.cds.ql.cqn.CqnSelect;
+import com.sap.cds.ql.cqn.CqnUpdate;
+import com.sap.cds.reflect.CdsElement;
 import com.sap.cds.reflect.CdsEntity;
 import com.sap.cds.services.draft.DraftPatchEventContext;
 import com.sap.cds.services.draft.DraftService;
+import com.sap.cds.services.draft.Drafts;
 import com.sap.cds.services.handler.EventHandler;
 import com.sap.cds.services.handler.annotations.Before;
 import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import com.sap.cds.services.persistence.PersistenceService;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,17 +71,92 @@ public class DraftPatchAttachmentsHandler implements EventHandler {
           CqnSelect select = Select.from(draftEntity).matching(path.target().keys());
           Result result = persistence.run(select);
 
+          FieldAccessor attachmentCtx = FieldAccessor.from(path.target().type(), element);
+
+          List<Attachments> existingAttachments;
+          if (attachmentCtx instanceof FieldAccessor.Inline inline) {
+            // For inline attachments, the DB result has flattened column names (e.g.
+            // profileIcon_contentId).
+            // Extract to unprefixed Attachments and carry over parent entity keys for matching.
+            String prefix = inline.prefix();
+            Map<String, Object> parentKeys = path.target().keys();
+            existingAttachments =
+                result.listOf(Attachments.class).stream()
+                    .map(
+                        raw -> {
+                          Attachments extracted =
+                              ApplicationHandlerHelper.extractInlineAttachment(raw, prefix);
+                          parentKeys.forEach(extracted::putIfAbsent);
+                          return extracted;
+                        })
+                    .toList();
+          } else {
+            existingAttachments = result.listOf(Attachments.class);
+          }
+
           return ModifyApplicationHandlerHelper.handleAttachmentForEntity(
-              result.listOf(Attachments.class),
+              existingAttachments,
               eventFactory,
               context,
               path,
               (InputStream) value,
-              defaultMaxSize);
+              defaultMaxSize,
+              attachmentCtx);
         };
 
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)
         .process(data, context.getTarget());
+
+    // The framework's DRAFT_PATCH ON handler only persists readonly fields added by
+    // @Before handlers, so mimeType and fileName (non-readonly) set by CreateAttachmentEvent
+    // are dropped. Persist them directly via the PersistenceService.
+    persistInlineAttachmentMetadata(context.getTarget(), data);
+  }
+
+  private void persistInlineAttachmentMetadata(CdsEntity target, List<? extends CdsData> data) {
+    List<String> inlinePrefixes = ApplicationHandlerHelper.getInlineAttachmentFieldNames(target);
+    if (inlinePrefixes.isEmpty()) {
+      return;
+    }
+
+    CdsEntity draftEntity = DraftUtils.getDraftEntity(target);
+    for (CdsData d : data) {
+      for (String prefix : inlinePrefixes) {
+        var ctx = new FieldAccessor.Inline(prefix);
+
+        // Only update if the attachment was actually processed (contentId present)
+        Object contentId = d.get(ctx.fieldName(Attachments.CONTENT_ID));
+        if (contentId == null) {
+          continue;
+        }
+
+        Map<String, Object> updateData = new HashMap<>();
+        Object mimeType = d.get(ctx.fieldName(MediaData.MIME_TYPE));
+        Object fileName = d.get(ctx.fieldName(MediaData.FILE_NAME));
+        if (mimeType != null) {
+          updateData.put(ctx.fieldName(MediaData.MIME_TYPE), mimeType);
+        }
+        if (fileName != null) {
+          updateData.put(ctx.fieldName(MediaData.FILE_NAME), fileName);
+        }
+        if (updateData.isEmpty()) {
+          continue;
+        }
+
+        CqnPredicate predicate =
+            CQL.and(
+                CQL.get(ctx.fieldName(Attachments.CONTENT_ID)).eq(contentId),
+                CQL.get(Drafts.IS_ACTIVE_ENTITY).eq(false));
+        for (CdsElement key : target.keyElements().toList()) {
+          Object keyValue = d.get(key.getName());
+          if (keyValue != null) {
+            predicate = CQL.and(predicate, CQL.get(key.getName()).eq(keyValue));
+          }
+        }
+        CqnUpdate update = Update.entity(draftEntity).data(updateData).where(predicate);
+        persistence.run(update);
+      }
+    }
   }
 }
