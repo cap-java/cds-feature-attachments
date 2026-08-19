@@ -116,7 +116,7 @@ jobs:
           auth-method: basic
 
       - name: SonarQube Scan
-        uses: cap-java/.github/actions/scan-with-sonar@main
+        uses: cap-java/.github/actions/scan-with-sonar@5fc795c5049bb4d49e957346df2e5d6d7c0c23b9 #main
         with:
           java-version: 21
           maven-version: ${{ env.MAVEN_VERSION }}
@@ -145,7 +145,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
 
       - name: CodeQL Analysis
-        uses: cap-java/.github/actions/scan-with-codeql@main
+        uses: cap-java/.github/actions/scan-with-codeql@5fc795c5049bb4d49e957346df2e5d6d7c0c23b9 #main
         with:
           java-version: 21
           maven-version: ${{ env.MAVEN_VERSION }}
