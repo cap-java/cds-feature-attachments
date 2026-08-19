@@ -120,7 +120,7 @@ The UI Facet can also be added directly after other UI Facets in a `cds` file in
 ### Single (Inline) Attachments
 
 > [!Important]
-> Inline attachments require **cds-services 4.9.0** or higher and are available from **cds-feature-attachments 1.6.0**.
+> Inline attachments are available from **cds-feature-attachments 1.7.0**.
 
 In addition to the composition-based `Attachments` aspect (which supports multiple files), `cds-feature-attachments` provides the `Attachment` type for **single-file** attachment fields directly on an entity. This is useful when an entity needs exactly one file, for example a profile icon or a cover image.
 
