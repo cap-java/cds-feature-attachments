@@ -11,6 +11,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.ql.CQL;
 import com.sap.cds.ql.cqn.CqnDelete;
 import com.sap.cds.reflect.CdsEntity;
@@ -24,6 +25,7 @@ import com.sap.cds.services.handler.annotations.HandlerOrder;
 import com.sap.cds.services.handler.annotations.ServiceName;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +41,21 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   private static final Logger logger = LoggerFactory.getLogger(DraftCancelAttachmentsHandler.class);
 
   private static final Filter contentIdFilter =
-      (path, element, type) ->
-          ApplicationHandlerHelper.isMediaEntity(path.target().type())
-              && element.getName().equals(Attachments.CONTENT_ID);
+      (path, element, type) -> {
+        // Case 1: Composition-based attachment entity
+        if (ApplicationHandlerHelper.isDirectMediaEntity(path.target().type())
+            && element.getName().equals(Attachments.CONTENT_ID)) {
+          return true;
+        }
+        // Case 2: Inline attachment type — check for prefixed contentId
+        String elementName = element.getName();
+        if (elementName.endsWith("_" + Attachments.CONTENT_ID)) {
+          return ApplicationHandlerHelper.getInlineAttachmentPrefix(
+                  path.target().type(), elementName)
+              .isPresent();
+        }
+        return false;
+      };
 
   private final AttachmentsReader attachmentsReader;
   private final MarkAsDeletedAttachmentEvent deleteEvent;
@@ -85,22 +99,31 @@ public class DraftCancelAttachmentsHandler implements EventHandler {
   private Validator buildDeleteContentValidator(
       DraftCancelEventContext context, List<? extends CdsData> activeCondensedAttachments) {
     return (path, element, value) -> {
-      Attachments attachment = Attachments.of(path.target().values());
+      FieldAccessor attachmentCtx = FieldAccessor.from(path.target().type(), element);
+      Attachments attachment = attachmentCtx.extractFrom(path.target().values());
+
       if (Boolean.FALSE.equals(attachment.get(Drafts.HAS_ACTIVE_ENTITY))) {
-        deleteEvent.processEvent(path, null, attachment, context);
+        deleteEvent.processEvent(path, null, attachment, context, attachmentCtx);
         return;
       }
+
       Map<String, Object> keys = ApplicationHandlerHelper.removeDraftKey(path.target().keys());
       Optional<? extends CdsData> existingEntry =
           activeCondensedAttachments.stream()
-              .filter(updatedData -> ApplicationHandlerHelper.areKeysInData(keys, updatedData))
+              .filter(updatedData -> attachmentCtx.matches(Attachments.of(updatedData), keys))
               .findAny();
-      existingEntry.ifPresent(
-          entry -> {
-            if (!entry.get(Attachments.CONTENT_ID).equals(value)) {
-              deleteEvent.processEvent(null, null, attachment, context);
-            }
-          });
+
+      if (existingEntry.isPresent()) {
+        Object existingContentId = existingEntry.get().get(Attachments.CONTENT_ID);
+        if (!Objects.equals(existingContentId, attachment.getContentId())) {
+          deleteEvent.processEvent(null, null, attachment, context, attachmentCtx);
+        }
+      } else if (attachment.getContentId() != null && !activeCondensedAttachments.isEmpty()) {
+        logger.warn(
+            "Draft attachment with contentId {} has no matching active entry. Deleting to prevent orphan.",
+            attachment.getContentId());
+        deleteEvent.processEvent(null, null, attachment, context, attachmentCtx);
+      }
     };
   }
 

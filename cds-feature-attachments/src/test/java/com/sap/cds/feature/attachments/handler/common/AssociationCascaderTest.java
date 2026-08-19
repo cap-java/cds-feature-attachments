@@ -33,6 +33,15 @@ class AssociationCascaderTest {
   }
 
   @Test
+  void findMediaEntityNames_includesInlineParentEntity_whenItAlsoHasChildCompositions() {
+    var entity = runtime.getCdsModel().findEntity(Roots_.CDS_NAME).orElseThrow();
+
+    var result = cut.findMediaEntityNames(runtime.getCdsModel(), entity);
+
+    assertThat(result).contains(Roots_.CDS_NAME);
+  }
+
+  @Test
   void findMediaEntityNames_returnsAllLeafMediaEntities_forRoot() {
     var entity = runtime.getCdsModel().findEntity(RootTable_.CDS_NAME).orElseThrow();
 
@@ -40,6 +49,7 @@ class AssociationCascaderTest {
 
     assertThat(result)
         .containsExactlyInAnyOrder(
+            RootTable_.CDS_NAME,
             "unit.test.TestService.RootTable.attachments",
             Attachment_.CDS_NAME,
             "unit.test.TestService.Items.itemAttachments",
@@ -53,8 +63,8 @@ class AssociationCascaderTest {
 
     var result = cut.findMediaEntityNames(runtime.getCdsModel(), entity);
 
-    // RootTable and Items should NOT be included (they have children)
-    assertThat(result).isNotEmpty().doesNotContain(RootTable_.CDS_NAME, Items_.CDS_NAME);
+    // Items should NOT be included (has children but no inline attachments)
+    assertThat(result).isNotEmpty().doesNotContain(Items_.CDS_NAME);
   }
 
   @Test

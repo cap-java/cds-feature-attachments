@@ -9,6 +9,7 @@ import com.sap.cds.feature.attachments.generated.cds4j.sap.attachments.Attachmen
 import com.sap.cds.feature.attachments.handler.applicationservice.modifyevents.MarkAsDeletedAttachmentEvent;
 import com.sap.cds.feature.attachments.handler.common.ApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.services.cds.ApplicationService;
 import com.sap.cds.services.cds.CdsDeleteEventContext;
 import com.sap.cds.services.handler.EventHandler;
@@ -49,9 +50,12 @@ public class DeleteAttachmentsHandler implements EventHandler {
             context.getModel(), context.getTarget(), context.getCqn());
 
     Converter converter =
-        (path, element, value) ->
-            deleteEvent.processEvent(
-                path, (InputStream) value, Attachments.of(path.target().values()), context);
+        (path, element, value) -> {
+          FieldAccessor attachmentCtx = FieldAccessor.from(path.target().type(), element);
+          Attachments attachment = attachmentCtx.extractFrom(path.target().values());
+          return deleteEvent.processEvent(
+              path, (InputStream) value, attachment, context, attachmentCtx);
+        };
 
     CdsDataProcessor.create()
         .addConverter(ApplicationHandlerHelper.MEDIA_CONTENT_FILTER, converter)

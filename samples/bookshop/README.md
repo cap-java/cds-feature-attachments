@@ -90,7 +90,7 @@ The `srv/attachments.cds` file extends the Books entity with attachments:
 
 ```cds
 using { sap.capire.bookshop as my } from '../db/schema';
-using { sap.attachments.Attachments } from 'com.sap.cds/cds-feature-attachments';
+using { Attachments } from 'com.sap.cds/cds-feature-attachments';
 
 extend my.Books with {
   attachments: Composition of many Attachments;

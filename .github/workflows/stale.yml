@@ -8,4 +8,4 @@ on:
 
 jobs:
   stale:
-    uses: cap-java/.github/.github/workflows/stale.yml@main
+    uses: cap-java/.github/.github/workflows/stale.yml@5fc795c5049bb4d49e957346df2e5d6d7c0c23b9 #main

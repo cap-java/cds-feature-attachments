@@ -19,6 +19,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.transaction.Cr
 import com.sap.cds.feature.attachments.handler.applicationservice.transaction.ListenerProvider;
 import com.sap.cds.feature.attachments.handler.common.AssociationCascader;
 import com.sap.cds.feature.attachments.handler.common.AttachmentsReader;
+import com.sap.cds.feature.attachments.handler.common.FieldAccessor;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
@@ -130,9 +131,9 @@ public class Registration implements CdsRuntimeConfiguration {
         new DefaultAttachmentMalwareScanner(persistenceService, attachmentService, scanClient);
 
     EndTransactionMalwareScanProvider malwareScanEndTransactionListener =
-        (attachmentEntity, contentId) ->
+        (attachmentEntity, contentId, fieldAccessor) ->
             new EndTransactionMalwareScanRunner(
-                attachmentEntity, contentId, malwareScanner, runtime);
+                attachmentEntity, contentId, fieldAccessor, malwareScanner, runtime);
 
     // register event handlers for attachment service
     configurer.eventHandler(
@@ -161,7 +162,8 @@ public class Registration implements CdsRuntimeConfiguration {
               eventFactory, attachmentsReader, outboxedAttachmentService, storage, defaultMaxSize));
       configurer.eventHandler(new DeleteAttachmentsHandler(attachmentsReader, deleteEvent));
       EndTransactionMalwareScanRunner scanRunner =
-          new EndTransactionMalwareScanRunner(null, null, malwareScanner, runtime);
+          new EndTransactionMalwareScanRunner(
+              null, null, new FieldAccessor.Composition(), malwareScanner, runtime);
       configurer.eventHandler(
           new ReadAttachmentsHandler(
               attachmentService,
