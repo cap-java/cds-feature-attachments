@@ -1,125 +1,13 @@
 name: Deploy to Maven Central
 
-env:
-  JAVA_VERSION: '21'
-  MAVEN_VERSION: '3.9.16'
-
 on:
   release:
     types: [ "released" ]
 
 jobs:
-  requires-approval:
-    runs-on: ubuntu-latest
-    name: "Waiting for release approval"
-    environment: release-approval
-    permissions:
-      contents: read
-    steps:
-      - name: Approval Step
-        run: echo "Release has been approved!"
-
-  verify-version:
-    needs: requires-approval
-    name: Verify Version Matches Tag
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
-        with:
-          ref: ${{ github.event.release.tag_name }}
-
-      - name: Set up Java
-        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: sapmachine
-          cache: maven
-
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
-        with:
-          maven-version: ${{ env.MAVEN_VERSION }}
-
-      - name: Verify pom.xml revision matches release tag
-        run: |
-          TAG="${{ github.event.release.tag_name }}"
-          REVISION=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)
-          echo "Tag:      $TAG"
-          echo "Revision: $REVISION"
-          if [ "$TAG" != "$REVISION" ]; then
-            echo "::error::Release tag '$TAG' does not match pom.xml <revision> '$REVISION'. Open a 'Prep release' PR to bump the version before tagging."
-            exit 1
-          fi
-        shell: bash
-
-  blackduck:
-    needs: verify-version
-    name: Blackduck Scan
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
-        with:
-          ref: ${{ github.event.release.tag_name }}
-
-      - name: Scan With Black Duck
-        uses: cap-java/.github/actions/scan-with-blackduck@5fc795c5049bb4d49e957346df2e5d6d7c0c23b9 #main
-        with:
-          blackduck_token: ${{ secrets.BLACK_DUCK_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          maven-version: ${{ env.MAVEN_VERSION }}
-          project-name: com.sap.cds.feature.attachments
-          included-modules: cds-feature-attachments,cds-feature-attachments-oss,cds-feature-attachments-fs
-          version: ${{ github.event.release.tag_name }}
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: verify-version
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
-        with:
-          ref: ${{ github.event.release.tag_name }}
-
-      - name: Build
-        uses: cap-java/.github/actions/build@5fc795c5049bb4d49e957346df2e5d6d7c0c23b9 #main
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          maven-version: ${{ env.MAVEN_VERSION }}
-
-  deploy:
-    name: Deploy to Maven Central
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: [blackduck, build]
-    environment: release
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
-        with:
-          ref: ${{ github.event.release.tag_name }}
-
-      - name: Deploy
-        uses: cap-java/.github/actions/deploy-release@5fc795c5049bb4d49e957346df2e5d6d7c0c23b9 #main
-        with:
-          user: ${{ secrets.CENTRAL_REPOSITORY_USER }}
-          password: ${{ secrets.CENTRAL_REPOSITORY_PASS }}
-          gpg-pub-key: ${{ secrets.PGP_PUBKEY_ID }}
-          gpg-private-key: ${{ secrets.PGP_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.PGP_PASSPHRASE }}
-          revision: ${{ github.event.release.tag_name }}
-          java-version: ${{ env.JAVA_VERSION }}
-          maven-version: ${{ env.MAVEN_VERSION }}
+  release:
+    uses: cap-java/.github/.github/workflows/release.yml@b5eb1ad6341e9fd1d681c42f3b36c4b750a7dac2
+    with:
+      blackduck-project-name: com.sap.cds.feature.attachments
+      blackduck-included-modules: cds-feature-attachments,cds-feature-attachments-oss,cds-feature-attachments-fs
+    secrets: inherit
