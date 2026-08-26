@@ -4,6 +4,9 @@ on:
   release:
     types: [ "released" ]
 
+permissions:
+  contents: read
+
 jobs:
   release:
     uses: cap-java/.github/.github/workflows/release.yml@b5eb1ad6341e9fd1d681c42f3b36c4b750a7dac2 #main
