@@ -15,6 +15,7 @@ import com.sap.cds.feature.attachments.handler.applicationservice.CreateAttachme
 import com.sap.cds.feature.attachments.handler.applicationservice.DeleteAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.ReadAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.applicationservice.UpdateAttachmentsHandler;
+import com.sap.cds.feature.attachments.handler.applicationservice.helper.ModifyApplicationHandlerHelper;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftActiveAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftCancelAttachmentsHandler;
 import com.sap.cds.feature.attachments.handler.draftservice.DraftPatchAttachmentsHandler;
@@ -251,6 +252,35 @@ class RegistrationTest {
         .containsExactly(
             "target/cds/com.sap.cds/cds-feature-attachments/**",
             "../target/cds/com.sap.cds/cds-feature-attachments/**");
+  }
+
+  @Test
+  void resolveDefaultMaxSize_returnsFiniteDefaultWhenNoConfig() {
+    CdsEnvironment environment = mock(CdsEnvironment.class);
+    when(environment.getProperty("cds.attachments.maxUploadSize", String.class, null))
+        .thenReturn(null);
+
+    assertThat(Registration.resolveDefaultMaxSize(environment))
+        .isEqualTo(ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE);
+  }
+
+  @Test
+  void resolveDefaultMaxSize_ignoresBlankConfig() {
+    CdsEnvironment environment = mock(CdsEnvironment.class);
+    when(environment.getProperty("cds.attachments.maxUploadSize", String.class, null))
+        .thenReturn("   ");
+
+    assertThat(Registration.resolveDefaultMaxSize(environment))
+        .isEqualTo(ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE);
+  }
+
+  @Test
+  void resolveDefaultMaxSize_honorsConfiguredOverride() {
+    CdsEnvironment environment = mock(CdsEnvironment.class);
+    when(environment.getProperty("cds.attachments.maxUploadSize", String.class, null))
+        .thenReturn("1GB");
+
+    assertThat(Registration.resolveDefaultMaxSize(environment)).isEqualTo("1GB");
   }
 
   private void isHandlerForClassIncluded(
