@@ -56,6 +56,12 @@ mvn verify -Platest-test-version     # Test against latest CAP Java
 
 ## Architecture
 
+### Two attachment models
+
+**Composition-based**: `Attachments` is its own composition child entity, annotated `@(_is_media_data)`. Fields live in a separate DB table.
+
+**Inline**: an `Attachment` type field on the parent entity (e.g. `avatar : Attachment`). CDS flattens it into the parent table as `avatar_content`, `avatar_contentId`, `avatar_status`, etc. Detected at runtime by scanning for elements ending in `_content` with `@(_is_media_data)`. All handlers support both models via `FieldAccessor` (`Composition` or `Inline` variant).
+
 ### Handler Layer (`handler/`)
 
 Handlers are CAP event handlers registered for all services of a given type.
@@ -78,8 +84,10 @@ public class FooHandler implements EventHandler {
 ### Service Layer (`service/`)
 
 - `AttachmentService` - interface defining events: CREATE, READ, MARK_AS_DELETED, RESTORE
-- `DefaultAttachmentsServiceHandler` - default on-handler (stores in DB)
+- `DefaultAttachmentsServiceHandler` - default on-handler (stores content in DB). Runs at `10 * HandlerOrder.AFTER + HandlerOrder.LATE` to guarantee it is last.
 - Malware scanning in `service/malware/` (optional, via SAP Malware Scanning Service)
+
+**Storage plugin extension point:** Plugins (`OSSAttachmentsServiceHandler`, `FSAttachmentsServiceHandler`) register `@On` handlers on `AttachmentService` with default order, intercept before the default, and call `context.setCompleted()` in `finally` to prevent the DB handler from running. On create, plugins set `context.setIsInternalStored(false)` — `CreateAttachmentEvent` uses this to return `null` to the CAP framework instead of the `InputStream`, suppressing the DB content column write.
 
 ### Modification Event Factory
 
@@ -95,6 +103,28 @@ Defined in `cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-featu
 - `attachments.cds` - `sap.attachments.Attachments` aspect, `MediaData` aspect, `StatusCode` enum, `ScanStates` entity
 - Generated CDS4J classes: `com.sap.cds.feature.attachments.generated`
 
+## Non-obvious Design Decisions
+
+**Why creates are not outboxed, but deletes are:** The create event carries an `InputStream` (the live HTTP request body), which cannot be serialized to the DB outbox. Deletes use the outbox for two reasons: (1) **timing** — the delete must only fire after the DB transaction commits; without the outbox a delete during a transaction that later rolls back would permanently destroy content that should still exist; (2) **reliability** — if the server crashes after commit but before the delete reaches external storage, the message survives and is replayed on restart.
+
+**Rollback cleanup via `CreationChangeSetListener`:** `CreateAttachmentEvent` registers a `CreationChangeSetListener` immediately after uploading content. If the enclosing DB transaction rolls back (`afterClose(completed=false)`), the listener fires in a **new** `ChangeSetContext` (so its own delete commits independently) and calls `markAttachmentAsDeleted` to clean up the orphaned external content. This handles the case where content upload succeeds but a later validation in the same transaction fails.
+
+**Why two `@Before` handlers at different orders in Create/Update handlers:** `processBeforeForDraft` runs at `CHECK_CAPABILITIES` (early) to preserve readonly fields (`contentId`, `status`, `scannedAt`, `fileName`) into a `DRAFT_READONLY_CONTEXT` marker key **before** the CAP runtime strips them. `processBefore` runs at `LATE` and calls `restoreReadonlyFields` to retrieve them. If both ran at the same order, the readonly fields would already be gone.
+
+**Read path — lazy proxy and why `BeforeReadItemsModifier` is required:** `ReadAttachmentsHandler.processAfter` returns a `LazyProxyInputStream`, not the real stream. The OData adapter sees a non-null content field and generates a `$value` download link. The actual `AttachmentService.readAttachment()` call only happens when the client follows that link and the stream is first read. `BeforeReadItemsModifier` (in `processBefore`) must inject `contentId`, `status`, and `scannedAt` into the SELECT query — without them the lazy proxy has null metadata and cannot validate status.
+
+**Why `ThreadLocalDataStorage` instead of enriching the event context:** When CAP activates a draft (`DraftSave`), it fires internal `CdsCreate`/`CdsUpdate` events for the entities being written. Those inner events have their own `EventContext` objects with no parent reference to the outer `DraftSaveEventContext`. `DraftActiveAttachmentsHandler` sets a `ThreadLocal` flag, calls `context.proceed()` (which synchronously fires the inner handlers on the same thread), and the inner handlers read the flag. The `try/finally` in `ThreadLocalDataStorage.set()` guarantees cleanup even on exceptions, preventing thread-pool leaks.
+
+**`MarkAsDeletedAttachmentEvent` during `DRAFT_PATCH`:** The guard `!DraftService.EVENT_DRAFT_PATCH.equals(eventContext.getEvent())` skips the actual `markAttachmentAsDeleted` call — you can't delete external content while a draft is still open. However, the data-clearing block still runs and nullifies `contentId`/`status`/`scannedAt` (and `mimeType`/`fileName` for inline) in the draft row. The actual external delete happens at draft-cancel time via `DraftCancelAttachmentsHandler`, which compares draft vs. active contentIds.
+
+**DraftPatch inline metadata workaround:** The CAP `DRAFT_PATCH` `@On` handler only persists `@readonly` fields added by `@Before` handlers. `mimeType` and `fileName` are not readonly, so values set by `CreateAttachmentEvent` are silently dropped. `DraftPatchAttachmentsHandler.persistInlineAttachmentMetadata` explicitly writes these fields via `PersistenceService` as a workaround.
+
+**File size is enforced at two levels:** The `Content-Length` header is checked upfront — if present and already over the limit, the request is rejected before a single byte of the body is read. `CountingInputStream` is the actual enforcement that can't be bypassed: it counts real bytes as they flow through and throws `CONTENT_TOO_LARGE` mid-stream the moment the limit is crossed, regardless of what the header said. Without it, a client could upload an arbitrarily large file by omitting or lying about `Content-Length`. `CreateAttachmentsHandler.restoreError` catches the exception and re-wraps it with the human-readable configured size limit.
+
+**`areKeysEmpty` in `ReadAttachmentsHandler`:** When the OData layer resolves a `$value` (raw content stream) request, CAP's internal CQN has null keys on the attachment path — `areKeysEmpty` returns `true`. For regular entity reads (metadata), keys are populated. The rescan-on-download logic therefore only triggers on actual file downloads, not list views or metadata reads. For inline attachments, `isInline()` is the equivalent trigger (inline fields are always part of the parent entity and have no own keys).
+
+**`RESCAN_THRESHOLD = 3 days`:** Hardcoded per the SAP Malware Scanning Service FAQ recommendation. Making it configurable was not pursued.
+
 ## Key Patterns
 
 | Pattern | Where |
@@ -105,8 +135,8 @@ Defined in `cds-feature-attachments/src/main/resources/cds/com.sap.cds/cds-featu
 | Assertions | AssertJ (`assertThat(...)`) preferred over JUnit assertions |
 | Mocking | Mockito; tests follow Arrange/Act/Assert |
 | Error handling | `throw new ServiceException(ErrorStatuses.BAD_REQUEST, msg)` |
-| Outbox | Persistent outbox for delete operations (reliability) |
-| Thread-local | `ThreadLocalDataStorage` passes draft activation context |
+| Outbox | Persistent outbox for **delete** operations only — ensures delete fires post-commit (not during a transaction that may roll back), and survives crashes; creates can't be outboxed because the stream isn't serializable |
+| Thread-local | `ThreadLocalDataStorage` bridges `DraftSaveEventContext` → inner create/update contexts during draft activation |
 
 ## Naming
 
