@@ -27,7 +27,7 @@
     - [Usage of the CDS Model](#usage-of-the-cds-model)
   - [Configuration](#configuration)
   - [Handler](#handler)
-    - [Events](#events)
+    - [Mapping CAP Events to Attachment Operations](#mapping-cap-events-to-attachment-operations)
     - [Draft Activate and Deep Updates](#draft-activate-and-deep-updates)
     - [Content for new Draft](#content-for-new-draft)
     - [Delete](#delete)
@@ -292,11 +292,11 @@ and `ApplicationService` handlers are registered.
 The class `Registration` which implements this configuration is referenced in the `META-INF/services` folder
 in file `com.sap.cds.services.runtime.CdsRuntimeConfiguration` to make it visible for the CAP Java runtime.
 
-### Handler
+### Handlers
 
-The following packages are the main packages for the handler implementation in package `handler`:
+The following packages are the main packages for the handler implementations in the package `handler`:
 
-- `applicationservice`: Handler for the `ApplicationService
+- `applicationservice`: Handler for the `ApplicationService`
 - `draftservice`: Handler for the `DraftService`
 
 In the `applicationservice` package are handlers for the `create`, `update`, `delete` and `read` operations implemented.
@@ -318,16 +318,34 @@ based on the data included in the request which `AttachmentService` event needs 
 
 The factory returns an implementation of the `ModifyAttachmentEvent` interface.
 
-#### Events
+#### Mapping CAP Events to Attachment Operations
+
+The `ModifyAttachmentEvent` interface is a strategy object — despite its name,
+it is not a CAP event or a passive value object.
+Its `processEvent` method contains the logic for emitting the appropriate
+`AttachmentService` event.
+The name reflects that each implementation maps to one `AttachmentService` event,
+but the execution logic lives inside the implementation itself.
+Throughout this document, "emitting an event" means invoking the corresponding
+method on the `AttachmentService` interface (e.g. `createAttachment()`), which
+CAP then dispatches to the registered `@On` handler.
+
+The `DefaultModifyAttachmentEventFactory` selects the right strategy based on
+the attachment data in the request — primarily whether `content` and `contentId`
+are present or have changed.
+A CAP service event (e.g. `UPDATE`) does not map one-to-one to an
+`AttachmentService` event: an update could mean new content is being uploaded,
+only metadata is changing, or the attachment is being removed.
+The factory resolves that ambiguity.
 
 The `ModifyAttachmentEvent` interface has the following implementations:
 
-| Implementation                 | Description                                                                                                                                                                                                      |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CreateAttachmentEvent`        | Calls the `CREATE`event of the `AttachmentService`                                                                                                                                                               |
-| `DoNothingAttachmentEvent`     | Is use if the attachment entity is included in the request but nothing needs to be done in the `AttachmentService` e.g. a field is updates which is not the `content`- or `contentId` - field                    |
-| `MarkAsDeletedAttachmentEvent` | Calls the `MARK_AS_DELETED` event of the `AttachmentService`, but not in case the event is a `DRAFT_PATCH`event from the `DraftService`, in this case the mark as deleted is triggered if the draft is activated |
-| `UpdateAttachmentEvent`        | Calls first the `MarkAsDeletedAttachmentEvent` and after that the `CreateAttachmentEvent`                                                                                                                        |
+| Implementation                 | Description                                                                                                                                                                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CreateAttachmentEvent`        | Emits the `CREATE_ATTACHMENT` event on the `AttachmentService`                                                                                                                                                           |
+| `DoNothingAttachmentEvent`     | Used when the attachment entity is included in the request but nothing needs to be done, e.g. a field is updated which is not the `content` or `contentId` field                                                         |
+| `MarkAsDeletedAttachmentEvent` | Emits the `MARK_AS_DELETED` event on the `AttachmentService`; skipped during `DRAFT_PATCH` events from the `DraftService` — in that case the mark as deleted is triggered when the draft is activated                    |
+| `UpdateAttachmentEvent`        | Emits first the `MarkAsDeletedAttachmentEvent` and then the `CreateAttachmentEvent`                                                                                                                                      |
 
 #### Draft Activate and Deep Updates
 
