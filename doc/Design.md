@@ -313,7 +313,7 @@ as this could be the case for deep creates or deep updates.
 
 After the handler has checked if an attachment entity is contained in the request,
 the handler calls the `ModifyAttachmentEventFactory` implementation.
-The implementation of this interface, `DefaultModifyAttachmentEventFactory`, checks
+The implementation of this interface, `ModifyAttachmentEventFactory`, checks
 based on the data included in the request which `AttachmentService` event needs to be called.
 
 The factory returns an implementation of the `ModifyAttachmentEvent` interface.
@@ -330,7 +330,7 @@ Throughout this document, "emitting an event" means invoking the corresponding
 method on the `AttachmentService` interface (e.g. `createAttachment()`), which
 CAP then dispatches to the registered `@On` handler.
 
-The `DefaultModifyAttachmentEventFactory` selects the right strategy based on
+The `ModifyAttachmentEventFactory` selects the right strategy based on
 the attachment data in the request — primarily whether `content` and `contentId`
 are present or have changed.
 A CAP service event (e.g. `UPDATE`) does not map one-to-one to an
@@ -366,10 +366,10 @@ root
 
 If in this example an item is deleted which included an attachment entity the delete event needs to be called for the
 attachment entity.
-To be able to do this, the handler calls `DefaultAttachmentsReader` to read existing attachments from the database.
+To be able to do this, the handler calls `AttachmentsReader` to read existing attachments from the database.
 The reader is only called if an association is included in the request.
 
-The reader uses the `DefaultAssociationCascader` to determine the associations which need to be read for the attachment
+The reader uses the `AssociationCascader` to determine the associations which need to be read for the attachment
 entity included in the entity hierarchy.
 With the information from the cascader, the reader creates a select statement to read all attachment entities that belong to
 the data in the request.
@@ -433,7 +433,7 @@ getQualifiedName().
 endsWith("_drafts");
 ```
 
-The constants for `SiblingEntity` and `_drafts` are defined in the `DraftConstants` class.
+The constants for `SiblingEntity` and `_drafts` are defined in the `DraftUtils` class.
 
 #### Readonly Fields
 
@@ -525,10 +525,10 @@ in the request context.
 #### Default Implementation
 
 In the `service.handler` package the default handler implementation of the `AttachmentService` is implemented.
-The class `DefaultAttachmentService` is registered for the events of the `AttachmentService` and implements the
+The class `DefaultAttachmentsServiceHandler` is registered for the events of the `AttachmentService` and implements the
 `@On` handler for the service.
 
-Because the default implementation of the service stores the attachments in the database, the `DefaultAttachmentService`
+Because the default implementation of the service stores the attachments in the database, the `DefaultAttachmentsServiceHandler`
 does nothing with the content of the attachment.
 
 The handler that calls the `AttachmentService` is responsible for storing the content of the attachment in the database for the default
@@ -622,7 +622,7 @@ Because a draft entity could be in the phase of activation at the moment the sca
 the update will not be recognized for the activation.
 In this case the status will remain `Scanning` or `Unscanned`.
 
-This needs to be corrected in the future if a `MalwareScanService` is implemented that will rescan the content.
+This needs to be corrected in the future if a malware scan service is implemented that will rescan the content.
 For now the scan is retriggered if a read is executed for an entity which has one of these status values.
 Because of this, the malware scan also needs to be triggered from the `ReadAttachmentsHandler`.
 
@@ -639,7 +639,7 @@ The following table gives an overview of the possible status values and the mapp
 | `Failed`     | `FAILED`                | During the scan an error occurred.                                                                       |
 
 Only content with the status `Clean` can be downloaded from the UI.
-This is validated in the `DefaultAttachmentStatusValidator`. If the content is not clean, the validator throws
+This is validated in the `AttachmentStatusValidator`. If the content is not clean, the validator throws
 an `AttachmentStatusException`.
 
 ### Texts
