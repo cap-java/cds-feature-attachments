@@ -66,7 +66,7 @@
 
     <excluded.generation.package>com/sap/cds/feature/attachments/generated/</excluded.generation.package>
 
-    <software.amazon.awssdk-s3-version>2.54.13</software.amazon.awssdk-s3-version>
+    <software.amazon.awssdk-s3-version>2.55.7</software.amazon.awssdk-s3-version>
     <software.amazon.awssdk-crt-version>0.48.4</software.amazon.awssdk-crt-version>
 
     <!-- Latest versions of CAP Java and cds-dk used for integrations tests only -->
@@ -89,7 +89,7 @@
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-bom</artifactId>
-        <version>4.2.17.Final</version>
+        <version>4.2.18.Final</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -113,7 +113,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-bom</artifactId>
-        <version>5.23.0</version>
+        <version>5.24.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -208,7 +208,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.4</version>
+          <version>3.2.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
@@ -367,7 +367,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>3.10.2</version>
+        <version>3.10.3</version>
         <configuration>
           <java>
             <googleJavaFormat>
