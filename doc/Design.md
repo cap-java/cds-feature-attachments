@@ -374,8 +374,13 @@ entity included in the entity hierarchy.
 With the information from the cascader, the reader creates a select statement to read all attachment entities that belong to
 the data in the request.
 
-After the data are read, the update handler compares the data with the data in the request and calls the delete event for all
-attachments which are not included in the request.
+After the data are read, the update handler compares the data with the data in
+the request and emits the `MARK_AS_DELETED` event for all attachments which are
+not included in the request.
+This is relevant when an external storage plugin is active — in that case
+`MARK_AS_DELETED` triggers actual content deletion in the external store.
+For the default implementation, the DB cascade already removes the attachment
+rows, so this step is a no-op.
 
 #### Content for new Draft
 
