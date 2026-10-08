@@ -35,12 +35,16 @@ runs:
     - name: Generic Integration Tests
       env:
         MALWARE_SCAN_TIMEOUT: ${{ inputs.malware-scan-timeout }}
+        # Tests relying on the malware scan service are flaky.
+        # Therefore, we retry failed tests as a mitigation.
+        RERUN_FAILING_TESTS_COUNT: "2"
       run: |
         mvn clean verify -ntp -B \
           -f integration-tests/pom.xml \
           -pl :cds-feature-attachments-integration-tests-parent,:cds-feature-attachments-integration-tests-db,:cds-feature-attachments-integration-tests-generic \
           -Dcds.install-node.skip \
-          -Dtest.malware-scan.timeout="${MALWARE_SCAN_TIMEOUT}"
+          -Dtest.malware-scan.timeout="${MALWARE_SCAN_TIMEOUT}" \
+          -Dsurefire.rerunFailingTestsCount="${RERUN_FAILING_TESTS_COUNT}"
       shell: bash
 
     - name: MTX-Local Integration Tests
