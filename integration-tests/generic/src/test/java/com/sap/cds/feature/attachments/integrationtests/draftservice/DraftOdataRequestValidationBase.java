@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpStatus;
@@ -54,6 +56,9 @@ abstract class DraftOdataRequestValidationBase {
   @Autowired protected PersistenceService persistenceService;
   @Autowired private TableDataDeleter dataDeleter;
   @Autowired private TestPersistenceHandler testPersistenceHandler;
+
+  @Value("${test.malware-scan.timeout:PT60S}")
+  private Duration malwareScanTimeout;
 
   @AfterEach
   void teardown() {
@@ -122,7 +127,7 @@ abstract class DraftOdataRequestValidationBase {
             + "/content";
 
     Awaitility.await()
-        .atMost(60, TimeUnit.SECONDS)
+        .atMost(malwareScanTimeout)
         .pollDelay(1, TimeUnit.SECONDS)
         .pollInterval(2, TimeUnit.SECONDS)
         .until(
@@ -796,7 +801,7 @@ abstract class DraftOdataRequestValidationBase {
             + "/content";
 
     Awaitility.await()
-        .atMost(60, TimeUnit.SECONDS)
+        .atMost(malwareScanTimeout)
         .pollDelay(1, TimeUnit.SECONDS)
         .pollInterval(2, TimeUnit.SECONDS)
         .until(
@@ -807,11 +812,11 @@ abstract class DraftOdataRequestValidationBase {
               var attachmentEntityContentAsString =
                   attachmentEntityResponse.getResponse().getContentAsString();
 
-              var booleanResult =
+              var contentMatchesExpectation =
                   attachmentContentAsString.equals(attachmentContent)
                       && attachmentEntityContentAsString.equals(attachmentEntityContent);
 
-              if (!booleanResult) {
+              if (!contentMatchesExpectation) {
                 logger.info(
                     "Attachment response content: {}, Attachment Test Content: {}, Attachment Entity response content: {}, Attachment Entity Test Content: {}",
                     attachmentContentAsString,
@@ -819,7 +824,7 @@ abstract class DraftOdataRequestValidationBase {
                     attachmentEntityContentAsString,
                     attachmentEntityContent);
               }
-              return booleanResult;
+              return contentMatchesExpectation;
             });
     clearServiceHandlerContext();
 
