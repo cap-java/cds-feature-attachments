@@ -37,8 +37,8 @@ This sample demonstrates how to use the `cds-feature-attachments` plugin in a CA
    ```
 
 4. **Access the application**:
-   - Browse Books: http://localhost:8080/browse/index.html
-   - Admin Books: http://localhost:8080/admin-books/index.html
+   - Browse Books: http://localhost:8080/index.html#Books-display
+   - Admin Books: http://localhost:8080/index.html#Books-manage
 
 ## Using Attachments
 
