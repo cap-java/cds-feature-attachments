@@ -128,8 +128,10 @@
 
       <dependency>
         <groupId>org.bouncycastle</groupId>
-        <artifactId>bcprov-jdk18on</artifactId>
+        <artifactId>bc-bom</artifactId>
         <version>1.86</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <dependency>
