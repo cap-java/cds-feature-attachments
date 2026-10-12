@@ -118,6 +118,8 @@
         <scope>import</scope>
       </dependency>
 
+      <!-- Override jackson dependency version because of high vulnerability.
+      TODO: remove once direct dependencies are updated.-->
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
@@ -126,9 +128,11 @@
         <scope>import</scope>
       </dependency>
 
+      <!-- Override bouncycaste dependency version because of high vulnerability
+      TODO: remove once direct dependencies are updated.-->
       <dependency>
         <groupId>org.bouncycastle</groupId>
-        <artifactId>bc-bom</artifactId>
+        <artifactId>bc-jdk18on-bom</artifactId>
         <version>1.86</version>
         <type>pom</type>
         <scope>import</scope>
