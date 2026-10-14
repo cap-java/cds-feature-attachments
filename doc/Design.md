@@ -384,15 +384,27 @@ rows, so this step is a no-op.
 
 #### Content for new Draft
 
-If a new draft is created, the content of the attachment entity is not read from external sources in case it is stored
-externally.
-To avoid calling the delete method when the draft is activated with no changes in the attachment entity because the content
-field is empty,
-not the content field itself is validated but the `contentId` field.
+When the `DraftService` creates a draft from an active entity that already has
+an attachment, it copies the entity data into the draft table but not the
+attachment content itself — the content remains in storage, referenced by
+`contentId`.
+As a result, the draft row has `contentId` populated but `content` empty.
 
-To make this possible, the fields need to be filled also for storage of the content in the database.
-Because of this, the default implementation of the handler of the `AttachmentService` also fills the `contentId`
-field.
+When the user activates the draft without modifying the attachment,
+`UpdateAttachmentsHandler` must decide what to do with the attachment.
+The `ModifyAttachmentEventFactory` makes this decision based on the data:
+empty `content` alone is ambiguous — it could mean "leave the attachment alone"
+or "the attachment was removed".
+To resolve this, the factory checks `contentId` instead: if it is present, the
+attachment still exists and `DoNothingAttachmentEvent` is returned; if it is
+null, the attachment was genuinely removed and `MarkAsDeletedAttachmentEvent`
+is returned.
+
+For the default implementation, where content is stored as a blob in the
+database, `contentId` would not naturally be set.
+Therefore `DefaultAttachmentsServiceHandler` explicitly fills `contentId` with
+the attachment's entity ID on every create — ensuring the factory can
+distinguish "untouched" from "removed" during draft activation.
 
 #### Delete
 
@@ -400,7 +412,7 @@ For the delete event, the handler does not call the `AttachmentService` directly
 is used.
 With this, the calls to the `AttachmentService` are stored in the database and only executed after the transaction is
 committed.
-So if the transaction had errors and needs to be rolled back, the delete event is not called and no rollback of the delete is needed.
+So if the transaction had errors and needs to be rolled back, the delete event is not emitted and no rollback of the delete is needed.
 
 More information about the outbox can be found in
 the [CAP Java documentation](https://cap.cloud.sap/docs/java/outbox#outboxing-cap-service-events).
@@ -416,35 +428,29 @@ Because of this, this field is removed before requests to the database are execu
 
 #### Sibling Entity (Draft or Active)
 
-In the draft handler, we need to read the active entities to determine the events.
-Because the draft handler uses draft entities, the active entities need to be read.
+In the draft handlers, the active entity is sometimes needed to determine the
+correct attachment operation — for example, to compare the active `contentId`
+against the draft `contentId` when cancelling a draft.
 
-To get the active entity from the draft entity, the following code is used:
-
-```java
-context.getTarget().
-
-getTargetOf("SiblingEntity");
-```
-
-With this, the active entity can be determined from the draft entity.
-To check if an entity is a draft entity, the following code is used:
+`DraftUtils` provides two helper methods for navigating between the two
+siblings:
 
 ```java
-context.getTarget().
-
-getQualifiedName().
-
-endsWith("_drafts");
+DraftUtils.getActiveEntity(entity);  // returns the active sibling
+DraftUtils.getDraftEntity(entity);   // returns the draft sibling
 ```
 
-The constants for `SiblingEntity` and `_drafts` are defined in the `DraftUtils` class.
+Both methods use `Drafts.SIBLING_ENTITY` from the CAP framework to navigate
+to the sibling, and `DraftUtils.isDraftEntity()` to determine which direction
+to navigate.
+Whether an entity is a draft is determined by checking whether its qualified
+name ends with the `DRAFT_TABLE_POSTFIX` constant (`_drafts`), also defined
+in `DraftUtils`.
 
 #### Readonly Fields
 
-Some fields are defined as readonly fields in the CDS model because they are calculated or filled in the backend, but
-with
-a reference to a potential external system.
+Some fields are defined as readonly in the CDS model because they are set by
+the back end, potentially via an external system.
 The following fields are readonly fields:
 
 - `contentId`
@@ -458,12 +464,12 @@ activation of a draft entity.
 Because readonly fields are deleted from the event context during the draft activate, the fields need to be stored and
 added to the event context again after they are deleted, but only in case of the draft activate.
 
-To be able to identify the draft activate process a handler for draft activate is implemented:
+To be able to identify the draft activation, a handler for draft activation is implemented:
 
 - `DraftActiveAttachmentsHandler`
 
-This handler overwrites the `on` event of the draft activate and set a flag in the `ThreadDataStorageSetter` to identify
-the draft activate process.
+This handler overwrites the `on` event of the draft activation and sets a flag in the `ThreadDataStorageSetter` to identify
+the draft activation.
 
 After that, the origin handler is called.
 
@@ -479,7 +485,7 @@ This is done before the readonly fields are deleted by using a method annotated 
 ```
 
 The new field is added directly in the data for the attachment entity.
-In case the process is no activate draft process the field is cleared to make sure that the field is not filled from
+In case the request is not a draft activation, the field is cleared to make sure that the field is not filled from
 outside.
 
 The method in the `ApplicationService` handler that processes the data runs at a later point to ensure that all validations are executed first.
