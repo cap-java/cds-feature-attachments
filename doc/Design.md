@@ -39,9 +39,9 @@
     - [Service Interface](#service-interface)
     - [Multi-Tenancy](#multi-tenancy)
     - [Default Implementation](#default-implementation)
-      - [Internal Stored](#internal-stored)
       - [Content ID](#content-id)
     - [Malware Scan](#malware-scan)
+      - [User Experience](#user-experience)
       - [Implementation](#implementation)
         - [Read Data](#read-data)
         - [Scan Content](#scan-content)
@@ -528,44 +528,41 @@ the implementation of the service.
 
 #### Multi-Tenancy
 
-The feature is ready for multitenancy scenarios.
-The attachment service is called without tenant information in the event context, but the tenant information needs to be
-included
-in the request context.
+The feature is ready for multi-tenancy scenarios.
+Tenant information does not need to be passed explicitly when emitting events
+on the `AttachmentService` — CAP propagates it automatically via the
+`RequestContext`, which is available on the current thread.
 
 #### Default Implementation
 
-In the `service.handler` package the default handler implementation of the `AttachmentService` is implemented.
-The class `DefaultAttachmentsServiceHandler` is registered for the events of the `AttachmentService` and implements the
-`@On` handler for the service.
+In the `service.handler` package, the default handler implementation of the
+`AttachmentService` is implemented.
+The class `DefaultAttachmentsServiceHandler` is registered for the events of
+the `AttachmentService` and implements the `@On` handler for the service.
 
-Because the default implementation of the service stores the attachments in the database, the `DefaultAttachmentsServiceHandler`
-does nothing with the content of the attachment.
+For the default implementation, attachment content is stored as a blob in the
+database by CAP's generic persistence mechanism — not by any explicit code in
+`DefaultAttachmentsServiceHandler`.
+This works through a two-way contract between the `AttachmentService` and the
+calling handler:
 
-The handler that calls the `AttachmentService` is responsible for storing the content of the attachment in the database for the default
-implementation.
-This is needed because the create event is called during the `@Before` phase of the `DraftService`
-and `ApplicationService`.
-In this phase the attachment entity is not available in the database, so the content of the attachment cannot be stored
-in the `AttachmentService` create event default implementation.
+1. `DefaultAttachmentsServiceHandler` sets `isInternalStored=true` on the
+   create event context, signalling that content should remain in the data map.
+2. The calling handler (`CreateAttachmentsHandler`) checks this flag and, if
+   `true`, leaves the content stream in the data — so CAP writes it to the
+   database column automatically as part of the normal `CREATE` operation.
 
-For the create event a listener is registered for the end of the transaction to scan the content
-of the attachment for malware.
+For an external storage plugin, `isInternalStored` is left `false`, which
+causes the calling handler to remove the content from the data map, preventing
+CAP from writing it to the database.
 
-##### Internal Stored
+The `AttachmentService` create event is emitted during the `@Before` phase,
+before the entity exists in the database, so there is no way for
+`DefaultAttachmentsServiceHandler` to write the content itself at that point —
+the flag-based contract is the only viable approach.
 
-Because the handler of the `DraftService` and `ApplicationService` need to know if the content of the attachment needs
-to be stored in the database, or if the storage is handled by the `AttachmentService`, the create event of
-the `AttachmentService`
-contains this information.
-The event returns the following boolean value if the content of the attachment is stored in the database or not:
-
-- `isInternalStored`
-
-The default implementation sets this flag to `true`.
-If there will be other implementations of the `AttachmentService` which store the content of the attachment in an
-external
-storage the flag must not be set.
+For the create event, a listener is registered for the end of the transaction
+to scan the content of the attachment for malware.
 
 ##### Content ID
 
@@ -576,8 +573,28 @@ use.
 
 #### Malware Scan
 
-During the processing of the default implementation of the handler for the `AttachmentService` a malware scan is
-registered.
+##### User Experience
+
+When a user uploads an attachment, the upload succeeds immediately but the
+attachment is placed in `Scanning` status.
+The scan runs asynchronously after the transaction commits, so the attachment
+is temporarily unavailable for download.
+
+Once the scan completes:
+- **`Clean`** — the attachment can be downloaded.
+- **`Infected` or `Failed`** — the download is blocked with a "not clean" error.
+
+If the scan has not yet completed and the user attempts to download, they
+receive a "not scanned yet" error.
+In that case, the plugin retriggers the scan so that the status is updated as
+soon as possible.
+
+If no malware scanner is bound, the status is set to `Clean` immediately and
+downloads are never blocked.
+
+When an attachment is created, a change set listener is registered to trigger
+a malware scan after the transaction commits.
+This applies regardless of the storage backend.
 To see the whole process have a look in the [process description](Processes.md#malware-scan).
 
 ##### Implementation
@@ -590,7 +607,7 @@ There are two interfaces implemented for the malware scan:
 
 There are two places where the malware scan is called:
 
-1. In the change set listener registered in the default ON-implementation of the `AttachmentService` create event
+1. In the change set listener registered in the `@On` handler of the `AttachmentService` create event
 2. In the `ReadAttachmentsHandler`, a handler which is registered for the `ApplicationService`
    to read the content of the attachment
 
@@ -598,7 +615,7 @@ The interface `AsyncMalwareScanExecutor` and the `ChangeSetListener` are both im
 record `EndTransactionMalwareScanRunner`
 to have the logic to start the malware scan in a asynchronous way in one place.
 
-The clas `DefaultAttachmentMalwareScanner` implements the interface `AttachmentMalwareScanner` and do the scan.
+The class `DefaultAttachmentMalwareScanner` implements the interface `AttachmentMalwareScanner` and does the scan.
 
 ###### Read Data
 
@@ -613,8 +630,12 @@ The data are read with the where condition on the `contentId`.
 ###### Scan Content
 
 For each attachment entity found during the selection, the content is scanned using the
-`MalwareScanClient`. The content is taken directly from the attachment entity, as the malware scan is called for the
-default implementation of the `AttachmentService` handler and the content is stored in the database.
+`MalwareScanClient`.
+The content is obtained from the `content` database column if it is non-null
+(default implementation, where the blob is stored in the database).
+If the column is null (external storage such as OSS),
+`attachmentService.readAttachment()` is called instead,
+which fetches the content from the external store via the registered `@On` handler.
 
 The client first checks if a malware scanner is bound; if not, it returns the status `NO_SCANNER`.
 In this case a warning log is written stating that no scanner is bound and that this should not be used in productive systems.
@@ -630,11 +651,12 @@ With this, an update of the attachment entity is attempted.
 ###### Read Attachment calls Malware Scan
 
 Because a draft entity could be in the phase of activation at the moment the scan is executed,
-the update will not be recognized for the activation.
+the update of the scan status will not be recognized if it happens _after_ the activation, because it targets a draft table row.
 In this case the status will remain `Scanning` or `Unscanned`.
 
-This needs to be corrected in the future if a malware scan service is implemented that will rescan the content.
-For now the scan is retriggered if a read is executed for an entity which has one of these status values.
+A more robust solution would ensure that attachments stuck in `Scanning` or `Unscanned` are
+eventually rescanned without requiring a user download.
+For now, the scan is retriggered when a read is executed for an entity with one of these status values.
 Because of this, the malware scan also needs to be triggered from the `ReadAttachmentsHandler`.
 
 ##### Status
