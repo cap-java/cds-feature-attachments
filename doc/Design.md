@@ -27,7 +27,7 @@
     - [Usage of the CDS Model](#usage-of-the-cds-model)
   - [Configuration](#configuration)
   - [Handler](#handler)
-    - [Events](#events)
+    - [Mapping CAP Events to Attachment Operations](#mapping-cap-events-to-attachment-operations)
     - [Draft Activate and Deep Updates](#draft-activate-and-deep-updates)
     - [Content for new Draft](#content-for-new-draft)
     - [Delete](#delete)
@@ -39,9 +39,9 @@
     - [Service Interface](#service-interface)
     - [Multi-Tenancy](#multi-tenancy)
     - [Default Implementation](#default-implementation)
-      - [Internal Stored](#internal-stored)
       - [Content ID](#content-id)
     - [Malware Scan](#malware-scan)
+      - [User Experience](#user-experience)
       - [Implementation](#implementation)
         - [Read Data](#read-data)
         - [Scan Content](#scan-content)
@@ -292,11 +292,11 @@ and `ApplicationService` handlers are registered.
 The class `Registration` which implements this configuration is referenced in the `META-INF/services` folder
 in file `com.sap.cds.services.runtime.CdsRuntimeConfiguration` to make it visible for the CAP Java runtime.
 
-### Handler
+### Handlers
 
-The following packages are the main packages for the handler implementation in package `handler`:
+The following packages are the main packages for the handler implementations in the package `handler`:
 
-- `applicationservice`: Handler for the `ApplicationService
+- `applicationservice`: Handler for the `ApplicationService`
 - `draftservice`: Handler for the `DraftService`
 
 In the `applicationservice` package are handlers for the `create`, `update`, `delete` and `read` operations implemented.
@@ -313,21 +313,39 @@ as this could be the case for deep creates or deep updates.
 
 After the handler has checked if an attachment entity is contained in the request,
 the handler calls the `ModifyAttachmentEventFactory` implementation.
-The implementation of this interface, `DefaultModifyAttachmentEventFactory`, checks
+The implementation of this interface, `ModifyAttachmentEventFactory`, checks
 based on the data included in the request which `AttachmentService` event needs to be called.
 
 The factory returns an implementation of the `ModifyAttachmentEvent` interface.
 
-#### Events
+#### Mapping CAP Events to Attachment Operations
+
+The `ModifyAttachmentEvent` interface is a strategy object — despite its name,
+it is not a CAP event or a passive value object.
+Its `processEvent` method contains the logic for emitting the appropriate
+`AttachmentService` event.
+The name reflects that each implementation maps to one `AttachmentService` event,
+but the execution logic lives inside the implementation itself.
+Throughout this document, "emitting an event" means invoking the corresponding
+method on the `AttachmentService` interface (e.g. `createAttachment()`), which
+CAP then dispatches to the registered `@On` handler.
+
+The `ModifyAttachmentEventFactory` selects the right strategy based on
+the attachment data in the request — primarily whether `content` and `contentId`
+are present or have changed.
+A CAP service event (e.g. `UPDATE`) does not map one-to-one to an
+`AttachmentService` event: an update could mean new content is being uploaded,
+only metadata is changing, or the attachment is being removed.
+The factory resolves that ambiguity.
 
 The `ModifyAttachmentEvent` interface has the following implementations:
 
-| Implementation                 | Description                                                                                                                                                                                                      |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CreateAttachmentEvent`        | Calls the `CREATE`event of the `AttachmentService`                                                                                                                                                               |
-| `DoNothingAttachmentEvent`     | Is use if the attachment entity is included in the request but nothing needs to be done in the `AttachmentService` e.g. a field is updates which is not the `content`- or `contentId` - field                    |
-| `MarkAsDeletedAttachmentEvent` | Calls the `MARK_AS_DELETED` event of the `AttachmentService`, but not in case the event is a `DRAFT_PATCH`event from the `DraftService`, in this case the mark as deleted is triggered if the draft is activated |
-| `UpdateAttachmentEvent`        | Calls first the `MarkAsDeletedAttachmentEvent` and after that the `CreateAttachmentEvent`                                                                                                                        |
+| Implementation                 | Description                                                                                                                                                                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CreateAttachmentEvent`        | Emits the `CREATE_ATTACHMENT` event on the `AttachmentService`                                                                                                                                                           |
+| `DoNothingAttachmentEvent`     | Used when the attachment entity is included in the request but nothing needs to be done, e.g. a field is updated which is not the `content` or `contentId` field                                                         |
+| `MarkAsDeletedAttachmentEvent` | Emits the `MARK_AS_DELETED` event on the `AttachmentService`; skipped during `DRAFT_PATCH` events from the `DraftService` — in that case the mark as deleted is triggered when the draft is activated                    |
+| `UpdateAttachmentEvent`        | Emits first the `MarkAsDeletedAttachmentEvent` and then the `CreateAttachmentEvent`                                                                                                                                      |
 
 #### Draft Activate and Deep Updates
 
@@ -348,28 +366,45 @@ root
 
 If in this example an item is deleted which included an attachment entity the delete event needs to be called for the
 attachment entity.
-To be able to do this, the handler calls `DefaultAttachmentsReader` to read existing attachments from the database.
+To be able to do this, the handler calls `AttachmentsReader` to read existing attachments from the database.
 The reader is only called if an association is included in the request.
 
-The reader uses the `DefaultAssociationCascader` to determine the associations which need to be read for the attachment
+The reader uses the `AssociationCascader` to determine the associations which need to be read for the attachment
 entity included in the entity hierarchy.
 With the information from the cascader, the reader creates a select statement to read all attachment entities that belong to
 the data in the request.
 
-After the data are read, the update handler compares the data with the data in the request and calls the delete event for all
-attachments which are not included in the request.
+After the data are read, the update handler compares the data with the data in
+the request and emits the `MARK_AS_DELETED` event for all attachments which are
+not included in the request.
+This is relevant when an external storage plugin is active — in that case
+`MARK_AS_DELETED` triggers actual content deletion in the external store.
+For the default implementation, the DB cascade already removes the attachment
+rows, so this step is a no-op.
 
 #### Content for new Draft
 
-If a new draft is created, the content of the attachment entity is not read from external sources in case it is stored
-externally.
-To avoid calling the delete method when the draft is activated with no changes in the attachment entity because the content
-field is empty,
-not the content field itself is validated but the `contentId` field.
+When the `DraftService` creates a draft from an active entity that already has
+an attachment, it copies the entity data into the draft table but not the
+attachment content itself — the content remains in storage, referenced by
+`contentId`.
+As a result, the draft row has `contentId` populated but `content` empty.
 
-To make this possible, the fields need to be filled also for storage of the content in the database.
-Because of this, the default implementation of the handler of the `AttachmentService` also fills the `contentId`
-field.
+When the user activates the draft without modifying the attachment,
+`UpdateAttachmentsHandler` must decide what to do with the attachment.
+The `ModifyAttachmentEventFactory` makes this decision based on the data:
+empty `content` alone is ambiguous — it could mean "leave the attachment alone"
+or "the attachment was removed".
+To resolve this, the factory checks `contentId` instead: if it is present, the
+attachment still exists and `DoNothingAttachmentEvent` is returned; if it is
+null, the attachment was genuinely removed and `MarkAsDeletedAttachmentEvent`
+is returned.
+
+For the default implementation, where content is stored as a blob in the
+database, `contentId` would not naturally be set.
+Therefore `DefaultAttachmentsServiceHandler` explicitly fills `contentId` with
+the attachment's entity ID on every create — ensuring the factory can
+distinguish "untouched" from "removed" during draft activation.
 
 #### Delete
 
@@ -377,7 +412,7 @@ For the delete event, the handler does not call the `AttachmentService` directly
 is used.
 With this, the calls to the `AttachmentService` are stored in the database and only executed after the transaction is
 committed.
-So if the transaction had errors and needs to be rolled back, the delete event is not called and no rollback of the delete is needed.
+So if the transaction had errors and needs to be rolled back, the delete event is not emitted and no rollback of the delete is needed.
 
 More information about the outbox can be found in
 the [CAP Java documentation](https://cap.cloud.sap/docs/java/outbox#outboxing-cap-service-events).
@@ -393,35 +428,29 @@ Because of this, this field is removed before requests to the database are execu
 
 #### Sibling Entity (Draft or Active)
 
-In the draft handler, we need to read the active entities to determine the events.
-Because the draft handler uses draft entities, the active entities need to be read.
+In the draft handlers, the active entity is sometimes needed to determine the
+correct attachment operation — for example, to compare the active `contentId`
+against the draft `contentId` when cancelling a draft.
 
-To get the active entity from the draft entity, the following code is used:
-
-```java
-context.getTarget().
-
-getTargetOf("SiblingEntity");
-```
-
-With this, the active entity can be determined from the draft entity.
-To check if an entity is a draft entity, the following code is used:
+`DraftUtils` provides two helper methods for navigating between the two
+siblings:
 
 ```java
-context.getTarget().
-
-getQualifiedName().
-
-endsWith("_drafts");
+DraftUtils.getActiveEntity(entity);  // returns the active sibling
+DraftUtils.getDraftEntity(entity);   // returns the draft sibling
 ```
 
-The constants for `SiblingEntity` and `_drafts` are defined in the `DraftConstants` class.
+Both methods use `Drafts.SIBLING_ENTITY` from the CAP framework to navigate
+to the sibling, and `DraftUtils.isDraftEntity()` to determine which direction
+to navigate.
+Whether an entity is a draft is determined by checking whether its qualified
+name ends with the `DRAFT_TABLE_POSTFIX` constant (`_drafts`), also defined
+in `DraftUtils`.
 
 #### Readonly Fields
 
-Some fields are defined as readonly fields in the CDS model because they are calculated or filled in the backend, but
-with
-a reference to a potential external system.
+Some fields are defined as readonly in the CDS model because they are set by
+the back end, potentially via an external system.
 The following fields are readonly fields:
 
 - `contentId`
@@ -435,12 +464,12 @@ activation of a draft entity.
 Because readonly fields are deleted from the event context during the draft activate, the fields need to be stored and
 added to the event context again after they are deleted, but only in case of the draft activate.
 
-To be able to identify the draft activate process a handler for draft activate is implemented:
+To be able to identify the draft activation, a handler for draft activation is implemented:
 
 - `DraftActiveAttachmentsHandler`
 
-This handler overwrites the `on` event of the draft activate and set a flag in the `ThreadDataStorageSetter` to identify
-the draft activate process.
+This handler overwrites the `on` event of the draft activation and sets a flag in the `ThreadDataStorageSetter` to identify
+the draft activation.
 
 After that, the origin handler is called.
 
@@ -456,7 +485,7 @@ This is done before the readonly fields are deleted by using a method annotated 
 ```
 
 The new field is added directly in the data for the attachment entity.
-In case the process is no activate draft process the field is cleared to make sure that the field is not filled from
+In case the request is not a draft activation, the field is cleared to make sure that the field is not filled from
 outside.
 
 The method in the `ApplicationService` handler that processes the data runs at a later point to ensure that all validations are executed first.
@@ -499,44 +528,41 @@ the implementation of the service.
 
 #### Multi-Tenancy
 
-The feature is ready for multitenancy scenarios.
-The attachment service is called without tenant information in the event context, but the tenant information needs to be
-included
-in the request context.
+The feature is ready for multi-tenancy scenarios.
+Tenant information does not need to be passed explicitly when emitting events
+on the `AttachmentService` — CAP propagates it automatically via the
+`RequestContext`, which is available on the current thread.
 
 #### Default Implementation
 
-In the `service.handler` package the default handler implementation of the `AttachmentService` is implemented.
-The class `DefaultAttachmentService` is registered for the events of the `AttachmentService` and implements the
-`@On` handler for the service.
+In the `service.handler` package, the default handler implementation of the
+`AttachmentService` is implemented.
+The class `DefaultAttachmentsServiceHandler` is registered for the events of
+the `AttachmentService` and implements the `@On` handler for the service.
 
-Because the default implementation of the service stores the attachments in the database, the `DefaultAttachmentService`
-does nothing with the content of the attachment.
+For the default implementation, attachment content is stored as a blob in the
+database by CAP's generic persistence mechanism — not by any explicit code in
+`DefaultAttachmentsServiceHandler`.
+This works through a two-way contract between the `AttachmentService` and the
+calling handler:
 
-The handler that calls the `AttachmentService` is responsible for storing the content of the attachment in the database for the default
-implementation.
-This is needed because the create event is called during the `@Before` phase of the `DraftService`
-and `ApplicationService`.
-In this phase the attachment entity is not available in the database, so the content of the attachment cannot be stored
-in the `AttachmentService` create event default implementation.
+1. `DefaultAttachmentsServiceHandler` sets `isInternalStored=true` on the
+   create event context, signalling that content should remain in the data map.
+2. The calling handler (`CreateAttachmentsHandler`) checks this flag and, if
+   `true`, leaves the content stream in the data — so CAP writes it to the
+   database column automatically as part of the normal `CREATE` operation.
 
-For the create event a listener is registered for the end of the transaction to scan the content
-of the attachment for malware.
+For an external storage plugin, `isInternalStored` is left `false`, which
+causes the calling handler to remove the content from the data map, preventing
+CAP from writing it to the database.
 
-##### Internal Stored
+The `AttachmentService` create event is emitted during the `@Before` phase,
+before the entity exists in the database, so there is no way for
+`DefaultAttachmentsServiceHandler` to write the content itself at that point —
+the flag-based contract is the only viable approach.
 
-Because the handler of the `DraftService` and `ApplicationService` need to know if the content of the attachment needs
-to be stored in the database, or if the storage is handled by the `AttachmentService`, the create event of
-the `AttachmentService`
-contains this information.
-The event returns the following boolean value if the content of the attachment is stored in the database or not:
-
-- `isInternalStored`
-
-The default implementation sets this flag to `true`.
-If there will be other implementations of the `AttachmentService` which store the content of the attachment in an
-external
-storage the flag must not be set.
+For the create event, a listener is registered for the end of the transaction
+to scan the content of the attachment for malware.
 
 ##### Content ID
 
@@ -547,8 +573,28 @@ use.
 
 #### Malware Scan
 
-During the processing of the default implementation of the handler for the `AttachmentService` a malware scan is
-registered.
+##### User Experience
+
+When a user uploads an attachment, the upload succeeds immediately but the
+attachment is placed in `Scanning` status.
+The scan runs asynchronously after the transaction commits, so the attachment
+is temporarily unavailable for download.
+
+Once the scan completes:
+- **`Clean`** — the attachment can be downloaded.
+- **`Infected` or `Failed`** — the download is blocked with a "not clean" error.
+
+If the scan has not yet completed and the user attempts to download, they
+receive a "not scanned yet" error.
+In that case, the plugin retriggers the scan so that the status is updated as
+soon as possible.
+
+If no malware scanner is bound, the status is set to `Clean` immediately and
+downloads are never blocked.
+
+When an attachment is created, a change set listener is registered to trigger
+a malware scan after the transaction commits.
+This applies regardless of the storage backend.
 To see the whole process have a look in the [process description](Processes.md#malware-scan).
 
 ##### Implementation
@@ -561,7 +607,7 @@ There are two interfaces implemented for the malware scan:
 
 There are two places where the malware scan is called:
 
-1. In the change set listener registered in the default ON-implementation of the `AttachmentService` create event
+1. In the change set listener registered in the `@On` handler of the `AttachmentService` create event
 2. In the `ReadAttachmentsHandler`, a handler which is registered for the `ApplicationService`
    to read the content of the attachment
 
@@ -569,7 +615,7 @@ The interface `AsyncMalwareScanExecutor` and the `ChangeSetListener` are both im
 record `EndTransactionMalwareScanRunner`
 to have the logic to start the malware scan in a asynchronous way in one place.
 
-The clas `DefaultAttachmentMalwareScanner` implements the interface `AttachmentMalwareScanner` and do the scan.
+The class `DefaultAttachmentMalwareScanner` implements the interface `AttachmentMalwareScanner` and does the scan.
 
 ###### Read Data
 
@@ -584,8 +630,12 @@ The data are read with the where condition on the `contentId`.
 ###### Scan Content
 
 For each attachment entity found during the selection, the content is scanned using the
-`MalwareScanClient`. The content is taken directly from the attachment entity, as the malware scan is called for the
-default implementation of the `AttachmentService` handler and the content is stored in the database.
+`MalwareScanClient`.
+The content is obtained from the `content` database column if it is non-null
+(default implementation, where the blob is stored in the database).
+If the column is null (external storage such as OSS),
+`attachmentService.readAttachment()` is called instead,
+which fetches the content from the external store via the registered `@On` handler.
 
 The client first checks if a malware scanner is bound; if not, it returns the status `NO_SCANNER`.
 In this case a warning log is written stating that no scanner is bound and that this should not be used in productive systems.
@@ -601,11 +651,12 @@ With this, an update of the attachment entity is attempted.
 ###### Read Attachment calls Malware Scan
 
 Because a draft entity could be in the phase of activation at the moment the scan is executed,
-the update will not be recognized for the activation.
+the update of the scan status will not be recognized if it happens _after_ the activation, because it targets a draft table row.
 In this case the status will remain `Scanning` or `Unscanned`.
 
-This needs to be corrected in the future if a `MalwareScanService` is implemented that will rescan the content.
-For now the scan is retriggered if a read is executed for an entity which has one of these status values.
+A more robust solution would ensure that attachments stuck in `Scanning` or `Unscanned` are
+eventually rescanned without requiring a user download.
+For now, the scan is retriggered when a read is executed for an entity with one of these status values.
 Because of this, the malware scan also needs to be triggered from the `ReadAttachmentsHandler`.
 
 ##### Status
@@ -621,7 +672,7 @@ The following table gives an overview of the possible status values and the mapp
 | `Failed`     | `FAILED`                | During the scan an error occurred.                                                                       |
 
 Only content with the status `Clean` can be downloaded from the UI.
-This is validated in the `DefaultAttachmentStatusValidator`. If the content is not clean, the validator throws
+This is validated in the `AttachmentStatusValidator`. If the content is not clean, the validator throws
 an `AttachmentStatusException`.
 
 ### Texts
