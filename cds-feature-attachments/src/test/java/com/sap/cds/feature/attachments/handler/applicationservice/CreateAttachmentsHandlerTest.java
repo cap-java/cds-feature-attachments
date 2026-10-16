@@ -77,7 +77,7 @@ class CreateAttachmentsHandlerTest {
         new CreateAttachmentsHandler(
             eventFactory,
             storageReader,
-            ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+            ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE,
             runtime);
 
     createContext = mock(CdsCreateEventContext.class);
