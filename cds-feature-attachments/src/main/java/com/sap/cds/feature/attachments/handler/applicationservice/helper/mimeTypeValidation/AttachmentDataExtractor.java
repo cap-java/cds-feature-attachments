@@ -23,8 +23,11 @@ import java.util.stream.Collectors;
 
 public final class AttachmentDataExtractor {
   private static final String FILE_NAME_FIELD = "fileName";
+  private static final String MIME_TYPE_FIELD = "mimeType";
   public static final Filter FILE_NAME_FILTER =
       (path, element, type) -> element.getName().contentEquals(FILE_NAME_FIELD);
+  public static final Filter MIME_TYPE_FILTER =
+      (path, element, type) -> element.getName().contentEquals(MIME_TYPE_FIELD);
 
   /**
    * Extracts and validates file names of attachments from the given entity data.
@@ -40,6 +43,34 @@ public final class AttachmentDataExtractor {
     // Ensures that all attachments have valid (non-null, non-empty) file names.
     ensureAttachmentsHaveFileNames(entity, data, fileNamesByElementName);
     return fileNamesByElementName;
+  }
+
+  /**
+   * Extracts the explicitly supplied {@code mimeType} values of attachments from the given entity
+   * data, keyed by the qualified name of the declaring media entity.
+   *
+   * <p>Unlike file names, these values are not derived from the file extension but taken verbatim
+   * from the request payload (or, later, HTTP headers). They must therefore be validated against
+   * the acceptable media types as well, otherwise an allowed file name could be paired with a
+   * disallowed MIME type that is subsequently persisted and served inline.
+   *
+   * @param entity the CDS entity definition
+   * @param data the incoming data containing attachment values
+   * @return a map of declaring media entity names to sets of supplied MIME types
+   */
+  public static Map<String, Set<String>> extractMimeTypesByElement(
+      CdsEntity entity, List<? extends CdsData> data) {
+    Map<String, Set<String>> mimeTypesByElementName = new HashMap<>();
+    CdsDataProcessor processor = CdsDataProcessor.create();
+    Validator mimeTypeValidator =
+        (path, element, value) -> {
+          if (value instanceof String mimeType && !mimeType.isBlank()) {
+            String key = element.getDeclaringType().getQualifiedName();
+            mimeTypesByElementName.computeIfAbsent(key, k -> new HashSet<>()).add(mimeType.trim());
+          }
+        };
+    processor.addValidator(MIME_TYPE_FILTER, mimeTypeValidator).process(data, entity);
+    return mimeTypesByElementName;
   }
 
   private static Map<String, Set<String>> collectFileNamesByElementName(
