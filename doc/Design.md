@@ -26,7 +26,7 @@
     - [ETag](#etag)
     - [Usage of the CDS Model](#usage-of-the-cds-model)
   - [Configuration](#configuration)
-  - [Handler](#handler)
+  - [Handlers](#handlers)
     - [Mapping CAP Events to Attachment Operations](#mapping-cap-events-to-attachment-operations)
     - [Draft Activate and Deep Updates](#draft-activate-and-deep-updates)
     - [Content for new Draft](#content-for-new-draft)
@@ -312,9 +312,9 @@ This needs to be done not only for the top-level entity in the request but also 
 as this could be the case for deep creates or deep updates.
 
 After the handler has checked if an attachment entity is contained in the request,
-the handler calls the `ModifyAttachmentEventFactory` implementation.
-The implementation of this interface, `ModifyAttachmentEventFactory`, checks
-based on the data included in the request which `AttachmentService` event needs to be called.
+the handler calls `ModifyAttachmentEventFactory`.
+The `ModifyAttachmentEventFactory` checks
+based on the data included in the request which `AttachmentService` event needs to be emitted.
 
 The factory returns an implementation of the `ModifyAttachmentEvent` interface.
 
@@ -344,7 +344,7 @@ The `ModifyAttachmentEvent` interface has the following implementations:
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `CreateAttachmentEvent`        | Emits the `CREATE_ATTACHMENT` event on the `AttachmentService`                                                                                                                                                           |
 | `DoNothingAttachmentEvent`     | Used when the attachment entity is included in the request but nothing needs to be done, e.g. a field is updated which is not the `content` or `contentId` field                                                         |
-| `MarkAsDeletedAttachmentEvent` | Emits the `MARK_AS_DELETED` event on the `AttachmentService`; skipped during `DRAFT_PATCH` events from the `DraftService` — in that case the mark as deleted is triggered when the draft is activated                    |
+| `MarkAsDeletedAttachmentEvent` | Emits the `MARK_ATTACHMENT_AS_DELETED` event on the `AttachmentService`; skipped during `DRAFT_PATCH` events from the `DraftService` — in that case the mark as deleted is triggered when the draft is cancelled by `DraftCancelAttachmentsHandler` |
 | `UpdateAttachmentEvent`        | Emits first the `MarkAsDeletedAttachmentEvent` and then the `CreateAttachmentEvent`                                                                                                                                      |
 
 #### Draft Activate and Deep Updates
@@ -436,8 +436,8 @@ against the draft `contentId` when cancelling a draft.
 siblings:
 
 ```java
-DraftUtils.getActiveEntity(entity);  // returns the active sibling
-DraftUtils.getDraftEntity(entity);   // returns the draft sibling
+DraftUtils.getActiveEntity(entity);  // returns the active entity, navigating to the sibling if the input is a draft entity
+DraftUtils.getDraftEntity(entity);   // returns the draft entity, navigating to the sibling if the input is an active entity
 ```
 
 Both methods use `Drafts.SIBLING_ENTITY` from the CAP framework to navigate
@@ -533,6 +533,9 @@ Tenant information does not need to be passed explicitly when emitting events
 on the `AttachmentService` — CAP propagates it automatically via the
 `RequestContext`, which is available on the current thread.
 
+For asynchronous operations (e.g. the malware scan), a `RequestContextRunner`
+is captured on the parent thread and replayed on the child thread to restore the tenant context.
+
 #### Default Implementation
 
 In the `service.handler` package, the default handler implementation of the
@@ -552,7 +555,7 @@ calling handler:
    `true`, leaves the content stream in the data — so CAP writes it to the
    database column automatically as part of the normal `CREATE` operation.
 
-For an external storage plugin, `isInternalStored` is left `false`, which
+For an external storage plugin, `isInternalStored` is set to `false`, which
 causes the calling handler to remove the content from the data map, preventing
 CAP from writing it to the database.
 
