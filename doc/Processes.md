@@ -39,15 +39,15 @@ event.
 ## Delete
 
 The following overview shows the process of deleting existing content inside the attachment entity.
-Content is not deleted directly but only marked as deleted.
-The reason is that customers have raised a possible scenario where, due to bugs or other reasons,
-databases can be restored with links to the content.
-If content is deleted directly, it would be lost upon such a restore.
 
-Because of this, content is only marked as deleted, so it can be moved to a recycle bin or similar
-concepts can be implemented.
+The behaviour depends on the storage backend:
 
-If the database is restored, an endpoint can be called to also restore the content.
+- **Database storage:** the attachment row is deleted directly by the CAP framework. There is no soft delete.
+- **Filesystem storage:** the content directory is moved to a `deleted/` folder rather than removed. The restore endpoint can be used to recover content after a database restore.
+- **Object store (OSS) storage:** the code issues a plain delete request to the bucket.
+    Whether this results in a soft delete depends on the bucket configuration.
+    If the bucket has versioning enabled, the delete places a delete marker and the content remains recoverable.
+    In that case, a database restore can be made consistent with the bucket state by finding the matching bucket version.
 
 In the case of a draft, the delete handler is not called. It is only called when the draft is activated.
 If deletion were also called for a draft that is later cancelled, the content could not easily be restored or unmarked.
