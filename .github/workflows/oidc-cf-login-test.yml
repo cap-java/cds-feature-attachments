@@ -1,0 +1,99 @@
+name: OIDC CF Login Test
+
+on:
+  push:
+    branches:
+      - holger/oidcSetup
+  workflow_dispatch:
+    inputs:
+      cfApiEndpointUrl:
+        description: 'Cloud Foundry API endpoint'
+        default: 'https://api.cf.eu12-001.hana.ondemand.com'
+        required: true
+        type: string
+      cfOrg:
+        description: 'CF org name'
+        default: 'CAP-PLUGINS-DEV_ci-aws-mjy1tj90'
+        required: true
+        type: string
+      cfSpace:
+        description: 'CF space name'
+        default: 'ci-java'
+        required: true
+        type: string
+      userOrigin:
+        description: 'Origin-identifier of the platform IdP'
+        default: 'aarz7ikup-platform'
+        required: true
+        type: string
+      tenantIssuerUri:
+        description: 'Issuer URI of the SAP Cloud Identity Services tenant'
+        default: 'https://aarz7ikup.accounts400.ondemand.com'
+        required: true
+        type: string
+
+jobs:
+  oidc-login-test:
+    name: OIDC CF Login Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write  # required for requesting the GitHub-issued JWT
+      contents: read
+
+    env:
+      CF_API: ${{ inputs.cfApiEndpointUrl || 'https://api.cf.eu12-001.hana.ondemand.com' }}
+      CF_ORG: ${{ inputs.cfOrg || 'CAP-PLUGINS-DEV_ci-aws-mjy1tj90' }}
+      CF_SPACE: ${{ inputs.cfSpace || 'ci-java' }}
+      CF_USER_ORIGIN: ${{ inputs.userOrigin || 'aarz7ikup-platform' }}
+      CIS_ISSUER_URI: ${{ inputs.tenantIssuerUri || 'https://aarz7ikup.accounts400.ondemand.com' }}
+
+    steps:
+      - name: Show provided parameters
+        run: |
+          echo "CF_API=$CF_API"
+          echo "CF_ORG=$CF_ORG"
+          echo "CF_SPACE=$CF_SPACE"
+          echo "CF_USER_ORIGIN=$CF_USER_ORIGIN"
+          echo "CIS_ISSUER_URI=$CIS_ISSUER_URI"
+
+      - name: Install CF CLI
+        env:
+          CF_CLI_VERSION: '8.18.3'
+        run: |
+          wget -q "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${CF_CLI_VERSION}&source=github-rel" -O cf-cli.tar.gz
+          tar -xzf cf-cli.tar.gz
+          sudo mv cf8 /usr/local/bin/cf
+          cf --version
+
+      - name: Get GitHub-issued JWT
+        id: get-github-jwt
+        run: |
+          githubJwt=$(curl -s \
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            -H "Accept: application/json; api-version=2.0" \
+            -H "Content-Type: application/json" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=$CIS_ISSUER_URI" \
+            | jq -r '.value')
+          echo "JWT header + payload (decoded):"
+          echo "$githubJwt" | jq -R 'split(".") | .[0],.[1] | @base64d | fromjson'
+          echo "githubJwt=$githubJwt" >> "$GITHUB_OUTPUT"
+
+      - name: Set CF API endpoint
+        run: cf api "$CF_API"
+
+      - name: Login to CF via OIDC assertion
+        run: cf auth --assertion "${{ steps.get-github-jwt.outputs.githubJwt }}" --origin "$CF_USER_ORIGIN"
+
+      - name: Target CF org and space
+        run: cf target -o "$CF_ORG" -s "$CF_SPACE"
+
+      - name: Show CF info
+        run: |
+          cf orgs
+          cf spaces
+          cf target
+
+      - name: Logout from CF
+        if: always()
+        run: cf logout
