@@ -84,8 +84,8 @@ jobs:
           cf-api: ${{ secrets[format('CF_API_{0}', matrix.hyperscaler)] }}
           cf-org: ${{ secrets[format('CF_ORG_{0}', matrix.hyperscaler)] }}
           cf-space: ${{ secrets[format('CF_SPACE_{0}', matrix.hyperscaler)] }}
-          cf-user-origin: ${{ vars.CF_USER_ORIGIN }}
-          cis-issuer-uri: ${{ vars.CIS_ISSUER_URI }}
+          cf-user-origin: ${{ secrets.CF_USER_ORIGIN }}
+          cis-issuer-uri: ${{ secrets.CIS_ISSUER_URI }}
           auth-method: ${{ matrix.auth-method }}
 
       - name: Integration Tests
@@ -113,8 +113,8 @@ jobs:
           cf-api: ${{ secrets.CF_API_AWS }}
           cf-org: ${{ secrets.CF_ORG_AWS }}
           cf-space: ${{ secrets.CF_SPACE_AWS }}
-          cf-user-origin: ${{ vars.CF_USER_ORIGIN }}
-          cis-issuer-uri: ${{ vars.CIS_ISSUER_URI }}
+          cf-user-origin: ${{ secrets.CF_USER_ORIGIN }}
+          cis-issuer-uri: ${{ secrets.CIS_ISSUER_URI }}
           auth-method: basic
 
       - name: SonarQube Scan
