@@ -12,7 +12,7 @@ inputs:
     description: Cloud Foundry space
     required: true
   cf-user-origin:
-    description: Origin key of the platform IdP (SAP Cloud Identity Services) in Cloud Foundry
+    description: Origin key of the platform IdP (SAP Cloud Identity Services) for Cloud Foundry
     required: true
   cis-issuer-uri:
     description: Issuer URI of the SAP Cloud Identity Services tenant, used as audience of the GitHub OIDC token
@@ -47,7 +47,7 @@ runs:
           echo "::error::ACTIONS_ID_TOKEN_REQUEST_URL is not set. The calling job needs 'permissions: id-token: write'."
           exit 1
         fi
-        audience=$(jq -rn --arg a "$CIS_ISSUER_URI" '$a|@uri')
+        audience=$(jq -rn --arg a "${CIS_ISSUER_URI%/}" '$a|@uri')
         for i in {1..5}; do
           # Token is short-lived, so request a fresh one on every attempt
           githubJwt=$(curl -sSf \
@@ -80,7 +80,7 @@ runs:
       working-directory: integration-tests/mtx-local
       run: |
         for i in {1..5}; do
-          cds bind objectstore -2 objectstore:ci-pipeline && break
+          cds bind objectstore --to objectstore:ci-pipeline && break
           echo "cds bind objectstore failed, retrying ($i/5)..."
           sleep 30
           if [ "$i" -eq 5 ]; then
@@ -93,10 +93,10 @@ runs:
       if: inputs.auth-method == 'basic'
       shell: bash
       working-directory: integration-tests/mtx-local
-      run: cds bind malware-scanner -2 malware-scanner:malware-key-basic
+      run: cds bind malware-scanner --to malware-scanner:malware-key-basic
 
     - name: Bind malware-scanner (mtls)
       if: inputs.auth-method == 'mtls'
       shell: bash
       working-directory: integration-tests/mtx-local
-      run: cds bind malware-scanner -2 malware-scanner:malware-key-mtls
+      run: cds bind malware-scanner --to malware-scanner:malware-key-mtls
