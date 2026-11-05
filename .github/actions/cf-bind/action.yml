@@ -100,8 +100,3 @@ runs:
       shell: bash
       working-directory: integration-tests/mtx-local
       run: cds bind malware-scanner -2 malware-scanner:malware-key-mtls
-
-    - name: CF Logout
-      if: always()
-      shell: bash
-      run: cf logout || true
