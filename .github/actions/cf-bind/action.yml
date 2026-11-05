@@ -80,7 +80,7 @@ runs:
       working-directory: integration-tests/mtx-local
       run: |
         for i in {1..5}; do
-          cds bind os -2 os:pipeline && break
+          cds bind objectstore -2 objectstore:ci-pipeline && break
           echo "cds bind objectstore failed, retrying ($i/5)..."
           sleep 30
           if [ "$i" -eq 5 ]; then
@@ -93,13 +93,13 @@ runs:
       if: inputs.auth-method == 'basic'
       shell: bash
       working-directory: integration-tests/mtx-local
-      run: cds bind malware -2 malware:malware-key-basic
+      run: cds bind malware-scanner -2 malware-scanner:malware-key-basic
 
     - name: Bind malware-scanner (mtls)
       if: inputs.auth-method == 'mtls'
       shell: bash
       working-directory: integration-tests/mtx-local
-      run: cds bind malware -2 malware:malware-key-mtls
+      run: cds bind malware-scanner -2 malware-scanner:malware-key-mtls
 
     - name: CF Logout
       if: always()
