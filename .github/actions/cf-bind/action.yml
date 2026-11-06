@@ -5,17 +5,17 @@ inputs:
   cf-api:
     description: Cloud Foundry API endpoint
     required: true
-  cf-username:
-    description: Cloud Foundry username
-    required: true
-  cf-password:
-    description: Cloud Foundry password
-    required: true
   cf-org:
     description: Cloud Foundry organization
     required: true
   cf-space:
     description: Cloud Foundry space
+    required: true
+  cf-user-origin:
+    description: Origin key of the platform IdP (SAP Cloud Identity Services) for Cloud Foundry
+    required: true
+  cis-issuer-uri:
+    description: Issuer URI of the SAP Cloud Identity Services tenant, used as audience of the GitHub OIDC token
     required: true
   auth-method:
     description: 'Malware scanner authentication method: basic or mtls'
@@ -34,18 +34,32 @@ runs:
         sudo mv cf8 /usr/local/bin/cf
         cf --version
 
-    - name: CF Login
+    - name: CF Login (GitHub OIDC)
       shell: bash
       env:
-        CF_USERNAME: ${{ inputs.cf-username }}
-        CF_PASSWORD: ${{ inputs.cf-password }}
         CF_API: ${{ inputs.cf-api }}
         CF_ORG: ${{ inputs.cf-org }}
         CF_SPACE: ${{ inputs.cf-space }}
+        CF_USER_ORIGIN: ${{ inputs.cf-user-origin }}
+        CIS_ISSUER_URI: ${{ inputs.cis-issuer-uri }}
       run: |
+        if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+          echo "::error::ACTIONS_ID_TOKEN_REQUEST_URL is not set. The calling job needs 'permissions: id-token: write'."
+          exit 1
+        fi
+        audience=$(jq -rn --arg a "${CIS_ISSUER_URI%/}" '$a|@uri')
+        githubJwt=$(curl -sSf \
+          -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+          -H "Accept: application/json; api-version=2.0" \
+          "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=$audience" | jq -r '.value // empty')
+        if [ -z "$githubJwt" ]; then
+          echo "::error::Could not get a GitHub OIDC token."
+          exit 1
+        fi
+        echo "::add-mask::$githubJwt"
         for i in {1..5}; do
           cf api "$CF_API" && \
-          cf auth && \
+          cf auth --assertion "$githubJwt" --origin "$CF_USER_ORIGIN" && \
           cf target -o "$CF_ORG" -s "$CF_SPACE" && break
           if [ "$i" -eq 5 ]; then
             echo "cf login failed after 5 attempts."
@@ -67,7 +81,7 @@ runs:
       working-directory: integration-tests/mtx-local
       run: |
         for i in {1..5}; do
-          cds bind os -2 os:pipeline && break
+          cds bind objectstore --to objectstore:ci-pipeline && break
           echo "cds bind objectstore failed, retrying ($i/5)..."
           sleep 30
           if [ "$i" -eq 5 ]; then
@@ -80,10 +94,10 @@ runs:
       if: inputs.auth-method == 'basic'
       shell: bash
       working-directory: integration-tests/mtx-local
-      run: cds bind malware -2 malware:malware-key-basic
+      run: cds bind malware-scanner --to malware-scanner:malware-key-basic
 
     - name: Bind malware-scanner (mtls)
       if: inputs.auth-method == 'mtls'
       shell: bash
       working-directory: integration-tests/mtx-local
-      run: cds bind malware -2 malware:malware-key-mtls
+      run: cds bind malware-scanner --to malware-scanner:malware-key-mtls

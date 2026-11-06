@@ -38,6 +38,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      id-token: write
       packages: read
       security-events: write
     secrets: inherit
