@@ -85,7 +85,7 @@ class UpdateAttachmentsHandlerTest {
             attachmentsReader,
             attachmentService,
             storageReader,
-            ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER);
+            ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE);
 
     event = mock(ModifyAttachmentEvent.class);
     updateContext = mock(CdsUpdateEventContext.class);
