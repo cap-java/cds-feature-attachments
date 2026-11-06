@@ -65,8 +65,6 @@ jobs:
     name: Integration Tests (Java ${{ matrix.java-version }}, ${{ matrix.auth-method }}, ${{ matrix.hyperscaler }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    permissions:
-      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -81,10 +79,10 @@ jobs:
         uses: ./.github/actions/cf-bind
         with:
           cf-api: ${{ secrets[format('CF_API_{0}', matrix.hyperscaler)] }}
-          cf-username: ${{ secrets.CF_USERNAME }}
-          cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets[format('CF_ORG_{0}', matrix.hyperscaler)] }}
           cf-space: ${{ secrets[format('CF_SPACE_{0}', matrix.hyperscaler)] }}
+          cf-user-origin: ${{ secrets.CF_USER_ORIGIN }}
+          cis-issuer-uri: ${{ secrets.CIS_ISSUER_URI }}
           auth-method: ${{ matrix.auth-method }}
 
       - name: Integration Tests
@@ -97,8 +95,6 @@ jobs:
     name: SonarQube Scan
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    permissions:
-      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
@@ -109,10 +105,10 @@ jobs:
         uses: ./.github/actions/cf-bind
         with:
           cf-api: ${{ secrets.CF_API_AWS }}
-          cf-username: ${{ secrets.CF_USERNAME }}
-          cf-password: ${{ secrets.CF_PASSWORD }}
           cf-org: ${{ secrets.CF_ORG_AWS }}
           cf-space: ${{ secrets.CF_SPACE_AWS }}
+          cf-user-origin: ${{ secrets.CF_USER_ORIGIN }}
+          cis-issuer-uri: ${{ secrets.CIS_ISSUER_URI }}
           auth-method: basic
 
       - name: SonarQube Scan

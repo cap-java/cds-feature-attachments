@@ -3,6 +3,10 @@ cds:
     csv:
       paths: "../db/src/gen/csv"
 
+test:
+  malware-scan:
+    timeout: PT60S
+
 ---
 spring:
   config:

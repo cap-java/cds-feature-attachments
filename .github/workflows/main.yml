@@ -32,6 +32,7 @@ jobs:
     uses: ./.github/workflows/pipeline.yml
     permissions:
       contents: read
+      id-token: write
       security-events: write
       actions: read
       packages: read
