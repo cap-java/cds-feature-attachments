@@ -49,7 +49,6 @@ runs:
         fi
         audience=$(jq -rn --arg a "${CIS_ISSUER_URI%/}" '$a|@uri')
         for i in {1..5}; do
-          # Token is short-lived, so request a fresh one on every attempt
           githubJwt=$(curl -sSf \
             -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             -H "Accept: application/json; api-version=2.0" \
