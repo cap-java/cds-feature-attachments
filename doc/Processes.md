@@ -18,7 +18,23 @@ The following overview shows the process of creating a new content inside the at
 
 ### Success
 
-![Create](./img/Create_Success.png)
+```mermaid
+sequenceDiagram
+    actor User
+    participant H as Create (Draft)<br/>Attachments Handler
+    participant AS as Attachment Service
+    participant ASH as Attachment Service<br/>Handler
+    participant PS as Persistence Service
+
+    User->>H: Deep Insert / Insert
+    H->>AS: Create
+    AS->>ASH: Create
+    ASH-->>AS: return documentId
+    AS-->>H: return documentId
+    H->>PS: Store documentId
+    PS-->>H: return
+    H-->>User: return
+```
 
 Independent of "draft" or "no draft" processes, the steps are the same; only the handlers differ.
 The handlers listen to the event `CREATE` or `DRAFT_CREATE` and are executed when the event is triggered.
@@ -28,7 +44,43 @@ gets the stream and processes it.
 
 ### Error
 
-![Create Error](./img/Create_Error.png)
+```mermaid
+sequenceDiagram
+    actor User
+    participant H as Create (Draft)<br/>Attachments Handler
+    participant OB as Outbox
+    participant AS as Attachment Service
+    participant ASH as Attachment Service<br/>Handler
+    participant PS as Persistence Service
+    participant DB as Database<br/>Transaction
+
+    User->>+DB: Create Transaction
+    DB-->>User: return created
+
+    User->>H: Deep Insert / Insert
+    H->>AS: Create
+    AS->>ASH: Create
+    ASH-->>AS: return documentId
+    AS-->>H: return documentId
+    H->>PS: Store documentId
+    PS-->>H: return
+    H-->>User: return
+
+    note over User,DB: transaction error
+    DB-->>-H: error
+
+    H->>+DB: Create Transaction
+    DB-->>H: return created
+    H->>OB: Mark for Deletion
+    OB-->>H: return
+    H-->>User: return
+
+    DB-->>-OB: return closed
+    OB->>AS: Mark for Deletion
+    AS->>ASH: Mark for Deletion
+    ASH-->>AS: return
+    AS-->>OB: return
+```
 
 After an error occurs in the database transaction, the create handler creates a new transaction
 and calls the outbox (attachment service as an outboxed service) to mark the newly created content as deleted.
@@ -58,7 +110,30 @@ If deletion were also called for a draft that is later cancelled, the content co
 
 ### Success
 
-![Delete](./img/Delete_Success.png)
+```mermaid
+sequenceDiagram
+    actor User
+    participant H as Delete Attachments<br/>Handler
+    participant OB as Outbox
+    participant AS as Attachment Service
+    participant ASH as Attachment Service<br/>Handler
+    participant PS as Persistence Service
+    participant DB as Database<br/>Transaction
+
+    User->>+DB: Create Transaction
+    DB-->>User: return created
+
+    User->>H: Deep Update / Update
+    H->>OB: Mark for Deletion
+    OB-->>H: return
+    H-->>User: return
+
+    DB-->>-OB: return closed
+    OB->>AS: Mark for Deletion
+    AS->>ASH: Mark for Deletion
+    ASH-->>AS: return
+    AS-->>OB: return
+```
 
 The delete handler calls the outbox (attachment service as an outboxed service) to mark the content as deleted.
 After the transaction is finished, the outbox takes care of calling the attachment service for the "mark as deleted"
@@ -66,7 +141,27 @@ event.
 
 ### Error
 
-![Delete Error](./img/Delete_Error.png)
+```mermaid
+sequenceDiagram
+    actor User
+    participant H as Delete Attachments<br/>Handler
+    participant OB as Outbox
+    participant AS as Attachment Service
+    participant ASH as Attachment Service<br/>Handler
+    participant PS as Persistence Service
+    participant DB as Database<br/>Transaction
+
+    User->>+DB: Create Transaction
+    DB-->>User: return created
+
+    User->>H: Deep Update / Update
+    H->>OB: Mark for Deletion
+    OB-->>H: return
+    H-->>User: return
+
+    note over User,DB: transaction error
+    DB-->>-User: return error
+```
 
 After the error occurs, the outbox entry is rolled back, so the attachment service is never called
 for "mark as deleted" and nothing needs to be done.
@@ -79,7 +174,36 @@ consistency.
 
 ### Success
 
-![Update](./img/Update_Success.png)
+```mermaid
+sequenceDiagram
+    actor User
+    participant H as Update (Draft)<br/>Attachments Handler
+    participant OB as Outbox
+    participant AS as Attachment Service
+    participant ASH as Attachment Service<br/>Handler
+    participant PS as Persistence Service
+    participant DB as Database<br/>Transaction
+
+    User->>+DB: Create Transaction
+    DB-->>User: return created
+
+    User->>H: Deep Update / Update
+    H->>OB: Mark for Deletion of existing document
+    OB-->>H: return
+    H->>AS: Create
+    AS->>ASH: Create
+    ASH-->>AS: return documentId
+    AS-->>H: return documentId
+    H->>PS: Store documentId
+    PS-->>H: return
+    H-->>User: return
+
+    DB-->>-OB: return closed
+    OB->>AS: Mark for Deletion of existing document
+    AS->>ASH: Mark for Deletion of existing document
+    ASH-->>AS: return
+    AS-->>OB: return
+```
 
 The update is implemented as a delete and new create process.
 First, the outbox is called to mark the existing content as deleted.
@@ -88,7 +212,45 @@ After that, the attachment service is called for the create event.
 
 ### Error
 
-![Update Error](./img/Update_Error.png)
+```mermaid
+sequenceDiagram
+    actor User
+    participant H as Update (Draft)<br/>Attachments Handler
+    participant OB as Outbox
+    participant AS as Attachment Service
+    participant ASH as Attachment Service<br/>Handler
+    participant PS as Persistence Service
+    participant DB as Database<br/>Transaction
+
+    User->>+DB: Create Transaction
+    DB-->>User: return created
+
+    User->>H: Deep Update / Update
+    H->>OB: Mark for Deletion of existing document
+    OB-->>H: return
+    H->>AS: Create
+    AS->>ASH: Create
+    ASH-->>AS: return documentId
+    AS-->>H: return documentId
+    H->>PS: Store documentId
+    PS-->>H: return
+    H-->>User: return
+
+    note over User,DB: transaction error
+    DB-->>-H: return error
+
+    H->>+DB: Create Transaction
+    DB-->>H: return created
+    H->>OB: Mark for Deletion of new created document
+    OB-->>H: return
+    H-->>User: return
+
+    DB-->>-OB: return closed
+    OB->>AS: Mark for Deletion of new created document
+    AS->>ASH: Mark for Deletion of new created document
+    ASH-->>AS: return
+    AS-->>OB: return
+```
 
 In case of errors and rollback of the database transaction, the outbox entry for the deletion mark of the existing content
 is not persisted, so nothing needs to be done.
@@ -128,7 +290,32 @@ The following fields are readonly:
 As the current implementation of the draft activation in the CAP Java stack does not copy readonly fields to the
 active entity, some special logic needs to be implemented to preserve the readonly fields.
 
-![Store_readonly_data.png](./img/Store_readonly_data.png)
+```mermaid
+sequenceDiagram
+    actor User
+    participant H as Attachment Activate<br/>Draft Handler
+    participant DAH as Default Activate Draft<br/>Handler
+    participant CUH as Create/Update<br/>Attachment Handler
+    participant TLS as Thread Local Data<br/>Storage
+    participant RFH as Readonly Fields<br/>Handler
+
+    User->>H: Activate Draft
+    H->>TLS: Set "isDraftActivateEvent"
+    TLS-->>H: return
+    H->>DAH: Activate Draft
+    DAH->>CUH: Activate Draft (Before Event +<br/>Time: OrderConstants.Before.CHECK_CAPABILITIES)
+    CUH->>TLS: Read "isDraftActivateEvent"
+    TLS-->>CUH: return
+    CUH-->>DAH: return (with readonly fields in new data field)
+    DAH->>RFH: remove readonly fields in data
+    RFH-->>DAH: return
+    DAH->>CUH: Activate Draft (Before Event +<br/>Time: HandlerOrder.LATE)
+    CUH-->>DAH: return
+    DAH-->>H: return
+    H->>TLS: Remove "isDraftActivateEvent"
+    TLS-->>H: return
+    H-->>User: return
+```
 
 In the `CreateAttachmentHandler` and in the `UpdateAttachmentHandler`, the readonly fields are stored in the event data
 of the attachment entity under the key `CREATE_READONLY_CONTEXT`, but only when the process is a draft activation.
@@ -151,7 +338,20 @@ no-op in the database, filesystem, and OSS backends. The event exists as an exte
 custom `AttachmentService` handler implementations, such as one backed by SAP Document Management
 Service (DMS), which may have its own recycle bin or versioning concept.
 
-![Restore](./img/Restore_Documents.png)
+```mermaid
+sequenceDiagram
+    actor User
+    participant H as Restore Handler
+    participant AS as Attachment Service
+    participant ASH as Attachment Service<br/>Handler
+
+    User->>H: Restore
+    H->>AS: Restore
+    AS->>ASH: Restore
+    ASH-->>AS: return
+    AS-->>H: return
+    H-->>User: return
+```
 
 ## Malware Scan
 
@@ -188,7 +388,37 @@ current transaction is closed.
 The service reads the attachment entity and, using the content ID, retrieves the content via the attachment service.
 After that, the external malware scanner is called and the status of the content is updated.
 
-![Malware Scan](./img/Malware_Scan.png)
+```mermaid
+sequenceDiagram
+    participant H as Handler
+    participant AS as Attachment Service
+    participant ASH as Attachment Service<br/>Handler
+    participant MS as Malware Scanner
+    participant EMS as External Malware<br/>Scan Service
+    participant PS as Persistence Service
+    participant DB as Database<br/>Transaction
+
+    H->>+DB: Create Transaction
+    DB-->>H: return
+
+    H->>AS: Create
+    AS->>ASH: Create
+    ASH->>MS: Register Scanning
+    MS-->>ASH: return
+    ASH-->>AS: return documentId,<br/>status UNSCANNED
+    AS-->>H: return
+
+    DB-->>-H: transaction closed
+
+    H->>MS: Scan
+    MS->>PS: Read Attachment Entity
+    PS-->>MS: return
+    MS->>EMS: Scan
+    EMS-->>MS: return
+    MS->>PS: Update attachment entity status
+    PS-->>MS: return
+    MS-->>H: return
+```
 
 If there is no external scanner available, the status will be set to `Clean` (since there is no scanner to detect issues).
 
@@ -219,19 +449,62 @@ This check is implemented in the proxy for the following reasons:
 
 The following sequence diagram shows the process of reading a content including access to the attachment service.
 
-![Read with content Access](./img/Read_with_Document.png)
+```mermaid
+sequenceDiagram
+    actor User
+    participant OD as OData Handler
+    participant H as Read Attachments<br/>Handler
+    participant ISP as Input Stream Proxy
+    participant AS as Attachment Service
+
+    User->>OD: Read document
+    OD->>H: Read
+    H->>ISP: Create Instance
+    ISP-->>H: return
+    H-->>OD: return
+    OD->>ISP: Read all bytes
+    ISP->>AS: Read all bytes
+    AS-->>ISP: return
+    ISP-->>OD: return
+    OD-->>User: return
+```
 
 ### Read without Access to the Content
 
 The following sequence diagram shows the process of reading a content without access to the attachment service.
 
-![Read without content Access](./img/Read_without_Document.png)
+```mermaid
+sequenceDiagram
+    actor User
+    participant OD as OData Handler
+    participant H as Read Attachments<br/>Handler
+    participant ISP as Input Stream Proxy
+    participant AS as Attachment Service
+
+    User->>OD: Read document
+    OD->>H: Read
+    H->>ISP: Create Instance
+    ISP-->>H: return
+    H-->>OD: return
+    OD-->>User: return
+```
 
 ### Error because of Malware Scan Status
 
 The following sequence diagram shows the process of reading a content with an error because of the malware scan status.
 
-![Read with Malware Scan Error](./img/Read_wrong_status.png)
+```mermaid
+sequenceDiagram
+    actor User
+    participant OD as OData Handler
+    participant H as Read Attachments<br/>Handler
+
+    User->>OD: Read content
+    OD->>H: Read
+    note over OD,H: exception: wrong status
+    H-->>OD: exception
+    OD-->>User: return error
+```
 
 ### No Scanner Available
 
