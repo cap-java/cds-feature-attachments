@@ -42,12 +42,16 @@ The following overview shows the process of deleting existing content inside the
 
 The behaviour depends on the storage backend:
 
-- **Database storage:** the attachment row is deleted directly by the CAP framework. There is no soft delete.
-- **Filesystem storage:** the content directory is moved to a `deleted/` folder rather than removed. The restore endpoint can be used to recover content after a database restore.
+- **Database storage:** the attachment row is deleted directly by the CAP framework.
+  There is no soft delete. The restore endpoint does nothing for this backend.
+- **Filesystem storage:** the content directory is moved to a `deleted/` folder rather than
+  removed. The restore endpoint does not recover this content — the restore handler is a no-op
+  for this backend. Recovery requires a manual filesystem operation.
 - **Object store (OSS) storage:** the code issues a plain delete request to the bucket.
-    Whether this results in a soft delete depends on the bucket configuration.
-    If the bucket has versioning enabled, the delete places a delete marker and the content remains recoverable.
-    In that case, a database restore can be made consistent with the bucket state by finding the matching bucket version.
+  Whether this results in a soft delete depends on the bucket configuration.
+  If the bucket has versioning enabled, the delete places a delete marker and the content
+  remains recoverable. In that case, a database restore can be made consistent with the bucket
+  state by finding the matching bucket version.
 
 In the case of a draft, the delete handler is not called. It is only called when the draft is activated.
 If deletion were also called for a draft that is later cancelled, the content could not easily be restored or unmarked.
@@ -136,13 +140,16 @@ in the database.
 
 The handlers are called twice so that the logic runs at a late point in time, after validations have been executed.
 
-## Restore Deleted content
+## Restore Deleted Content
 
-For restoring deletion-marked content, customers need to call an endpoint to trigger the restore process.
-The endpoint calls a restore handler, which in turn calls the restore event in the attachment service.
+The attachment service defines a `RESTORE_DELETED` event and exposes an endpoint that accepts
+a timestamp as input. The intent is that every content marked as deleted after the given timestamp
+would be restored.
 
-A timestamp is provided as input, indicating which content needs to be restored.
-Every content marked as deleted after the given timestamp will be restored.
+However, none of the built-in storage backends implement this event — the restore handler is a
+no-op in the database, filesystem, and OSS backends. The event exists as an extension point for
+custom `AttachmentService` handler implementations, such as one backed by SAP Document Management
+Service (DMS), which may have its own recycle bin or versioning concept.
 
 ![Restore](./img/Restore_Documents.png)
 
