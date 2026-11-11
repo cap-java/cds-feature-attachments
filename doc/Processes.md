@@ -264,8 +264,10 @@ The process for creation is the same as for the [create event](#create).
 
 The same is true for the update event. The process for the update event is the same as for the [update event](#update).
 
-The delete event is not called for drafts. The delete event is only called when the draft is activated.
-For this, only the content ID is deleted in the draft attachment entity.
+Deleting active content in a draft does not emit the delete event immediately;
+that event is emitted when the draft is activated.
+Cancelling a draft can still emit delete events to clean up content created or replaced only in that draft.
+For this, only the content ID is deleted in the draft attachment entity
 When the draft is activated, the delete event is called for the content ID.
 
 ### Activate Draft
@@ -318,11 +320,11 @@ sequenceDiagram
 ```
 
 In the `CreateAttachmentHandler` and in the `UpdateAttachmentHandler`, the readonly fields are stored in the event data
-of the attachment entity under the key `CREATE_READONLY_CONTEXT`, but only when the process is a draft activation.
+of the attachment entity under the key `DRAFT_READONLY_CONTEXT`, but only when the process is a draft activation.
 Otherwise, the key `CREATE_READONLY_CONTEXT` is cleared to prevent these fields from being set externally.
 
 The handlers are called again after the readonly fields are removed and can use the readonly fields from the
-storage under key `CREATE_READONLY_CONTEXT`. The readonly fields are copied back into the data so that they are stored
+storage under key `DRAFT_READONLY_CONTEXT`. The readonly fields are copied back into the data so that they are stored
 in the database.
 
 The handlers are called twice so that the logic runs at a late point in time, after validations have been executed.
