@@ -129,10 +129,14 @@ sequenceDiagram
     H-->>User: return
 
     DB-->>-OB: return closed
+    OB->>+DB: Create Transaction
+    DB-->>OB: return created
     OB->>AS: Mark for Deletion
     AS->>ASH: Mark for Deletion
     ASH-->>AS: return
     AS-->>OB: return
+    OB->>DB: Dequeue message
+    DB-->>-OB: return closed
 ```
 
 The delete handler calls the outbox (attachment service as an outboxed service) to mark the content as deleted.
