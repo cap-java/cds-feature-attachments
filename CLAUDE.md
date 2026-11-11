@@ -45,6 +45,7 @@ mvn verify -Platest-test-version     # Test against latest CAP Java
 ## Code Style
 
 - **Formatter:** Google Java Format via Spotless. Run `mvn spotless:apply` before committing.
+- **Markdown line length:** keep lines in `.md` files to a maximum of 100 characters.
 - **License header** required on every Java file:
   ```java
   /*
