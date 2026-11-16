@@ -93,7 +93,7 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     attachment.getContent(),
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE,
                     new FieldAccessor.Composition()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
@@ -149,7 +149,7 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     content,
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE,
                     new FieldAccessor.Composition()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
@@ -182,7 +182,7 @@ class ModifyApplicationHandlerHelperTest {
                 eventContext,
                 path,
                 content,
-                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE,
                 new FieldAccessor.Composition()));
   }
 
@@ -215,7 +215,7 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     content,
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE,
                     new FieldAccessor.Composition()));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ErrorStatuses.BAD_REQUEST);
@@ -249,7 +249,7 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     (InputStream) data.get("avatar_content"),
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE,
                     new FieldAccessor.Inline("avatar")));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
@@ -282,7 +282,7 @@ class ModifyApplicationHandlerHelperTest {
                 eventContext,
                 path,
                 content,
-                ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE,
                 new FieldAccessor.Inline("avatar")));
   }
 
@@ -329,7 +329,7 @@ class ModifyApplicationHandlerHelperTest {
                     eventContext,
                     path,
                     content,
-                    ModifyApplicationHandlerHelper.DEFAULT_SIZE_WITH_SCANNER,
+                    ModifyApplicationHandlerHelper.DEFAULT_MAX_UPLOAD_SIZE,
                     new FieldAccessor.Inline("avatar")));
 
     assertThat(exception.getErrorStatus()).isEqualTo(ExtendedErrorStatuses.CONTENT_TOO_LARGE);
