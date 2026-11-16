@@ -60,6 +60,54 @@ public final class AttachmentValidationHelper {
     Map<String, Set<String>> fileNamesByElementName =
         AttachmentDataExtractor.extractAndValidateFileNamesByElement(entity, data);
     validateAttachmentMediaTypes(fileNamesByElementName, allowedTypesByElementName);
+
+    // validate the explicitly supplied mime types as well. The file name check alone can be
+    // bypassed by pairing an allowed file name (e.g. "report.pdf") with a disallowed MIME type
+    // (e.g. "text/html") that is persisted and served inline.
+    Map<String, Set<String>> mimeTypesByElementName =
+        AttachmentDataExtractor.extractMimeTypesByElement(entity, data);
+    validateAttachmentMimeTypes(mimeTypesByElementName, allowedTypesByElementName);
+  }
+
+  private static void validateAttachmentMimeTypes(
+      Map<String, Set<String>> mimeTypesByElementName,
+      Map<String, List<String>> acceptableMediaTypesByElementName) {
+
+    Map<String, List<String>> invalidMimeTypes =
+        findInvalidMimeTypesByElementName(
+            mimeTypesByElementName, acceptableMediaTypesByElementName);
+
+    if (!invalidMimeTypes.isEmpty()) {
+      throw buildUnsupportedFileTypeMessage(acceptableMediaTypesByElementName, invalidMimeTypes);
+    }
+  }
+
+  private static Map<String, List<String>> findInvalidMimeTypesByElementName(
+      Map<String, Set<String>> mimeTypesByElementName,
+      Map<String, List<String>> acceptableMediaTypesByElementName) {
+    if (mimeTypesByElementName == null || mimeTypesByElementName.isEmpty()) {
+      return Map.of();
+    }
+    Map<String, List<String>> invalidMimeTypes = new HashMap<>();
+    mimeTypesByElementName.forEach(
+        (elementName, mimeTypes) -> {
+          List<String> acceptableTypes = acceptableMediaTypesByElementName.get(elementName);
+          if (acceptableTypes == null) {
+            return;
+          }
+
+          List<String> invalid =
+              mimeTypes.stream()
+                  .filter(
+                      mimeType -> !MediaTypeService.isMimeTypeAllowed(acceptableTypes, mimeType))
+                  .toList();
+
+          if (!invalid.isEmpty()) {
+            invalidMimeTypes.put(elementName, invalid);
+          }
+        });
+
+    return invalidMimeTypes;
   }
 
   private static void validateAttachmentMediaTypes(

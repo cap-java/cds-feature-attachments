@@ -83,6 +83,28 @@ class MediaValidatedAttachmentsNonDraftTest extends OdataRequestValidationBase {
   }
 
   @Test
+  void shouldRejectAttachment_whenAllowedFileNameCarriesDisallowedMimeType() throws Exception {
+    String rootId = createRootAndReturnId();
+    String attachmentMetadata =
+        objectMapper.writeValueAsString(Map.of("fileName", "image.jpg", "mimeType", "text/html"));
+
+    requestHelper.assertPostStatus(
+        createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS),
+        attachmentMetadata,
+        status().isUnsupportedMediaType());
+  }
+
+  @Test
+  void shouldAcceptAttachment_whenAllowedFileNameAndAllowedMimeType() throws Exception {
+    String rootId = createRootAndReturnId();
+    String attachmentMetadata =
+        objectMapper.writeValueAsString(Map.of("fileName", "image.jpg", "mimeType", "image/jpeg"));
+
+    requestHelper.assertPostStatus(
+        createUrl(rootId, MEDIA_VALIDATED_ATTACHMENTS), attachmentMetadata, status().isCreated());
+  }
+
+  @Test
   void shouldAcceptUppercaseExtension_whenMimeTypeIsAllowed() throws Exception {
     String rootId = createRootAndReturnId();
     String attachmentMetadata = createAttachmentMetadata("IMAGE.JPG");
